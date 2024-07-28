@@ -1,11 +1,11 @@
 #!/bin/bash
 
-{{ if eq .chezmoi.user "root" -}}
+{{ if eq .chezmoi.username "root" -}}
 # prep package manager
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git
+apt install -y zsh git nano
 
 # install starship
 sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
