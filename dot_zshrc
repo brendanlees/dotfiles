@@ -22,7 +22,7 @@ bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
 # run nerdfetch on startup
-nerdfetch
+#nerdfetch
 
 # aliases
 #alias {{here}}={{something}}
