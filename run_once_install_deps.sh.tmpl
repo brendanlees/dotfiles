@@ -11,13 +11,15 @@ apt install -y zsh git nano
 sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
 
 # install oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc # --skip-chsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+
+chsh -s $(which zsh)
 
 {{ else -}}
 
 # install oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc # --skip-chsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
 
 # set zsh to default shell
-#chsh -s $(which zsh)
+chsh -s $(which zsh)
 {{ end -}}
