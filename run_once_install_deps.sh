@@ -7,4 +7,4 @@ apt update && apt upgrade -y && apt autoremove
 apt install zsh git
 
 # install starship
-curl -sS https://starship.rs/install.sh | sh -y
+curl -sS https://starship.rs/install.sh | sh
