@@ -1,15 +1,14 @@
 # dotfiles
 
-## Set up
+dotfiles, managed by https://www.chezmoi.io/
 
-Install chezmoi
-`sudo sh -c "$(curl -fsLS get.chezmoi.io)"`
+## set up
 
-In a new shell, pull down repo
+install chezmoi
+`su && cd / && sh -c "$(curl -fsLS get.chezmoi.io) && exit"`
+
+or
+`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME`
+
+in a new shell, pull down repo
 `chezmoi init --apply $GITHUB_USERNAME`
-
-Install env dependencies via setup-env.sh
-`sudo sh ~/.local/share/chezmoi/scripts/setup-env.sh`
-
-Install user specific dependencies via setup-user.sh
-`sh ~/.local/share/chezmoi/scripts/setup-user.sh`
