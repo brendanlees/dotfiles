@@ -2,23 +2,18 @@
 
 My dotfiles, managed by chezmoi (https://www.chezmoi.io/) with a bit of mackup (https://github.com/lra/mackup)
 
-
 ## Installation & Configuration
 
 ### Linux
-
-install chezmoi at system level
-`sudo sh -c 'su -c "cd / && sh -c \"\$(curl -fsLS get.chezmoi.io)\""'`
-
-apply/pull dotfiles repo to intended user(s)
 ```sh
+# install chezmoi at system bin level
+sudo sh -c 'su -c "cd / && sh -c \"\$(curl -fsLS get.chezmoi.io)\""'
 
-# use sudo for root/sudo users
+# use sudo if applying dotfiles repo to root user
 sudo chezmoi init --apply $GITHUB_USERNAME
 
-# don't for system users
+# no sudo if applying dotfiles repo to non-root user(s)
 chezmoi init --apply $GITHUB_USERNAME
-
 
 ```
 
@@ -34,7 +29,7 @@ chezmoi init --apply $GITHUB_USERNAME
 mackup restore
 
 ```
-Mackup symlinks selected mac app config files to the folder ~/dotfiles-mac. Snapshots of this directory are then backed up to Time Machine (local) & Arq + Backblaze B2 (cloud). This offers more retention/versioning options than the standard iCloud/Dropbox storage option.
+Mackup symlinks selected mac app config files to the folder `~/dotfiles-mac`. Snapshots of this directory are then backed up to Time Machine (local) & Arq + Backblaze B2 (cloud). This offers more retention/versioning options than the standard iCloud/Dropbox storage option.
 
 
 ## References & Future Tweaks
