@@ -1,6 +1,11 @@
 #!/bin/bash
 
-{{ if eq .chezmoi.username "root" -}}
+# ---
+# linux
+# ---
+
+{{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
+
 # prep package manager
 apt update && apt upgrade -y && apt autoremove
 
@@ -15,11 +20,38 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 
 chsh -s $(which zsh)
 
-{{ else -}}
+{{ else if eq .chezmoi.os "linux" -}}
 
 # install oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
+
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+	echo "Getting oh-my-zsh"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
+else
+	echo ".oh-my-zsh already found, skipping."
+fi
 
 # set zsh to default shell
+echo "Set zsh as default shell"
 chsh -s $(which zsh)
+{{ end -}}
+
+# ---
+# macos
+# ---
+
+{{ if eq .chezmoi.os "darwin" }}
+
+# install starship
+sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+
+# install oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+	echo "Getting oh-my-zsh"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
+else
+	echo ".oh-my-zsh already found, skipping."
+fi
+echo "Set zsh as default shell"
+sudo chsh -s $(which zsh) $(whoami)
 {{ end -}}
