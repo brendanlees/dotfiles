@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # prep package manager
-apt update && apt upgrade -y && apt autoremove -y
+apt update && apt upgrade -y && apt autoremove
 
 # install packages
 apt install zsh git -y
