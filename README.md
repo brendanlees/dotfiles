@@ -1,32 +1,52 @@
 # dotfiles
 
-dotfiles, managed by https://www.chezmoi.io/
+My dotfiles, managed by chezmoi (https://www.chezmoi.io/) with a bit of mackup (https://github.com/lra/mackup)
 
-## set up
+
+## Installation & Configuration
+
+### Linux
 
 install chezmoi at system level
 `sudo sh -c 'su -c "cd / && sh -c \"\$(curl -fsLS get.chezmoi.io)\""'`
 
-apply/pull dotfiles repo to as intended user(s)
+apply/pull dotfiles repo to intended user(s)
 ```sh
 
-# for root/sudo users
+# use sudo for root/sudo users
 sudo chezmoi init --apply $GITHUB_USERNAME
 
-# for system users
+# don't for system users
 chezmoi init --apply $GITHUB_USERNAME
+
 
 ```
 
-## references, future tweaks
+### Mac OS
+```sh
+# install
+brew install chezmoi
+
+# apply
+chezmoi init --apply $GITHUB_USERNAME
+
+# restore ~/dotfiles-mac/mackup, then run:
+mackup restore
+
+```
+Mackup symlinks selected mac app config files to the folder ~/dotfiles-mac. Snapshots of this directory are then backed up to Time Machine (local) & Arq + Backblaze B2 (cloud). This offers more retention/versioning options than the standard iCloud/Dropbox storage option.
+
+
+## References & Future Tweaks
 - https://www.chezmoi.io/
-	- docs
-	- user guides
+	- Docs
+	- User guides
 - https://github.com/twpayne/dotfiles
-	- creators repo
+	- Chezmoi creators repo
 - https://github.com/logandonley/dotfiles
-	- ansible integration
+	- Ansible integration
 - https://github.com/sudopluto/dotfiles
-	- encryption usage
+	- Encryption usage
+- Gitleaks
 
 
