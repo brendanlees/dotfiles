@@ -11,6 +11,6 @@ sh -c "$(curl -fsLS get.chezmoi.io)"
 exit`
 
 apply/pull dotfiles repo to user
-`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME`
+`sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME`
 
 
