@@ -7,7 +7,7 @@ apt update && apt upgrade -y && apt autoremove
 apt install zsh git
 
 # install starship
-curl -sS https://starship.rs/install.sh -y | sh
+curl -syS https://starship.rs/install.sh | sh
 
 # set zsh to default shell
 chsh -s $(which zsh)
