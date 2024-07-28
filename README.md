@@ -8,8 +8,8 @@ Install chezmoi
 In a new shell, pull down repo
 `chezmoi init --apply $GITHUB_USERNAME`
 
-Install dependencies via setup.sh
-`sudo sh ~/.local/share/chezmoi/setup.sh`
+Install env dependencies via setup-env.sh
+`sudo sh ~/.local/share/chezmoi/scripts/setup-env.sh`
 
-Install omz as user - do not set zsh as default shell
-`sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"`
+Install user specific dependencies via setup-user.sh
+`sh ~/.local/share/chezmoi/scripts/setup-user.sh`
