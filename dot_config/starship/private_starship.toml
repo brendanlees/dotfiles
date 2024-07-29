@@ -31,7 +31,6 @@ Windows = ''
 Arch = '󰣇'
 Ubuntu = ''
 Macos = ''
-Debian = ''
 
 # Shows the username
 [username]
