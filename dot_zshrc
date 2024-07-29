@@ -8,13 +8,14 @@ source $ZSH/oh-my-zsh.sh
 export EDITOR="code -w"
 
 # Load zsh-autosuggestions
-source "$HOME/.zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$HOME/.plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Load zsh-syntax-highlighting
-source "$HOME/.zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/.plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Start Starship prompt
 eval "$(starship init zsh)"
+export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
 # Navigate words using Ctrl + arrow keys
 # >>> CRTL + right arrow | CRTL + left arrow
