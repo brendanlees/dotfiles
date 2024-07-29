@@ -1,9 +1,26 @@
-# ~/.config/starship.toml
+# ~/.config/starship/starship.toml
 
 add_newline = false
 command_timeout = 500
 
-right_format = """$os$username$hostname$kubernetes$directory$git_branch$git_status"""
+right_format = """$os$username$hostname$directory$git_branch$git_status"""
+
+
+# Set monokai as custom color palette
+palette = 'monokai'
+
+# Define custom colors
+[palettes.monokai]
+#black = '#2e2e2e'
+#gray = '#797979'
+#white = '#d6d6d6'
+#yellow = '#e5b567'
+#green = '#b4d273'
+#red = '#e87d3e3'
+#purple = '#9e86c8'
+#pink = '#b05279'
+#blue = '#6c99bb'
+
 
 
 [os]
@@ -11,10 +28,11 @@ format = '[$symbol](bold white) '
 disabled = false
 
 [os.symbols]
-Windows = ' '
+Windows = ''
 Arch = '󰣇'
 Ubuntu = ''
 Macos = ''
+Debian = '󰣚'
 
 # Shows the username
 [username]
@@ -63,15 +81,6 @@ staged = '[󰐗 staged=${count}](green) '
 renamed = '[󱍸 renamed=${count}](yellow) '
 deleted = '[󰍶 deleted=${count}](red) '
 
-# Shows kubernetes context and namespace
-[kubernetes]
-format = 'via [󱃾 $context\($namespace\)](bold purple) '
-disabled = false
-
-
-
-[vagrant]
-disabled = true
 
 [docker_context]
 disabled = true
