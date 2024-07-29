@@ -22,9 +22,8 @@ palette = 'monokai'
 #blue = '#6c99bb'
 
 
-
 [os]
-format = '[$symbol](bold white) '   
+format = '[$symbol](bold white) '
 disabled = false
 
 [os.symbols]
@@ -81,6 +80,9 @@ staged = '[󰐗 staged=${count}](green) '
 renamed = '[󱍸 renamed=${count}](yellow) '
 deleted = '[󰍶 deleted=${count}](red) '
 
+# stop 'systemd' showing in lxcs
+[container]
+disabled = true
 
 [docker_context]
 disabled = true
