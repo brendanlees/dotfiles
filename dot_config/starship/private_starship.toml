@@ -3,14 +3,14 @@
 add_newline = false
 command_timeout = 500
 
-right_format = """$os$username$hostname$directory$git_branch$git_status"""
+right_format = """$os$username$hostname$directory$git_branch$git_status${custom.ddev}"""
 
 
 # Set monokai as custom color palette
-palette = 'monokai'
+#palette = 'monokai'
 
 # Define custom colors
-[palettes.monokai]
+#[palettes.monokai]
 #black = '#2e2e2e'
 #gray = '#797979'
 #white = '#d6d6d6'
@@ -31,6 +31,7 @@ Windows = ''
 Arch = '󰣇'
 Ubuntu = ''
 Macos = ''
+Debian = '󰣚'
 
 # Shows the username
 [username]
@@ -79,9 +80,14 @@ staged = '[󰐗 staged=${count}](green) '
 renamed = '[󱍸 renamed=${count}](yellow) '
 deleted = '[󰍶 deleted=${count}](red) '
 
-# stop 'systemd' showing in lxcs
-[container]
-disabled = true
+# ddev icon
+[custom.ddev]
+description = "Display icon when inside DDEV project"
+when = """ test -n "${DDEV_PROJECT:1}" """
+symbol = '🐳 '
+command = "echo $DDEV_PROJECT"
+format = "[$symbol$output]($style) "
+style = "bold blue"
 
 [docker_context]
 disabled = true
