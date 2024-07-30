@@ -1,6 +1,6 @@
 # to update run 'chezmoi apply, -R to refresh externals'
 
-[".zsh-plugins/zsh-autosuggestions"]
+[".cli-plugins/zsh/zsh-autosuggestions"]
 type = "archive"
 url = "https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
 exact = true
@@ -15,9 +15,23 @@ exclude = [
   "*/*.circleci",
 ]
 
-[".zsh-plugins/zsh-syntax-highlighting"]
+[".cli-plugins/zsh/zsh-syntax-highlighting"]
 type = "archive"
 url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz"
+exact = true
+stripComponents = 1
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
+
+[".cli-plugins/fzf/fzf-git-sh"]
+type = "archive"
+url = "https://github.com/junegunn/fzf-git.sh.git"
 exact = true
 stripComponents = 1
 refreshPeriod = "168h"

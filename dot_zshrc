@@ -8,10 +8,10 @@ source $ZSH/oh-my-zsh.sh
 export EDITOR="code -w"
 
 # Load zsh-autosuggestions
-source "$HOME/.zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Load zsh-syntax-highlighting
-source "$HOME/.zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Start Starship prompt
 eval "$(starship init zsh)"
@@ -42,3 +42,6 @@ _fzf_compgen_path() {
 _fzf_compgen_dir() {
   fd --type=d --hidden --exclude .git . "$1"
 }
+
+# Load fzf git script
+source "$HOME/.cli-plugins/fzf/fzf-git.sh/fzf-git.sh"
