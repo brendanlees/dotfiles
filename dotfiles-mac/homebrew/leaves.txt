@@ -1,6 +1,7 @@
 ansible
 bash
 bash-completion
+bat
 brew-cask-completion
 ddev
 ffmpeg
