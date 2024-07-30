@@ -44,4 +44,4 @@ _fzf_compgen_dir() {
 }
 
 # Load fzf git script
-source "$HOME/.cli-plugins/fzf/fzf-git.sh/fzf-git.sh"
+source "$HOME/.cli-plugins/fzf/fzf-git.sh"
