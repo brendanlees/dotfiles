@@ -22,8 +22,5 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
-# run nerdfetch on startup
-#nerdfetch
-
-# aliases
-#alias {{here}}={{something}}
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)

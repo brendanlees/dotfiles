@@ -5,6 +5,7 @@ brew-cask-completion
 ddev
 ffmpeg
 flock
+fzf
 gallery-dl
 git
 htop
