@@ -29,7 +29,7 @@ exclude = [
   "*/*.md",
 ]
 
-[".cli-plugins/fzf/fzf-git-sh"]
+[".cli-plugins/fzf/fzf-git.sh"]
 type = "file"
 url = "https://github.com/junegunn/fzf-git.sh/blob/main/fzf-git.sh"
 exact = true
