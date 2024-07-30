@@ -30,8 +30,8 @@ exclude = [
 ]
 
 [".cli-plugins/fzf/fzf-git-sh"]
-type = "archive"
-url = "https://github.com/junegunn/fzf-git.sh.git"
+type = "file"
+url = "https://github.com/junegunn/fzf-git.sh/blob/main/fzf-git.sh"
 exact = true
 stripComponents = 1
 refreshPeriod = "168h"
