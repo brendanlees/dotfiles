@@ -45,3 +45,6 @@ _fzf_compgen_dir() {
 
 # Load fzf git script
 source "$HOME/.cli-plugins/fzf/fzf-git.sh"
+
+# Default bat theme
+export BAT_THEME='Monokai Extended'
