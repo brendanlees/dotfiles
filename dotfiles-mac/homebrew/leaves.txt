@@ -6,6 +6,7 @@ brew-cask-completion
 ddev
 ffmpeg
 flock
+fd
 fzf
 gallery-dl
 git
