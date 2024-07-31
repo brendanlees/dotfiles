@@ -1,30 +1,52 @@
-
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="robbyrussell"
-plugins=(git)
-source $ZSH/oh-my-zsh.sh
-
-# Define local path
+# define local path
 export PATH=$PATH:~/.local/bin
 
-# Define VSCode as the default text editor
+#################
+# editor
+#################
+{{- if eq .chezmoi.os "darwin" }}
+# vscode
 export EDITOR="code -w"
+{{- end }}
 
-# Load zsh-autosuggestions
+#################
+# oh-my-zsh
+#################
+export ZSH="$HOME/.oh-my-zsh"
+
+#ZSH_THEME="robbyrussell"
+
+DISABLE_AUTO_UPDATE="true"
+
+# load zsh-autosuggestions
 source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-# Load zsh-syntax-highlighting
+# load zsh-syntax-highlighting
 source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
-# Start Starship prompt
+source $ZSH/oh-my-zsh.sh
+
+#################
+# starship
+#################
+
+# start starship prompt
 eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
+
+#################
+# key bindings
+#################
 # Navigate words using Ctrl + arrow keys
 # >>> CRTL + right arrow | CRTL + left arrow
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
+
+#################
+# fzf + fd
+#################
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
@@ -45,14 +67,19 @@ _fzf_compgen_dir() {
   fd --type=d --hidden --exclude .git . "$1"
 }
 
-# Load fzf git script
+# Load fzf-git script
 source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
+#################
+# bat
+#################
 # Default bat theme
 export BAT_THEME='Monokai Extended'
 
 
-### Aliases ###
+#################
+# aliases
+#################
 # bat
 {{- if lookPath "bat" }}
 alias cat=bat

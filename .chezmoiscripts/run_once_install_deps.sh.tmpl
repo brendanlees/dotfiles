@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# ---
+#################
 # linux
-# ---
+#################
 
 {{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
 
@@ -16,10 +16,14 @@ apt install -y zsh git nano bat fd-find
 ~/.fzf/install --all
 
 # install starship
-sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+{{ template "starship.sh.tmpl" . }}
 
-# install oh-my-zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+	echo "Getting oh-my-zsh"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc 
+else
+	echo ".oh-my-zsh already found, skipping."
+fi
 
 chsh -s $(which zsh)
 
@@ -48,7 +52,7 @@ chsh -s $(which zsh)
 {{ if eq .chezmoi.os "darwin" }}
 
 # install starship
-sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+{{ include "starship.sh.tmpl" }}
 
 # install oh-my-zsh
 if [ ! -d "$HOME/.oh-my-zsh" ]; then

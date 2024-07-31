@@ -1,0 +1,6 @@
+# install starship
+if [ ! -d "$HOME/.config/starship/starship.toml" ]; then echo "Getting Starship"
+sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+else
+	echo "starship.toml already found, skipping."
+fi
