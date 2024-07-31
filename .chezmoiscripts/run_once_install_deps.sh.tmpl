@@ -14,11 +14,11 @@ apt update && apt upgrade -y && apt autoremove
 # install packages
 apt install -y zsh git nano bat fd-find
 
+# install fzf
+~/.fzf/install --all
+
 # check/run installer scripts & check/set zsh as default
 {{ template "install-scripts.sh.tmpl" . }}
-
-# install fzf
-# ~/.fzf/install --all
 
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
@@ -27,7 +27,7 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-scripts.sh.tmpl" . }}
 
 # install fzf
-#~/.fzf/install --all
+~/.fzf/install --all
 
 {{ end -}}
 
@@ -38,10 +38,11 @@ apt install -y zsh git nano bat fd-find
 
 {{ if eq .chezmoi.os "darwin" }}
 
+# install fzf
+~/.fzf/install --all
+
 # install oh-my-zsh, starship, fzf
 {{ template "installers.sh.tmpl" . }}
 
-# install fzf
-~/.fzf/install --all
 
 {{ end -}}
