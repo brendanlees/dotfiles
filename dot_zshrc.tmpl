@@ -48,7 +48,7 @@ bindkey "^[[1;5D" backward-word
 # fzf + fd
 #################
 # Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+source <("$HOME/.fzf/bin/fzf --zsh")
 
 # -- Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
