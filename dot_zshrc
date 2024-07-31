@@ -4,6 +4,9 @@ ZSH_THEME="robbyrussell"
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
+# Define local path
+export PATH=$PATH:~/.local/bin
+
 # Define VSCode as the default text editor
 export EDITOR="code -w"
 
