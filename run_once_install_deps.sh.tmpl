@@ -12,6 +12,9 @@ apt update && apt upgrade -y && apt autoremove
 # install packages
 apt install -y zsh git nano fzf bat fd-find
 
+# run symlink for fd
+ln -s $(which fdfind) ~/.local/bin/fd
+
 # install starship
 sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
 
