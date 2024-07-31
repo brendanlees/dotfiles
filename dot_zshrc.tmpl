@@ -45,8 +45,8 @@ alias cat=bat
 alias cat=batcat
 {{- end }}
 # fd
-#{{- if lookPath "fdfind" }}
-#alias fd=fdfind
+{{- if lookPath "fdfind" }}
+alias fd=fdfind
 {{- end }}
 
 #################
@@ -65,7 +65,7 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 # fd
 #################
 # Set up path (due to symlink)
-export PATH="$PATH:$HOME/.local/bin/fd"
+#export PATH="$PATH:$HOME/.local/bin/fd"
 
 # Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
