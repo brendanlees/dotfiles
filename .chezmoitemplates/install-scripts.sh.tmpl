@@ -15,6 +15,12 @@ else
 	echo "starship.toml already found, skipping."
 fi
 
+# run symlink for fd
+mkdir ~/.local/bin && ln -sf $(which fdfind) ~/.local/bin/fd
+
+# install fzf
+~/.fzf/install --all
+
 # set zsh to default shell
 if [ ! -f ~/.zshrc ]; then
     echo "Set zsh as default shell"
