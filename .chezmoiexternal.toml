@@ -29,7 +29,7 @@ exclude = [
   "*/*.md",
 ]
 
-[".cli-plugins/fzf/fzf-git.sh"]
+[".fzf"]
 type = "git-repo"
 url = "https://github.com/junegunn/fzf.git"
 refreshPeriod = "168h"
@@ -41,7 +41,7 @@ exclude = [
   "*/*.md",
 ]
 
-[".fzf"]
+[".cli-plugins/fzf/fzf-git.sh"]
 type = "file"
 url = "https://github.com/junegunn/fzf-git.sh/raw/main/fzf-git.sh"
 exact = true
