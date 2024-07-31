@@ -12,7 +12,7 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y {{- range .aptPackages }} {{ . }} {{- end }}
+apt install -y zsh git nano bat fd-find
 
 # check/run installer scripts & check/set zsh as default
 {{ template "install-scripts.sh.tmpl" . }}
