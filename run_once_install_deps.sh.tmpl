@@ -10,7 +10,10 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano fzf bat fd-find
+apt install -y zsh git nano bat fd-find
+
+# run fzf git installer script
+sh ~/.fzf/install
 
 # run symlink for fd
 mkdir -p ~/.local/bin
