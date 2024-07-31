@@ -50,3 +50,16 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
 # Default bat theme
 export BAT_THEME='Monokai Extended'
+
+
+### Aliases ###
+# bat
+{{- if lookPath "bat" }}
+alias cat=bat
+{{- else if lookPath "batcat" }}
+alias cat=batcat
+{{- end }}
+# fd
+{{- if lookPath "fdfind" }}
+alias fd=fdfind
+{{- end }}

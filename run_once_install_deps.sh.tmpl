@@ -16,8 +16,8 @@ apt install -y zsh git nano bat fd-find
 ~/.fzf/install --all
 
 # run symlink for fd
-mkdir -p ~/.local/bin
-ln -sf $(which fdfind) ~/.local/bin/fd
+# mkdir -p ~/.local/bin
+# ln -sf $(which fdfind) ~/.local/bin/fd
 
 # install starship
 sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
@@ -33,11 +33,10 @@ chsh -s $(which zsh)
 ~/.fzf/install --all
 
 # run symlink for fd
-mkdir -p ~/.local/bin
-ln -sf $(which fdfind) ~/.local/bin/fd
+# mkdir -p ~/.local/bin
+# ln -sf $(which fdfind) ~/.local/bin/fd
 
 # install oh-my-zsh
-
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
 	echo "Getting oh-my-zsh"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
