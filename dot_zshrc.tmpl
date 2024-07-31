@@ -43,12 +43,25 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
+#################
+# aliases
+#################
+# bat
+{{- if lookPath "bat" }}
+alias cat=bat
+{{- else if lookPath "batcat" }}
+alias cat=batcat
+{{- end }}
+# fd
+{{- if lookPath "fdfind" }}
+alias fd=fdfind
+{{- end }}
 
 #################
 # fzf + fd
 #################
 # Set up fzf key bindings and fuzzy completion
-source "$HOME/.fzf/bin/fzf --zsh"
+source <(fzf --zsh)
 
 # -- Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
@@ -77,16 +90,3 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 export BAT_THEME='Monokai Extended'
 
 
-#################
-# aliases
-#################
-# bat
-{{- if lookPath "bat" }}
-alias cat=bat
-{{- else if lookPath "batcat" }}
-alias cat=batcat
-{{- end }}
-# fd
-{{- if lookPath "fdfind" }}
-alias fd=fdfind
-{{- end }}
