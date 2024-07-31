@@ -18,7 +18,7 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-scripts.sh.tmpl" . }}
 
 # install fzf
-~/.fzf/install --all
+# ~/.fzf/install --all
 
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
@@ -27,7 +27,7 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-scripts.sh.tmpl" . }}
 
 # install fzf
-~/.fzf/install --all
+#~/.fzf/install --all
 
 {{ end -}}
 
