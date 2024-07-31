@@ -24,6 +24,8 @@ apt install -y {{- range .aptPackages }} {{ . }} {{- end }}
 # check/run installer scripts & check/set zsh as default
 {{ template "install-scripts.sh.tmpl" . }}
 
+{{ end -}}
+
 
 #################
 # mac os
@@ -33,3 +35,5 @@ apt install -y {{- range .aptPackages }} {{ . }} {{- end }}
 
 # install oh-my-zsh, starship, fzf
 {{ template "installers.sh.tmpl" . }}
+
+{{ end -}}
