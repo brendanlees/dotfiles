@@ -21,6 +21,7 @@ source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 
+
 #################
 # starship
 #################
@@ -56,8 +57,11 @@ alias fd=fdfind
 #################
 # fzf + fd
 #################
+# Set up path due to Git install
+export PATH="$PATH:$HOME/.fzf/bin"
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
+
 
 # -- Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
