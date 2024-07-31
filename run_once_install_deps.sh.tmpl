@@ -49,6 +49,13 @@ chsh -s $(which zsh)
 
 {{ if eq .chezmoi.os "darwin" }}
 
+# run fzf git installer script
+~/.fzf/install --all
+
+# run symlink for fd
+mkdir -p ~/.local/bin
+ln -sf $(which fdfind) ~/.local/bin/fd
+
 # install starship
 sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
 
