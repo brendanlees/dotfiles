@@ -17,12 +17,17 @@ apt install -y zsh git nano bat fd-find
 # check/run installer scripts & check/set zsh as default
 {{ template "install-scripts.sh.tmpl" . }}
 
+# install fzf
+~/.fzf/install --all
 
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
 
 # check/run installer scripts & check/set zsh as default
 {{ template "install-scripts.sh.tmpl" . }}
+
+# install fzf
+~/.fzf/install --all
 
 {{ end -}}
 
@@ -35,5 +40,8 @@ apt install -y zsh git nano bat fd-find
 
 # install oh-my-zsh, starship, fzf
 {{ template "installers.sh.tmpl" . }}
+
+# install fzf
+~/.fzf/install --all
 
 {{ end -}}
