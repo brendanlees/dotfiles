@@ -7,7 +7,7 @@ right_format = """$os$username$hostname$directory$git_branch$git_status${custom.
 
 
 # Set monokai as custom color palette
-#palette = 'monokai'
+palette = 'monokai'
 
 # Define custom colors
 #[palettes.monokai]
