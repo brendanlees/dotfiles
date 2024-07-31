@@ -20,16 +20,12 @@ source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 # load zsh-syntax-highlighting
 source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
-
-
 #################
 # starship
 #################
-
 # start starship prompt
 eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
-
 
 #################
 # key bindings
@@ -42,7 +38,6 @@ bindkey "^[[1;5D" backward-word
 #################
 # aliases
 #################
-
 # bat
 {{- if lookPath "bat" }}
 alias cat=bat
@@ -55,15 +50,24 @@ alias cat=batcat
 {{- end }}
 
 #################
-# fzf + fd
+# fzf
 #################
-# Set up path due to Git install
+# Set up path (due to Git install)
 export PATH="$PATH:$HOME/.fzf/bin"
+
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
+# Load fzf-git script
+source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
-# -- Use fd instead of fzf
+#################
+# fd
+#################
+# Set up path (due to symlink)
+export PATH="$PATH:$HOME/.local/bin/fd"
+
+# Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
@@ -80,8 +84,6 @@ _fzf_compgen_dir() {
   fd --type=d --hidden --exclude .git . "$1"
 }
 
-# Load fzf-git script
-source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
 #################
 # bat
