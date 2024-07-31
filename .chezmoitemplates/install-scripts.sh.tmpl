@@ -1,0 +1,28 @@
+
+# install oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+	echo "Getting oh-my-zsh"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
+else
+	echo ".oh-my-zsh already found, skipping."
+fi
+
+# install starship
+if [ ! -d "$HOME/.config/starship" ]; then 
+echo "Getting Starship"
+sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+else
+	echo "starship.toml already found, skipping."
+fi
+
+# install fzf
+~/.fzf/install --all
+
+# set zsh to default shell
+if [ ! -f ~/.zshrc ]; then
+    echo "Set zsh as default shell"
+    chsh -s $(which zsh)
+fi
+else
+	echo "zsh already default shell, skipping."
+fi

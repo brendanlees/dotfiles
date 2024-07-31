@@ -4,63 +4,32 @@
 # linux
 #################
 
+##### root user ####
+
 {{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
 
 # prep package manager
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano bat fd-find
+apt install -y {{- range .aptPackages }} {{ . }} {{- end }}
 
-# run fzf git installer script
-~/.fzf/install --all
+# check/run installer scripts & check/set zsh as default
+{{ template "install-scripts.sh.tmpl" . }}
 
-# install starship
-{{ template "starship.sh.tmpl" . }}
 
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-	echo "Getting oh-my-zsh"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc 
-else
-	echo ".oh-my-zsh already found, skipping."
-fi
-
-chsh -s $(which zsh)
-
+#### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
 
-# run fzf git installer script
-~/.fzf/install --all
+# check/run installer scripts & check/set zsh as default
+{{ template "install-scripts.sh.tmpl" . }}
 
-# install oh-my-zsh
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-	echo "Getting oh-my-zsh"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
-else
-	echo ".oh-my-zsh already found, skipping."
-fi
 
-# set zsh to default shell
-echo "Set zsh as default shell"
-chsh -s $(which zsh)
-{{ end -}}
-
-# ---
-# macos
-# ---
+#################
+# mac os
+#################
 
 {{ if eq .chezmoi.os "darwin" }}
 
-# install starship
-{{ include "starship.sh.tmpl" }}
-
-# install oh-my-zsh
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-	echo "Getting oh-my-zsh"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc --skip-chsh
-else
-	echo ".oh-my-zsh already found, skipping."
-fi
-echo "Set zsh as default shell"
-sudo chsh -s $(which zsh) $(whoami)
-{{ end -}}
+# install oh-my-zsh, starship, fzf
+{{ template "installers.sh.tmpl" . }}
