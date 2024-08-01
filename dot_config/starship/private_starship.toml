@@ -1,25 +1,40 @@
 # ~/.config/starship/starship.toml
 
 add_newline = false
-command_timeout = 500
+command_timeout = 50000
 
 right_format = """$os$username$hostname$directory$git_branch$git_status${custom.ddev}"""
 
 
-# Set monokai as custom color palette
-#palette = 'monokai'
+# palette = 'monokai'
+palette = 'tokyo-night'
 
-# Define custom colors
-#[palettes.monokai]
-#black = '#2e2e2e'
-#gray = '#797979'
-#white = '#d6d6d6'
-#yellow = '#e5b567'
-#green = '#b4d273'
-#red = '#e87d3e3'
-#purple = '#9e86c8'
-#pink = '#b05279'
-#blue = '#6c99bb'
+[palettes.monokai]
+# overrides
+red = '#e87d3e'
+green = '#b4d273'
+yellow = '#e5b567'
+blue = '#6c99bb'
+black = '#2e2e2e'
+white = '#d6d6d6'
+gray = '#797979'
+
+# semantic
+accent = 'red'
+primary = 'yellow'
+neutral = 'gray'
+
+[palettes.tokyo-night]
+# overrides
+red = '#f7768e'
+green = '#9ece6a'
+blue = '#769ff0'
+white = '#c0caf5'
+
+# semantic
+accent = '#73daca'
+primary = '#769ff0'
+neutral = '#a9b1d6'
 
 
 [os]
@@ -33,10 +48,14 @@ Ubuntu = ''
 Macos = ''
 Debian = '󰣚'
 
+[character]
+format = '[❯ ](accent)'
+
+
 # Shows the username
 [username]
 style_user = 'white bold'
-style_root = 'red bold'
+style_root = 'accent bold'
 format = '[$user]($style) '
 disabled = false
 show_always = true
@@ -44,17 +63,18 @@ show_always = true
 # Shows the hostname
 [hostname]
 ssh_only = false
-format = 'on [$hostname](green bold) '
+format = '[on](neutral) [$hostname](primary bold) '
 disabled = false
 
 # Shows current directory
 [directory]
+style = 'accent bold'
 truncation_length = 1
 truncation_symbol = '…/'
 home_symbol = ' ~'
 read_only_style = '197'
 read_only = '  '
-format = 'at [$path]($style)[$read_only]($read_only_style) '
+format = '[at](neutral) [$path]($style)[$read_only]($read_only_style) '
 
 # Shows current git branch
 [git_branch]
