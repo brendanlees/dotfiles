@@ -1,12 +1,12 @@
-# set bat default theme
+# set bat external theme
 if [ ! -d ~/.config/bat/themes ]; then
   # load external theme
     echo "Loading external bat theme"
     {{- if lookPath "bat" }}
-      cat cache --build
+      bat cache --build
     {{- end }}
 else
-    echo "Loading default bat theme"
+    cat cache --build
 fi
 
 # set zsh to default shell
