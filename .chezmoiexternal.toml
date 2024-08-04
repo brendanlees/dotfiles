@@ -1,5 +1,18 @@
 # to update run 'chezmoi apply, -R to refresh externals'
 
+[".cli-plugins/zsh/zsh-pure-theme"]
+type = "git-repo"
+url = "https://github.com/sindresorhus/pure.git"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+  "*/*.circleci",
+]
+
 [".cli-plugins/zsh/zsh-autosuggestions"]
 type = "archive"
 url = "https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
