@@ -2,12 +2,9 @@
 if [ ! -d ~/.config/bat/themes ]; then
   # load external theme
     echo "Loading external bat theme"
-    {{- if lookPath "batcat" }}
       /usr/bin/batcat cache --build
-    {{- end }}
-    {{- if lookPath "bat" }}
+else if
       /usr/bin/bat cache --build
-    {{- end }}
 else
     echo "bat is not installed"
 fi
