@@ -12,10 +12,12 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano bat fd-find eza
+apt install -y zsh git nano bat fd-find
 
 # check/run installer scripts & check/set zsh as default
+{{ template "install-eza.sh.tmpl" . }}
 {{ template "install-scripts.sh.tmpl" . }}
+
 
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
