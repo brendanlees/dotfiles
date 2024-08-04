@@ -18,7 +18,7 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-starship.sh.tmpl" . }}
 {{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
-{{ template "default-shell-zsh.sh.tmpl" . }}
+{{ template "init-defaults.sh.tmpl" . }}
 
 
 
@@ -29,7 +29,7 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-starship.sh.tmpl" . }}
 {{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
-{{ template "default-shell-zsh.sh.tmpl" . }}
+{{ template "init-defaults.sh.tmpl" . }}
 
 {{ end -}}
 
@@ -40,8 +40,6 @@ apt install -y zsh git nano bat fd-find
 
 {{ if eq .chezmoi.os "darwin" }}
 
-# install fzf
-~/.fzf/install --all
 
 # install starship, fzf, zsh defaults
 {{ template "install-starship.sh.tmpl" . }}

@@ -1,0 +1,18 @@
+# set bat default theme
+if [ ! -d ~/.config/bat/themes ]; then
+  # load external theme
+    echo "Loading external bat theme"
+    bat cache --build
+else
+  # load fallback default theme
+	  sed -i 's/^export BAT_THEME=.*$/#&/' ~/.zshrc
+    echo "export BAT_THEME='Monokai Extended'" >> ~/.zshrc
+fi
+
+# set zsh to default shell
+if [ ! -f ~/.zshrc ]; then
+    echo "Set zsh as default shell"
+    chsh -s $(which zsh)
+else
+	echo "zsh already default shell, skipping."
+fi
