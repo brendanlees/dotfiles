@@ -1,7 +1,7 @@
 # check for fzf
-if [ ! -d "$HOME/.fzf.zsh" ]; then
-# install fzf
-  ~/.fzf/install --all
+if [ ! "$HOME/.fzf.zsh" ]; then
+    # install fzf
+    ~/.fzf/install --all
 else
     echo ".fzf already found, skipping."
 fi
