@@ -25,7 +25,7 @@ if [ ! -d ~/.config/bat/themes ]; then
 
   # Check if batcat or bat is aliased to cat
   batcat_alias=$(resolve_alias 'cat')
-  
+
   if [[ $batcat_alias == *"batcat"* ]]; then
     eval "$batcat_alias cache --build"
   elif [[ $batcat_alias == *"bat"* ]]; then
