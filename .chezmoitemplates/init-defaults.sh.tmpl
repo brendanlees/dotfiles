@@ -5,7 +5,7 @@ if [ ! -d ~/.config/bat/themes ]; then
     bat cache --build
 else
   # load fallback default theme
-	  sed -i 's/^export BAT_THEME=.*$/#&/' /.zshrc
+	  sed -i 's/^export BAT_THEME=.*$/#&/' ~/.zshrc
     echo "export BAT_THEME='Monokai Extended'" >> ~/.zshrc
 fi
 
