@@ -1,13 +1,21 @@
-# set bat external theme
+#!/bin/bash
+
+# Check if bat themes directory exists
 if [ ! -d ~/.config/bat/themes ]; then
-  # load external theme
-    echo "Loading external bat theme"
-      /usr/bin/batcat cache --build
-elif
-      /usr/bin/bat cache --build
-elif
+  # Load external theme
+  echo "Loading external bat theme"
+  
+  if command -v batcat &> /dev/null; then
+    /usr/bin/batcat cache --build
+  elif command -v bat &> /dev/null; then
+    /usr/bin/bat cache --build
+  else
     echo "bat is not installed"
+  fi
+else
+  echo "The themes directory already exists."
 fi
+
 
 # set zsh to default shell
 if [ ! -f ~/.zshrc ]; then
