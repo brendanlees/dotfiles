@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Check if bat themes directory exists
+# check if bat themes directory exists
 if [ ! -d ~/.config/bat/themes ]; then
-  # Load external theme
   echo "Loading external bat theme"
   
-  if command -v batcat; then
+  if [ -x /usr/bin/batcat ]; then
     /usr/bin/batcat cache --build
-  elif command -v bat; then
+  elif [ -x /usr/bin/bat ]; then
     /usr/bin/bat cache --build
   else
     echo "bat is not installed"
