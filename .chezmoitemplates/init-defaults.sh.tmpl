@@ -5,7 +5,7 @@
 #################
 
 # Check if bat themes directory exists
-if [ ! -d ~/.config/bat/themes ]; then
+if [ -d ~/.config/bat/themes ]; then
   echo "Loading external bat theme"
     /usr/bin/batcat cache --build
 fi
