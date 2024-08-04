@@ -3,10 +3,13 @@ if [ ! -d ~/.config/bat/themes ]; then
   # load external theme
     echo "Loading external bat theme"
     {{- if lookPath "batcat" }}
-      batcat cache --build
+      /usr/bin/batcat cache --build
+    {{- end }}
+    {{- if lookPath "bat" }}
+      /usr/bin/bat cache --build
     {{- end }}
 else
-    bat cache --build
+    echo "bat is not installed"
 fi
 
 # set zsh to default shell
