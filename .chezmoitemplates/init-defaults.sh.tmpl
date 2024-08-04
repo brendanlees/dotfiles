@@ -2,7 +2,9 @@
 if [ ! -d ~/.config/bat/themes ]; then
   # load external theme
     echo "Loading external bat theme"
-    bat cache --build
+    {{- if lookPath "bat" }}
+      cat cache --build
+    {{- end }}
 else
   # load fallback default theme
 	  sed -i 's/^export BAT_THEME=.*$/#&/' ~/.zshrc
