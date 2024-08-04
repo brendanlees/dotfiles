@@ -1,0 +1,7 @@
+# set zsh to default shell
+if [ ! -f ~/.zshrc ]; then
+    echo "Set zsh as default shell"
+    chsh -s $(which zsh)
+else
+	echo "zsh already default shell, skipping."
+fi
