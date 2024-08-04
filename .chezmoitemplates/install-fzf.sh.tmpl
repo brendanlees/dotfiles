@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # check for fzf
-if [ ! "$HOME/.fzf.zsh" ]; then
+if [ ! -f "$HOME/.fzf.zsh" ]; then
     # install fzf
     ~/.fzf/install --all
 else
