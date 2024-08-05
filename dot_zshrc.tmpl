@@ -61,11 +61,11 @@ alias fd=fdfind
 {{- end }}
 # eza
 {{- if lookPath "eza" }}
-alias ld='eza -lD'
-alias lf='eza -lF --color=always'
+alias ld='eza -lD --icons=always'
+alias lf='eza -lF --color=always --icons=always'
 alias lh='eza -dl .* --group-directories-first'
-alias ll='eza -al --group-directories-first'
-alias ls='eza -alF --color=always --sort=size'
+alias ll='eza -al --icons=always --color=always --group-directories-first'
+alias ls='eza -alF --color=always --icons=always'
 alias lt='eza -al --sort=modified'
 {{- end }}
 
@@ -94,7 +94,6 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
 # Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
-
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
 
