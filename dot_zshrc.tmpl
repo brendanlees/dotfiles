@@ -39,6 +39,16 @@ eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
 #################
+# zoxide
+#################
+eval "$(zoxide init zsh)"
+
+# aliases
+{{- if lookPath "zoxide" }}
+alias cd=zoxide
+{{- end }}
+
+#################
 # key bindings
 #################
 # Navigate words using Ctrl + arrow keys
@@ -46,28 +56,6 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
-#################
-# aliases
-#################
-# bat
-{{- if lookPath "bat" }}
-alias cat=bat
-{{- else if lookPath "batcat" }}
-alias cat=batcat
-{{- end }}
-# fd
-{{- if lookPath "fdfind" }}
-alias fd=fdfind
-{{- end }}
-# eza
-{{- if lookPath "eza" }}
-alias ld='eza -lD --color=always --icons=always'
-alias lf='eza -lF --color=always --icons=always'
-alias lh='eza -dl .* --color=always --icons=always --group-directories-first'
-alias ll='eza -al --icons=always --color=always --group-directories-first'
-alias ls='eza -alF --color=always --icons=always'
-alias lt='eza -al --color=always --icons=always --sort=modified'
-{{- end }}
 
 #################
 # fzf
@@ -88,6 +76,11 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
 # Set up path (due to symlink)
 #export PATH="$PATH:$HOME/.local/bin/fd"
+
+# aliases
+{{- if lookPath "fdfind" }}
+alias fd=fdfind
+{{- end }}
 
 
 {{- if eq .chezmoi.os "darwin" }}
@@ -112,10 +105,34 @@ _fzf_compgen_dir() {
 {{- end }}
 
 #################
+# eza
+#################
+
+# aliases
+{{- if lookPath "eza" }}
+alias ld='eza -lD --color=always --icons=always'
+alias lf='eza -lF --color=always --icons=always'
+alias lh='eza -dl .* --color=always --icons=always --group-directories-first'
+alias ll='eza -al --icons=always --color=always --group-directories-first'
+alias ls='eza -alF --color=always --icons=always'
+alias lt='eza -al --color=always --icons=always --sort=modified'
+{{- end }}
+
+#################
 # bat
 #################
+
 # Default bat theme
 #export BAT_THEME='Monokai Extended'
 export BAT_THEME=tokyonight_night
+
+# aliases
+{{- if lookPath "bat" }}
+alias cat=bat
+{{- else if lookPath "batcat" }}
+alias cat=batcat
+{{- end }}
+
+
 
 

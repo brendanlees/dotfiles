@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# install zoxide
+if ! command -v zoxide &> /dev/null; then 
+echo "Installing zoxide"
+
+{{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
+apt install -y zoxide
+
+{{ if eq .chezmoi.os "darwin" }}
+brew install zoxide
+
+{{ end -}}
+
+else
+	echo "zoxide already installed, skipping."
+fi
