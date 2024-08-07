@@ -112,6 +112,9 @@ style = "bold blue"
 [docker_context]
 disabled = true
 
+[container]
+disabled = true
+
 [helm]
 disabled = true
 
