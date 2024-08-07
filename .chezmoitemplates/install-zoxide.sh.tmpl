@@ -4,7 +4,7 @@
 if ! command -v zoxide &> /dev/null; then 
   echo "Installing zoxide"
 
-  {{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
+  {{ if (eq .chezmoi.os "linux") -}}
     curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
   {{ else if eq .chezmoi.os "darwin" }}
     brew install zoxide
