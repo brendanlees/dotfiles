@@ -49,8 +49,8 @@ Macos = ''
 Debian = '󰣚'
 
 [character]
-success_symbol = "[❯](accent)"
-error_symbol = "[✗](red)"
+success_symbol = "[❯ ](accent)"
+error_symbol = "[✗ ](red)"
 
 
 # Shows the username
