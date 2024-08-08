@@ -154,9 +154,9 @@ export BAT_THEME=tokyonight_night
 
 # aliases
 {{- if lookPath "bat" }}
-alias cat=bat
+alias cat=bat --paging never
 {{- else if lookPath "batcat" }}
-alias cat=batcat
+alias cat=batcat --paging never
 {{- end }}
 
 
