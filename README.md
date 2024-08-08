@@ -6,13 +6,13 @@ Managed by [chezmoi](https://www.chezmoi.io/)
 
 ### Linux
 ```sh
-# install chezmoi at system bin level
+# install chezmoi
 sudo sh -c 'su -c "cd / && sh -c \"\$(curl -fsLS get.chezmoi.io)\""'
 
-# use sudo if applying dotfiles repo to root user
+# init as sudo to run setup scripts and apply dotfiles to root
 sudo chezmoi init --apply $GITHUB_USERNAME
 
-# no sudo if applying dotfiles repo to non-root user(s)
+# then init for non-root system user(s) if required
 chezmoi init --apply $GITHUB_USERNAME
 
 ```
@@ -22,7 +22,7 @@ chezmoi init --apply $GITHUB_USERNAME
 # install chezmoi
 brew install chezmoi
 
-# apply dotfiles repo to user(s)
+# apply dotfiles to user
 chezmoi init --apply $GITHUB_USERNAME
 
 
