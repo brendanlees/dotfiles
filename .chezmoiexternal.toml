@@ -53,6 +53,18 @@ exclude = [
   "*/*.md",
 ]
 
+[".cli-plugins/fzf/fzf-tab"]
+type = "git-repo"
+url = "https://github.com/Aloxaf/fzf-tab"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
+
 [".cli-plugins/fzf/fzf-git.sh"]
 type = "file"
 url = "https://github.com/junegunn/fzf-git.sh/raw/main/fzf-git.sh"

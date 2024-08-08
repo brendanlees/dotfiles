@@ -74,6 +74,10 @@ source <(fzf --zsh)
 # Load fzf-git script
 source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
+# Load fzf-tab script
+autoload -U compinit; compinit
+source "$HOME/.cli-plugins/fzf/fzf-tab.plugin.zsh"
+
 #################
 # fd 
 #################
