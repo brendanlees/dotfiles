@@ -81,6 +81,11 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
+# aliases
+{{- if lookPath "fdfind" }}
+fzfp --preview 'bat --style=numbers --color=always --theme=tokyonight_night {}' 
+{{- end }}
+
 #################
 # fd 
 #################
