@@ -10,13 +10,16 @@ export EDITOR="code -w"
 #################
 # zsh plugins
 #################
-# load zsh-autosuggestions
-source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
 # load zsh-syntax-highlighting
 source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
-# history config
+# load zsh-completions
+fpath=("$HOME/.cli-plugins/zsh/zsh-completions/" $fpath)
+
+# load zsh-autosuggestions
+source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+# autosuggestions history config
 export HISTSIZE=10000
 export HISTFILE=$HOME/.zsh_history
 export SAVEHIST=$HISTSIZE

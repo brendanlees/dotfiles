@@ -29,6 +29,18 @@ exclude = [
   "*/*.md",
 ]
 
+[".cli-plugins/zsh/zsh-completions"]
+type = "git-repo"
+url = "https://github.com/zsh-users/zsh-completions.git"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
+
 [".fzf"]
 type = "git-repo"
 url = "https://github.com/junegunn/fzf.git"
