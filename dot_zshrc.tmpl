@@ -50,6 +50,10 @@ eval "$(zoxide init --cmd cd zsh)"
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
+# zsh history
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+
 
 #################
 # fzf
