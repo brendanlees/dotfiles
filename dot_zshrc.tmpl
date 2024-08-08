@@ -127,21 +127,21 @@ _fzf_compgen_dir() {
 
 # aliases
 {{- if lookPath "eza" }}
-    # Set minimal version default (add l for long view)
+    # Set minimal version default (add f for full view)
     ls_minimal="--no-permissions --no-filesize --no-user --no-time --git"
     
-    alias ld="eza -D --color=always --icons=always $ls_minimal"
-    alias ldl="eza -D --color=always --icons=always"
-    alias lf="eza -F --color=always --icons=always $ls_minimal"
-    alias lfl="eza -F --color=always --icons=always"
-    alias lh="eza -d .* --color=always --icons=always --group-directories-first $ls_minimal"
-    alias lhl="eza -d .* --color=always --icons=always --group-directories-first"
-    alias ll="eza -a --icons=always --color=always --group-directories-first $ls_minimal"
-    alias lll="eza -a --icons=always --color=always --group-directories-first"
-    alias ls="eza -aF --color=always --icons=always $ls_minimal"
-    alias lsl="eza -aF --color=always --icons=always --git"
-    alias lt="eza -a --color=always --icons=always --sort=modified $ls_minimal"
-    alias ltl="eza -a --icons=always --color=always --sort=modified"
+    alias ld="eza -lD --color=always --icons=always $ls_minimal"
+    alias ldf="eza -lD --color=always --icons=always"
+    alias lf="eza -lF --color=always --icons=always $ls_minimal"
+    alias lff="eza -lF --color=always --icons=always"
+    alias lh="eza -ld .* --color=always --icons=always --group-directories-first $ls_minimal"
+    alias lhf="eza -ld .* --color=always --icons=always --group-directories-first"
+    alias ll="eza -al --icons=always --color=always --group-directories-first $ls_minimal"
+    alias llf="eza -al --icons=always --color=always --group-directories-first"
+    alias ls="eza -alF --color=always --icons=always $ls_minimal"
+    alias lsf="eza -alF --color=always --icons=always --git"
+    alias lt="eza -al --color=always --icons=always --sort=modified $ls_minimal"
+    alias ltf="eza -al --icons=always --color=always --sort=modified"
 {{- end }}
 
 #################
