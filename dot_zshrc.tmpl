@@ -131,8 +131,9 @@ alias ld='eza -lD --color=always --icons=always'
 alias lf='eza -lF --color=always --icons=always'
 alias lh='eza -dl .* --color=always --icons=always --group-directories-first'
 alias ll='eza -al --icons=always --color=always --group-directories-first'
-alias ls='eza -alF --color=always --icons=always'
+alias ls='eza -alF --color=always --icons=always --no-permissions --no-filesize --no-user --no-time --git'
 alias lt='eza -al --color=always --icons=always --sort=modified'
+# --no-permissions --no-filesize --no-user --no-time --git
 {{- end }}
 
 #################
