@@ -83,7 +83,7 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 # aliases
 {{- if lookPath "fzf" }}
-alias fzfp=fzf --preview 'cat --style=numbers --color=always --theme=tokyonight_night {}' 
+alias fzfp='fzf --preview "bat --style=numbers --color=always --theme=tokyonight_night {}"' 
 {{- end }}
 
 #################
