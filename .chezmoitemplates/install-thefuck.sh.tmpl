@@ -4,13 +4,19 @@
 if ! command -v thefuck &> /dev/null; then 
   echo "Installing thefuck"
 
-  {{ if and (eq .chezmoi.os "linux") (or (not .chezmoi.hostname) (not (contains "pve" .chezmoi.hostname))) -}}
+  {{- $hostname := .chezmoi.hostname -}}
+  {{- if not (contains "pve" $hostname) -}} #skip on pve os / homelab
 
-    sudo apt install -y python3-dev python3-pip python3-setuptools
-    pip3 install thefuck --user
-  {{ else if eq .chezmoi.os "darwin" }}
-    brew install thefuck
-  {{ end -}}
+    {{ if (eq .chezmoi.os "linux") -}}
+      sudo apt install -y python3-dev python3-pip python3-setuptools
+      pip3 install thefuck --user
+    {{ else if eq .chezmoi.os "darwin" }}
+      brew install thefuck
+    {{ end -}}
+
+  {{- else -}}
+    echo "Hostname contains 'pve', skipping installation."
+  {{- end -}}
 
 else
     echo "thefuck already installed, skipping."
