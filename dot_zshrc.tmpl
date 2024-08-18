@@ -1,4 +1,12 @@
 #################
+# vault etc
+#################
+{{- if eq .chezmoi.os "darwin" }}
+source "$HOME/.bw"
+{{- end }}
+
+
+#################
 # editor
 #################
 {{- if eq .chezmoi.os "darwin" }}
