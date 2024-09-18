@@ -18,10 +18,16 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
 
+# init theme/shell defaults
+{{ template "init-defaults.sh.tmpl" . }}
+
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
 
 {{ template "install-eza.sh.tmpl" . }}
+
+# init theme/shell defaults
+{{ template "init-defaults.sh.tmpl" . }}
 
 {{ end -}}
 
@@ -44,5 +50,3 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-zoxide.sh.tmpl" . }}
 {{ template "install-thefuck.sh.tmpl" . }}
 
-# init theme/shell defaults
-{{ template "init-defaults.sh.tmpl" . }}
