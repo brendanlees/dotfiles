@@ -14,21 +14,14 @@ apt update && apt upgrade -y && apt autoremove
 # install packages
 apt install -y zsh git nano bat fd-find
 
-# check/run installer modules & set defaults
-{{ template "install-starship.sh.tmpl" . }}
+# check/run package installer modules
 {{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
-{{ template "init-defaults.sh.tmpl" . }}
-
-
 
 #### non-root user ####
 {{ else if eq .chezmoi.os "linux" -}}
 
-# check/run installer scripts & check/set zsh as default
-{{ template "install-starship.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
-{{ template "init-defaults.sh.tmpl" . }}
 
 {{ end -}}
 
@@ -39,17 +32,14 @@ apt install -y zsh git nano bat fd-find
 
 {{ if eq .chezmoi.os "darwin" }}
 
-
-# install starship, fzf, zsh defaults
-{{ template "install-starship.sh.tmpl" . }}
-{{ template "init-defaults.sh.tmpl" . }}
-
+# nothing needed here yet
 
 {{ end -}}
 
 #################
-# install dependencies
+# all platforms
 #################
 
+{{ template "install-starship.sh.tmpl" . }}
 {{ template "install-zoxide.sh.tmpl" . }}
 {{ template "install-thefuck.sh.tmpl" . }}
