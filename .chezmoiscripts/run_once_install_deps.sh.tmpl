@@ -20,7 +20,7 @@ apt install -y zsh git nano bat fd-find
 
 # --- all users --- #
 {{ template "install-eza.sh.tmpl" . }}
-#{{ template "init-defaults.sh.tmpl" . }}
+{{ template "init-defaults.sh.tmpl" . }}
 {{ end -}}
 
 #################
@@ -36,5 +36,3 @@ apt install -y zsh git nano bat fd-find
 {{ template "install-starship.sh.tmpl" . }}
 {{ template "install-zoxide.sh.tmpl" . }}
 {{ template "install-thefuck.sh.tmpl" . }}
-
-{{ template "init-defaults.sh.tmpl" . }}
