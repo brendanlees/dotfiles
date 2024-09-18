@@ -27,7 +27,6 @@ apt install -y zsh git nano bat fd-find
 
 # check/run installer scripts & check/set zsh as default
 {{ template "install-starship.sh.tmpl" . }}
-{{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-eza.sh.tmpl" . }}
 {{ template "init-defaults.sh.tmpl" . }}
 
@@ -43,7 +42,6 @@ apt install -y zsh git nano bat fd-find
 
 # install starship, fzf, zsh defaults
 {{ template "install-starship.sh.tmpl" . }}
-{{ template "install-fzf.sh.tmpl" . }}
 {{ template "init-defaults.sh.tmpl" . }}
 
 
@@ -53,5 +51,6 @@ apt install -y zsh git nano bat fd-find
 # install dependencies
 #################
 
+{{ template "install-fzf.sh.tmpl" . }}
 {{ template "install-zoxide.sh.tmpl" . }}
 {{ template "install-thefuck.sh.tmpl" . }}
