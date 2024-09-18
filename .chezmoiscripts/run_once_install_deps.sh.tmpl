@@ -3,10 +3,10 @@
 #################
 # linux
 #################
+{{ if eq .chezmoi.os "linux" -}}
 
-##### root user ####
-
-{{ if and (eq .chezmoi.username "root") (eq .chezmoi.os "linux") -}}
+# --- root user --- #
+{{ if eq .chezmoi.username "root" -}}
 
 # prep package manager
 apt update && apt upgrade -y && apt autoremove
@@ -16,37 +16,25 @@ apt install -y zsh git nano bat fd-find
 
 # check/run package installer modules
 {{ template "install-fzf.sh.tmpl" . }}
-{{ template "install-eza.sh.tmpl" . }}
-
-# init theme/shell defaults
-{{ template "init-defaults.sh.tmpl" . }}
-
-#### non-root user ####
-{{ else if eq .chezmoi.os "linux" -}}
-
-{{ template "install-eza.sh.tmpl" . }}
-
-# init theme/shell defaults
-{{ template "init-defaults.sh.tmpl" . }}
-
 {{ end -}}
 
+# --- all users --- #
+{{ template "install-eza.sh.tmpl" . }}
+#{{ template "init-defaults.sh.tmpl" . }}
+{{ end -}}
 
 #################
 # mac os
 #################
-
 {{ if eq .chezmoi.os "darwin" }}
-
 # nothing needed here yet
-
 {{ end -}}
 
 #################
 # all platforms
 #################
-
 {{ template "install-starship.sh.tmpl" . }}
 {{ template "install-zoxide.sh.tmpl" . }}
 {{ template "install-thefuck.sh.tmpl" . }}
 
+{{ template "init-defaults.sh.tmpl" . }}
