@@ -1,24 +1,6 @@
 #!/bin/bash
 
 #################
-# load bat external theme
-#################
-
-# Check if bat themes directory exists
-if [ -d ~/.config/bat/themes ]; then
-  echo "Loading external bat theme"
-  {{- if lookPath "batcat" }}
-    /usr/bin/batcat cache --build
-  {{- end }}
-  {{- if and (lookPath "bat") (eq .chezmoi.os "darwin") -}}
-    /opt/homebrew/bin/bat cache --build
-  {{- else if lookPath "bat"}}
-    /usr/bin/bat cache --build
-  {{- end }}
-fi
-
-
-#################
 # set zsh to default shell
 #################
 if [ ! -f ~/.zshrc ]; then
