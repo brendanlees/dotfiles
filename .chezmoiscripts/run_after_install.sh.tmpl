@@ -1,7 +1,11 @@
 #!/bin/bash
 
 #################
-# install dependencies
+# post-install 
 #################
 
+# init theme/shell defaults
+{{ template "init-defaults.sh.tmpl" . }}
+
+# post-installer dependency tasks
 {{ template "install-fzf.sh.tmpl" . }}
