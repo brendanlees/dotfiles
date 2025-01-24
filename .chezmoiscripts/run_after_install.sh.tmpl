@@ -1,11 +1,16 @@
 #!/bin/bash
 
-#################
+# ------------------------------------------
 # post-install dependency tasks
-#################
+# ------------------------------------------
+
+# --- fzf ---
 
 # finish fzf installation script
 {{ template "install-fzf.sh.tmpl" . }}
+
+
+# --- bat ---
 
 # load bat external theme(s)
 if [ -d ~/.config/bat/themes ]; then
