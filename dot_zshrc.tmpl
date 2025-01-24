@@ -171,7 +171,7 @@ _fzf_comprun() {
     alias ls="eza -alF --color=always --icons=always $ls_minimal"
 
     # drop git flag for older versions of debian (unsupported)
-    if eza --git /dev/null 2>&1 | grep -q "feature was disabled"; then
+    if ! eza --git /dev/null 2>&1 | grep -q "feature was disabled"; then
       alias lsf="eza -alF --color=always --icons=always --git"
     else
       alias lsf="eza -alF --color=always --icons=always"
