@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# !TODO git flag issues on debian arch/arm, manually move to cargo (rust) for these
-# apt-get install cargo, cargo install exa
-# ref: https://github.com/eza-community/eza/issues/1060
-
-# Check for eza
+# check for eza
 if ! command -v eza &> /dev/null; then
   # prep repo requirements
   apt install -y gpg
