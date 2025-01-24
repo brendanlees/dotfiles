@@ -1,23 +1,39 @@
-#################
-# vault etc
-#################
+# ------------------------------------------
+# vault
+# ------------------------------------------
+
 {{- if eq .chezmoi.os "darwin" }}
 export PATH="$HOME/.bw:$PATH"
 {{- end }}
 
 
-#################
+# ------------------------------------------
 # editor
-#################
+# ------------------------------------------
+
 {{- if eq .chezmoi.os "darwin" }}
 # vscode
 export EDITOR="code -w"
 {{- end }}
 
 
-#################
+# ------------------------------------------
+# key bindings
+# ------------------------------------------
+
+# navigate words using ctrl + arrow keys
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
+
+# navigate zsh history using p + n
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+
+
+# ------------------------------------------
 # zsh plugins
-#################
+# ------------------------------------------
+
 # load zsh-syntax-highlighting
 source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
@@ -47,58 +63,49 @@ setopt hist_ignore_dups
 setopt hist_find_no_dups
 
 
-#################
+# ------------------------------------------
 # starship
-#################
+# ------------------------------------------
+
 # start starship prompt
 eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
-#################
-# zoxide
-#################
+# ------------------------------------------
+# zoxide (cd)
+# ------------------------------------------
+
 export PATH=$HOME/.local/bin:$PATH
 eval "$(zoxide init --cmd cd zsh)"
 
-#################
-# key bindings
-#################
-# Navigate words using Ctrl + arrow keys
-# >>> CRTL + right arrow | CRTL + left arrow
-bindkey "^[[1;5C" forward-word
-bindkey "^[[1;5D" backward-word
+# ------------------------------------------
+# fzf (fuzzy finder)
+# ------------------------------------------
 
-# zsh history
-bindkey '^p' history-search-backward
-bindkey '^n' history-search-forward
-
-
-#################
-# fzf
-#################
-# Set up path (due to Git install)
+# set up path (due to git install)
 export PATH="$PATH:$HOME/.fzf/bin"
 
-# Set up fzf key bindings and fuzzy completion
+# set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
-# Load fzf-git script
+# load fzf-git script
 source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 
-# Load fzf-tab script
+# load fzf-tab script
 autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 
-#################
-# fd 
-#################
-# mac only due to issues with fdfind
+# ------------------------------------------
+# fd (find)
+# ------------------------------------------
+# ! mac only due to issues with fdfind
 
-# Set up path (due to symlink)
+# set up path (due to symlink)
 #export PATH="$PATH:$HOME/.local/bin/fd"
 
-# aliases
+# --- aliases ---
+
 {{- if lookPath "fdfind" }}
 alias fd=fdfind
 {{- end }}
@@ -106,19 +113,19 @@ alias fd=fdfind
 
 {{- if eq .chezmoi.os "darwin" }}
 
-# Use fd instead of fzf
+# use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
 
-# Use fd (https://github.com/sharkdp/fd) for listing path candidates.
+# use fd (https://github.com/sharkdp/fd) for listing path candidates.
 # - The first argument to the function ($1) is the base path to start traversal
 # - See the source code (completion.{bash,zsh}) for the details.
 _fzf_compgen_path() {
   fd --hidden --exclude .git . "$1"
 }
 
-# Use fd to generate the list for directory completion
+# use fd to generate the list for directory completion
 _fzf_compgen_dir() {
   fd --type=d --hidden --exclude .git . "$1"
 }
@@ -128,9 +135,13 @@ show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head
 export FZF_CTRL_T_OPTS="--preview '$show_file_or_dir_preview'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 
-# Advanced customization of fzf options via _fzf_comprun function
-# - The first argument to the function is the name of the command.
-# - You should make sure to pass the rest of the arguments to fzf.
+
+# --- apply fd to fzf options ---
+
+# advanced customization of fzf options via _fzf_comprun function
+# - the first argument to the function is the name of the command.
+# - you should make sure to pass the rest of the arguments to fzf.
+
 _fzf_comprun() {
   local command=$1
   shift
@@ -143,22 +154,22 @@ _fzf_comprun() {
   esac
 }
 
-
 {{- end }}
 
-#################
-# eza
-#################
 
-# aliases
+# ------------------------------------------
+# eza (ls)
+# ------------------------------------------
+
+# --- aliases ---
+
 {{- if lookPath "eza" }}
 
-  # drop git flag for older versions of debian (unsupported)
+  # ! drop git flag for older versions of debian (unsupported)
   if ! eza --git /dev/null 2>&1 | grep -q "feature was disabled"; then
 
-    # minimal version var default (add f for full view)
+    # minimal version var (default) > add f for full view
     ls_minimal="--no-permissions --no-filesize --no-user --no-time --git"
-
     alias lsf="eza -alF --color=always --icons=always --git"
 
   else
@@ -183,36 +194,36 @@ _fzf_comprun() {
 
     alias ls="eza -alF --color=always --icons=always $ls_minimal"
 
-    
-  
     alias lt="eza -al --color=always --icons=always --sort=modified $ls_minimal"
     alias ltf="eza -al --icons=always --color=always --sort=modified"
 
     alias tree="eza -alF --tree --level=2 --icons=always --color=always $ls_minimal"
     alias treef="eza -alF --tree --level=2 --icons=always --color=always"
 
- 
-    
 {{- end }}
 
-#################
-# bat
-#################
+# ------------------------------------------
+# bat (cat)
+# ------------------------------------------
 
-# Default bat theme
+# --- theme ---
+
 #export BAT_THEME='Monokai Extended'
 export BAT_THEME=tokyonight_night
 
-# aliases
+# --- aliases ---
+
 {{- if lookPath "bat" }}
-alias cat='bat --paging never --style plain'
+  alias cat='bat --paging never --style plain'
 {{- else if lookPath "batcat" }}
-alias cat='batcat --paging never --style plain'
+  alias cat='batcat --paging never --style plain'
 {{- end }}
 
-#################
-# thefuck
-#################
+# ------------------------------------------
+# thefuck (correction)
+# ------------------------------------------
+# ! disabled due to bugs
+
 #{{ if and (eq .chezmoi.os "linux") (or (not .chezmoi.hostname) (not (contains "pve" .chezmoi.hostname))) -}}
 #eval $(thefuck --alias)
 #{{ end -}}
