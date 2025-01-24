@@ -6,32 +6,21 @@
 
 # Check for eza
 if ! command -v eza &> /dev/null; then
-    # Check if the system is Debian-based
-    if [ -f /etc/debian_version ]; then
-        # Install cargo if not present
-        if ! command -v cargo &> /dev/null; then
-            sudo apt-get install -y cargo
-        fi
-        
-        # Install eza using cargo
-        cargo install eza
-    else
-        # Original apt installation method for non-Debian systems
-        # prep repo requirements
-        apt install -y gpg
+  # prep repo requirements
+  apt install -y gpg
 
-        # install repo
-        sudo mkdir -p /etc/apt/keyrings
-        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
-        sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+  # install repo
+  sudo mkdir -p /etc/apt/keyrings
+  wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+  sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
 
-        # update/pull repo
-        sudo apt update
+  # update/pull repo
+  sudo apt update
 
-        # install package
-        sudo apt install -y eza
-    fi
+  # install package
+  sudo apt install -y eza
+  
 else
     echo "eza already found, skipping."
 fi
