@@ -2,7 +2,7 @@
 # docker
 # ------------------------------------------
 
-#{{- define "dockeraliases" -}}
+{{- define "dockeraliases" -}}
 
 # --- env vars ---
 
@@ -41,7 +41,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 # ps
 alias dps='sudo docker ps -a' # running docker processes
 alias dpss='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)' # list all processes in a table (go syntax) 
-#alias dpss='sudo docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)' # list all processes in a table (bash syntax)
+
 
 # df
 alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
@@ -67,7 +67,7 @@ alias dprunevol='sudo docker volume prune' # remove unused volumes
 
 alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
 alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h' # see the size of docker containers (go syntax) 
-#alias dlogsize='sudo du -ch $(sudo docker inspect --format='{{.LogPath}}' $(sudo docker ps -qa)) | sort -h' # see the size of docker containers (bash syntax)
+
 
 
 # --- network ---
@@ -77,5 +77,5 @@ alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f "{{ `{{` }}.Na
 
 #alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t" # list all containers with their IP addresses (bash syntax)
 
-#{{- end -}}
-#{{ template "dockeraliases" . }}
+{{- end -}}
+{{ template "dockeraliases" . }}
