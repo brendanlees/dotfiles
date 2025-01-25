@@ -9,6 +9,8 @@ if [[ -f "$HOME/docker/shared/config/zsh_aliases.env" ]]; then
   source $HOME/docker/shared/config/zsh_aliases.env 
 fi 
 
+{{- define "dockerformat" -}}
+
 # --- compose ---
 
 
@@ -36,10 +38,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 
 # ps
 alias dps='sudo docker ps -a' # running docker processes
-{{- define "dockerformat" -}}
 alias dpss='sudo docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)'
-{{- end -}}
-{{ template "dockerformat" . }}
 
 # df
 alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
@@ -64,14 +63,12 @@ alias dprunevol='sudo docker volume prune' # remove unused volumes
 # --- logs ---
 
 alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
-{{- define "dockerformat" -}}
 alias dlogsize='sudo du -ch $(sudo docker inspect --format='{{.LogPath}}' $(sudo docker ps -qa)) | sort -h' # see the size of docker containers
-{{- end -}}
-{{ template "dockerformat" . }}
+
 
 # --- network ---
 
-{{- define "dockerformat" -}}
 sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t' # list all containers with their IP addresses
+
 {{- end -}}
 {{ template "dockerformat" . }}
