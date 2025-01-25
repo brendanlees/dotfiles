@@ -2,6 +2,8 @@
 # docker
 # ------------------------------------------
 
+{{- define "dockeraliases" -}}
+
 # --- env vars ---
 
 # source env vars (if they exist)
@@ -9,7 +11,7 @@ if [[ -f "$HOME/docker/shared/config/zsh_aliases.env" ]]; then
   source $HOME/docker/shared/config/zsh_aliases.env 
 fi 
 
-{{- define "dockerformat" -}}
+
 
 # --- compose ---
 
@@ -71,4 +73,4 @@ alias dlogsize='sudo du -ch $(sudo docker inspect --format='{{.LogPath}}' $(sudo
 sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t' # list all containers with their IP addresses
 
 {{- end -}}
-{{ template "dockerformat" . }}
+{{ template "dockeraliases" . }}
