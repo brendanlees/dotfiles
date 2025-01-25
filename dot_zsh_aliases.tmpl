@@ -61,7 +61,6 @@ alias dprunevol='sudo docker volume prune' # remove unused volumes
 # --- logs ---
 
 alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
-alias dlogsize='sudo du -ch $(sudo docker inspect --format='{{.LogPath}}' $(sudo docker ps -qa)) | sort -h' # see the size of docker containers
 
 
 # --- network ---
