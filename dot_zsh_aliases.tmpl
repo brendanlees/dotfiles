@@ -73,8 +73,8 @@ alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ 
 # --- network ---
 
 alias dnet='sudo docker network ls' # list networks 
+alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'" # list all containers with their IP addresses
 
-alias dips='sudo docker ps -q | xargs -n 1 sudo docker inspect -f '\''{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}'\'' | sed '\''s#%tab%#\t#g'\'' | sed '\''s#/##g'\'' | sort | column -t -N NAME,IP\(s\) -o $'\''\t'\''\'' # list all containers with their IP addresses
 
 {{- end -}}
 {{ template "dockeraliases" . }}
