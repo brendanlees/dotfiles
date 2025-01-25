@@ -2,7 +2,7 @@
 # docker
 # ------------------------------------------
 
-{{- define "dockeraliases" -}}
+#{{- define "dockeraliases" -}}
 
 # --- env vars ---
 
@@ -77,5 +77,5 @@ alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f "{{ `{{` }}.Na
 
 #alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t" # list all containers with their IP addresses (bash syntax)
 
-{{- end -}}
-{{ template "dockeraliases" . }}
+#{{- end -}}
+#{{ template "dockeraliases" . }}
