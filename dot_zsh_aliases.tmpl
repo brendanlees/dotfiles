@@ -2,5 +2,67 @@
 # docker
 # ------------------------------------------
 
-alias dstop='sudo docker stop $(sudo docker ps -a -q)' # usage: dstop container_name
+# --- env vars ---
+
+# source env vars (if they exist)
+if [[ -f "$HOME/docker/shared/config/zsh_aliases.env" ]]; then
+  source $HOME/docker/shared/config/zsh_aliases.env 
+fi 
+
+# --- compose ---
+
+
+
+
+# --- containers ---
+
+# start
+alias dstart='sudo docker start' # usage: dstart container_name
+alias dstopall='sudo docker start $(sudo docker ps -aq)' # dstart all containers
+
+# stop
+alias dstop='sudo docker stop' # usage: dstop container_name
 alias dstopall='sudo docker stop $(sudo docker ps -aq)' # stop all containers
+
+# rm
+alias drm='sudo docker rm' # usage: drm container_name
+alias drmall='sudo docker rm $(sudo docker ps -aq)' # remove all containers
+
+# shell
+alias dexec='sudo docker exec -ti' # usage: dexec container_name
+
+
+# --- system ---
+
+# ps
+alias dps='sudo docker ps -a' # running docker processes
+alias dpss='sudo docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)' # list all processes sorted by name in table format
+# df
+alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
+
+# system prune
+alias ddelimages='sudo docker rmi $(sudo docker images -q)' # delete unused images
+alias dprunesys='sudo docker system prune -a' # remove unsed docker data
+
+
+# --- images ---
+
+alias dimg='sudo docker image ls' # list images
+alias dpruneimg='sudo docker image prune' # remove unused images
+
+
+# --- volumes ---
+
+alias dvol='sudo docker volume ls' # list volumes
+alias dprunevol='sudo docker volume prune' # remove unused volumes
+
+
+# --- logs ---
+
+alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
+alias dlogsize='sudo du -ch $(sudo docker inspect --format='{{.LogPath}}' $(sudo docker ps -qa)) | sort -h' # see the size of docker containers
+
+
+# --- network ---
+
+sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o $'\t' # list all containers with their IP addresses
