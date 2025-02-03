@@ -14,7 +14,7 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano bat fd-find
+apt install -y zsh git nano bat fd-find btop tmux
 
 # check/run package installer modules
 {{ template "install-fzf.sh.tmpl" . }}
@@ -31,7 +31,7 @@ apt install -y zsh git nano bat fd-find
 # ------------------------------------------
 
 {{ if eq .chezmoi.os "darwin" }}
-# nothing needed here yet
+# nothing needed here yet (btop)
 {{ end -}}
 
 # ------------------------------------------
