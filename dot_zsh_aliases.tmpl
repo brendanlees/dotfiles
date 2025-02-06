@@ -14,12 +14,6 @@ if [[ -f "$HOME/docker/shared/config/zsh_aliases.env" ]]; then
 fi 
 
 
-
-# --- compose ---
-
-
-
-
 # --- containers ---
 
 # start
@@ -30,12 +24,47 @@ alias dstopall='sudo docker start $(sudo docker ps -aq)' # dstart all containers
 alias dstop='sudo docker stop' # usage: dstop container_name
 alias dstopall='sudo docker stop $(sudo docker ps -aq)' # stop all containers
 
+# restart
+alias drestart='sudo docker restart' # usage: dstart container_name
+alias drestartall='sudo docker restart $(sudo docker ps -aq)' # dstart all containers
+
 # rm
 alias drm='sudo docker rm' # usage: drm container_name
 alias drmall='sudo docker rm $(sudo docker ps -aq)' # remove all containers
 
 # shell
 alias dexec='sudo docker exec -ti' # usage: dexec container_name
+
+
+# --- compose ---
+
+# define docker root folder compose files
+alias dc='sudo docker compose -f $HOME/docker/compose.yml' # core
+alias dca='sudo docker compose -f $HOME/docker/compose.yml' # all
+
+alias dcup='dc up -d --build --remove-orphans' # up the stack
+alias dcdown='dc down --remove-orphans' # down the stack
+
+alias dcstart='dc start' # usage: dcstart container_name
+alias dcstop='dc stop' # usage: dcstop container_name
+
+alias dcrec='dc up -d --force-recreate --remove-orphans' # usage: dcrec container_name
+alias dcrestart='dc restart ' # usage: dcrestart container_name
+
+alias dcpull='dc pull' # usage: dcpull to pull all new images or dcpull container_name
+
+
+# --- common stacks ---
+
+# all
+// alias dcstart.all='dca start' # run all compose files in docker folder root
+
+# services
+// alias dcstart.*='dc start'
+// alias dcstop.*='dc stop'
+// alias dcrec.*='dc up -d --force-recreate --remove-orphans'
+// alias dcpull.*='dc pull'
+// alias dcbuild.*='dc up -d --build --remove-orphans'
 
 
 # --- system ---
