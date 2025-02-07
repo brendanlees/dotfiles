@@ -46,23 +46,25 @@ docker_compose_all() {
 
 # compose file handler > compose file 'wildcard'
 docker_compose_wildcard() {
-    local command="$1"
-    local stack="$2"
+    typeset command=$1
+    typeset stack=$2
+    typeset compose_file
     
-    if [[ "$stack" == "all" ]]; then
+    [[ "$stack" = "all" ]] && {
         echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
         return 1
     }
     
-    local compose_file="$HOME/docker/compose.$stack.yml"
+    compose_file=$HOME/docker/compose.$stack.yml
     
-    if [[ -f "$compose_file" ]]; then
+    [[ -f "$compose_file" ]] && {
         sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
-    else
-        echo "Error: Compose file for stack '$stack' not found at ${compose_file}"
+    } || {
+        echo "Error: Compose file for stack '$stack' not found at $compose_file"
         return 1
-    fi
+    }
 }
+
 
 # list available compose stacks
 docker_compose_stacks() {
