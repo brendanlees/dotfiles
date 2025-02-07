@@ -54,12 +54,12 @@ docker_compose_wildcard() {
         return 1
     }
     
-    local compose_file="$HOME/docker/compose.${stack}.yml"
+    local compose_file="$HOME/docker/compose.$stack.yml"
     
     if [[ -f "$compose_file" ]]; then
         sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
     else
-        echo "Error: Compose file for stack '${stack}' not found at ${compose_file}"
+        echo "Error: Compose file for stack '$stack' not found at ${compose_file}"
         return 1
     fi
 }
