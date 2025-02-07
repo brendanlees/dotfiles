@@ -70,7 +70,7 @@ docker_compose_wildcard() {
 docker_compose_stacks() {
     echo "Available compose files:"
     if [[ -f "$HOME/docker/compose.yml" ]]; then
-        echo "- compose.yml (base)"
+        echo "- compose.yml (core)"
     fi
     find "$HOME/docker" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.\(.*\)\.yml/- \1/'
 }
@@ -112,14 +112,16 @@ alias dcrec='dc up -d --force-recreate --remove-orphans' # usage: dcrec containe
 alias dcrestart='dc restart' # usage: dcrestart container_name
 alias dcpull='dc pull' # usage: dcpull to pull all new images or dcpull container_name
 
+
 # run wildcard compose / merge files
-alias dcup.='docker_compose_wildcard "up -d --build --remove-orphans"'
-alias dcdown.='docker_compose_wildcard "down --remove-orphans"'
-alias dcstart.='docker_compose_wildcard "start"'
-alias dcstop.='docker_compose_wildcard "stop"'
-alias dcrec.='docker_compose_wildcard "up -d --force-recreate --remove-orphans"'
-alias dcrestart.='docker_compose_wildcard "restart"'
-alias dcpull.='docker_compose_wildcard "pull"'
+alias dcup.='f() { docker_compose_wildcard "up -d --build --remove-orphans" "$1" }; f'
+alias dcdown.='f() { docker_compose_wildcard "down --remove-orphans" "$1" }; f'
+alias dcstart.='f() { docker_compose_wildcard "start" "$1" }; f'
+alias dcstop.='f() { docker_compose_wildcard "stop" "$1" }; f'
+alias dcrec.='f() { docker_compose_wildcard "up -d --force-recreate --remove-orphans" "$1" }; f'
+alias dcrestart.='f() { docker_compose_wildcard "restart" "$1" }; f'
+alias dcpull.='f() { docker_compose_wildcard "pull" "$1" }; f'
+
 
 # run all compose / merge files in docker root
 alias dcup.all='docker_compose_all "up -d --build --remove-orphans"'
