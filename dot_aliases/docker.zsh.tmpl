@@ -2,7 +2,7 @@
 # .aliases/docker
 # ------------------------------------------
 
-{{- define "dockeraliases" -}}
+
 
 # --- env vars ---
 
@@ -17,7 +17,7 @@ fi
 
 # compose file handler > all compose files
 docker_compose_all() {
-    local command=$1
+    local command="$1"
     local compose_files=()
     
     # add base compose file if it exists
@@ -46,8 +46,8 @@ docker_compose_all() {
 
 # compose file handler > compose file 'wildcard'
 docker_compose_wildcard() {
-    local command=$1
-    local stack=$2
+    local command="$1"
+    local stack="$2"
     
     if [[ "$stack" == "all" ]]; then
         echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
@@ -170,6 +170,3 @@ alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ 
 alias dnet='sudo docker network ls' # list networks 
 alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'" # list all containers with their IP addresses
 
-
-{{- end -}}
-{{ template "dockeraliases" . }}
