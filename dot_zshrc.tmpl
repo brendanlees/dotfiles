@@ -1,8 +1,7 @@
 # ------------------------------------------
-# aliases
+# aliases / replacements
 # ------------------------------------------
 
-# load aliases
 source "$HOME/.zsh_aliases"
 
 # ------------------------------------------
@@ -85,6 +84,7 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 export PATH=$HOME/.local/bin:$PATH
 eval "$(zoxide init --cmd cd zsh)"
 
+
 # ------------------------------------------
 # fzf (fuzzy finder)
 # ------------------------------------------
@@ -102,129 +102,6 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
-
-# ------------------------------------------
-# fd (find)
-# ------------------------------------------
-# ! mac only due to issues with fdfind
-
-# set up path (due to symlink)
-#export PATH="$PATH:$HOME/.local/bin/fd"
-
-# --- aliases ---
-
-{{- if lookPath "fdfind" }}
-alias fd=fdfind
-{{- end }}
-
-
-{{- if eq .chezmoi.os "darwin" }}
-
-# use fd instead of fzf
-export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
-
-# use fd (https://github.com/sharkdp/fd) for listing path candidates.
-# - The first argument to the function ($1) is the base path to start traversal
-# - See the source code (completion.{bash,zsh}) for the details.
-_fzf_compgen_path() {
-  fd --hidden --exclude .git . "$1"
-}
-
-# use fd to generate the list for directory completion
-_fzf_compgen_dir() {
-  fd --type=d --hidden --exclude .git . "$1"
-}
-
-show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :500 {}; fi"
-
-export FZF_CTRL_T_OPTS="--preview '$show_file_or_dir_preview'"
-export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
-
-
-# --- apply fd to fzf options ---
-
-# advanced customization of fzf options via _fzf_comprun function
-# - the first argument to the function is the name of the command.
-# - you should make sure to pass the rest of the arguments to fzf.
-
-_fzf_comprun() {
-  local command=$1
-  shift
-
-  case "$command" in
-    cd)           fzf --preview 'eza --tree --color=always {} | head -200' "$@" ;;
-    export|unset) fzf --preview "eval 'echo ${}'"         "$@" ;;
-    ssh)          fzf --preview 'dig {}'                   "$@" ;;
-    *)            fzf --preview "$show_file_or_dir_preview" "$@" ;;
-  esac
-}
-
-{{- end }}
-
-
-# ------------------------------------------
-# eza (ls)
-# ------------------------------------------
-
-# --- aliases ---
-
-{{- if lookPath "eza" }}
-
-  # ! drop git flag for older versions of debian (unsupported)
-  if ! eza --git /dev/null 2>&1 | grep -q "feature was disabled"; then
-
-    # minimal version var (default) > add f for full view
-    ls_minimal="--no-permissions --no-filesize --no-user --no-time --git"
-    alias lsf="eza -alF --color=always --icons=always --git"
-
-  else
-
-    # minimal version var (no git)
-    ls_minimal="--no-permissions --no-filesize --no-user --no-time"
-    alias lsf="eza -alF --color=always --icons=always"
-
-  fi
-
-    alias ld="eza -lD --color=always --icons=always $ls_minimal"
-    alias ldf="eza -lD --color=always --icons=always"
-
-    alias lf="eza -lF --color=always --icons=always $ls_minimal"
-    alias lff="eza -lF --color=always --icons=always"
-
-    alias lh="eza -ld .* --color=always --icons=always --group-directories-first $ls_minimal"
-    alias lhf="eza -ld .* --color=always --icons=always --group-directories-first"
-
-    alias ll="eza -al --icons=always --color=always --group-directories-first $ls_minimal"
-    alias llf="eza -al --icons=always --color=always --group-directories-first"
-
-    alias ls="eza -alF --color=always --icons=always $ls_minimal"
-
-    alias lt="eza -al --color=always --icons=always --sort=modified $ls_minimal"
-    alias ltf="eza -al --icons=always --color=always --sort=modified"
-
-    alias tree="eza -alF --tree --level=2 --icons=always --color=always $ls_minimal"
-    alias treef="eza -alF --tree --level=2 --icons=always --color=always"
-
-{{- end }}
-
-# ------------------------------------------
-# bat (cat)
-# ------------------------------------------
-
-# --- theme ---
-
-#export BAT_THEME='Monokai Extended'
-export BAT_THEME=tokyonight_night
-
-# --- aliases ---
-
-{{- if lookPath "bat" }}
-  alias cat='bat --paging never --style plain'
-{{- else if lookPath "batcat" }}
-  alias cat='batcat --paging never --style plain'
-{{- end }}
 
 # ------------------------------------------
 # thefuck (correction)
