@@ -19,13 +19,13 @@ DOCKER_ROOT="$HOME/docker"
 function docker_compose_stack() {
     local cmd="$1"
     local stack="$2"
-    eval "sudo docker compose -f '$HOME/docker/compose.$stack.yml' $cmd"
+    eval "sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' $cmd"
 }
 
 # run all stacks
 function docker_compose_all() {
     local cmd="$1"
-    for file in "$HOME/docker"/compose.*.yml; do
+    for file in "$DOCKER_ROOT"/compose.*.yml; do
         eval "sudo docker compose -f '$file' $cmd"
     done
 }
@@ -33,10 +33,10 @@ function docker_compose_all() {
 # list available stacks
 docker_compose_stacks() {
     echo "Available compose files:"
-    if [[ -f "$HOME/docker/compose.yml" ]]; then
+    if [[ -f "$DOCKER_ROOT/compose.yml" ]]; then
         echo "- compose.yml (core)"
     fi
-    find "$HOME/docker" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.\(.*\)\.yml/- \1/'
+    find "$DOCKER_ROOT" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.\(.*\)\.yml/- \1/'
 }
 
 
@@ -68,7 +68,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 alias dcls='docker_compose_stacks'
 
 # define docker root folder compose file
-alias dc='sudo docker compose -f $DOCKER_ROOT/compose.yml'
+alias dc="sudo docker compose -f $DOCKER_ROOT/compose.yml"
 
 # define commands and stacks
 typeset -A commands
