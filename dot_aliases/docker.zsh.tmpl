@@ -15,55 +15,55 @@ fi
 
 # --- functions ---
 
-# # compose file handler > all compose files
-# docker_compose_all() {
-#     local command="$1"
-#     local compose_files=()
+# compose file handler > all compose files
+docker_compose_all() {
+    local command="$1"
+    local compose_files=()
     
-#     # add base compose file if it exists
-#     if [[ -f "$HOME/docker/compose.yml" ]]; then
-#         compose_files+=("-f" "$HOME/docker/compose.yml")
-#     fi
+    # add base compose file if it exists
+    if [[ -f "$HOME/docker/compose.yml" ]]; then
+        compose_files+=("-f" "$HOME/docker/compose.yml")
+    fi
     
-#     # add all additional compose files
-#     for file in "$HOME/docker"/compose.*.yml; do
-#         if [[ -f "$file" ]]; then
-#             compose_files+=("-f" "$file")
-#         fi
-#     done
+    # add all additional compose files
+    for file in "$HOME/docker"/compose.*.yml; do
+        if [[ -f "$file" ]]; then
+            compose_files+=("-f" "$file")
+        fi
+    done
     
-#     if [ ${#compose_files[@]} -eq 0 ]; then
-#         echo "No compose files found in $HOME/docker/"
-#         return 1
-#     fi
+    if [ ${#compose_files[@]} -eq 0 ]; then
+        echo "No compose files found in $HOME/docker/"
+        return 1
+    fi
     
-#     echo "Running command across these files:"
-#     printf '%s\n' "${compose_files[@]}" | sed 's/-f //'
-#     echo "---"
+    echo "Running command across these files:"
+    printf '%s\n' "${compose_files[@]}" | sed 's/-f //'
+    echo "---"
     
-#     sudo docker compose "${compose_files[@]}" $command
-# }
+    sudo docker compose "${compose_files[@]}" $command
+}
 
-# # compose file handler > compose file 'wildcard'
-# docker_compose_wildcard() {
-#     typeset command=$1
-#     typeset stack=$2
-#     typeset compose_file
+# compose file handler > compose file 'wildcard'
+docker_compose_wildcard() {
+    typeset command=$1
+    typeset stack=$2
+    typeset compose_file
     
-#     [[ "$stack" = "all" ]] && {
-#         echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
-#         return 1
-#     }
+    [[ "$stack" = "all" ]] && {
+        echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
+        return 1
+    }
     
-#     compose_file=$HOME/docker/compose.$stack.yml
+    compose_file=$HOME/docker/compose.$stack.yml
     
-#     [[ -f "$compose_file" ]] && {
-#         sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
-#     } || {
-#         echo "Error: Compose file for stack '$stack' not found at $compose_file"
-#         return 1
-#     }
-# }
+    [[ -f "$compose_file" ]] && {
+        sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
+    } || {
+        echo "Error: Compose file for stack '$stack' not found at $compose_file"
+        return 1
+    }
+}
 
 
 # list available compose stacks
