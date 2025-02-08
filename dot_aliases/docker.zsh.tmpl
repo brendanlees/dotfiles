@@ -17,16 +17,16 @@ fi
 
 # run merge stacks
 function docker_compose_stack() {
-    local cmd=$1
-    local stack=$2
-    sudo docker compose -f "$HOME/docker/compose.$stack.yml" $cmd
+    local cmd="$1"
+    local stack="$2"
+    eval "sudo docker compose -f '$HOME/docker/compose.$stack.yml' $cmd"
 }
 
 # run all stacks
 function docker_compose_all() {
-    local cmd=$1
+    local cmd="$1"
     for file in "$HOME/docker"/compose.*.yml; do
-        sudo docker compose -f "$file" $cmd
+        eval "sudo docker compose -f '$file' $cmd"
     done
 }
 
@@ -89,7 +89,7 @@ stacks=(all arr media monitoring services)
 
 # generate regular commands for default compose.yml
 for cmd name cmd_args in ${(kv)commands}; do
-    alias "dc${cmd}"="dc ${cmd_args}"  # this creates dcpull, dcup, etc. for the default file
+    alias "dc${cmd}"="sudo docker compose -f '$HOME/docker/compose.yml' ${cmd_args}"
 done
 
 # generate stack-specific commands
