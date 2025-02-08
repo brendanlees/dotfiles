@@ -2,8 +2,6 @@
 # .aliases/docker
 # ------------------------------------------
 
-
-
 # --- env vars ---
 
 DOCKER_ROOT="$HOME/docker"
@@ -91,11 +89,11 @@ for stack in arr media monitoring services; do
 done
 
 # all stacks commands
-alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build --remove-orphans; done'
-alias "dcdown.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" down --remove-orphans; done'
+alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d --remove-orphans'
+alias "dcdown.all"='sudo docker compose -f "$DOCKER_ROOT/compose.yml" down --remove-orphans'
 alias "dcstart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" start; done'
 alias "dcstop.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" stop; done'
-alias "dcrec.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --force-recreate --remove-orphans; done'
+alias "dcrec.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --force-recreate; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d --remove-orphans'
 alias "dcrestart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" restart; done'
 alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" pull; done'
 
