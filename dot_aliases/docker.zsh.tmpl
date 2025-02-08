@@ -68,10 +68,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 alias dcls='docker_compose_stacks'
 
 # define docker root folder compose file
-alias dc='sudo docker compose -f $DOCKER_ROOT/compose.yml' # core
-
-# define all root folder compose files
-alias -g ".all"='() { docker_compose_all $0 }; _'
+alias dc='sudo docker compose -f $DOCKER_ROOT/compose.yml'
 
 # define commands and stacks
 typeset -A commands
@@ -85,22 +82,23 @@ commands=(
     ["pull"]="pull"
 )
 
-stacks=(all arr media monitoring services)
+stacks=(arr media monitoring services)
 
 # generate regular commands for default compose.yml
 for cmd name cmd_args in ${(kv)commands}; do
-    alias "dc${cmd}"="sudo docker compose -f '$HOME/docker/compose.yml' ${cmd_args}"
+    alias "dc${cmd}"="dc ${cmd_args}"
 done
 
 # generate stack-specific commands
 for stack in $stacks; do
     for cmd name cmd_args in ${(kv)commands}; do
-        if [[ $stack == "all" ]]; then
-            alias "dc${cmd}.${stack}"="docker_compose_all '${cmd_args}'"
-        else
-            alias "dc${cmd}.${stack}"="docker_compose_stack '${cmd_args}' '${stack}'"
-        fi
+        alias "dc${cmd}.${stack}"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' ${cmd_args}"
     done
+done
+
+# generate all-stack commands
+for cmd name cmd_args in ${(kv)commands}; do
+    alias "dc${cmd}.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" '"${cmd_args}"'; done'
 done
 
 
