@@ -15,55 +15,55 @@ fi
 
 # --- functions ---
 
-# compose file handler > all compose files
-docker_compose_all() {
-    local command="$1"
-    local compose_files=()
+# # compose file handler > all compose files
+# docker_compose_all() {
+#     local command="$1"
+#     local compose_files=()
     
-    # add base compose file if it exists
-    if [[ -f "$HOME/docker/compose.yml" ]]; then
-        compose_files+=("-f" "$HOME/docker/compose.yml")
-    fi
+#     # add base compose file if it exists
+#     if [[ -f "$HOME/docker/compose.yml" ]]; then
+#         compose_files+=("-f" "$HOME/docker/compose.yml")
+#     fi
     
-    # add all additional compose files
-    for file in "$HOME/docker"/compose.*.yml; do
-        if [[ -f "$file" ]]; then
-            compose_files+=("-f" "$file")
-        fi
-    done
+#     # add all additional compose files
+#     for file in "$HOME/docker"/compose.*.yml; do
+#         if [[ -f "$file" ]]; then
+#             compose_files+=("-f" "$file")
+#         fi
+#     done
     
-    if [ ${#compose_files[@]} -eq 0 ]; then
-        echo "No compose files found in $HOME/docker/"
-        return 1
-    fi
+#     if [ ${#compose_files[@]} -eq 0 ]; then
+#         echo "No compose files found in $HOME/docker/"
+#         return 1
+#     fi
     
-    echo "Running command across these files:"
-    printf '%s\n' "${compose_files[@]}" | sed 's/-f //'
-    echo "---"
+#     echo "Running command across these files:"
+#     printf '%s\n' "${compose_files[@]}" | sed 's/-f //'
+#     echo "---"
     
-    sudo docker compose "${compose_files[@]}" $command
-}
+#     sudo docker compose "${compose_files[@]}" $command
+# }
 
-# compose file handler > compose file 'wildcard'
-docker_compose_wildcard() {
-    typeset command=$1
-    typeset stack=$2
-    typeset compose_file
+# # compose file handler > compose file 'wildcard'
+# docker_compose_wildcard() {
+#     typeset command=$1
+#     typeset stack=$2
+#     typeset compose_file
     
-    [[ "$stack" = "all" ]] && {
-        echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
-        return 1
-    }
+#     [[ "$stack" = "all" ]] && {
+#         echo "Error: Use dcup.all, dcdown.all etc. for all stacks"
+#         return 1
+#     }
     
-    compose_file=$HOME/docker/compose.$stack.yml
+#     compose_file=$HOME/docker/compose.$stack.yml
     
-    [[ -f "$compose_file" ]] && {
-        sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
-    } || {
-        echo "Error: Compose file for stack '$stack' not found at $compose_file"
-        return 1
-    }
-}
+#     [[ -f "$compose_file" ]] && {
+#         sudo docker compose -f "$HOME/docker/compose.yml" -f "$compose_file" $command
+#     } || {
+#         echo "Error: Compose file for stack '$stack' not found at $compose_file"
+#         return 1
+#     }
+# }
 
 
 # list available compose stacks
@@ -100,8 +100,21 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 
 # --- compose / stacks ---
 
+# list stacks
+alias dcls='docker_compose_stacks'
+
 # define docker root folder compose file
 alias dc='sudo docker compose -f $DOCKER_ROOT/compose.yml' # core
+
+# define all root folder compose files
+alias -g ".all"='() { docker_compose_all $0 }; _'
+
+# define common merge compose files
+alias -g ".arr"='() { docker_compose_wildcard $0 "arr" }; _'
+alias -g ".media"='() { docker_compose_wildcard $0 "media" }; _'
+alias -g ".monitoring"='() { docker_compose_wildcard $0 "monitoring" }; _'
+alias -g ".proxy"='() { docker_compose_wildcard $0 "proxy" }; _'
+alias -g ".services"='() { docker_compose_wildcard $0 "services" }; _'
 
 # run basic / core compose file
 alias dcup='dc up -d --build --remove-orphans' # up the stack
@@ -111,29 +124,6 @@ alias dcstop='dc stop' # usage: dcstop container_name
 alias dcrec='dc up -d --force-recreate --remove-orphans' # usage: dcrec container_name
 alias dcrestart='dc restart' # usage: dcrestart container_name
 alias dcpull='dc pull' # usage: dcpull to pull all new images or dcpull container_name
-
-
-# run wildcard compose / merge files
-alias dcup.='f() { docker_compose_wildcard "up -d --build --remove-orphans" "$1" }; f'
-alias dcdown.='f() { docker_compose_wildcard "down --remove-orphans" "$1" }; f'
-alias dcstart.='f() { docker_compose_wildcard "start" "$1" }; f'
-alias dcstop.='f() { docker_compose_wildcard "stop" "$1" }; f'
-alias dcrec.='f() { docker_compose_wildcard "up -d --force-recreate --remove-orphans" "$1" }; f'
-alias dcrestart.='f() { docker_compose_wildcard "restart" "$1" }; f'
-alias dcpull.='f() { docker_compose_wildcard "pull" "$1" }; f'
-
-
-# run all compose / merge files in docker root
-alias dcup.all='docker_compose_all "up -d --build --remove-orphans"'
-alias dcdown.all='docker_compose_all "down --remove-orphans"'
-alias dcstart.all='docker_compose_all "start"'
-alias dcstop.all='docker_compose_all "stop"'
-alias dcrec.all='docker_compose_all "up -d --force-recreate --remove-orphans"'
-alias dcrestart.all='docker_compose_all "restart"'
-alias dcpull.all='docker_compose_all "pull"'
-
-# List stacks alias
-alias dcls='docker_compose_stacks'
 
 
 # --- system ---
