@@ -68,7 +68,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 alias dcls='docker_compose_stacks'
 
 # define docker root folder compose file
-alias dc="sudo docker compose -f $DOCKER_ROOT/compose.yml"
+alias dc='sudo docker compose -f "$DOCKER_ROOT/compose.yml"'
 
 # define commands and stacks
 typeset -A commands
