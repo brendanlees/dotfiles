@@ -70,36 +70,34 @@ alias dcls='docker_compose_stacks'
 # define docker root folder compose file
 alias dc='sudo docker compose -f "$DOCKER_ROOT/compose.yml"'
 
-# define commands and stacks
-typeset -A commands
-commands=(
-    ["up"]="up -d --build --remove-orphans"
-    ["down"]="down --remove-orphans"
-    ["start"]="start"
-    ["stop"]="stop"
-    ["rec"]="up -d --force-recreate --remove-orphans"
-    ["restart"]="restart"
-    ["pull"]="pull"
-)
-
-stacks=(arr media monitoring services)
-
-# generate regular commands for default compose.yml
-for cmd name cmd_args in ${(kv)commands}; do
-    alias "dc${cmd}"="dc ${cmd_args}"
-done
+# define default commands
+alias dcup='dc up -d --build --remove-orphans'
+alias dcdown='dc down --remove-orphans'
+alias dcstart='dc start'
+alias dcstop='dc stop'
+alias dcrec='dc up -d --force-recreate --remove-orphans'
+alias dcrestart='dc restart'
+alias dcpull='dc pull'
 
 # generate stack-specific commands
-for stack in $stacks; do
-    for cmd name cmd_args in ${(kv)commands}; do
-        alias "dc${cmd}.${stack}"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' ${cmd_args}"
-    done
+for stack in arr media monitoring services; do
+    alias "dcup.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" up -d --build --remove-orphans'
+    alias "dcdown.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" down --remove-orphans'
+    alias "dcstart.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" start'
+    alias "dcstop.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" stop'
+    alias "dcrec.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" up -d --force-recreate --remove-orphans'
+    alias "dcrestart.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" restart'
+    alias "dcpull.$stack"='sudo docker compose -f "$DOCKER_ROOT/compose.$stack.yml" pull'
 done
 
-# generate all-stack commands
-for cmd name cmd_args in ${(kv)commands}; do
-    alias "dc${cmd}.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" '"${cmd_args}"'; done'
-done
+# all stacks commands
+alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build --remove-orphans; done'
+alias "dcdown.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" down --remove-orphans; done'
+alias "dcstart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" start; done'
+alias "dcstop.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" stop; done'
+alias "dcrec.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --force-recreate --remove-orphans; done'
+alias "dcrestart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" restart; done'
+alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" pull; done'
 
 
 # --- system ---
