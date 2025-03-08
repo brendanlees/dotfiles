@@ -12,8 +12,8 @@ else
 fi 
 
 # lock / unlock permissions
-alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env' # re-lock permissions
-alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env' # open permissions for editing
+alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 600 {} \' # re-lock permissions
+alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env ; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 777 {} \' # open permissions for editing
 
 # --- functions ---
 
