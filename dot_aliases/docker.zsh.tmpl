@@ -11,9 +11,13 @@ else
   DOCKER_ROOT="$HOME/docker"
 fi 
 
+# lock / unlock permissions
+alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env' # re-lock permissions
+alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env' # open permissions for editing
+
 # --- functions ---
 
-# run merge stacks
+# run merged stacks
 function docker_compose_stack() {
     local cmd="$1"
     local stack="$2"
@@ -106,7 +110,6 @@ alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker com
 # ps
 alias dps='sudo docker ps -a' # running docker processes
 alias dpss='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)' # list all processes in a table (go syntax) 
-
 
 # df
 alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
