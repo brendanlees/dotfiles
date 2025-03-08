@@ -2,14 +2,14 @@
 # .aliases/docker
 # ------------------------------------------
 
-# --- env vars ---
+# --- env ---
 
-DOCKER_ROOT="$HOME/docker"
-
-# source machine specific env vars (if they exist)
-# if [[ -f "$DOCKER_ROOT/shared/config/zsh_aliases.env" ]]; then
-#   source $DOCKER_ROOT/shared/config/zsh_aliases.env 
-# fi 
+# determine docker root (shared or default)
+if [[ -d "/opt/docker/" ]]; then
+  source DOCKER_ROOT="/opt/docker"
+else
+  source DOCKER_ROOT="$HOME/docker"
+fi 
 
 # --- functions ---
 
