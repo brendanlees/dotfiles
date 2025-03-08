@@ -6,9 +6,9 @@
 
 # determine docker root (shared or default)
 if [[ -d "/opt/docker/" ]]; then
-  source DOCKER_ROOT="/opt/docker"
+  DOCKER_ROOT="/opt/docker"
 else
-  source DOCKER_ROOT="$HOME/docker"
+  DOCKER_ROOT="$HOME/docker"
 fi 
 
 # --- functions ---
