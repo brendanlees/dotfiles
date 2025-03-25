@@ -12,7 +12,7 @@ else
 fi 
 
 # set docker-compose settings
-export COMPOSE_IGNORE_ORPHANS=True
+export COMPOSE_IGNORE_ORPHANS=1
 
 # lock / unlock permissions
 alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 600 {} \;' # re-lock permissions
