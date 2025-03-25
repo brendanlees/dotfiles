@@ -85,11 +85,11 @@ alias dcpull='dc pull'
 for stack in arr media monitoring services; do
     
     if [[ -f "$DOCKER_ROOT/compose.$stack.yml" ]]; then
-        alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build --remove-orphans"
-        alias "dcdown.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' down --remove-orphans"
+        alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build --ignore-orphans"
+        alias "dcdown.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' down --ignore-orphans"
         alias "dcstart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' start"
         alias "dcstop.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' stop"
-        alias "dcrec.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --force-recreate --remove-orphans"
+        alias "dcrec.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --force-recreate --ignore-orphans"
         alias "dcrestart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' restart"
         alias "dcpull.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' pull"
     fi
