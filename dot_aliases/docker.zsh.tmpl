@@ -11,6 +11,9 @@ else
   DOCKER_ROOT="$HOME/docker"
 fi 
 
+# set docker-compose settings
+export COMPOSE_IGNORE_ORPHANS=True
+
 # lock / unlock permissions
 alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 600 {} \;' # re-lock permissions
 alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env ; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 777 {} \;' # open permissions for editing
@@ -85,11 +88,11 @@ alias dcpull='dc pull'
 for stack in arr media monitoring services; do
     
     if [[ -f "$DOCKER_ROOT/compose.$stack.yml" ]]; then
-        alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build --ignore-orphans"
-        alias "dcdown.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' down --ignore-orphans"
+        alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build"
+        alias "dcdown.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' down"
         alias "dcstart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' start"
         alias "dcstop.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' stop"
-        alias "dcrec.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --force-recreate --ignore-orphans"
+        alias "dcrec.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --force-recreate"
         alias "dcrestart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' restart"
         alias "dcpull.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' pull"
     fi
