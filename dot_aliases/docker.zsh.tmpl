@@ -82,7 +82,7 @@ alias dcrestart='dc restart'
 alias dcpull='dc pull'
 
 # generate stack-specific commands
-for stack in arr media monitoring services; do
+for stack in arr media monitoring plex services; do
     
     if [[ -f "$DOCKER_ROOT/compose.$stack.yml" ]]; then
         alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build"
