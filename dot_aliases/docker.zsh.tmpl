@@ -109,7 +109,7 @@ alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker com
 
 # ps
 alias dps='sudo docker ps -a' # running docker processes
-alias dpss='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)' # list all processes in a table (go syntax) 
+alias dpsa='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)' # list all processes in a table (go syntax) 
 
 # df
 alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
