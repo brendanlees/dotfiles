@@ -5,8 +5,8 @@
 # ------------------------------------------
 
 if [ ! -d "$HOME/.config/starship" ]; then 
-echo "installing starship..."
-sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
+  echo "installing starship..."
+  sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
 else
 	echo "starship already installed, skipping."
 fi
