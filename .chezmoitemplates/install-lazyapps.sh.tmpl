@@ -23,7 +23,7 @@ if command -v docker &> /dev/null; then
     fi
     {{ end -}}
 else
-    echo "docker is not installed, skipping lazydocker installation."
+    echo "docker not installed, skipping lazydocker installation."
 fi
 
 # ------------------------------------------
@@ -46,12 +46,12 @@ if command -v git &> /dev/null; then
     {{ else if eq .chezmoi.os "darwin" }}
 
     if brew list --formula | grep -q "^lazygit$"; then
-      echo "lazygit is already installed, skipping."
+      echo "lazygit already installed, skipping."
     else
       echo "installing lazygit..."
       brew install lazygit
     fi
     {{ end -}}
 else
-    echo "git is not installed, skipping lazygit installation."
+    echo "git not installed, skipping lazygit installation."
 fi
