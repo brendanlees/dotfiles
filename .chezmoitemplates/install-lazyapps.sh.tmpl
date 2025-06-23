@@ -19,6 +19,7 @@ if command -v docker &> /dev/null; then
       echo "lazydocker is already installed via Homebrew."
     else
       brew install lazydocker
+    fi
     {{ end -}}
 else
     echo "Docker is not installed. Skipping lazydocker installation."
@@ -47,7 +48,7 @@ if command -v git &> /dev/null; then
       echo "lazygit is already installed via Homebrew."
     else
       brew install lazygit
-
+    fi
     {{ end -}}
 else
     echo "Git is not installed. Skipping lazygit installation."
