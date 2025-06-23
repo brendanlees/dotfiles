@@ -4,8 +4,8 @@
 # install > zoxide
 # ------------------------------------------
 
-if ! command -v zoxide &> /dev/null; then 
-  echo "Installing zoxide"
+if [ ! -f "$HOME/.fzf" ]; then
+  echo "installing zoxide...ƒ"
 
   {{ if (eq .chezmoi.os "linux") -}}
     curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
