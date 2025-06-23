@@ -7,7 +7,16 @@
 if command -v docker &> /dev/null; then
     if [ ! -d "$HOME/.local/bin/lazydocker" ]; then
         echo "Getting lazydocker"
+
+    {{ if (eq .chezmoi.os "linux") -}}
         curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+    {{ else if eq .chezmoi.os "darwin" }}
+
+      brew install lazydocker
+      
+    {{ end -}}
+    
     else
         echo "lazydocker already found, skipping."
     fi
@@ -33,6 +42,7 @@ if command -v git &> /dev/null; then
     {{ else if eq .chezmoi.os "darwin" }}
 
       brew install lazygit
+
     {{ end -}}
 
     else
