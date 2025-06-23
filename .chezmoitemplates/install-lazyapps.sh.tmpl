@@ -5,21 +5,21 @@
 # ------------------------------------------
 
 if command -v docker &> /dev/null; then
+
+  {{ if (eq .chezmoi.os "linux") -}}
     if [ ! -d "$HOME/.local/bin/lazydocker" ]; then
         echo "Getting lazydocker"
-
-    {{ if (eq .chezmoi.os "linux") -}}
         curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-
-    {{ else if eq .chezmoi.os "darwin" }}
-
-      brew install lazydocker
-      
-    {{ end -}}
-    
     else
         echo "lazydocker already found, skipping."
     fi
+
+  {{ else if eq .chezmoi.os "darwin" }}
+    if brew list --formula | grep -q "^lazydocker$"; then
+      echo "lazydocker is already installed via Homebrew."
+    else
+      brew install lazydocker
+    {{ end -}}
 else
     echo "Docker is not installed. Skipping lazydocker installation."
 fi
@@ -29,25 +29,26 @@ fi
 # ------------------------------------------
 
 if command -v git &> /dev/null; then
+
+  {{ if (eq .chezmoi.os "linux") -}}
     if [ ! -d "$HOME/.local/bin/lazygit" ]; then
         echo "Getting lazygit"
-
-    {{ if (eq .chezmoi.os "linux") -}}
-      
       LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
       curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
       tar xf lazygit.tar.gz lazygit
       sudo install lazygit -D -t /usr/local/bin/
-
-    {{ else if eq .chezmoi.os "darwin" }}
-
-      brew install lazygit
-
-    {{ end -}}
-
     else
         echo "lazygit already found, skipping."
     fi
+
+    {{ else if eq .chezmoi.os "darwin" }}
+
+    if brew list --formula | grep -q "^lazygit$"; then
+      echo "lazygit is already installed via Homebrew."
+    else
+      brew install lazygit
+
+    {{ end -}}
 else
     echo "Git is not installed. Skipping lazygit installation."
 fi
