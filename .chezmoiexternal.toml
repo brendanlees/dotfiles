@@ -91,7 +91,7 @@ exclude = [
   "*/*.md",
 ]
 
-[".tmux/plugins/tpm/tmux-tokyo-night.tmux"]
+[".tmux/plugins/tmux-tokyo-night.tmux"]
 type = "file"
 url = "https://github.com/fabioluciano/tmux-tokyo-night/blob/main/tmux-tokyo-night.tmux"
 exact = true
