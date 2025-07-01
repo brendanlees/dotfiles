@@ -90,17 +90,3 @@ exclude = [
   "*/.gitignore",
   "*/*.md",
 ]
-
-[".tmux/plugins/tmux-tokyo-night.tmux"]
-type = "file"
-url = "https://github.com/fabioluciano/tmux-tokyo-night/blob/main/tmux-tokyo-night.tmux"
-exact = true
-stripComponents = 1
-refreshPeriod = "168h"
-exclude = [
-  "*/.editorconfig",
-  "*/.gitattributes",
-  "*/.github",
-  "*/.gitignore",
-  "*/*.md",
-]
