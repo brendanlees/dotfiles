@@ -78,3 +78,15 @@ exclude = [
   "*/.gitignore",
   "*/*.md",
 ]
+
+[".tmux/plugins/tpm"]
+type = "git-repo"
+url = "https://github.com/tmux-plugins/tpm"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
