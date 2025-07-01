@@ -1,7 +1,5 @@
 # remap prefix from 'C-b' to 'C-s'
-unbind C-b
-set-option -g prefix C-s
-bind-key C-s send-prefix
+set -g prefix C-s
 
 # reload config file
 unbind r
@@ -20,10 +18,10 @@ set-option -g allow-rename off
 #bind -n M-Right select-pane -R
 
 # switch panes using vim motions (without prefix)
-bind -n M-h select-pane -L
-bind -n M-j select-pane -D
-bind -n M-k select-pane -U
-bind -n M-l select-pane -R
+bind-key M-h select-pane -L
+bind-key M-j select-pane -D
+bind-key M-k select-pane -U
+bind-key M-l select-pane -R
 
 # set status bar to top
 set-option -g status-position top
