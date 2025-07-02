@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# ------------------------------------------
+# install > tmux plugin dependencies
+# ------------------------------------------
+
+# --- theme ---
+
+if [ ! -d "$HOME/.tmux/plugins/tmux-tokyo-night/" ]; then
+  echo "installing tmux theme dependencies..."
+
+  {{ if (eq .chezmoi.os "linux") -}}
+    apt-get install bash bc coreutils gawk git jq playerctl
+  {{ else if eq .chezmoi.os "darwin" }}
+    brew install --cask font-monaspace-nerd-font font-noto-sans-symbols-2
+    brew install bash bc coreutils gawk gh glab gsed jq nowplaying-cli
+  {{ end -}}
+
+else
+    echo "tmux theme dependencies already installed, skipping."
+fi
