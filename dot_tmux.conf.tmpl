@@ -11,11 +11,12 @@ set -g mouse on
 # don't rename windows automatically
 set-option -g allow-rename off
 
-# switch panes using alt-arrow (without prefix)
-#bind -n M-Left select-pane -L
-#bind -n M-Down select-pane -D
-#bind -n M-Up select-pane -U
-#bind -n M-Right select-pane -R
+# start index at 1
+set -g base-index 1
+set -g pane-base-index 1
+
+# renumber when window is closed
+set -g renumber-window on
 
 # switch panes using vim motions (without prefix)
 bind -n C-h select-pane -L
@@ -26,13 +27,39 @@ bind -n C-l select-pane -R
 # set status bar to top
 set-option -g status-position top
 
-# init plugins
+#  plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'fabioluciano/tmux-tokyo-night'
+set -g @plugin 'tmux-plugins/tmux-cpu'
+set -g @plugin 'tmux-plugins/tmux-battery'
+# set -g @plugin 'dreknix/tmux-primary-ip'
+# set -g @plugin 'omerxx/tmux-sessionx'
 
-# theme vars (tokyo-night)
-set -g @theme_variation 'night'
+# theme
+set -g @plugin "janoamaral/tokyo-night-tmux"
 
-# init tmux plugin manager (keep this line at the very bottom of tmux.conf)
+# theme vars 
+set -g @tokyo-night-tmux_theme night
+set -g @tokyo-night-tmux_transparent 1
+
+set -g @tokyo-night-tmux_show_datetime 0
+
+set -g @tokyo-night-tmux_terminal_icon 
+set -g @tokyo-night-tmux_active_terminal_icon 
+set -g @tokyo-night-tmux_window_tidy_icons 2
+
+set -g @tokyo-night-tmux_window_id_style none
+set -g @tokyo-night-tmux_pane_id_style hide
+set -g @tokyo-night-tmux_zoom_id_style none
+
+set -g @tokyo-night-tmux_show_path 1
+set -g @tokyo-night-tmux_path_format relative
+
+set -g @tokyo-night-tmux_show_hostname 1
+set -g @tokyo-night-tmux_show_git 1
+
+# set -g @tokyo-night-tmux_show_battery_widget 1
+
+
+# run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
