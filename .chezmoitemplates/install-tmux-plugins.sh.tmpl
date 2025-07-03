@@ -10,10 +10,10 @@ if [ ! -d "$HOME/.tmux/plugins/tmux-tokyo-night/" ]; then
   echo "installing tmux theme dependencies..."
 
   {{ if (eq .chezmoi.os "linux") -}}
-    apt-get install bash bc coreutils gawk git jq playerctl
+    apt-get install bash bc coreutils gawk git jq
   {{ else if eq .chezmoi.os "darwin" }}
     brew install --cask font-monaspace-nerd-font font-noto-sans-symbols-2
-    brew install bash bc coreutils gawk gh glab gsed jq nowplaying-cli
+    brew install bash bc coreutils gawk gh glab gsed jq
   {{ end -}}
 
 else
