@@ -1,12 +1,26 @@
+# use zsh as default
+set -g default-shell /bin/zsh
+
+# enable 256-color and true-color (24-bit) support in tmux
+set -g default-terminal "screen-256color" # Set terminal type for 256-color support
+set -ga terminal-overrides ",*256col*:Tc" # Override to enable true-color for compatible terminals
+
+# general
+set -g set-clipboard on         # Use system clipboard
+set -g detach-on-destroy off    # Don't exit from tmux when closing a session
+set -g escape-time 0            # Remove delay for exiting insert mode with ESC in Neovim
+set -g history-limit 1000000    # Increase history size (from 2,000)
+set -g mouse on                 # Enable mouse support
+set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
+set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
+
 # remap prefix 
-set -g prefix C-s
+unbind C-b 
+set -g prefix C-space
 
 # reload config file
 unbind r
 bind r source-file ~/.tmux.conf
-
-# enable mouse control
-set -g mouse on
 
 # don't rename windows automatically
 set-option -g allow-rename off
@@ -14,6 +28,9 @@ set-option -g allow-rename off
 # start index at 1
 set -g base-index 1
 set -g pane-base-index 1
+
+# new window in same path
+bind c new-window -c "#{pane_current_path}"
 
 # renumber when window is closed
 set -g renumber-window on
@@ -30,10 +47,18 @@ set-option -g status-position top
 #  plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'tmux-plugins/tmux-cpu'
-set -g @plugin 'tmux-plugins/tmux-battery'
+set -g @plugin 'tmux-plugins/tmux-resurrect' 
+set -g @plugin 'tmux-plugins/tmux-continuum'   
+
+# -- to try / add
+# set -g @plugin 'hendrikmi/tmux-cpu-mem-monitor'
+# set -g @plugin 'tmux-plugins/tmux-cpu'
+# set -g @plugin 'tmux-plugins/tmux-battery'
 # set -g @plugin 'dreknix/tmux-primary-ip'
 # set -g @plugin 'omerxx/tmux-sessionx'
+
+# resurrect
+set -g @resurrect-capture-pane-contents 'on'
 
 # theme
 set -g @plugin "janoamaral/tokyo-night-tmux"
@@ -59,7 +84,6 @@ set -g @tokyo-night-tmux_show_hostname 0
 set -g @tokyo-night-tmux_show_git 1
 
 # set -g @tokyo-night-tmux_show_battery_widget 1
-
 
 # run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
