@@ -16,7 +16,7 @@ set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. 
 
 # remap prefix 
 unbind C-b 
-set -g prefix C-space
+set -g prefix C-s
 
 # reload config file
 unbind r
@@ -35,18 +35,29 @@ bind c new-window -c "#{pane_current_path}"
 # renumber when window is closed
 set -g renumber-window on
 
-# switch panes using vim motions (without prefix)
-bind -n C-h select-pane -L
-bind -n C-j select-pane -D
-bind -n C-k select-pane -U
-bind -n C-l select-pane -R
+# resize panes using vim motions (after prefix)
+bind -r j resize-pane -D 5
+bind -r k resize-pane -U 5
+bind -r l resize-pane -R 5
+bind -r h resize-pane -L 5
 
 # set status bar to top
 set-option -g status-position top
 
+set-window-option -g mode-keys vi
+
+bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
+bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
+
+unbind -T copy-mode-vi MouseDragEnd1Pane # don't exit copy mode after dragging with mouse
+
+# maximize/restore a pane
+bind-key -n C-f resize-pane -Z
+
 #  plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'christoomey/vim-tmux-navigator'
 set -g @plugin 'tmux-plugins/tmux-resurrect' 
 set -g @plugin 'tmux-plugins/tmux-continuum'   
 
@@ -56,6 +67,7 @@ set -g @plugin 'tmux-plugins/tmux-continuum'
 # set -g @plugin 'tmux-plugins/tmux-battery'
 # set -g @plugin 'dreknix/tmux-primary-ip'
 # set -g @plugin 'omerxx/tmux-sessionx'
+
 
 # resurrect
 set -g @resurrect-capture-pane-contents 'on'
@@ -84,6 +96,9 @@ set -g @tokyo-night-tmux_show_hostname 0
 set -g @tokyo-night-tmux_show_git 1
 
 # set -g @tokyo-night-tmux_show_battery_widget 1
+
+set -g @resurrect-capture-pane-contents 'on' 
+set -g @continuum-restore 'on' 
 
 # run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
