@@ -112,6 +112,14 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 #eval $(thefuck --alias)
 #{{ end -}}
 
+{{ if (output "command" "-v" "dietpi-software" | success) }}
+# ------------------------------------------
+# dietpi
+# ------------------------------------------
+export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
+/boot/dietpi/dietpi-login
+{{ end }}
+
 
 
 
