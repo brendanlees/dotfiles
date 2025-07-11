@@ -103,8 +103,8 @@ autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 
-{{ $hostname := (output "hostname") }}
-{{ if or (eq $hostname "rpi1") (eq $hostname "dietpi") }}
+{{/* detect dietpi */}}
+{{- if (eq .chezmoi.username "dietpi") -}}
 # ------------------------------------------
 # dietpi
 # ------------------------------------------
