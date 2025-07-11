@@ -1,5 +1,5 @@
 # ------------------------------------------
-# .aliases/docker
+# .aliases/docker (docker.zsh.tmpl)
 # ------------------------------------------
 
 # --- env ---
@@ -17,22 +17,6 @@ alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 
 
 # --- functions ---
 
-# run merged stacks
-function docker_compose_stack() {
-    local cmd="$1"
-    local stack="$2"
-    eval "sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' $cmd"
-}
-
-# run all stacks
-function docker_compose_all() {
-    local cmd="$1"
-    for file in "$DOCKER_ROOT"/compose.*.yml; do
-        eval "sudo docker compose -f '$file' $cmd"
-    done
-}
-
-# list available stacks
 docker_compose_stacks() {
     echo "Available compose files:"
     if [[ -f "$DOCKER_ROOT/compose.yml" ]]; then
@@ -41,38 +25,22 @@ docker_compose_stacks() {
     find "$DOCKER_ROOT" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.(.*)\.yml/- \1/'
 }
 
-
 # --- containers ---
 
-# start
 alias dstart='sudo docker start' # usage: dstart container_name
-alias dstopall='sudo docker start $(sudo docker ps -aq)' # dstart all containers
-
-# stop
+alias dstopall='sudo docker start $(sudo docker ps -aq)' # start all containers
 alias dstop='sudo docker stop' # usage: dstop container_name
 alias dstopall='sudo docker stop $(sudo docker ps -aq)' # stop all containers
-
-# restart
-alias drestart='sudo docker restart' # usage: dstart container_name
-alias drestartall='sudo docker restart $(sudo docker ps -aq)' # dstart all containers
-
-# rm
+alias drestart='sudo docker restart' # usage: drestart container_name
+alias drestartall='sudo docker restart $(sudo docker ps -aq)' # restart all containers
 alias drm='sudo docker rm' # usage: drm container_name
 alias drmall='sudo docker rm $(sudo docker ps -aq)' # remove all containers
-
-# shell
 alias dexec='sudo docker exec -ti' # usage: dexec container_name
-
 
 # --- compose / stacks ---
 
-# list stacks
 alias dcls='docker_compose_stacks'
-
-# define docker root folder compose file
 alias dc='sudo docker compose -f "$DOCKER_ROOT/compose.yml"'
-
-# define default commands
 alias dcup='dc up -d --build'
 alias dcdown='dc down'
 alias dcstart='dc start'
@@ -81,16 +49,17 @@ alias dcrec='dc up -d --force-recreate'
 alias dcrestart='dc restart'
 alias dcpull='dc pull'
 
-# dynamic stack-specific compose aliases based on available compose.$name.yml files
+# --- dynamic stack-specific compose aliases ---
+
+setopt +o nomatch 2>/dev/null
 for file in "$DOCKER_ROOT"/compose.*.yml; do
-    [[ -e "$file" ]] || continue  # skip if no matching files
+    [[ -e "$file" ]] || continue
     stack=$(basename "$file" | sed -E 's/compose\.(.*)\.yml/\1/')
     env_args=""
 
     default_env="$DOCKER_ROOT/.env"
     stack_env="$DOCKER_ROOT/.env-$stack"
 
-    # Combine --env-file arguments if both exist
     if [[ -f "$default_env" ]]; then
         env_args+=" --env-file $default_env"
     fi
@@ -109,7 +78,7 @@ for file in "$DOCKER_ROOT"/compose.*.yml; do
     alias "dcpull.$stack"="$cmd_prefix pull"
 done
 
-# all stacks commands
+# --- all stacks commands ---
 alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d '
 alias "dcdown.all"='sudo docker compose -f "$DOCKER_ROOT/compose.yml" down'
 alias "dcstart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" start; done'
@@ -118,40 +87,25 @@ alias "dcrec.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker comp
 alias "dcrestart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" restart; done'
 alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" pull; done'
 
-
 # --- system ---
-
-# ps
-alias dps='sudo docker ps -a' # running docker processes
-alias dpsa='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)' # list all processes in a table (go syntax) 
-
-# df
-alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
-
-# system prune
-alias ddelimages='sudo docker rmi $(sudo docker images -q)' # delete unused images
-alias dprunesys='sudo docker system prune -a' # remove unsed docker data
-
+alias dps='sudo docker ps -a'
+alias dpsa='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)'
+alias ddf='sudo docker system df'
+alias ddelimages='sudo docker rmi $(sudo docker images -q)'
+alias dprunesys='sudo docker system prune -a'
 
 # --- images ---
-
-alias dimg='sudo docker image ls' # list images
-alias dpruneimg='sudo docker image prune' # remove unused images
-
+alias dimg='sudo docker image ls'
+alias dpruneimg='sudo docker image prune'
 
 # --- volumes ---
-
-alias dvol='sudo docker volume ls' # list volumes
-alias dprunevol='sudo docker volume prune' # remove unused volumes
-
+alias dvol='sudo docker volume ls'
+alias dprunevol='sudo docker volume prune'
 
 # --- logs ---
-
-alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
-alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h' # see the size of docker containers (go syntax) 
-
+alias dlogs='sudo docker logs -tf --tail="50" '
+alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h'
 
 # --- network ---
-
-alias dnet='sudo docker network ls' # list networks 
-alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'" # list all containers with their IP addresses
+alias dnet='sudo docker network ls'
+alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'"
