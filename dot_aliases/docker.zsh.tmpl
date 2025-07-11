@@ -38,7 +38,7 @@ docker_compose_stacks() {
     if [[ -f "$DOCKER_ROOT/compose.yml" ]]; then
         echo "- compose.yml (core)"
     fi
-    find "$DOCKER_ROOT" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.\(.*\)\.yml/- \1/'
+    find "$DOCKER_ROOT" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.(.*)\.yml/- \1/'
 }
 
 
@@ -81,18 +81,32 @@ alias dcrec='dc up -d --force-recreate'
 alias dcrestart='dc restart'
 alias dcpull='dc pull'
 
-# generate stack-specific commands
-for stack in arr media monitoring plex services; do
-    
-    if [[ -f "$DOCKER_ROOT/compose.$stack.yml" ]]; then
-        alias "dcup.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --build"
-        alias "dcdown.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' down"
-        alias "dcstart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' start"
-        alias "dcstop.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' stop"
-        alias "dcrec.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' up -d --force-recreate"
-        alias "dcrestart.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' restart"
-        alias "dcpull.$stack"="sudo docker compose -f '$DOCKER_ROOT/compose.$stack.yml' pull"
+# dynamic stack-specific compose aliases based on available compose.$name.yml files
+for file in "$DOCKER_ROOT"/compose.*.yml; do
+    [[ -e "$file" ]] || continue  # skip if no matching files
+    stack=$(basename "$file" | sed -E 's/compose\.(.*)\.yml/\1/')
+    env_args=""
+
+    default_env="$DOCKER_ROOT/.env"
+    stack_env="$DOCKER_ROOT/.env-$stack"
+
+    # Combine --env-file arguments if both exist
+    if [[ -f "$default_env" ]]; then
+        env_args+=" --env-file $default_env"
     fi
+    if [[ -f "$stack_env" ]]; then
+        env_args+=" --env-file $stack_env"
+    fi
+
+    cmd_prefix="sudo docker compose$env_args -f $file"
+
+    alias "dcup.$stack"="$cmd_prefix up -d --build"
+    alias "dcdown.$stack"="$cmd_prefix down"
+    alias "dcstart.$stack"="$cmd_prefix start"
+    alias "dcstop.$stack"="$cmd_prefix stop"
+    alias "dcrec.$stack"="$cmd_prefix up -d --force-recreate"
+    alias "dcrestart.$stack"="$cmd_prefix restart"
+    alias "dcpull.$stack"="$cmd_prefix pull"
 done
 
 # all stacks commands
