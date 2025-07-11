@@ -113,7 +113,7 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 #{{ end -}}
 
 
-{{ if ne (output "bash" "-c" "command -v dietpi-software || echo ''") "" }}
+{{ if (lookPath "dietpi-software") }}
 # ------------------------------------------
 # dietpi
 # ------------------------------------------
