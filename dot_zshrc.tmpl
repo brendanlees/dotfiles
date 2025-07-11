@@ -113,7 +113,13 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 #{{ end -}}
 
 
-
+{{ if ne (output "bash" "-c" "command -v dietpi-software || echo ''") "" }}
+# ------------------------------------------
+# dietpi
+# ------------------------------------------
+export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
+/boot/dietpi/dietpi-login
+{{ end }}
 
 
 
