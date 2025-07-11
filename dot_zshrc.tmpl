@@ -103,7 +103,7 @@ autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 
-{{ if eq (output "bash" "-c" "bash -c 'command -v dietpi-software > /dev/null 2>&1 && echo exists'") "exists" }}
+{{ if eq (output "bash" "-lc" "command -v dietpi-software >/dev/null 2>&1 && echo exists") "exists" }}
 # ------------------------------------------
 # dietpi
 # ------------------------------------------
