@@ -112,7 +112,7 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 #eval $(thefuck --alias)
 #{{ end -}}
 
-{{ if (output "command" "-v" "dietpi-software" | success) }}
+{{ if ne (output "bash" "-c" "command -v dietpi-software || echo ''") "" }}
 # ------------------------------------------
 # dietpi
 # ------------------------------------------
