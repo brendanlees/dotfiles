@@ -85,14 +85,6 @@ for file in "$compose_dir"/compose.*.yml; do
     alias "dcpull.$stack"="$cmd_prefix pull"
 done
 
-# all stacks commands
-alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d '
-alias "dcdown.all"='sudo docker compose -f "$DOCKER_ROOT/compose.yml" down'
-alias "dcstart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" start; done'
-alias "dcstop.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" stop; done'
-alias "dcrec.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --force-recreate; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d'
-alias "dcrestart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" restart; done'
-alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" pull; done'
 
 # --- system ---
 alias dps='sudo docker ps -a'
