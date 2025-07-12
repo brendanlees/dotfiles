@@ -92,6 +92,7 @@ alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker com
 
 # --- system ---
 alias dps='sudo docker ps -a'
+alias dpsa='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)'
 alias ddf='sudo docker system df'
 alias ddelimages='sudo docker rmi $(sudo docker images -q)'
 alias dprunesys='sudo docker system prune -a'
@@ -106,7 +107,8 @@ alias dprunevol='sudo docker volume prune'
 
 # --- logs ---
 alias dlogs='sudo docker logs -tf --tail="50" '
+alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h'
 
 # --- network ---
 alias dnet='sudo docker network ls'
-alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'"
+alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'"
