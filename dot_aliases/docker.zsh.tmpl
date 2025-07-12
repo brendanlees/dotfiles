@@ -4,7 +4,7 @@
 
 # --- env ---
 
-# determine docker root (shared or default)
+# determine docker root folder (shared or default)
 if [[ -d "/opt/docker/" ]]; then
   DOCKER_ROOT="/opt/docker"
 else
@@ -17,6 +17,7 @@ alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 
 
 # --- functions ---
 
+# run compose commands from current working directory first, then from docker folder root anywhere else
 get_compose_dir() {
     local cwd="$PWD"
     local docker_root="${DOCKER_ROOT:-$HOME/docker}"
