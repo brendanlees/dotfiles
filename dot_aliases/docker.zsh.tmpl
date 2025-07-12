@@ -106,7 +106,6 @@ alias dprunevol='sudo docker volume prune'
 
 # --- logs ---
 alias dlogs='sudo docker logs -tf --tail="50" '
-alias dlogsize='sudo du -ch $(sudo docker inspect --format={{.LogPath}} $(sudo docker ps -qa)) | sort -h'
 
 # --- network ---
 alias dnet='sudo docker network ls'
