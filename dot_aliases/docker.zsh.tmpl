@@ -17,13 +17,16 @@ alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 
 
 # --- functions ---
 
-docker_compose_stacks() {
-    echo "Available compose files:"
-    if [[ -f "$DOCKER_ROOT/compose.yml" ]]; then
-        echo "- compose.yml (core)"
+get_compose_dir() {
+    local cwd="$PWD"
+    local docker_root="${DOCKER_ROOT:-$HOME/docker}"
+    if ls "$cwd"/compose.yml >/dev/null 2>&1 || ls "$cwd"/compose.*.yml >/dev/null 2>&1; then
+        echo "$cwd"
+    else
+        echo "$docker_root"
     fi
-    find "$DOCKER_ROOT" -name "compose.*.yml" -exec basename {} \; | sed 's/compose\.(.*)\.yml/- \1/'
 }
+
 
 # --- containers ---
 
@@ -39,8 +42,7 @@ alias dexec='sudo docker exec -ti' # usage: dexec container_name
 
 # --- compose / stacks ---
 
-alias dcls='docker_compose_stacks'
-alias dc='sudo docker compose -f "$DOCKER_ROOT/compose.yml"'
+alias dc='sudo docker compose -f "$(get_compose_dir)/compose.yml"'
 alias dcup='dc up -d --build'
 alias dcdown='dc down'
 alias dcstart='dc start'
@@ -52,13 +54,14 @@ alias dcpull='dc pull'
 # --- dynamic stack-specific compose aliases ---
 
 setopt +o nomatch 2>/dev/null
-for file in "$DOCKER_ROOT"/compose.*.yml; do
+compose_dir="$(get_compose_dir)"
+for file in "$compose_dir"/compose.*.yml; do
     [[ -e "$file" ]] || continue
     stack=$(basename "$file" | sed -E 's/compose\.(.*)\.yml/\1/')
     env_args=""
 
-    default_env="$DOCKER_ROOT/.env"
-    stack_env="$DOCKER_ROOT/.env-$stack"
+    default_env="$compose_dir/.env"
+    stack_env="$compose_dir/.env-$stack"
 
     if [[ -f "$default_env" ]]; then
         env_args+=" --env-file $default_env"
@@ -89,7 +92,7 @@ alias "dcpull.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker com
 
 # --- system ---
 alias dps='sudo docker ps -a'
-alias dpsa='sudo docker ps -a --format "table {{ `{{` }}.Names{{ `}}` }}\t{{ `{{` }}.State{{ `}}` }}\t{{ `{{` }}.Status{{ `}}` }}\t{{ `{{` }}.Image{{ `}}` }}" | (sed -u 1q; sort)'
+alias dpsa='sudo docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)'
 alias ddf='sudo docker system df'
 alias ddelimages='sudo docker rmi $(sudo docker images -q)'
 alias dprunesys='sudo docker system prune -a'
@@ -104,8 +107,8 @@ alias dprunevol='sudo docker volume prune'
 
 # --- logs ---
 alias dlogs='sudo docker logs -tf --tail="50" '
-alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h'
+alias dlogsize='sudo du -ch $(sudo docker inspect --format={{.LogPath}} $(sudo docker ps -qa)) | sort -h'
 
 # --- network ---
 alias dnet='sudo docker network ls'
-alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{ `{{` }}.Name{{ `}}` }}%tab%{{ `{{` }}range .NetworkSettings.Networks{{ `}}` }}{{ `{{` }}.IPAddress{{ `}}` }}%tab%{{ `{{` }}end{{ `}}` }}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'"
+alias dips="sudo docker ps -q | xargs -n 1 sudo docker inspect -f '{{.Name}}%tab%{{range .NetworkSettings.Networks}}{{.IPAddress}}%tab%{{end}}' | sed 's#%tab%#\t#g' | sed 's#/##g' | sort | column -t -N NAME,IP\(s\) -o \$'\t'"
