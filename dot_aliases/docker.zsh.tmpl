@@ -2,6 +2,7 @@
 # .aliases/docker (docker.zsh.tmpl)
 # ------------------------------------------
 
+
 # --- env ---
 
 # determine docker root folder (shared or default)
@@ -14,6 +15,7 @@ fi
 # lock / unlock permissions
 alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 600 {} \;' # re-lock permissions
 alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env ; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 777 {} \;' # open permissions for editing
+
 
 # --- functions ---
 
@@ -41,6 +43,7 @@ alias drm='sudo docker rm' # usage: drm container_name
 alias drmall='sudo docker rm $(sudo docker ps -aq)' # remove all containers
 alias dexec='sudo docker exec -ti' # usage: dexec container_name
 
+
 # --- compose / stacks ---
 
 alias dc='sudo docker compose -f "$(get_compose_dir)/compose.yml"'
@@ -52,7 +55,7 @@ alias dcrec='dc up -d --force-recreate'
 alias dcrestart='dc restart'
 alias dcpull='dc pull'
 
-# --- dynamic stack-specific compose aliases ---
+# dynamic stack-specific compose aliases
 
 setopt +o nomatch 2>/dev/null
 compose_dir="$(get_compose_dir)"
@@ -82,7 +85,7 @@ for file in "$compose_dir"/compose.*.yml; do
     alias "dcpull.$stack"="$cmd_prefix pull"
 done
 
-# --- all stacks commands ---
+# all stacks commands
 alias "dcup.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" up -d --build; done; sudo docker compose -f "$DOCKER_ROOT/compose.yml" up -d '
 alias "dcdown.all"='sudo docker compose -f "$DOCKER_ROOT/compose.yml" down'
 alias "dcstart.all"='for file in "$DOCKER_ROOT"/compose.*.yml; do sudo docker compose -f "$file" start; done'
