@@ -93,17 +93,21 @@ alias ddf='sudo docker system df'
 alias ddelimages='sudo docker rmi $(sudo docker images -q)'
 alias dprunesys='sudo docker system prune -a'
 
+
 # --- images ---
 alias dimg='sudo docker image ls'
 alias dpruneimg='sudo docker image prune'
+
 
 # --- volumes ---
 alias dvol='sudo docker volume ls'
 alias dprunevol='sudo docker volume prune'
 
+
 # --- logs ---
 alias dlogs='sudo docker logs -tf --tail="50" '
 alias dlogsize='sudo du -ch $(sudo docker inspect --format={{ `{{` }}.LogPath{{ `}}` }} $(sudo docker ps -qa)) | sort -h'
+
 
 # --- network ---
 alias dnet='sudo docker network ls'
