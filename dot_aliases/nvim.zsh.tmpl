@@ -1,0 +1,11 @@
+# ------------------------------------------
+# .aliases/nvim (nvim.zsh.tmpl)
+# ------------------------------------------
+
+{{ if eq .chezmoi.os "darwin" }}
+# Create shell aliases to launch each configuration
+alias nvchad="NVIM_APPNAME=nvim-nvchad nvim"
+alias lazyvim="NVIM_APPNAME=nvim-lazyvim nvim"
+alias astrovim="NVIM_APPNAME=nvim-astrovim nvim"
+alias mynvim="NVIM_APPNAME=nvim-custom nvim"
+{{ end -}}
