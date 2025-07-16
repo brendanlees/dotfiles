@@ -3,9 +3,25 @@
 # ------------------------------------------
 
 {{ if eq .chezmoi.os "darwin" }}
-# Create shell aliases to launch each configuration
-alias nvchad="NVIM_APPNAME=nvim-nvchad nvim"
-alias lazyvim="NVIM_APPNAME=nvim-lazyvim nvim"
-alias astrovim="NVIM_APPNAME=nvim-astrovim nvim"
-alias mynvim="NVIM_APPNAME=nvim-custom nvim"
+
+export DEFAULT_NVIM=${XDG_CONFIG_HOME:-$HOME/.config}/nvim
+export NVIM_APPNAME=${DEFAULT_NVIM}
+
+# Function to dynamically find and select Neovim configurations
+function nvims() {
+  local config_dirs
+  config_dirs=$(find -L "${XDG_CONFIG_HOME:-$HOME/.config}" -mindepth 2 -maxdepth 2 -name init.lua -o -name init.vim | awk -F/ '{print $(NF-1)}')
+  
+  local config
+  config=$(printf "%s\n" "default" $config_dirs | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
+  
+  if [[ -z $config ]]; then
+    echo "Nothing selected"
+    return 0
+  elif [[ $config == "default" ]]; then
+    config=${DEFAULT_NVIM:-""}
+  fi
+  
+  export NVIM_APPNAME=$config
+}
 {{ end -}}
