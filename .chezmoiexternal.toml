@@ -91,7 +91,7 @@ exclude = [
   "*/*.md",
 ]
 
-[".config/AstroNvim"]
+[".config/nvim"]
 type = "git-repo"
 url = "https://github.com/brendanlees/astronvim-config"
 refreshPeriod = "168h"
