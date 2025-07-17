@@ -90,3 +90,16 @@ exclude = [
   "*/.gitignore",
   "*/*.md",
 ]
+
+[".config/AstroNvim"]
+type = "git-repo"
+url = "https://github.com/brendanlees/astronvim-config"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
+
