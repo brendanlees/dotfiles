@@ -3,6 +3,7 @@
 # ------------------------------------------
 # ref: https://gist.github.com/elijahmanor/b279553c0132bfad7eae23e34ceb593
 
+{{ if eq .chezmoi.os "darwin" }}
 
 export DEFAULT_NVIM=AstroNvim
 export NVIM_APPNAME=${DEFAULT_NVIM}
@@ -25,3 +26,4 @@ function nvims() {
   export NVIM_APPNAME=$config
 }
 
+{{ end -}}
