@@ -5,7 +5,7 @@
 # ------------------------------------------
 
   {{ if (eq .chezmoi.os "linux") -}}
-    if [ ! -f "/usr/local/bin/nvim"]; then
+    if [ ! -f "/usr/local/bin/nvim" ]; then
         echo "installing neovim..."
 
       NEOVIM_VERSION=$(curl -s "https://api.github.com/repos/neovim/neovim/releases/latest" | grep -Po '"tag_name": *"\K[^"]*')
