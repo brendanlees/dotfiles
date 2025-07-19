@@ -6,10 +6,10 @@
 # --- env ---
 
 # determine docker root folder (shared or default)
-if [[ -d "/opt/docker/" ]]; then
+if [[ -d "/opt/docker/compose" ]]; then
   DOCKER_ROOT="/opt/docker"
 else
-  DOCKER_ROOT="$HOME/docker"
+  DOCKER_ROOT="$HOME/docker/compose"
 fi 
 
 # lock / unlock permissions
