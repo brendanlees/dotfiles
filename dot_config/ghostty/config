@@ -37,3 +37,4 @@ keybind = cmd+shift+,=reload_config
 shell-integration = zsh
 keybind = shift+enter=text:\x1b\r
 
+
