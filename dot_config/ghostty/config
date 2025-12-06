@@ -1,0 +1,39 @@
+# theme
+theme = TokyoNight Night
+window-padding-x = 8
+window-padding-y = 0
+macos-titlebar-proxy-icon = hidden
+macos-window-shadow = false
+bold-is-bright = true
+
+
+#macos-icon = glass
+#macos-icon = retro
+#macos-icon-frame = plastic
+#macos-icon-ghost-color = #ffffff
+
+
+# type
+window-inherit-font-size = false
+font-family = JetBrainsMono Nerd Font Mono
+window-title-font-family = JetBrainsMono Nerd Font Mono
+font-size = 17
+font-style = medium
+
+
+# clipboard
+clipboard-read = allow
+clipboard-write = allow
+
+# functionality
+shell-integration-features = ssh-terminfo,sudo
+confirm-close-surface = false
+auto-update = download
+
+# keybinds
+keybind = cmd+shift+,=reload_config
+
+# remotes
+shell-integration = zsh
+keybind = shift+enter=text:\x1b\r
+
