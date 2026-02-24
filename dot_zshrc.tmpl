@@ -28,6 +28,10 @@ export EDITOR=nvim
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
+# navigate lines using a + e
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
+
 # navigate zsh history using p + n
 bindkey '^p' history-search-backward
 bindkey '^n' history-search-forward
@@ -108,7 +112,3 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
 /boot/dietpi/dietpi-login
 {{ end }}
-
-
-
-
