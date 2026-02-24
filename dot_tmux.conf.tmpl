@@ -13,7 +13,6 @@ set -g history-limit 1000000    # Increase history size (from 2,000)
 set -g mouse on                 # Enable mouse support
 set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
 set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
-unbind -n C-e # Allow end of line shortcut
 
 # remap prefix
 # unbind C-b
@@ -102,6 +101,9 @@ set -g @tokyo-night-tmux_show_git 1
 
 # set -g @resurrect-capture-pane-contents 'on'
 # set -g @continuum-restore 'on'
+
+# binding overrides
+unbind -n C-e # Allow end of line shortcut
 
 # run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
