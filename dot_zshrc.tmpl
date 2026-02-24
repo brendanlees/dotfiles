@@ -21,23 +21,6 @@ export EDITOR=nvim
 
 
 # ------------------------------------------
-# key bindings
-# ------------------------------------------
-
-# navigate words using ctrl + arrow keys
-bindkey "^[[1;5C" forward-word
-bindkey "^[[1;5D" backward-word
-
-# navigate lines using a + e
-bindkey '^A' beginning-of-line
-bindkey '^E' end-of-line
-
-# navigate zsh history using p + n
-bindkey '^p' history-search-backward
-bindkey '^n' history-search-forward
-
-
-# ------------------------------------------
 # zsh plugins
 # ------------------------------------------
 
@@ -106,9 +89,30 @@ source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 {{/* detect dietpi */}}
 {{- if (eq .chezmoi.hostname "rpi1") -}}
+ 
 # ------------------------------------------
 # dietpi
 # ------------------------------------------
 export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
 /boot/dietpi/dietpi-login
 {{ end }}
+
+# ------------------------------------------
+# bindings
+# ------------------------------------------
+
+# These MUST be at the end of .zshrc to override any range bindings
+# created by FZF or compinit that would otherwise override them
+
+# navigate lines using ctrl+a and ctrl+e
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
+
+# navigate zsh history using ctrl+p and ctrl+n
+bindkey '^P' history-search-backward
+bindkey '^N' history-search-forward
+
+# navigate words using ctrl + arrow keys
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
+

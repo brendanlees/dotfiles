@@ -1,12 +1,13 @@
 # use zsh as default
 set -g default-shell /bin/zsh
-t
+
 # enable 256-color and true-color (24-bit) support in tmux
 set -g default-terminal "tmux-256color" # Set terminal type for 256-color support
 set -ga terminal-overrides ",*256col*:Tc" # Override to enable true-color for compatible terminals
 
 # general
 set -g set-clipboard on         # Use system clipboard
+set -ag terminal-features '*:clipboard'  # Enable OSC 52 for SSH clipboard support
 set -g detach-on-destroy off    # Don't exit from tmux when closing a session
 set -g escape-time 0            # Remove delay for exiting insert mode with ESC in Neovim
 set -g history-limit 1000000    # Increase history size (from 2,000)
@@ -46,10 +47,25 @@ set-option -g status-position top
 
 set-window-option -g mode-keys vi
 
+# vi-style copy mode bindings
 bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
-bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
 
-unbind -T copy-mode-vi MouseDragEnd1Pane # don't exit copy mode after dragging with mouse
+# tmux-yank configuration (cross-platform clipboard)
+# These settings must come BEFORE the plugin is loaded
+set -g @yank_selection 'clipboard'          # Copy to system clipboard (not just tmux buffer)
+set -g @yank_selection_mouse 'clipboard'    # Mouse selection also copies to system clipboard
+set -g @yank_with_mouse 'on'                # Enable mouse copy
+
+# Manual clipboard bindings (fallback if tmux-yank doesn't load)
+# tmux-yank will override these when it loads
+{{- if eq .chezmoi.os "darwin" }}
+bind-key -T copy-mode-vi 'y' send -X copy-pipe-and-cancel "pbcopy"
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "pbcopy"
+{{- else if eq .chezmoi.os "linux" }}
+# Linux - try wl-copy (Wayland) or xclip (X11)
+bind-key -T copy-mode-vi 'y' send -X copy-pipe-and-cancel "if command -v wl-copy >/dev/null 2>&1; then wl-copy; elif command -v xclip >/dev/null 2>&1; then xclip -selection clipboard; else xsel --clipboard --input; fi"
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "if command -v wl-copy >/dev/null 2>&1; then wl-copy; elif command -v xclip >/dev/null 2>&1; then xclip -selection clipboard; else xsel --clipboard --input; fi"
+{{- end }}
 
 # maximize/restore a pane
 bind-key -n C-f resize-pane -Z
@@ -102,8 +118,9 @@ set -g @tokyo-night-tmux_show_git 1
 # set -g @resurrect-capture-pane-contents 'on'
 # set -g @continuum-restore 'on'
 
-# binding overrides
-unbind -n C-e # Allow end of line shortcut
-
 # run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
+
+# binding overrides
+unbind -n C-a # Allow beginning of line shortcut
+unbind -n C-e # Allow end of line shortcut
