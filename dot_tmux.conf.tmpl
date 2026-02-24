@@ -13,9 +13,10 @@ set -g history-limit 1000000    # Increase history size (from 2,000)
 set -g mouse on                 # Enable mouse support
 set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
 set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
+unbind -n C-e # Allow end of line shortcut
 
-# remap prefix 
-# unbind C-b 
+# remap prefix
+# unbind C-b
 # set -g prefix C-s
 
 # reload config file
@@ -67,8 +68,8 @@ set -g @plugin 'tmux-plugins/tmux-yank'
 # set -g @plugin 'tmux-plugins/tmux-battery'
 # set -g @plugin 'dreknix/tmux-primary-ip'
 # set -g @plugin 'omerxx/tmux-sessionx'
-# set -g @plugin 'tmux-plugins/tmux-continuum'  
-# set -g @plugin 'tmux-plugins/tmux-resurrect' 
+# set -g @plugin 'tmux-plugins/tmux-continuum'
+# set -g @plugin 'tmux-plugins/tmux-resurrect'
 
 
 # resurrect
@@ -77,7 +78,7 @@ set -g @plugin 'tmux-plugins/tmux-yank'
 # theme
 set -g @plugin "janoamaral/tokyo-night-tmux"
 
-# theme vars 
+# theme vars
 set -g @tokyo-night-tmux_theme night
 set -g @tokyo-night-tmux_transparent 1
 
@@ -99,8 +100,8 @@ set -g @tokyo-night-tmux_show_git 1
 
 # set -g @tokyo-night-tmux_show_battery_widget 1
 
-# set -g @resurrect-capture-pane-contents 'on' 
-# set -g @continuum-restore 'on' 
+# set -g @resurrect-capture-pane-contents 'on'
+# set -g @continuum-restore 'on'
 
 # run tmux plugin manager
 run '~/.tmux/plugins/tpm/tpm'
