@@ -6,6 +6,8 @@ set -g default-terminal "tmux-256color" # Set terminal type for 256-color suppor
 set -ga terminal-overrides ",*256col*:Tc" # Override to enable true-color for compatible terminals
 
 # general
+set -g focus-events on          # Pass focus events to applications (e.g. Neovim autoread)
+set -g display-time 3000        # Show tmux messages for 3 seconds (default: 750ms)
 set -g set-clipboard on         # Use system clipboard
 set -ag terminal-features '*:clipboard'  # Enable OSC 52 for SSH clipboard support
 set -g detach-on-destroy off    # Don't exit from tmux when closing a session
@@ -34,13 +36,16 @@ set -g pane-base-index 1
 bind c new-window -c "#{pane_current_path}"
 
 # renumber when window is closed
-set -g renumber-window on
+set -g renumber-windows on
 
 # resize panes using vim motions (after prefix)
 bind -r j resize-pane -D 5
 bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 bind -r h resize-pane -L 5
+
+# skip "kill-pane 1? (y/n)" prompt
+bind-key x kill-pane 
 
 # set status bar to top
 set-option -g status-position top
@@ -49,6 +54,9 @@ set-window-option -g mode-keys vi
 
 # vi-style copy mode bindings
 bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
+
+# sesh config / integration
+bind-key "K" display-popup -h 90% -w 50% -E "sesh picker -i"
 
 # tmux-yank configuration (cross-platform clipboard)
 # These settings must come BEFORE the plugin is loaded
