@@ -34,7 +34,6 @@ get_compose_dir() {
 # --- containers ---
 
 alias dstart='sudo docker start' # usage: dstart container_name
-alias dstopall='sudo docker start $(sudo docker ps -aq)' # start all containers
 alias dstop='sudo docker stop' # usage: dstop container_name
 alias dstopall='sudo docker stop $(sudo docker ps -aq)' # stop all containers
 alias drestart='sudo docker restart' # usage: drestart container_name
