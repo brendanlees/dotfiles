@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# ------------------------------------------
+# install > mise (tool version manager)
+# ------------------------------------------
+
+if command -v mise &>/dev/null; then
+  echo "mise already installed, skipping."
+  exit 0
+fi
+
+echo "installing mise..."
+curl https://mise.run | sh
+
+echo "mise installed to ~/.local/bin/mise"
