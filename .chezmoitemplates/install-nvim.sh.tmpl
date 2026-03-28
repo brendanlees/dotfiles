@@ -1,34 +1,14 @@
 # !/bin/bash
 
 # ------------------------------------------
-# install > neovim
+# install > neovim (mac only - linux handled by .chezmoiexternal.toml.tmpl)
 # ------------------------------------------
 
-  {{ if (eq .chezmoi.os "linux") -}}
-    if [ ! -f "/usr/local/bin/nvim" ]; then
-        echo "installing neovim..."
-
-      NEOVIM_VERSION=$(curl -s "https://api.github.com/repos/neovim/neovim/releases/latest" | grep -Po '"tag_name": *"\K[^"]*')
-      ARCH=$(dpkg --print-architecture 2>/dev/null)
-      if [ "$ARCH" = "arm64" ]; then
-        curl -Lo neovim.tar.gz "https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-arm64.tar.gz"
-      else
-        curl -Lo neovim.tar.gz "https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz"
-      fi
-      
-      mkdir /opt/nvim
-      tar -xf neovim.tar.gz -C /opt/nvim --strip-components=1 
-      ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
-    else
-        echo "neovim already installed, skipping."
-    fi
-
-    {{ else if eq .chezmoi.os "darwin" }}
-
-    if brew list --formula | grep -q "^neovim$"; then
-      echo "neovim already installed, skipping."
-    else
-      echo "installing neovim..."
-      brew install neovim
-    fi
-  {{ end -}}
+{{ if eq .chezmoi.os "darwin" -}}
+if brew list --formula | grep -q "^neovim$"; then
+  echo "neovim already installed, skipping."
+else
+  echo "installing neovim..."
+  brew install neovim
+fi
+{{- end }}

@@ -1,4 +1,4 @@
-# to update run 'chezmoi apply, -R to refresh externals'
+# to update run 'chezmoi apply -R' to refresh externals
 
 [".cli-plugins/zsh/zsh-autosuggestions"]
 type = "archive"
@@ -103,3 +103,17 @@ exclude = [
   "*/*.md",
 ]
 
+{{- if eq .chezmoi.os "linux" }}
+
+# neovim binary bundle — extracts bin/nvim to ~/.local/bin/nvim (already in PATH)
+[".local"]
+type = "archive"
+{{- if eq .chezmoi.arch "arm64" }}
+url = "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz"
+{{- else }}
+url = "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
+{{- end }}
+stripComponents = 1
+refreshPeriod = "168h"
+
+{{- end }}

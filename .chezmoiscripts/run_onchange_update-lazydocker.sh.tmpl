@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# ------------------------------------------
+# update > lazydocker (linux)
+# bump the tag below to trigger an update:
+# v1 (2026-03-28)
+# ------------------------------------------
+
+{{- if eq .chezmoi.os "linux" }}
+
+if ! command -v docker &>/dev/null; then
+  echo "docker not found, skipping lazydocker install."
+  exit 0
+fi
+
+echo "installing latest lazydocker..."
+curl -s https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+{{- end }}
