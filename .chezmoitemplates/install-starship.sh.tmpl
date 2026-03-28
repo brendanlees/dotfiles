@@ -4,7 +4,7 @@
 # install > starship
 # ------------------------------------------
 
-if [ ! -d "$HOME/.config/starship" ]; then 
+if ! command -v starship &>/dev/null; then
   echo "installing starship..."
   sh -c "$(curl -sS https://starship.rs/install.sh)" -- -y
 else
