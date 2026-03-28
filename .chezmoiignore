@@ -1,5 +1,6 @@
 {{- if ne .chezmoi.os "darwin" }}
 dotfiles-mac # only manage mac dotfiles on mac
+dot_config/ghostty
 {{- end }}
 
 README.md
