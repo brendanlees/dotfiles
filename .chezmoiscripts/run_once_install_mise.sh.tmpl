@@ -1,10 +1,11 @@
 #!/bin/bash
+set -euo pipefail
 
 # ------------------------------------------
 # install > mise (tool version manager)
 # ------------------------------------------
 
-if command -v mise &>/dev/null; then
+if command -v mise &>/dev/null || [ -x "$HOME/.local/bin/mise" ]; then
   echo "mise already installed, skipping."
   exit 0
 fi
