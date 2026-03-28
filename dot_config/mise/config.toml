@@ -1,0 +1,7 @@
+[tools]
+neovim = "0.10.4"     # pinned — bump manually when ready to upgrade
+starship = "latest"
+zoxide = "latest"
+lazygit = "latest"
+lazydocker = "latest"
+eza = "latest"
