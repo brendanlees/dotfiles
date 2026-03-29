@@ -68,7 +68,6 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 export PATH=$HOME/.local/bin:$PATH
 eval "$(mise activate zsh)"
 eval "$(zoxide init --cmd cd zsh)"
-source <(carapace _carapace)
 
 
 # ------------------------------------------
@@ -87,6 +86,7 @@ source "$HOME/.cli-plugins/fzf/fzf-git.sh"
 # load fzf-tab script
 autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
+source <(carapace _carapace)
 
 
 {{/* detect dietpi */}}
