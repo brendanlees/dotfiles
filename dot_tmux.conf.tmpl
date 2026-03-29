@@ -3,7 +3,7 @@ set -g default-shell /bin/zsh
 
 # enable 256-color and true-color (24-bit) support in tmux
 set -g default-terminal "tmux-256color" # Set terminal type for 256-color support
-sset -as terminal-features ",*:RGB"
+set -as terminal-features ",*:RGB"
 
 # general
 set -g focus-events on          # Pass focus events to applications (e.g. Neovim autoread)
@@ -56,7 +56,7 @@ set-window-option -g mode-keys vi
 bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
 
 # sesh config / integration
-bind-key "K" display-popup -h 90% -w 50% -E "sesh picker -i"
+bind-key "K" display-popup -h 90% -w 50% -E "zsh -i -c 'sesh picker -i'"
 
 # tmux-yank configuration (cross-platform clipboard)
 # These settings must come BEFORE the plugin is loaded
