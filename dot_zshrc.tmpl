@@ -12,13 +12,12 @@ source "$HOME/.zsh_aliases"
 export PATH="$HOME/.bw:$PATH"
 {{- end }}
 
-
 # ------------------------------------------
-# editor
+# vim
 # ------------------------------------------
 
 export EDITOR=nvim
-
+set -o vi
 
 # ------------------------------------------
 # zsh plugins
@@ -52,7 +51,6 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-
 # ------------------------------------------
 # starship
 # ------------------------------------------
@@ -67,7 +65,6 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
 export PATH=$HOME/.local/bin:$PATH
 eval "$(zoxide init --cmd cd zsh)"
-
 
 # ------------------------------------------
 # fzf (fuzzy finder)
@@ -111,8 +108,3 @@ bindkey '^E' end-of-line
 # navigate zsh history using ctrl+p and ctrl+n
 bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
-
-# navigate words using ctrl + arrow keys
-bindkey "^[[1;5C" forward-word
-bindkey "^[[1;5D" backward-word
-
