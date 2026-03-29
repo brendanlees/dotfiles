@@ -1,5 +1,5 @@
 [tools]
-neovim = "0.10.4"     # pinned — bump manually when ready to upgrade
+neovim = "latest"
 starship = "latest"
 zoxide = "latest"
 lazygit = "latest"
