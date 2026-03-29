@@ -3,7 +3,7 @@ set -g default-shell /bin/zsh
 
 # enable 256-color and true-color (24-bit) support in tmux
 set -g default-terminal "tmux-256color" # Set terminal type for 256-color support
-set -ga terminal-overrides ",*256col*:Tc" # Override to enable true-color for compatible terminals
+sset -as terminal-features ",*:RGB"
 
 # general
 set -g focus-events on          # Pass focus events to applications (e.g. Neovim autoread)
