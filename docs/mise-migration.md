@@ -7,8 +7,7 @@ Cleanup is optional housekeeping to reclaim disk space and avoid confusion.
 
 ## Why cleanup is safe
 
-`eval "$(mise activate zsh)"` prepends mise's shim directory to PATH. Any tool managed
-by mise will resolve to the mise-managed version regardless of what else is installed.
+`eval "$(mise activate zsh)"` uses shell hooks to prepend mise's tool directories to PATH. Any tool managed by mise will resolve to the mise-installed version in the active shell.
 
 ## macOS
 
@@ -27,6 +26,7 @@ Remove tools previously installed to `~/.local/bin` by the old curl scripts:
 
 ```bash
 rm -f ~/.local/bin/lazygit
+rm -f ~/.local/bin/lazydocker
 rm -f ~/.local/bin/zoxide
 rm -f ~/.local/bin/nvim
 rm -f ~/.local/bin/starship
@@ -48,14 +48,13 @@ sudo apt update
 After applying dotfiles and opening a new shell:
 
 ```bash
-# Confirm mise shims are active
-which nvim      # should show ~/.local/share/mise/shims/nvim
-which starship  # should show ~/.local/share/mise/shims/starship
+# Confirm mise is managing tools
+mise current
 
 # List installed tools and versions
 mise list
 
-# Check for any tools not yet installed
+# Check mise health and configuration
 mise doctor
 ```
 
