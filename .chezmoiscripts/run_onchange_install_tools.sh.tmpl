@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # ------------------------------------------
-# install > mise tools (runs after mise bootstrap)
+# install > mise tools (re-runs when config changes)
+# config hash: {{ include (joinPath .chezmoi.sourceDir "dot_config/mise/config.toml") | sha256sum }}
 # ------------------------------------------
 
 MISE="$HOME/.local/bin/mise"
