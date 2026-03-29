@@ -22,7 +22,6 @@ apt install -y zsh git nano bat fd-find btop tmux ncdu
 
 # --- all users --- #
 
-{{ template "install-eza.sh.tmpl" . }}
 {{ template "init-defaults.sh.tmpl" . }}
 {{ end -}}
 
@@ -31,15 +30,5 @@ apt install -y zsh git nano bat fd-find btop tmux ncdu
 # ------------------------------------------
 
 {{ if eq .chezmoi.os "darwin" }}
-# nothing needed here yet (btop)
+# nothing needed here yet
 {{ end -}}
-
-# ------------------------------------------
-# all platforms
-# ------------------------------------------
-
-{{ template "install-starship.sh.tmpl" . }}
-{{ template "install-zoxide.sh.tmpl" . }}
-{{ template "install-lazyapps.sh.tmpl" . }}
-{{ template "install-nvim.sh.tmpl" . }}
-#{{ template "install-thefuck.sh.tmpl" . }}
