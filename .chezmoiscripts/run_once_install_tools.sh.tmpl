@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+# ------------------------------------------
+# install > mise tools (runs after mise bootstrap)
+# ------------------------------------------
+
+MISE="$HOME/.local/bin/mise"
+
+if [ ! -f "$MISE" ]; then
+  echo "mise not found at $MISE, skipping tool install."
+  exit 1
+fi
+
+echo "installing mise tools..."
+"$MISE" install
+
+echo "mise tools installed."
