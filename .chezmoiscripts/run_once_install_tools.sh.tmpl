@@ -7,7 +7,7 @@ set -euo pipefail
 
 MISE="$HOME/.local/bin/mise"
 
-if [ ! -f "$MISE" ]; then
+if [ ! -x "$MISE" ]; then
   echo "mise not found at $MISE, skipping tool install."
   exit 1
 fi
