@@ -1,0 +1,9 @@
+[tools]
+neovim = "latest"
+starship = "latest"
+zoxide = "latest"
+lazygit = "latest"
+lazydocker = "latest"
+eza = "latest"
+carapace = "latest"
+glow = "latest"
