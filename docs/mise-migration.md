@@ -2,7 +2,7 @@
 
 When applying these dotfiles to a machine that previously used the old install scripts,
 mise will immediately take over tool management — but old binaries are left on disk.
-mise's shims take PATH precedence, so tools work correctly without manual cleanup.
+mise's shell hooks ensure the mise-managed version takes PATH precedence, so tools work correctly without manual cleanup.
 Cleanup is optional housekeeping to reclaim disk space and avoid confusion.
 
 ## Why cleanup is safe
