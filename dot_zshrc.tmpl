@@ -90,23 +90,29 @@ if command -v carapace &>/dev/null; then
   source <(carapace _carapace zsh)
 fi
 
+# ------------------------------------------
+# homelab host specific overrides
+# ------------------------------------------
 
 {{/* detect dietpi */}}
 {{- if (eq .chezmoi.hostname "rpi1") -}}
- 
-# ------------------------------------------
 # dietpi
-# ------------------------------------------
 export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
 /boot/dietpi/dietpi-login
 {{ end }}
 
 # ------------------------------------------
+# git
+# ------------------------------------------
+
+# worktrunk
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
+# ------------------------------------------
 # bindings
 # ------------------------------------------
 
-# These MUST be at the end of .zshrc to override any range bindings
-# created by FZF or compinit that would otherwise override them
+# at the end to override any range bindings (fzf, tmux, compinit)
 
 # navigate lines using ctrl+a and ctrl+e
 bindkey '^A' beginning-of-line
