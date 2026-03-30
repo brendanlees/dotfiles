@@ -51,7 +51,7 @@ Debian = '󰣚'
 [character]
 success_symbol = "[❯](accent)"
 error_symbol = "[✗](red)"
-
+vicmd_symbol = "[❮](red)"
 
 # Shows the username
 [username]
@@ -110,23 +110,27 @@ command = "echo $DDEV_PROJECT"
 format = "[$symbol$output]($style) "
 style = "bold blue"
 
+[bun]
+format = 'via [🍔 $version](bold green) '
+
 [docker_context]
-disabled = true
+format = 'via [🐋 $context](blue bold)'
 
 [container]
-disabled = true
+format = '[$symbol \[$name\]]($style)'
 
-[helm]
-disabled = true
+[lua]
+format = 'via [🌕 $version](bold blue) '
 
-[python]
-disabled = true
+[mise]
+disabled = false
 
 [nodejs]
-disabled = true
+format = 'via [🤖 $version](bold green) '
 
-[ruby]
-disabled = true
+[php]
+format = 'via [🔹 $version](147 bold) '
 
-[terraform]
-disabled = true
+[python]
+symbol = '👾 '
+pyenv_version_name = true
