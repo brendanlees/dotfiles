@@ -12,6 +12,8 @@ fzf = "latest"
 tmux = "latest"
 jq = "latest"
 gh = "latest"
+{{ if eq .chezmoi.os "linux" -}}
 "github:aristocratos/btop" = "latest"
+{{ end -}}
 "github:joshmedeski/sesh" = "latest"
 bat = "latest"
