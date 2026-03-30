@@ -111,7 +111,7 @@ format = "[$symbol$output]($style) "
 style = "bold blue"
 
 [bun]
-format = 'via [🍔 $version](bold green) '
+# format = 'via [🍔 $version](bold green) '
 
 [docker_context]
 format = 'via [🐋 $context](blue bold)'
@@ -122,14 +122,11 @@ format = '[$symbol \[$name\]]($style)'
 [lua]
 format = 'via [🌕 $version](bold blue) '
 
-[mise]
-disabled = false
-
 [nodejs]
-format = 'via [🤖 $version](bold green) '
+# format = 'via [🤖 $version](bold green) '
 
 [php]
-format = 'via [🔹 $version](147 bold) '
+# format = 'via [🔹 $version](147 bold) '
 
 [python]
 symbol = '👾 '
