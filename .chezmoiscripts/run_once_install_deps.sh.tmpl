@@ -14,7 +14,7 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano ncdu
+apt install -y zsh git nano ncdu ldns
 {{ end -}}
 
 # --- all users --- #
@@ -29,6 +29,6 @@ apt install -y zsh git nano ncdu
 {{ if eq .chezmoi.os "darwin" -}}
 
 # install packages not available via mise on macOS
-brew install btop
+brew install btop ldns
 
 {{ end -}}
