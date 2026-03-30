@@ -17,3 +17,9 @@ echo "installing mise tools..."
 "$MISE" install
 
 echo "mise tools installed."
+
+# rebuild bat theme cache (bat may have just been installed)
+if command -v bat &>/dev/null; then
+  echo "Rebuilding bat theme cache..."
+  bat cache --build
+fi
