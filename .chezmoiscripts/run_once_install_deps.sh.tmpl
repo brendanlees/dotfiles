@@ -14,10 +14,7 @@
 apt update && apt upgrade -y && apt autoremove
 
 # install packages
-apt install -y zsh git nano fd-find btop tmux ncdu
-
-# check/run package installer modules
-{{ template "install-fzf.sh.tmpl" . }}
+apt install -y zsh git nano ncdu
 {{ end -}}
 
 # --- all users --- #
@@ -29,6 +26,9 @@ apt install -y zsh git nano fd-find btop tmux ncdu
 # mac os
 # ------------------------------------------
 
-{{ if eq .chezmoi.os "darwin" }}
-# nothing needed here yet
+{{ if eq .chezmoi.os "darwin" -}}
+
+# install packages not available via mise on macOS
+brew install btop
+
 {{ end -}}

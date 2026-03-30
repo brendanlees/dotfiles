@@ -1,0 +1,19 @@
+[tools]
+neovim = "latest"
+starship = "latest"
+zoxide = "latest"
+lazygit = "latest"
+lazydocker = "latest"
+eza = "latest"
+carapace = "latest"
+glow = "latest"
+fd = "latest"
+fzf = "latest"
+tmux = "latest"
+jq = "latest"
+gh = "latest"
+{{ if eq .chezmoi.os "linux" -}}
+"github:aristocratos/btop" = "latest"
+{{ end -}}
+"github:joshmedeski/sesh" = "latest"
+bat = "latest"
