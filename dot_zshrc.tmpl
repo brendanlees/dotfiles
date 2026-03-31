@@ -61,12 +61,11 @@ eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
 # ------------------------------------------
-# zoxide (cd)
+# mise / path
 # ------------------------------------------
 
 export PATH=$HOME/.local/bin:$PATH
 eval "$(mise activate zsh)"
-eval "$(zoxide init --cmd cd zsh)"
 
 # ------------------------------------------
 # fzf (fuzzy finder)
@@ -121,3 +120,9 @@ bindkey '^E' end-of-line
 # navigate zsh history using ctrl+p and ctrl+n
 bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
+
+# ------------------------------------------
+# zoxide (cd) — must be last
+# ------------------------------------------
+
+eval "$(zoxide init --cmd cd zsh)"
