@@ -1,0 +1,5 @@
+# files removed from source — chezmoi will delete these from the target machine
+
+# agent docs removed in favour of repo-only reference
+docs/mise-migration.md
+docs/superpowers
