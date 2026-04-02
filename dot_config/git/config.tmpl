@@ -1,0 +1,14 @@
+[user]
+{{- if or .personal .work }}
+  name  = {{ .git_name }}
+  email = {{ .git_email }}
+{{- else }}
+  name  = {{ .chezmoi.username }}
+  email = {{ .chezmoi.username }}@{{ .chezmoi.hostname }}
+{{- end }}
+
+[init]
+  defaultBranch = main
+
+[pull]
+  rebase = true

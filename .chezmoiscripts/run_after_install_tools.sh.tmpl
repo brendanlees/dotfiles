@@ -12,13 +12,6 @@ if [ ! -x "$MISE" ]; then
   exit 1
 fi
 
-# Source GitHub token so vfox/mise backends can make authenticated API calls
-# (avoids 403s from unauthenticated GitHub release fetches on rate-limited machines)
-if [ -f "$HOME/.config/private_env_tokens.sh" ]; then
-  # shellcheck disable=SC1091
-  source "$HOME/.config/private_env_tokens.sh"
-fi
-
 echo "installing mise tools..."
 "$MISE" install
 

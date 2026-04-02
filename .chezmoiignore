@@ -3,7 +3,12 @@ dotfiles-mac # only manage mac dotfiles on mac
 dot_config/ghostty
 {{- end }}
 
+{{- if not .personal }}
+dot_config/private_env_tokens.sh
+{{- end }}
+
 README.md
 key.txt.age
 LICENSE
 .DS_Store
+context
