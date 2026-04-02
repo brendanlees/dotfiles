@@ -89,15 +89,16 @@ if command -v carapace &>/dev/null; then
   source <(carapace _carapace zsh)
 fi
 
+{{- if .homelab }}
 # ------------------------------------------
 # homelab host specific overrides
 # ------------------------------------------
 
-# dietpi (detected at runtime)
 if [[ -d /boot/dietpi ]]; then
   export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
   /boot/dietpi/dietpi-login
 fi
+{{- end }}
 
 # ------------------------------------------
 # git

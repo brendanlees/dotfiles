@@ -1,8 +1,5 @@
 [user]
-{{- if .personal }}
-  name  = {{ (bitwardenFields "item" "github").name.value }}
-  email = {{ (bitwarden "item" "github").login.username }}
-{{- else if .work }}
+{{- if or .personal .work }}
   name  = {{ .git_name }}
   email = {{ .git_email }}
 {{- else }}
