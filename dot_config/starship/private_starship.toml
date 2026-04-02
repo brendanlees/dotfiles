@@ -116,8 +116,8 @@ style = "bold blue"
 [docker_context]
 format = 'via [🐋 $context](blue bold)'
 
-[container]
-format = '[$symbol \[$name\]]($style)'
+# [container]
+# format = '[$symbol \[$name\]]($style)'
 
 [lua]
 format = 'via [🌕 $version](bold blue) '
