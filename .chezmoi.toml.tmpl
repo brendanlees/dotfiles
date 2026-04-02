@@ -1,0 +1,4 @@
+{{- $github_token := promptStringOnce . "github_token" "GitHub read-only API token (leave blank to skip)" -}}
+
+[data]
+  github_token = {{ $github_token | quote }}

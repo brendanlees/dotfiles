@@ -13,6 +13,12 @@ export PATH="$HOME/.bw:$PATH"
 {{- end }}
 
 # ------------------------------------------
+# api tokens
+# ------------------------------------------
+
+[[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh"
+
+# ------------------------------------------
 # vim
 # ------------------------------------------
 
