@@ -37,6 +37,10 @@
 {{-     if not (or $personal $work $homelab) -}}
 {{-       warnf "chezmoi: no machine type set — re-run 'chezmoi init' to reconfigure" -}}
 {{-     end -}}
+{{-   else if or .personal .work .homelab -}}
+{{-     $personal = .personal -}}
+{{-     $work = .work -}}
+{{-     $homelab = .homelab -}}
 {{-   else -}}
 {{-     $ephemeral = true -}}
 {{-   end -}}
