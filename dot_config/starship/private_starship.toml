@@ -36,7 +36,6 @@ accent = '#73daca'
 primary = '#769ff0'
 neutral = '#a9b1d6'
 
-
 [os]
 format = '[$symbol](bold white) '
 disabled = false
@@ -111,23 +110,22 @@ format = "[$symbol$output]($style) "
 style = "bold blue"
 
 [bun]
-# format = 'via [🍔 $version](bold green) '
+disabled = true
 
 [docker_context]
 format = 'via [🐋 $context](blue bold)'
 
-# [container]
-# format = '[$symbol \[$name\]]($style)'
+[container]
+disabled = true
 
 [lua]
-format = 'via [🌕 $version](bold blue) '
+disabled = true
 
 [nodejs]
-# format = 'via [🤖 $version](bold green) '
+disabled = true
 
 [php]
-# format = 'via [🔹 $version](147 bold) '
+disabled = true
 
 [python]
-symbol = '👾 '
-pyenv_version_name = true
+disabled = true
