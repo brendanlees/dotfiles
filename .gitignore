@@ -1,3 +1,4 @@
+_staging/
 .DS_Store
 local-env.zsh
 .worktrees

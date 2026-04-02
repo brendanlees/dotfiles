@@ -5,18 +5,12 @@
 source "$HOME/.zsh_aliases"
 
 # ------------------------------------------
-# vault
+# api tokens (personal machines only)
 # ------------------------------------------
 
-{{- if eq .chezmoi.os "darwin" }}
-export PATH="$HOME/.bw:$PATH"
-{{- end }}
-
-# ------------------------------------------
-# api tokens
-# ------------------------------------------
-
+{{- if .personal }}
 [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh"
+{{- end }}
 
 # ------------------------------------------
 # vim
@@ -99,12 +93,11 @@ fi
 # homelab host specific overrides
 # ------------------------------------------
 
-{{/* detect dietpi */}}
-{{- if (eq .chezmoi.hostname "rpi1") -}}
-# dietpi
-export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
-/boot/dietpi/dietpi-login
-{{ end }}
+# dietpi (detected at runtime)
+if [[ -d /boot/dietpi ]]; then
+  export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
+  /boot/dietpi/dietpi-login
+fi
 
 # ------------------------------------------
 # git

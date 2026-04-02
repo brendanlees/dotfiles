@@ -1,4 +1,46 @@
-{{- $github_token := promptStringOnce . "github_token" "GitHub read-only API token (leave blank to skip)" -}}
+{{/* ─── Feature flags ──────────────────────────────────────────────────────── */}}
+{{- $personal  := false -}}
+{{- $work      := false -}}
+{{- $homelab   := false -}}
+{{- $ephemeral := false -}}
+
+{{/* Auto-detect ephemeral environments */}}
+{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") -}}
+  {{- $ephemeral = true -}}
+{{- else if not stdinIsATTY -}}
+  {{- $ephemeral = true -}}
+{{- else -}}
+  {{- $personal = promptBoolOnce . "personal" "Is this a personal machine?" -}}
+  {{- if $personal -}}
+    {{- $work = promptBoolOnce . "work" "Is this machine also used for work?" -}}
+  {{- else -}}
+    {{- $work = promptBoolOnce . "work" "Is this a work machine?" -}}
+    {{- if not $work -}}
+      {{- $homelab = promptBoolOnce . "homelab" "Is this a homelab machine?" -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not (or $personal $work $homelab) -}}
+    {{- warnf "chezmoi: no machine type set — re-run 'chezmoi init' to reconfigure" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* ─── Work git identity ───────────────────────────────────────────────────── */}}
+{{- $git_name  := "" -}}
+{{- $git_email := "" -}}
+{{- if $work -}}
+  {{- $git_name  = promptStringOnce . "git_name"  "Git full name" -}}
+  {{- $git_email = promptStringOnce . "git_email" "Git work email" -}}
+{{- end -}}
 
 [data]
-  github_token = {{ $github_token | quote }}
+  personal  = {{ $personal }}
+  work      = {{ $work }}
+  homelab   = {{ $homelab }}
+  ephemeral = {{ $ephemeral }}
+  git_name  = {{ $git_name | quote }}
+  git_email = {{ $git_email | quote }}
+{{- if $personal }}
+
+[bitwarden]
+  unlock = "auto"
+{{- end }}

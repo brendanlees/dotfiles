@@ -1,0 +1,17 @@
+#!/bin/bash
+# Generates a per-machine SSH key if one does not already exist.
+# Key is named by hostname — private key never leaves this machine.
+{{- if .personal }}
+
+KEY="$HOME/.ssh/{{ .chezmoi.hostname }}"
+
+if [[ ! -f "$KEY" ]]; then
+  mkdir -p "$HOME/.ssh"
+  chmod 700 "$HOME/.ssh"
+  ssh-keygen -t ed25519 -C "{{ .chezmoi.username }}@{{ .chezmoi.hostname }}" -f "$KEY" -N ""
+  echo ""
+  echo "SSH key generated. Add this public key to GitHub / any authorized_keys:"
+  echo ""
+  cat "${KEY}.pub"
+fi
+{{- end }}

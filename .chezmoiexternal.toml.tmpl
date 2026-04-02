@@ -91,6 +91,7 @@ exclude = [
   "*/*.md",
 ]
 
+{{- if not .ephemeral }}
 [".config/nvim"]
 type = "git-repo"
 url = "https://github.com/brendanlees/astronvim-config"
@@ -102,3 +103,4 @@ exclude = [
   "*/.gitignore",
   "*/*.md",
 ]
+{{- end }}

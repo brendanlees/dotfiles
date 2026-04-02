@@ -1,0 +1,11 @@
+{{- if .personal -}}
+# ------------------------------------------
+# .aliases/bitwarden (bitwarden.zsh.tmpl)
+# ------------------------------------------
+
+# --- vault ---
+
+alias bwsync='bw sync'
+alias bwapply='bw sync && chezmoi apply'
+
+{{- end }}

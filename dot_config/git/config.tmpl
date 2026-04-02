@@ -1,0 +1,17 @@
+[user]
+{{- if .personal }}
+  name  = {{ (bitwardenFields "item" "github").name.value }}
+  email = {{ (bitwarden "item" "github").login.username }}
+{{- else if .work }}
+  name  = {{ .git_name }}
+  email = {{ .git_email }}
+{{- else }}
+  name  = {{ .chezmoi.username }}
+  email = {{ .chezmoi.username }}@{{ .chezmoi.hostname }}
+{{- end }}
+
+[init]
+  defaultBranch = main
+
+[pull]
+  rebase = true
