@@ -1,35 +1,53 @@
-{{/* ─── Feature flags ──────────────────────────────────────────────────────── */}}
+{{/* ─── feature flags ─── */}}
 {{- $personal  := false -}}
 {{- $work      := false -}}
 {{- $homelab   := false -}}
 {{- $ephemeral := false -}}
 
-{{/* Auto-detect ephemeral environments */}}
-{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") -}}
-  {{- $ephemeral = true -}}
-{{- else if not stdinIsATTY -}}
-  {{- $ephemeral = true -}}
-{{- else -}}
-  {{- $personal = promptBoolOnce . "personal" "Is this a personal machine?" -}}
-  {{- if $personal -}}
-    {{- $work = promptBoolOnce . "work" "Is this machine also used for work?" -}}
-  {{- else -}}
-    {{- $work = promptBoolOnce . "work" "Is this a work machine?" -}}
-    {{- if not $work -}}
-      {{- $homelab = promptBoolOnce . "homelab" "Is this a homelab machine?" -}}
-    {{- end -}}
-  {{- end -}}
-  {{- if not (or $personal $work $homelab) -}}
-    {{- warnf "chezmoi: no machine type set — re-run 'chezmoi init' to reconfigure" -}}
-  {{- end -}}
+{{/* ─── hostname ─── */}}
+{{- $hostname := .chezmoi.hostname -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $hostname = output "scutil" "--get" "LocalHostName" | trim -}}
 {{- end -}}
 
-{{/* ─── Work git identity ───────────────────────────────────────────────────── */}}
+{{/* ─── ephemeral detection ─── */}}
+{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") (eq .chezmoi.username "ubuntu" "vagrant" "vscode") -}}
+{{-   $ephemeral = true -}}
+{{- end -}}
+
+{{/* ─── machine type ─── */}}
+{{- if not $ephemeral -}}
+{{-   if eq $hostname "bAir" -}}
+{{-     $personal = true -}}
+{{-     $work = true -}}
+{{-   else if eq $hostname "" -}}{{/* work-only machines */}}
+{{-     $work = true -}}
+{{-   else if eq $hostname "pve1" "pve2" "truenas" "pihole" "rpi1" "traefik" "servarr" "duplicacy" -}}
+{{-     $homelab = true -}}
+{{-   else if stdinIsATTY -}}
+{{-     $personal = promptBoolOnce . "personal" "Is this a personal machine?" -}}
+{{-     if $personal -}}
+{{-       $work = promptBoolOnce . "work" "Is this machine also used for work?" -}}
+{{-     else -}}
+{{-       $work = promptBoolOnce . "work" "Is this a work machine?" -}}
+{{-       if not $work -}}
+{{-         $homelab = promptBoolOnce . "homelab" "Is this a homelab machine?" -}}
+{{-       end -}}
+{{-     end -}}
+{{-     if not (or $personal $work $homelab) -}}
+{{-       warnf "chezmoi: no machine type set — re-run 'chezmoi init' to reconfigure" -}}
+{{-     end -}}
+{{-   else -}}
+{{-     $ephemeral = true -}}
+{{-   end -}}
+{{- end -}}
+
+{{/* ─── git identity ─── */}}
 {{- $git_name  := "" -}}
 {{- $git_email := "" -}}
-{{- if $work -}}
-  {{- $git_name  = promptStringOnce . "git_name"  "Git full name" -}}
-  {{- $git_email = promptStringOnce . "git_email" "Git work email" -}}
+{{- if or $personal $work -}}
+{{-   $git_name  = promptStringOnce . "git_name"  "Git full name" -}}
+{{-   $git_email = promptStringOnce . "git_email" "Git email" -}}
 {{- end -}}
 
 [data]
@@ -37,10 +55,7 @@
   work      = {{ $work }}
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
+{{- if or $personal $work }}
   git_name  = {{ $git_name | quote }}
   git_email = {{ $git_email | quote }}
-{{- if $personal }}
-
-[bitwarden]
-  unlock = "auto"
 {{- end }}
