@@ -28,7 +28,7 @@ if provisioning non-interactively (e.g. from an ansible role), pass the data blo
 - name: apply dotfiles
   command: >
     chezmoi init --apply
-    --data='{"work":true,"headless":true}'
+    --data='{"personal":false,"work":true,"homelab":false,"headless":true}'
     brendanlees
   become: false
 ```
