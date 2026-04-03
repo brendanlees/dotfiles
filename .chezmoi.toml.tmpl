@@ -25,13 +25,13 @@
 {{-   else if eq $hostname "pve1" "pve2" "truenas" "pihole" "rpi1" "traefik" "servarr" "duplicacy" -}}
 {{-     $homelab = true -}}
 {{-   else if stdinIsATTY -}}
-{{-     $personal = promptBoolOnce . "personal" "Is this a personal machine?" -}}
+{{-     $personal = promptBoolOnce . "personal" "Is this a personal and/or homelab admin machine (y/n)" -}}
 {{-     if $personal -}}
-{{-       $work = promptBoolOnce . "work" "Is this machine also used for work?" -}}
+{{-       $work = promptBoolOnce . "work" "Are you also using this machine for work (y/n)" -}}
 {{-     else -}}
-{{-       $work = promptBoolOnce . "work" "Is this a work machine?" -}}
+{{-       $work = promptBoolOnce . "work" "Is this a work machine (y/n)" -}}
 {{-       if not $work -}}
-{{-         $homelab = promptBoolOnce . "homelab" "Is this a homelab machine?" -}}
+{{-         $homelab = promptBoolOnce . "homelab" "Is this machine part of your homelab (y/n)" -}}
 {{-       end -}}
 {{-     end -}}
 {{-     if not (or $personal $work $homelab) -}}
