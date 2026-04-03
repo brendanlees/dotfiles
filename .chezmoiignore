@@ -14,6 +14,10 @@ dot_config/kanata/xbxd.kanata.plist
 dot_config/kanata/README.md
 {{- end }}
 
+{{- if or .headless (not (or .personal .work)) }}
+dot_config/vial-qmk
+{{- end }}
+
 {{- if not .personal }}
 dot_config/private_env_tokens.sh
 {{- end }}
