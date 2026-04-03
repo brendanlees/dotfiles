@@ -1,3 +1,10 @@
+{{ if eq .chezmoi.username "root" -}}
+[settings]
+# root's mise: trust all user home directories to prevent trust prompts
+# when navigating to /home/<user> directories during admin tasks
+trusted_config_paths = ["/home"]
+
+{{ end -}}
 [tools]
 neovim = "latest"
 starship = "latest"
