@@ -4,5 +4,7 @@
 docs/mise-migration.md
 docs/superpowers
 
-# fzf git-repo external replaced by mise
+# fzf git-repo external replaced by mise; shell integration now via `fzf --zsh`
 .fzf
+.fzf.bash
+.fzf.zsh
