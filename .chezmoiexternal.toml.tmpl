@@ -92,3 +92,22 @@ exclude = [
   "*/*.md",
 ]
 {{- end }}
+
+{{/* ─── fonts ─── */}}
+{{- if not .ephemeral }}
+{{- range .fonts_installed }}
+{{- $localZip := joinPath $.chezmoi.sourceDir "fonts" (printf "%s.zip" .) }}
+{{ if eq $.chezmoi.os "darwin" -}}
+["Library/Fonts/NerdFonts/{{ . }}"]
+{{- else -}}
+[".local/share/fonts/NerdFonts/{{ . }}"]
+{{- end }}
+type = "archive"
+refreshPeriod = "168h"
+{{ if stat $localZip -}}
+url = "file://{{ $localZip }}"
+{{- else -}}
+url = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ . }}.zip"
+{{- end }}
+{{- end }}
+{{- end }}
