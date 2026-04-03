@@ -1,0 +1,93 @@
+;; ============================================
+;; kanata
+;; ============================================
+;; docs
+;; https://github.com/jtroo/kanata/blob/main/docs/config.adoc
+;; os key code mappings
+;; https://github.com/jtroo/kanata/blob/main/parser/src/keys/mod.rs
+;; config references
+;; linkarzu - https://github.com/linkarzu/dotfiles-latest/blob/main/kanata/configs/macos.kbd
+
+;; config
+(defcfg
+  process-unmapped-keys yes
+  log-layer-changes no
+  ;;danger-enable-cmd yes (for scripts - requires different binary version)
+  concurrent-tap-hold yes
+  chords-v2-min-idle 50
+
+  ;; Only apply to built-in Mac keyboard
+  macos-dev-names-include (
+    "Apple Internal Keyboard / Trackpad"
+  )
+)
+
+;; vars
+(defvar
+  tap-timeout 300
+  hold-timeout 200
+  hold-timeout-slow 300
+  chord-timeout 30
+)
+
+;; define source keys (homerow + caps lock + space + function keys)
+(defsrc
+  tab q w e
+  caps
+  a s d f h j k l ;
+  x c
+  spc
+  f1 f2 f7 f8 f9 f10 f11 f12
+)
+
+;; chords: simultaneous key presses that produce symbols
+;; chords-v2 intercepts before layer processing - no layer changes needed
+(defchordsv2
+  (w e)   min   $chord-timeout first-release ()  ;; we    = -
+  (x c)   S-min $chord-timeout first-release ()  ;; xc    = _
+  (q w)   grv   $chord-timeout first-release ()  ;; qw    = `
+  (tab q) S-grv $chord-timeout first-release ()  ;; tab+q = ~
+)
+
+;; define aliases for homerow mods
+(defalias
+  ;; caps lock: tap for escape, hold for control
+  esc (tap-hold $tap-timeout 200 esc lctl)
+
+  ;; left homerow mods
+  a_cmd (tap-hold $tap-timeout $hold-timeout a lmet)  ;; a: tap for 'a', hold for Command (Meta)
+  s_alt (tap-hold $tap-timeout $hold-timeout s lalt)  ;; s: tap for 's', hold for Alt
+  d_sft (tap-hold $tap-timeout $hold-timeout d lsft)  ;; d: tap for 'd', hold for Shift
+  f_ctl (tap-hold $tap-timeout $hold-timeout f lctl)  ;; f: tap for 'f', hold for Control
+
+  ;; right homerow mods
+  j_ctl (tap-hold $tap-timeout $hold-timeout j rctl)  ;; j: tap for 'j', hold for Control
+  k_sft (tap-hold $tap-timeout $hold-timeout k rsft)  ;; k: tap for 'k', hold for Shift
+  l_alt (tap-hold $tap-timeout $hold-timeout l lalt)  ;; l: tap for 'l', hold for Alt
+  ;_cmd (tap-hold $tap-timeout $hold-timeout ; rmet)  ;; ;: tap for ';', hold for Command (Meta)
+
+  ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
+  spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
+)
+
+;; base layer with homerow mods active
+(deflayer base
+  tab q w e
+  @esc
+  @a_cmd @s_alt @d_sft @f_ctl h @j_ctl @k_sft @l_alt @;_cmd
+  x c
+  @spc_arr
+  brdn brup prev pp next mute vold volu
+)
+
+;; arrows layer: vim-style hjkl navigation
+;; When space is held, hjkl become arrow keys
+;; Left homerow mods (asdf) stay active, right side mods (jkl) are disabled
+(deflayer arrows
+  _ _ _ _
+  _
+  @a_cmd @s_alt @d_sft @f_ctl left down up rght ;
+  _ _
+  _
+  _ _ _ _ _ _ _ _
+)
