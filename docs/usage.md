@@ -1,30 +1,30 @@
-# Usage
+# usage
 
-## Updating
+## updating
 
-Pull the latest dotfiles and re-apply:
+pull the latest dotfiles and re-apply:
 
 ```sh
 chezmoi update
 ```
 
-Or manually:
+or manually:
 
 ```sh
 chezmoi git pull && chezmoi apply
 ```
 
-## Re-installing on a new machine
+## re-installing on a new machine
 
-**macOS:**
+**macos:**
 ```sh
 brew install chezmoi
 chezmoi init --apply brendanlees
 ```
 
-**Linux:**
+**linux:**
 ```sh
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply brendanlees
 ```
 
-On first run, chezmoi will prompt you to configure the machine type (see [scoping](./scoping.md)).
+on first run, chezmoi will prompt you to configure the machine type (see [scoping](./scoping.md)).

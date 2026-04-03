@@ -1,41 +1,41 @@
 # dotfiles
 
-Managed by [chezmoi](https://www.chezmoi.io/)
+managed by [chezmoi](https://www.chezmoi.io/).
 
-## Installation & Configuration
+## quick install
 
-### Linux
+**macos:**
+
 ```sh
-# install chezmoi
-sudo sh -c 'su -c "cd / && sh -c \"\$(curl -fsLS get.chezmoi.io)\""'
-
-# init as sudo to run setup scripts and apply dotfiles to root
-sudo chezmoi init --apply $GITHUB_USERNAME
-
+brew install chezmoi && chezmoi init --apply brendanlees
 ```
 
-### Mac OS
+**linux:**
+
 ```sh
-# install chezmoi
-brew install chezmoi
-
-# apply dotfiles to user
-chezmoi init --apply $GITHUB_USERNAME
-
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply brendanlees
 ```
 
+on first run you'll be prompted to set your machine role. see [scoping](docs/scoping.md) to skip prompts or provision via ansible.
 
-## References & Future Tweaks
-- https://www.chezmoi.io/
-	- Docs
-	- User guides
-- https://github.com/twpayne/dotfiles
-	- Chezmoi creators repo
-- https://github.com/logandonley/dotfiles
-	- Ansible integration
-- https://github.com/sudopluto/dotfiles
-	- Encryption usage
-- Gitleaks
-- https://github.com/fredericrous/dotfiles
+## architecture
 
+```
+.chezmoi.toml.tmpl        # template config — sets role flags (personal/work/homelab/ephemeral)
+.chezmoiexternal.toml.tmpl # external sources (fetched files, archives)
+.chezmoiscripts/
+  run_once_before_*       # bootstrap: install chezmoi deps, mise
+  run_after_*             # post-apply: install tools, tmux plugins
+.chezmoitemplates/        # shared template partials
+dot_zshrc.tmpl            # zsh config
+dot_aliases/              # alias files, sourced by zshrc
+dot_config/               # xdg config (git, mise, starship, ghostty, …)
+```
 
+role flags gate which config and packages are applied per machine type.
+
+## docs
+
+- [usage](docs/usage.md) — updating, re-installing
+- [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible
+- [inspiration](docs/inspiration.md) — reference repos and tools

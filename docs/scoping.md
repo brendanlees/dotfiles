@@ -1,30 +1,30 @@
-# Machine Scoping
+# machine scoping
 
-Dotfiles are scoped by machine role. On first init, chezmoi prompts interactively to configure:
+dotfiles are scoped by machine role. on first init, chezmoi prompts interactively to configure:
 
-| Flag        | Effect                                          |
+| flag        | effect                                          |
 | ----------- | ----------------------------------------------- |
 | `personal`  | apply personal and homelab admin config         |
 | `work`      | apply work config                               |
 | `homelab`   | apply homelab environment config                |
-| `ephemeral` | auto-detected for CI/containers; minimal config |
+| `ephemeral` | auto-detected for ci/containers; minimal config |
 
-Known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
+known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
 
-## Skip prompts via flags
+## skip prompts via flags
 
-Data flags can be added to `chezmoi init` to bypass interactive prompts:
+data flags can be added to `chezmoi init` to bypass interactive prompts:
 
 ```sh
 chezmoi init --apply --data='{"personal":true,"work":false,"homelab":false}' brendanlees
 ```
 
-## Configure via Ansible
+## configure via ansible
 
-If provisioning non-interactively (e.g. from an Ansible role), pass the data block in the chezmoi init task:
+if provisioning non-interactively (e.g. from an ansible role), pass the data block in the chezmoi init task:
 
 ```yaml
-- name: Apply dotfiles
+- name: apply dotfiles
   command: >
     chezmoi init --apply
     --data='{"personal":true,"headless":false}'
