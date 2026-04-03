@@ -3,6 +3,7 @@
 {{- $work      := false -}}
 {{- $homelab   := false -}}
 {{- $ephemeral := false -}}
+{{- $headless  := false -}}
 
 {{/* ─── hostname ─── */}}
 {{- $hostname := .chezmoi.hostname -}}
@@ -46,6 +47,17 @@
 {{-   end -}}
 {{- end -}}
 
+{{/* ─── headless ─── */}}
+{{- if $homelab -}}
+{{-   $headless = true -}}
+{{- else if and $work (not $personal) -}}
+{{-   if stdinIsATTY -}}
+{{-     $headless = promptBoolOnce . "headless" "Is this a headless machine (no GUI/fonts) (y/n)" -}}
+{{-   else if .headless -}}
+{{-     $headless = .headless -}}
+{{-   end -}}
+{{- end -}}
+
 {{/* ─── git identity ─── */}}
 {{- $git_name  := "" -}}
 {{- $git_email := "" -}}
@@ -59,6 +71,7 @@
   work      = {{ $work }}
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
+  headless  = {{ $headless }}
 {{- if or $personal $work }}
   git_name  = {{ $git_name | quote }}
   git_email = {{ $git_email | quote }}
