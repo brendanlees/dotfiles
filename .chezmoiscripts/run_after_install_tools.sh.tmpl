@@ -12,6 +12,9 @@ if [ ! -x "$MISE" ]; then
   exit 1
 fi
 
+# Trust the global mise config to prevent interactive prompts on first shell startup
+"$MISE" trust --yes "$HOME/.config/mise/config.toml" 2>/dev/null || true
+
 echo "installing mise tools..."
 "$MISE" install
 
