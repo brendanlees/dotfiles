@@ -30,5 +30,7 @@ apt install -y zsh git nano ncdu ldns
 
 # install packages not available via mise on macOS
 brew install btop ldns
-
+{{ if .personal -}}
+brew install bitwarden-cli
+{{ end -}}
 {{ end -}}
