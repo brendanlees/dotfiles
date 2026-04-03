@@ -8,6 +8,7 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 | `work`      | apply work config                               |
 | `homelab`   | apply homelab environment config                |
 | `ephemeral` | auto-detected for ci/containers; minimal config |
+| `headless`  | skip gui config (ghostty, kanata); auto-set for homelab, prompted for work-only |
 
 known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
 
@@ -27,7 +28,7 @@ if provisioning non-interactively (e.g. from an ansible role), pass the data blo
 - name: apply dotfiles
   command: >
     chezmoi init --apply
-    --data='{"personal":true,"headless":false}'
+    --data='{"work":true,"headless":true}'
     brendanlees
   become: false
 ```
