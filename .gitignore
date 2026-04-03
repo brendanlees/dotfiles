@@ -3,3 +3,4 @@ _staging/
 dot_DS_Store
 local-env.zsh
 .worktrees
+/docs/superpowers/
