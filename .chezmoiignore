@@ -12,3 +12,7 @@ key.txt.age
 LICENSE
 .DS_Store
 context
+
+# font store — zips are large; un-ignore a specific font to bundle it for offline machines
+# e.g. add '!fonts/JetBrainsMono.zip' to include it in the repo
+fonts/*.zip
