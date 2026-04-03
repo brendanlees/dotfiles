@@ -39,4 +39,5 @@ role flags gate which config and packages are applied per machine type.
 - [usage](docs/usage.md) — updating, re-installing
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible
 - [file tracking](docs/file-tracking.md) — adding dotfiles to track
+- [font management](docs/font-management.md) — font swapping, pulling/applying nerdfonts, local files
 - [inspiration](docs/inspiration.md) — reference repos and tools
