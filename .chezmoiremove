@@ -3,3 +3,6 @@
 # agent docs removed in favour of repo-only reference
 docs/mise-migration.md
 docs/superpowers
+
+# fzf git-repo external replaced by mise
+.fzf

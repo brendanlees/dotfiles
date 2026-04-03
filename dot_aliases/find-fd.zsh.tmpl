@@ -1,19 +1,12 @@
 # ------------------------------------------
 # .aliases/fd (find)
 # ------------------------------------------
-# ! mac only due to issues with fdfind
 
-# set up path (due to symlink)
-#export PATH="$PATH:$HOME/.local/bin/fd"
-
-# --- aliases ---
-
+# fdfind alias handles systems where fd is installed as fdfind (e.g. Debian/Ubuntu system packages)
 {{- if lookPath "fdfind" }}
 alias fd=fdfind
 {{- end }}
 
-
-{{- if eq .chezmoi.os "darwin" }}
 
 # use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
@@ -55,5 +48,3 @@ _fzf_comprun() {
     *)            fzf --preview "$show_file_or_dir_preview" "$@" ;;
   esac
 }
-
-{{- end }}
