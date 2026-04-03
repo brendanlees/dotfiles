@@ -12,7 +12,7 @@ if [ ! -d "$HOME/.tmux/plugins/tmux-tokyo-night/" ]; then
   {{ if (eq .chezmoi.os "linux") -}}
     apt-get install bash bc coreutils gawk git
   {{ else if eq .chezmoi.os "darwin" }}
-    brew install --cask font-monaspace-nerd-font font-noto-sans-symbols-2
+    brew install --cask font-jetbrains-mono-nerd-font font-monaspace-nerd-font font-noto-sans-symbols-2
     brew install bash bc coreutils gawk glab gsed
   {{ end -}}
 

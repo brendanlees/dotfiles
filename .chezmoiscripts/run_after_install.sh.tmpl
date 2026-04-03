@@ -15,12 +15,3 @@ if [ -d ~/.config/bat/themes ]; then
     batcat cache --build
   fi
 fi
-
-{{ if eq .chezmoi.os "linux" -}}
-# --- fonts ---
-
-if command -v fc-cache &>/dev/null; then
-  echo "refreshing font cache..."
-  fc-cache -f
-fi
-{{ end -}}
