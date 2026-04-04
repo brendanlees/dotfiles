@@ -1,5 +1,4 @@
 [settings]
-python_backend = "uv"
 {{ if eq .chezmoi.username "root" -}}
 trusted_config_paths = ["/home"] # trust user home dirs with mise configs (prevent trust prompts)
 {{ end -}}
