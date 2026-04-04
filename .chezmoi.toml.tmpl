@@ -52,7 +52,7 @@
 {{-   $headless = true -}}
 {{- else if and $work (not $personal) -}}{{/* personal machines assumed GUI */}}
 {{-   if stdinIsATTY -}}
-{{-     $headless = promptBoolOnce . "headless" "Is this a headless machine (no GUI/fonts) (y/n)" -}}
+{{-     $headless = promptBoolOnce . "headless" "Is this a headless machine (no GUI) (y/n)" -}}
 {{-   else if .headless -}}
 {{-     $headless = .headless -}}
 {{-   end -}}
