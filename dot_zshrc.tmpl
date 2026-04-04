@@ -34,7 +34,14 @@ fpath=("$HOME/.cli-plugins/zsh/zsh-completions/" $fpath)
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --color=always $realpath | head -200'
+zstyle ':fzf-tab:*' use-fzf-default-opts yes
+zstyle ':fzf-tab:*' prefix '│'
+zstyle ':fzf-tab:*' group-colors \
+  $'\033[38;2;118;159;240m' \
+  $'\033[38;2;115;218;202m' \
+  $'\033[38;2;187;154;247m' \
+  $'\033[38;2;158;206;106m'
 
 # load zsh-autosuggestions
 source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
