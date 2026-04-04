@@ -1,8 +1,0 @@
-{{- if .headless -}}
-#!/bin/bash
-# remove gui-only config previously deployed before headless detection was in place
-rm -rf \
-  "${HOME}/.config/ghostty" \
-  "${HOME}/.config/kanata" \
-  "${HOME}/.config/vial-qmk"
-{{- end -}}
