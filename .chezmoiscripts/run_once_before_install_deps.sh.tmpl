@@ -12,9 +12,8 @@
 
 # install core dependencies if missing
 missing=()
-command -v zsh  &>/dev/null || missing+=(zsh)
-command -v git  &>/dev/null || missing+=(git)
-command -v ncdu &>/dev/null || missing+=(ncdu)
+command -v zsh &>/dev/null || missing+=(zsh)
+command -v git &>/dev/null || missing+=(git)
 
 if [ ${#missing[@]} -gt 0 ]; then
 	apt update && apt install -y "${missing[@]}"
@@ -34,7 +33,7 @@ fi
 {{ if eq .chezmoi.os "darwin" -}}
 
 # install packages not available via mise on macOS
-brew install btop ncdu
+brew install btop
 {{ if .personal -}}
 brew install bitwarden-cli
 {{ end -}}
