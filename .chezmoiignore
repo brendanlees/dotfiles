@@ -1,25 +1,22 @@
 {{- if ne .chezmoi.os "darwin" }}
 dotfiles-mac # only manage mac dotfiles on mac
+Library
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") .headless }}
 .config/ghostty
-.config/ghostty/**
 {{- end }}
 
 {{- if .headless }}
 .config/kanata
-.config/kanata/**
 {{- else if ne .chezmoi.os "darwin" }}
 .config/kanata/scripts
-.config/kanata/scripts/**
 .config/kanata/xbxd.kanata.plist
 .config/kanata/README.md
 {{- end }}
 
 {{- if or .headless (not (or .personal .work)) }}
 .config/vial-qmk
-.config/vial-qmk/**
 {{- end }}
 
 {{- if not .personal }}
@@ -34,4 +31,3 @@ LICENSE
 context
 docs
 {{- end }}
-
