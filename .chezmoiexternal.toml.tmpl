@@ -13,6 +13,10 @@ exclude = [
   "*/.gitignore",
   "*/*.md",
   "*/*.circleci",
+  "*/test/**",
+  "*/tests/**",
+  "*/spec/**",
+  "**/*.zwc",
 ]
 
 [".cli-plugins/zsh/zsh-syntax-highlighting"]
@@ -27,6 +31,12 @@ exclude = [
   "*/.github",
   "*/.gitignore",
   "*/*.md",
+  "*/test/**",
+  "*/tests/**",
+  "*/test-data/**",
+  "*/highlighters/*/test-data/**",
+  "*/spec/**",
+  "**/*.zwc",
 ]
 
 [".cli-plugins/zsh/zsh-completions"]
@@ -39,6 +49,10 @@ exclude = [
   "*/.github",
   "*/.gitignore",
   "*/*.md",
+  "*/test/**",
+  "*/tests/**",
+  "*/spec/**",
+  "**/*.zwc",
 ]
 
 [".cli-plugins/fzf/fzf-tab"]
@@ -51,6 +65,11 @@ exclude = [
   "*/.github",
   "*/.gitignore",
   "*/*.md",
+  "*/test/**",
+  "*/tests/**",
+  "*/spec/**",
+  "*/images/**",
+  "**/*.zwc",
 ]
 
 [".cli-plugins/fzf/fzf-git.sh"]
@@ -77,6 +96,12 @@ exclude = [
   "*/.github",
   "*/.gitignore",
   "*/*.md",
+  "*/test/**",
+  "*/tests/**",
+  "*/spec/**",
+  "*/docs/**",
+  "*/bindings/**",
+  "**/*.zwc",
 ]
 
 {{- if not .ephemeral }}
@@ -91,6 +116,10 @@ exclude = [
   "*/.github",
   "*/.gitignore",
   "*/*.md",
+  "*/test/**",
+  "*/tests/**",
+  "*/spec/**",
+  "**/*.zwc",
 ]
 {{- end }}
 
