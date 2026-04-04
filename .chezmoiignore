@@ -3,18 +3,22 @@ dotfiles-mac # only manage mac dotfiles on mac
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") .headless }}
+dot_config/ghostty
 dot_config/ghostty/**
 {{- end }}
 
 {{- if .headless }}
+dot_config/kanata
 dot_config/kanata/**
 {{- else if ne .chezmoi.os "darwin" }}
+dot_config/kanata/scripts
 dot_config/kanata/scripts/**
 dot_config/kanata/xbxd.kanata.plist
 dot_config/kanata/README.md
 {{- end }}
 
 {{- if or .headless (not (or .personal .work)) }}
+dot_config/vial-qmk
 dot_config/vial-qmk/**
 {{- end }}
 
