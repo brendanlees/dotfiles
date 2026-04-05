@@ -2,13 +2,15 @@
 # .aliases/chezmoi
 # ------------------------------------------
 
+# vault
 {{- $bw := "" }}
 {{- if .personal }}
 {{- $bw = "export BW_SESSION=$(bw unlock --raw) && " }}
 {{- end }}
 
-# purge & reinit
-alias czr='{{ $bw }}chezmoi purge --force && chezmoi init --apply brendanlees'
+# apply
+alias cza='{{ $bw }}chezmoi apply --force'
 
-# reapply
-alias czrs='{{ $bw }}chezmoi apply'
+# purge system & reinit
+# (NOTE this will wipe the repo - be sure to push branches or worktrees first!)
+alias czr='{{ $bw }}chezmoi purge --force && chezmoi init --apply brendanlees'
