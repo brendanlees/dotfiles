@@ -133,13 +133,35 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 
 # at the end to override any range bindings (fzf, tmux, compinit)
 
+# --- lines ---
 # navigate lines using ctrl+a and ctrl+e
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 
+# --- history ---
 # navigate zsh history using ctrl+p and ctrl+n
 bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
+
+# --- navigation combos ---
+# cd and ls
+cx() { cd "$@" && ls; } 
+
+# find dir and ls
+fcd() { cd "$(find . -type d -not -path '*/.*' | fzf)" && ls; } 
+
+# find file and copy to clipboard
+f() {
+  echo "$(find . -type f -not -path '*/.*' | fzf)" | \
+{{- if eq .chezmoi.os "darwin" }}
+    pbcopy
+{{- else }}
+    xclip -selection clipboard
+{{- end }}
+}
+
+# find and open in nvim
+fv() { nvim "$(find . -type f -not -path '*/.*' | fzf)" }
 
 # ------------------------------------------
 # zoxide
