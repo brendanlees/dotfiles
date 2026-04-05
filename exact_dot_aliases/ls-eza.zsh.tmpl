@@ -2,6 +2,8 @@
 # .aliases/eza (ls)
 # ------------------------------------------
 
+{{- if lookPath "eza" }}
+
 # ! drop git flag for older versions of debian (unsupported)
 if ! eza --git /dev/null 2>&1 | grep -q "feature was disabled"; then
 
