@@ -23,6 +23,10 @@ Library
 .config/private_env_tokens.sh
 {{- end }}
 
+{{- if ne .chezmoi.os "linux" }}
+.local/share/fonts
+{{- end }}
+
 README.md
 key.txt.age
 LICENSE
