@@ -81,9 +81,6 @@ eval "$(mise activate zsh)"
 # set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
-# load fzf-git script
-source "$HOME/.cli-plugins/fzf/fzf-git.sh"
-
 # load fzf-tab script
 autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
