@@ -2,6 +2,13 @@
 # .aliases/chezmoi
 # ------------------------------------------
 
-# alias cz="chezmoi"
-alias dotfiles="cd ~/.local/share/chezmoi"
-alias czr="chezmoi purge --force && chezmoi init --apply brendanlees"
+{{- $bw := "" }}
+{{- if .personal }}
+{{- $bw = "export BW_SESSION=$(bw unlock --raw) && " }}
+{{- end }}
+
+# purge & reinit
+alias czr='{{ $bw }}chezmoi purge --force && chezmoi init --apply brendanlees'
+
+# reapply
+alias czrs='{{ $bw }}chezmoi apply'

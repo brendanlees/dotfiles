@@ -1,5 +1,8 @@
 [user]
-{{- if or .personal .work }}
+{{- if and .personal (lookPath "bw") }}
+  name  = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").name.value }}
+  email = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").email.value }}
+{{- else if and (not .personal) .work }}
   name  = {{ .git_name }}
   email = {{ .git_email }}
 {{- else }}
@@ -15,3 +18,11 @@
 
 [push]
   autoSetupRemote = true
+{{- if .personal }}
+
+[includeIf "hasconfig:remote.*.url:*gitea.lab.brendans.cloud*"]
+  path = ~/.config/git/gitea
+
+[includeIf "hasconfig:remote.*.url:*github.com*"]
+  path = ~/.config/git/github
+{{- end }}
