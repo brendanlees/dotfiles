@@ -129,4 +129,6 @@ bindkey '^N' history-search-forward
 # zoxide (cd) — must be last
 # ------------------------------------------
 
-eval "$(zoxide init --cmd cd zsh)"
+if [[ -o interactive ]] && command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init --cmd cd zsh)"
+fi
