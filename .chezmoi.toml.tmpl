@@ -61,7 +61,7 @@
 {{/* ─── git identity ─── */}}
 {{- $git_name  := "" -}}
 {{- $git_email := "" -}}
-{{- if or $personal $work -}}
+{{- if and (not $personal) $work -}}
 {{-   $git_name  = promptStringOnce . "git_name"  "Git full name" -}}
 {{-   $git_email = promptStringOnce . "git_email" "Git email" -}}
 {{- end -}}
@@ -72,7 +72,7 @@
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
-{{- if or $personal $work }}
+{{- if and (not $personal) $work }}
   git_name  = {{ $git_name | quote }}
   git_email = {{ $git_email | quote }}
 {{- end }}
