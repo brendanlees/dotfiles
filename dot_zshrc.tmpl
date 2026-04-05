@@ -60,6 +60,22 @@ setopt hist_ignore_dups
 setopt hist_find_no_dups
 
 # ------------------------------------------
+# clipboard 
+# ------------------------------------------
+
+# copy current command to clipboard
+copy-command() {
+{{- if eq .chezmoi.os "darwin" }}
+  echo -n $BUFFER | pbcopy
+{{- else if eq .chezmoi.os "linux" }}
+  echo -n $BUFFER | xclip -selection clipboard
+{{- end }}
+  zle -M "Copied to clipboard"
+}
+zle -N copy-command
+bindkey '^Xc' copy-command
+
+# ------------------------------------------
 # starship
 # ------------------------------------------
 
