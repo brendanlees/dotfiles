@@ -2,10 +2,8 @@
 # .aliases/bat (cat)
 # ------------------------------------------
 
-# --- aliases ---
-
 {{- if lookPath "bat" }}
-  alias cat='bat --paging never --style plain'
+alias cat='bat --paging never --style plain'
 {{- else if lookPath "batcat" }}
-  alias cat='batcat --paging never --style plain'
+alias cat='batcat --paging never --style plain'
 {{- end }}
