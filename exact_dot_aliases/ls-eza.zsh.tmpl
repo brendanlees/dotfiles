@@ -2,6 +2,8 @@
 # .aliases/eza (ls)
 # ------------------------------------------
 
+# --- aliases ---
+
 {{- if lookPath "eza" }}
 
 # ! drop git flag for older versions of debian (unsupported)
@@ -36,6 +38,7 @@ alias llf="eza -al --icons=always --color=always --group-directories-first"
 
 # list default
 alias ls="eza -alF --color=always --icons=always $ls_minimal"
+alias lst="eza -alF --tree --level=2 --long --color=always --icons=always $ls_minimal"
 
 # list by modified time
 alias lt="eza -al --color=always --icons=always --sort=modified $ls_minimal"
