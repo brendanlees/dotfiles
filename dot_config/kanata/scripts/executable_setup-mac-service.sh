@@ -1,7 +1,7 @@
 #!/bin/bash
 # Kanata Auto-Start Setup Script
 
-set -e
+set -euo pipefail
 
 echo "🔧 Setting up Kanata auto-start service..."
 echo ""
@@ -29,7 +29,7 @@ echo ""
 
 # Create symlink
 echo "5. Creating symlink to LaunchDaemons..."
-sudo ln -sf /Users/brendan/.config/kanata/xbxd.kanata.plist /Library/LaunchDaemons/xbxd.kanata.plist
+sudo ln -sf "$HOME/.config/kanata/xbxd.kanata.plist" /Library/LaunchDaemons/xbxd.kanata.plist
 echo "   ✓ Symlinked plist file"
 echo ""
 
