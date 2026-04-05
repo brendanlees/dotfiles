@@ -1,6 +1,6 @@
 # dotfiles
 
-managed by [chezmoi](https://www.chezmoi.io/).
+managed by [chezmoi](https://www.chezmoi.io/)
 
 ## quick install
 
