@@ -104,6 +104,22 @@ exclude = [
   "**/*.zwc",
 ]
 
+{{- if and .personal (not .headless) }}
+{{-   $fontDir := "" }}
+{{-   if eq .chezmoi.os "darwin" }}
+{{-     $fontDir = "Library/Fonts" }}
+{{-   else if eq .chezmoi.os "linux" }}
+{{-     $fontDir = ".local/share/fonts" }}
+{{-   end }}
+
+["{{ $fontDir }}/{{ .nerd_font }}"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ .nerd_font }}.tar.xz"
+exact = true
+refreshPeriod = "168h"
+include = ["{{ .nerd_font }}NerdFontMono-*.ttf"]
+{{- end }}
+
 {{- if not .ephemeral }}
 [".config/nvim"]
 type = "git-repo"
