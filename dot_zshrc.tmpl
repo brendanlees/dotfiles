@@ -68,14 +68,14 @@ eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 
 # ------------------------------------------
-# mise / path
+# mise 
 # ------------------------------------------
 
 export PATH=$HOME/.local/bin:$PATH
 eval "$(mise activate zsh)"
 
 # ------------------------------------------
-# fzf (fuzzy finder)
+# fzf 
 # ------------------------------------------
 
 # set up fzf key bindings and fuzzy completion
@@ -86,7 +86,7 @@ autoload -U compinit; compinit -u
 source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
 
 # ------------------------------------------
-# carapace (multi-shell completions)
+# carapace 
 # ------------------------------------------
 
 if command -v carapace &>/dev/null; then
@@ -95,7 +95,7 @@ fi
 
 {{- if .homelab }}
 # ------------------------------------------
-# homelab host specific overrides
+# homelab 
 # ------------------------------------------
 
 if [[ -d /boot/dietpi ]]; then
@@ -126,8 +126,9 @@ bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
 
 # ------------------------------------------
-# zoxide (cd) — must be last
+# zoxide
 # ------------------------------------------
+# !NOTE must be last
 
 if [[ -o interactive ]] && command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init --cmd cd zsh)"
