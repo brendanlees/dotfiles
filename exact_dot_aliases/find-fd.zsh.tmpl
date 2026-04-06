@@ -30,6 +30,18 @@ show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head
 export FZF_CTRL_T_OPTS="--preview '$show_file_or_dir_preview'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 
+# fzf visual style (tokyonight night — matches starship palette)
+export FZF_DEFAULT_OPTS="
+  --highlight-line
+  --info=inline-right
+  --ansi
+  --layout=reverse
+  --border=sharp
+  --color=fg:#c0caf5,bg:#1a1b26,hl:#73daca,fg+:#c0caf5,bg+:#292e42,hl+:#73daca
+  --color=info:#a9b1d6,prompt:#769ff0,pointer:#73daca,marker:#9ece6a,spinner:#73daca
+  --color=header:#769ff0,border:#414868,separator:#414868
+"
+
 
 # --- apply fd to fzf options ---
 
