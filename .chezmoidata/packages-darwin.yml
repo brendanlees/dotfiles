@@ -37,6 +37,7 @@ brews:
   personal:
     - btop
     - cmatrix
+    - dockutil
     - ente-cli
     - ffmpeg
     - gemini-cli
