@@ -1,13 +1,12 @@
 #!/bin/sh
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
-{{- $pkg := index . "packages-darwin" }}
-{{- $tools := $pkg.uv.base }}
+{{- $tools := .uv.base }}
 {{- if .personal }}
-{{-   $tools = concat $tools $pkg.uv.personal }}
+{{-   $tools = concat $tools .uv.personal }}
 {{- end }}
 {{- if .work }}
-{{-   $tools = concat $tools $pkg.uv.work }}
+{{-   $tools = concat $tools .uv.work }}
 {{- end }}
 
 {{- if $tools }}
