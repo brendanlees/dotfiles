@@ -122,6 +122,17 @@ if [[ -d /boot/dietpi ]]; then
 fi
 {{- end }}
 
+{{- if and .personal (eq .chezmoi.os "darwin") }}
+# ------------------------------------------
+# mac
+# ------------------------------------------
+
+export PATH=/opt/homebrew/bin:$PATH
+
+alias matrix='osascript -e "tell application \"System Events\" to key code 36 using {command down}" && tmux new-window cmatrix'
+
+{{- end }}
+
 # ------------------------------------------
 # git
 # ------------------------------------------
