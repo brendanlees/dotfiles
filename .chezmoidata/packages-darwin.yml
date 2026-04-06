@@ -1,0 +1,77 @@
+uv:
+  base: []
+  personal:
+    - claude-monitor
+    - esphome
+    - jcodemunch-mcp
+  work: []
+
+taps:
+  base: []
+  personal:
+    - felixkratz/formulae
+    - macos-fuse-t/cask
+    - nikitabobko/tap
+    - qmk/qmk
+    - yt-dlp/taps
+  work:
+    - ddev/ddev
+    - discoteq/discoteq
+    - shivammathur/php
+
+brews:
+  base:
+    - ansible
+    - bash
+    - bitwarden-cli
+    - bun
+    - chezmoi
+    - curl
+    - git
+    - mysql
+    - node
+    - pnpm
+    - tmux
+    - uv
+    - zsh
+  personal:
+    - btop
+    - cmatrix
+    - ente-cli
+    - ffmpeg
+    - gemini-cli
+    - kanata
+    - opencode
+    - tldr
+    - worktrunk
+    - yt-dlp
+    - felixkratz/formulae/borders
+    - qmk/qmk/qmk
+  work:
+    - awscli
+    - ddev/ddev/ddev
+    - discoteq/discoteq/flock
+    - kubectl
+    - wp-cli
+
+casks:
+  base: []
+  personal:
+    - bitwarden
+    - claude-code
+    - db-browser-for-sqlite
+    - font-monaspice-nerd-font
+    - font-noto-sans-symbols-2
+    - fuse-t
+    - ghostty
+    - itsycal
+    - jordanbaird-ice
+    - lookaway
+    - orbstack
+    - pearcleaner
+    - raycast
+    - sequel-ace
+    - zed
+    - nikitabobko/tap/aerospace
+    - macos-fuse-t/cask/fuse-t-sshfs
+  work: []

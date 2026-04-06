@@ -1,0 +1,15 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when packages-darwin.yml changes
+
+{{- $pkg := index . "packages-darwin" }}
+{{- $taps := $pkg.taps.base }}
+{{- if .personal }}
+{{-   $taps = concat $taps $pkg.taps.personal }}
+{{- end }}
+{{- if .work }}
+{{-   $taps = concat $taps $pkg.taps.work }}
+{{- end }}
+
+{{- range $taps }}
+brew tap {{ . }}
+{{- end }}
