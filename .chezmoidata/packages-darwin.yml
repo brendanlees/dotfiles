@@ -1,0 +1,31 @@
+brews:
+  base:
+    - ansible
+    - bun
+    - curl
+    - git
+    - mysql
+    - node
+    - pnpm
+    - raycast
+    - tmux
+    - zsh
+  personal:
+    - ente-cli
+    - ffmpeg
+    - kanata
+    - opencode
+    - tldr
+    - worktrunk
+  work:
+    - awscli
+    - kubectl
+    - wp-cli
+
+casks:
+  base: []
+  personal:
+    - ghostty
+    - firefox
+    - vlc
+  work: []

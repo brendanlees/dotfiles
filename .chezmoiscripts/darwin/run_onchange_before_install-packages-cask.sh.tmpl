@@ -1,0 +1,15 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when packages-darwin.yml changes
+
+{{- $pkg := index . "packages-darwin" }}
+{{- $casks := $pkg.casks.base }}
+{{- if .personal }}
+{{-   $casks = concat $casks $pkg.casks.personal }}
+{{- end }}
+{{- if .work }}
+{{-   $casks = concat $casks $pkg.casks.work }}
+{{- end }}
+
+{{- if $casks }}
+brew install --cask {{ $casks | join " " }}
+{{- end }}
