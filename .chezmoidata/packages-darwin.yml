@@ -1,3 +1,11 @@
+uv:
+  base: []
+  personal:
+    - claude-monitor
+    - esphome
+    - jcodemunch-mcp
+  work: []
+
 taps:
   base: []
   personal:
