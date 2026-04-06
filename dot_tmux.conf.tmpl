@@ -17,6 +17,12 @@ set -g mouse on                 # Enable mouse support
 set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
 set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
 
+# borders
+set -g pane-border-lines double
+set -g pane-border-indicators both
+set -g pane-active-border-style 'fg=magenta,bg=default'
+set -g pane-border-style 'fg=brightblack,bg=default'
+
 # remap prefix
 # unbind C-b
 # set -g prefix C-s
