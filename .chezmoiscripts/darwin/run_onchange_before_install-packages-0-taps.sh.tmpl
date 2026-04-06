@@ -1,0 +1,7 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when packages-darwin.yml changes
+
+{{- $pkg := index . "packages-darwin" }}
+{{- range $pkg.taps }}
+brew tap {{ . }}
+{{- end }}
