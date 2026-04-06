@@ -155,9 +155,11 @@ bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 
 # --- history ---
-# navigate zsh history using ctrl+p and ctrl+n
+# navigate zsh history using ctrl+p/n,k/j
 bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
+bindkey '^k' up-line-or-search
+bindkey '^j' down-line-or-search
 
 # --- navigation combos ---
 # cd and ls
