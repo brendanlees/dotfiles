@@ -127,10 +127,12 @@ fi
 # mac
 # ------------------------------------------
 
+# brew tweaks
 export PATH=/opt/homebrew/bin:$PATH
 export HOMEBREW_NO_ENV_HINTS=1
 
-alias matrix='osascript -e "tell application \"System Events\" to key code 36 using {command down}" && tmux new-window cmatrix'
+# dumb/fun stuff
+alias matrix='osascript -e "tell application \"System Events\" to key code 36 using {command down}" && { [[ -n $TMUX ]] && tmux new-window cmatrix || tmux new-session cmatrix; }'
 
 {{- end }}
 
