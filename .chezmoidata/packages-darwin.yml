@@ -25,7 +25,6 @@ brews:
     - bash
     - bitwarden-cli
     - bun
-    - btop
     - chezmoi
     - curl
     - gh
@@ -46,7 +45,12 @@ brews:
     - ffmpeg
     - gemini-cli
     - kanata
+    - keka
+    - little-snitch
+    - macwhisper
+    - micro-snitch
     - opencode
+    - soundsource
     - tldr
     - worktrunk
     - yt-dlp
@@ -85,7 +89,11 @@ casks:
   base: []
   personal:
     - ableton-live-suite
+    - affinity-photo
+    - airbuddy
+    - arq
     - betterdisplay
+    - cloudmounter
     - betterzip
     - cryptomator
     - home-assistant
