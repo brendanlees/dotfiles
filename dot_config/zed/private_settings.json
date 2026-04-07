@@ -1,0 +1,68 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "project_panel": {
+    "file_icons": true,
+    "dock": "right",
+    "button": false,
+  },
+  "icon_theme": "Monospace Icon Theme - Dark",
+  "relative_line_numbers": "enabled",
+  "ui_font_family": "JetBrainsMono Nerd Font",
+  "git": {
+    "disable_git": false,
+  },
+  "session": {
+    "trust_all_worktrees": false,
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "vim_mode": true,
+  "terminal": {
+    "shell": "system",
+    "font_size": 14.0,
+    "font_family": "JetBrainsMono Nerd Font",
+    "line_height": {
+      "custom": 1.2,
+    },
+    "blinking": "on",
+    "button": false,
+  },
+  "base_keymap": "VSCode",
+  "minimap": {
+    "show": "never",
+  },
+  "buffer_font_family": "JetBrainsMono",
+  "file_types": {
+    "toml": [".chezmoiexternal.toml"],
+    "plaintext": [".env-proxy"],
+  },
+  "colorize_brackets": true,
+  "auto_indent_on_paste": true,
+  "linked_edits": true,
+  "soft_wrap": "editor_width",
+  "tab_size": 2,
+  "ui_font_size": 16,
+  "buffer_font_size": 18.0,
+  "theme": {
+    "mode": "system",
+    "light": "Ayu Light",
+    "dark": "Tokyo Night",
+  },
+  // hide status bar elements
+  "git_panel": { "button": false },
+  "collaboration_panel": { "button": false },
+  "diagnostics": { "button": false },
+  "search": { "button": false },
+  "outline_panel": { "button": false },
+  "notification_panel": { "button": false },
+  "debugger": { "button": false },
+}
