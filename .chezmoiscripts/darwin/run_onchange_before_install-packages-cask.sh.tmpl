@@ -10,5 +10,5 @@
 {{- end }}
 
 {{- if $casks }}
-brew install --cask {{ $casks | join " " }}
+brew install --cask --adopt {{ $casks | join " " }}
 {{- end }}

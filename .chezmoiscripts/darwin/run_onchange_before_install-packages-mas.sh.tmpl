@@ -1,0 +1,16 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when packages-darwin.yml changes
+
+{{- $apps := .mas.base }}
+{{- if .personal }}
+{{-   $apps = concat $apps .mas.personal }}
+{{- end }}
+{{- if .work }}
+{{-   $apps = concat $apps .mas.work }}
+{{- end }}
+
+{{- if $apps }}
+{{-   range $apps }}
+mas install {{ .id }}
+{{-   end }}
+{{- end }}
