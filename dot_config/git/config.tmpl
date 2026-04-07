@@ -26,3 +26,8 @@
 [includeIf "hasconfig:remote.*.url:*github.com*"]
   path = ~/.config/git/github
 {{- end }}
+{{- if eq .chezmoi.os "darwin" }}
+
+[credential]
+  helper = osxkeychain
+{{- end }}
