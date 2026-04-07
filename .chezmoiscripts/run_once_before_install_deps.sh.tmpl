@@ -17,7 +17,7 @@ command -v zsh &>/dev/null || missing+=(zsh)
 command -v git &>/dev/null || missing+=(git)
 
 if [ ${#missing[@]} -gt 0 ]; then
-	apt update && apt install -y "${missing[@]}"
+  apt update && apt install -y "${missing[@]}"
 fi
 
 {{ end -}}
@@ -33,9 +33,13 @@ fi
 
 {{ if eq .chezmoi.os "darwin" -}}
 
-# install packages not available via mise on macOS
-brew install btop
+# check for declarative packages
+if ! command -v brew &>/dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
 {{ if .personal -}}
+# for secrets
 brew install bitwarden-cli
 {{ end -}}
 {{ end -}}

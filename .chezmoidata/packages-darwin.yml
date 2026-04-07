@@ -25,6 +25,7 @@ brews:
     - bash
     - bitwarden-cli
     - bun
+    - btop
     - chezmoi
     - curl
     - git
