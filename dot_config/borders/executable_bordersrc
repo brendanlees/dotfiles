@@ -1,15 +1,18 @@
 #!/bin/bash
 
+# colors taken from tokyonight theme
+red="0xfff7768e"
+blue="0xff7aa2f7"
+transparent="0x00000000"
+grey="0xff414550"
+
 options=(
-	# style=round
-	# width=6.0
-	# hidpi=off
-	# active_color=0xffe2e2e3
-	# inactive_color=0xff414550
-  # blacklist="Todoist","SoundSource","Todoist Helper", "TodoistWidgets","Tailscale","Sleeve", "PastePal", "Dropover"
+  style=round
+  width=6.0
+  hidpi=on
+  active_color="$blue"
+  inactive_color="$transparent"
+  blacklist="Todoist","SoundSource","Todoist Helper", "TodoistWidgets","Tailscale","Sleeve", "PastePal", "Dropover"
 )
 
-
-borders "${options[@]}" 
-
-# active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0
+borders "${options[@]}"
