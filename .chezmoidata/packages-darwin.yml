@@ -28,12 +28,14 @@ brews:
     - btop
     - chezmoi
     - curl
+    - gh
     - git
     - mysql
     - node
     - pnpm
     - tmux
     - uv
+    - wget
     - zsh
   personal:
     - btop
