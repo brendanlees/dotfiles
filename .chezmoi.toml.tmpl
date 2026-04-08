@@ -16,8 +16,17 @@
 {{-   $ephemeral = true -}}
 {{- end -}}
 
+{{/* ─── env var override ─── */}}
+{{- $role := env "CHEZMOI_ROLE" -}}
+{{- if $role -}}
+{{-   if regexMatch "(^|,)personal(,|$)" $role }}{{ $personal = true }}{{ end -}}
+{{-   if regexMatch "(^|,)work(,|$)"     $role }}{{ $work     = true }}{{ end -}}
+{{-   if regexMatch "(^|,)homelab(,|$)"  $role }}{{ $homelab  = true }}{{ end -}}
+{{-   if regexMatch "(^|,)headless(,|$)" $role }}{{ $headless = true }}{{ end -}}
+{{- end -}}
+
 {{/* ─── machine type ─── */}}
-{{- if not $ephemeral -}}
+{{- if and (not $ephemeral) (not $role) -}}
 {{-   if eq $hostname "bAir" -}}
 {{-     $personal = true -}}
 {{-     $work = true -}}

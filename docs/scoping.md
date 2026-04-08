@@ -20,6 +20,25 @@ data flags can be added to `chezmoi init` to bypass interactive prompts:
 chezmoi init --apply --data='{"personal":true,"work":false,"homelab":false}' brendanlees
 ```
 
+## skip prompts via env var
+
+set `CHEZMOI_ROLE` (comma-separated) before running `chezmoi init` — useful when you don't want to type a long `--data=` json blob, or when something else (mise, direnv, systemd unit) is already managing per-machine env:
+
+```sh
+CHEZMOI_ROLE=personal,work chezmoi init --apply brendanlees
+```
+
+valid tokens: `personal`, `work`, `homelab`, `headless`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false.
+
+env vars are read from the chezmoi process at init time, so any of these work:
+
+- inline prefix (`CHEZMOI_ROLE=… chezmoi init`)
+- shell `export`
+- mise `[env]` block in `~/.config/mise/config.toml` (set once per machine, persists across shells)
+- direnv `.envrc`
+
+precedence: `CHEZMOI_ROLE` env var → hostname allow-list → interactive prompts.
+
 ## configure via ansible
 
 if provisioning non-interactively (e.g. from an ansible role)
