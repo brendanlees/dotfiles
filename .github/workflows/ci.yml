@@ -128,11 +128,20 @@ jobs:
       - name: install chezmoi
         run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
 
+      - name: init chezmoi config with ephemeral role
+        run: |
+          mkdir -p "$HOME/.config/chezmoi-ci"
+          "$HOME/.local/bin/chezmoi" init \
+            --source="$GITHUB_WORKSPACE" \
+            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --apply=false
+
       - name: chezmoi apply --dry-run
         run: |
           set -euo pipefail
           "$HOME/.local/bin/chezmoi" apply \
             --source="$GITHUB_WORKSPACE" \
+            --config="$HOME/.config/chezmoi-ci/config.toml" \
             --dry-run \
             --verbose \
             --exclude=externals
