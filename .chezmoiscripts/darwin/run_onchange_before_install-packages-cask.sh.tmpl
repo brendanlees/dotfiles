@@ -1,13 +1,7 @@
 #!/bin/sh
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
-{{- $casks := .casks.base }}
-{{- if .personal }}
-{{-   $casks = concat $casks .casks.personal }}
-{{- end }}
-{{- if .work }}
-{{-   $casks = concat $casks .casks.work }}
-{{- end }}
+{{- $casks := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .casks .)) }}
 
 {{- if $casks }}
 brew install --cask --adopt {{ $casks | join " " }}

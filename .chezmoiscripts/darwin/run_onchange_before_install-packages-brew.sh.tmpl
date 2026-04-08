@@ -1,12 +1,6 @@
 #!/bin/sh
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
-{{- $brews := .brews.base }}
-{{- if .personal }}
-{{-   $brews = concat $brews .brews.personal }}
-{{- end }}
-{{- if .work }}
-{{-   $brews = concat $brews .brews.work }}
-{{- end }}
+{{- $brews := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .brews .)) }}
 
 brew install {{ $brews | join " " }}

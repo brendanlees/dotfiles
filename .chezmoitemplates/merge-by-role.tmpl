@@ -1,0 +1,12 @@
+{{- /*
+merge a base/personal/work data block by active role flags.
+usage: {{ fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .brews .)) }}
+  arg 0: data block with .base / .personal / .work keys
+  arg 1: root context (for .personal / .work flags)
+*/ -}}
+{{- $data := index . 0 -}}
+{{- $ctx  := index . 1 -}}
+{{- $items := $data.base -}}
+{{- if $ctx.personal }}{{ $items = concat $items $data.personal }}{{- end -}}
+{{- if $ctx.work }}{{ $items = concat $items $data.work }}{{- end -}}
+{{- $items | toJson -}}

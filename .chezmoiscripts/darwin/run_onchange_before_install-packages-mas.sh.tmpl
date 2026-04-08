@@ -1,13 +1,7 @@
 #!/bin/sh
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
-{{- $apps := .mas.base }}
-{{- if .personal }}
-{{-   $apps = concat $apps .mas.personal }}
-{{- end }}
-{{- if .work }}
-{{-   $apps = concat $apps .mas.work }}
-{{- end }}
+{{- $apps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .mas .)) }}
 
 {{- if $apps }}
 {{-   range $apps }}
