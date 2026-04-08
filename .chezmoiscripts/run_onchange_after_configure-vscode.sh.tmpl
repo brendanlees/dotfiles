@@ -1,6 +1,6 @@
 {{ if and (eq .chezmoi.os "darwin" "linux") (not .headless) -}}
 
-{{- $extensions := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .vscode .)) }}
+{{- $extensions := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .vscode .)) -}}
 
 #!/bin/bash
 
