@@ -145,3 +145,92 @@ jobs:
             --dry-run \
             --verbose \
             --exclude=externals
+
+  lint-configs:
+    name: lint yaml and toml
+    runs-on: ubuntu-latest
+    env:
+      CHEZMOI_ROLE: ephemeral,headless
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install chezmoi
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+
+      - name: install yamllint and taplo
+        run: |
+          pipx install yamllint
+          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
+            | gunzip > /usr/local/bin/taplo
+          chmod +x /usr/local/bin/taplo
+
+      - name: init chezmoi config with ephemeral role
+        run: |
+          mkdir -p "$HOME/.config/chezmoi-ci"
+          "$HOME/.local/bin/chezmoi" init \
+            --source="$GITHUB_WORKSPACE" \
+            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --apply=false
+
+      - name: render tmpl configs to staging dir
+        run: |
+          set -euo pipefail
+          chezmoi_bin="$HOME/.local/bin/chezmoi"
+          cfg="$HOME/.config/chezmoi-ci/config.toml"
+          mkdir -p rendered
+
+          while IFS= read -r f; do
+            out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f")
+            [[ -z "$out" ]] && continue
+            base=$(basename "$f" .tmpl)
+            safe=$(printf '%s' "$f" | tr '/ ' '__')
+            printf '%s\n' "$out" > "rendered/${safe%.tmpl}"
+          done < <(find . \( -name '*.yml.tmpl' -o -name '*.yaml.tmpl' -o -name '*.toml.tmpl' \) -not -path './.git/*' -type f)
+
+          echo "rendered:"; ls rendered
+
+      - name: yamllint static + rendered yaml
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          config='{extends: relaxed, rules: {line-length: disable, trailing-spaces: disable, empty-lines: disable, document-start: disable, comments: disable, truthy: disable}}'
+          yaml_files=(
+            .github/workflows/*.yml
+            .chezmoidata/*.yml
+            dot_config/carapace/carapace.yaml
+            dot_config/lazydocker/config.yml
+            dot_config/glow/glow.yml
+            rendered/*.yml
+            rendered/*.yaml
+          )
+          yamllint -d "$config" "${yaml_files[@]}"
+
+      - name: taplo lint static + rendered toml
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          toml_files=(
+            dot_config/starship/private_starship.toml
+            dot_config/aerospace/aerospace.toml
+            rendered/*.toml
+          )
+          taplo lint --no-schema "${toml_files[@]}"
+
+  plist-lint:
+    name: plutil lint plists
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: plutil -lint all plists
+        run: |
+          set -euo pipefail
+          fails=0
+          while IFS= read -r f; do
+            if ! plutil -lint "$f"; then
+              fails=$((fails+1))
+            fi
+          done < <(find . -name '*.plist' -not -path './.git/*' -type f)
+          if [[ $fails -gt 0 ]]; then
+            echo "::error::$fails plist(s) failed lint"
+            exit 1
+          fi
