@@ -160,9 +160,9 @@ jobs:
       - name: install yamllint and taplo
         run: |
           pipx install yamllint
-          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
-            | gunzip > /usr/local/bin/taplo
-          chmod +x /usr/local/bin/taplo
+          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz \
+            | gunzip > /tmp/taplo
+          sudo install -m 755 /tmp/taplo /usr/local/bin/taplo
 
       - name: init chezmoi config with ephemeral role
         run: |
