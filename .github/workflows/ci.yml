@@ -112,3 +112,27 @@ jobs:
           else
             echo "(none)"
           fi
+
+  dry-run:
+    name: dry-run (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      CHEZMOI_ROLE: ephemeral,headless
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install chezmoi
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+
+      - name: chezmoi apply --dry-run
+        run: |
+          set -euo pipefail
+          "$HOME/.local/bin/chezmoi" apply \
+            --source="$GITHUB_WORKSPACE" \
+            --dry-run \
+            --verbose \
+            --exclude=externals
