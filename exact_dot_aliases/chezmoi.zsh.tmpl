@@ -4,7 +4,7 @@
 
 # vault
 {{- $bw := "" }}
-{{- if .personal }}
+{{- if and .personal (lookPath "bw") }}
 {{- $bw = "export BW_SESSION=$(bw unlock --raw) && " }}
 {{- end }}
 
