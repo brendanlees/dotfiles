@@ -2,15 +2,58 @@
 # .aliases/chezmoi
 # ------------------------------------------
 
-# vault
-{{- $bw := "" }}
 {{- if and .personal (lookPath "bw") }}
-{{- $bw = "export BW_SESSION=$(bw unlock --raw) && " }}
+# vault — reuse existing BW_SESSION if set, otherwise unlock once
+_chezmoi_bw_ensure() {
+    if [ -z "${BW_SESSION:-}" ]; then
+        BW_SESSION="$(bw unlock --raw)" || return 1
+        export BW_SESSION
+    fi
+}
+{{- else }}
+_chezmoi_bw_ensure() { :; }
 {{- end }}
 
 # apply
-alias cza='{{ $bw }}chezmoi apply --force'
+cza() {
+    _chezmoi_bw_ensure || return 1
+    chezmoi apply --force
+}
 
 # purge system & reinit
-# (NOTE this will wipe the repo - be sure to push branches or worktrees first!)
-alias czr='{{ $bw }}chezmoi purge --force && chezmoi init --apply brendanlees'
+# refuses if there is unpushed work or extra worktrees in the chezmoi source dir
+czr() {
+    local src
+    src="$(chezmoi source-path)" || return 1
+
+    if [ -n "$(git -C "$src" status --porcelain)" ]; then
+        printf 'czr: refusing — dirty working tree in %s\n' "$src" >&2
+        git -C "$src" status --short >&2
+        return 1
+    fi
+
+    local unpushed
+    unpushed="$(git -C "$src" log --branches --not --remotes --oneline 2>/dev/null)"
+    if [ -n "$unpushed" ]; then
+        printf 'czr: refusing — local commits not on any remote in %s:\n' "$src" >&2
+        printf '%s\n' "$unpushed" >&2
+        return 1
+    fi
+
+    if [ "$(git -C "$src" worktree list | wc -l)" -gt 1 ]; then
+        printf 'czr: refusing — extra worktrees exist:\n' >&2
+        git -C "$src" worktree list >&2
+        return 1
+    fi
+
+    printf 'czr: this will WIPE %s and reinit. type "yes" to proceed: ' "$src"
+    local reply
+    read -r reply
+    if [ "$reply" != "yes" ]; then
+        printf 'czr: aborted\n' >&2
+        return 1
+    fi
+
+    _chezmoi_bw_ensure || return 1
+    chezmoi purge --force && chezmoi init --apply brendanlees
+}
