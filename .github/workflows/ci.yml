@@ -1,0 +1,116 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run shellcheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC1091
+        with:
+          scandir: .
+          additional_files: "*.sh"
+          ignore_paths: >-
+            .git
+
+  render-templates:
+    name: render templates
+    runs-on: ubuntu-latest
+    env:
+      CHEZMOI_ROLE: ephemeral,headless
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install chezmoi
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+
+      - name: install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: init chezmoi config with ephemeral role
+        run: |
+          mkdir -p "$HOME/.config/chezmoi-ci"
+          "$HOME/.local/bin/chezmoi" init \
+            --source="$GITHUB_WORKSPACE" \
+            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --apply=false
+
+      - name: render all templates
+        run: |
+          set -euo pipefail
+          chezmoi_bin="$HOME/.local/bin/chezmoi"
+          cfg="$HOME/.config/chezmoi-ci/config.toml"
+
+          # templates that require non-ephemeral data (e.g. .font_family
+          # which is only defined for personal role). excluded from the
+          # ephemeral render pass; revisit in stage 2 with a role matrix.
+          skip=(
+            "./.chezmoi.toml.tmpl"
+            "./.chezmoiexternal.toml.tmpl"
+            "./dot_config/ghostty/config.tmpl"
+          )
+
+          is_skipped() {
+            local target=$1
+            for s in "${skip[@]}"; do
+              [[ "$target" == "$s" ]] && return 0
+            done
+            return 1
+          }
+
+          fails=0
+          rendered_sh_dir=$(mktemp -d)
+
+          while IFS= read -r f; do
+            if is_skipped "$f"; then
+              echo "skip  $f"
+              continue
+            fi
+
+            if ! out=$("$chezmoi_bin" execute-template --config="$cfg" < "$f" 2>&1); then
+              echo "FAIL  $f"
+              echo "$out" | sed 's/^/      /'
+              fails=$((fails+1))
+              continue
+            fi
+
+            # shell templates must start with a shebang on line 1 when non-empty
+            if [[ "$f" == *.sh.tmpl ]] && [[ -n "$out" ]]; then
+              first_line=$(printf '%s\n' "$out" | head -n1)
+              if [[ "$first_line" != "#!"* ]]; then
+                echo "FAIL  $f (first line is not a shebang: '$first_line')"
+                fails=$((fails+1))
+                continue
+              fi
+              safe=$(printf '%s' "$f" | tr '/' '_')
+              printf '%s\n' "$out" > "$rendered_sh_dir/${safe}.sh"
+            fi
+
+            echo "ok    $f"
+          done < <(find . -name '*.tmpl' -not -path './.git/*' -not -path './.chezmoitemplates/*' -type f | sort)
+
+          if [[ $fails -gt 0 ]]; then
+            echo "::error::$fails template(s) failed to render"
+            exit 1
+          fi
+
+          echo "---"
+          echo "shellcheck rendered shell templates:"
+          shopt -s nullglob
+          rendered=("$rendered_sh_dir"/*.sh)
+          if (( ${#rendered[@]} > 0 )); then
+            shellcheck -e SC1091 "${rendered[@]}"
+          else
+            echo "(none)"
+          fi
