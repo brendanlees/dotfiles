@@ -28,7 +28,7 @@ set `CHEZMOI_ROLE` (comma-separated) before running `chezmoi init` — useful wh
 CHEZMOI_ROLE=personal,work chezmoi init --apply brendanlees
 ```
 
-valid tokens: `personal`, `work`, `homelab`, `headless`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false.
+valid tokens: `personal`, `work`, `homelab`, `headless`, `ephemeral`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false. ci uses `CHEZMOI_ROLE=ephemeral,headless` for non-interactive validation — see [testing](testing.md).
 
 env vars are read from the chezmoi process at init time, so any of these work:
 

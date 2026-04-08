@@ -39,4 +39,5 @@ role flags gate which config and packages are applied per machine type.
 - [usage](docs/usage.md) — updating, re-installing
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible
 - [file tracking](docs/file-tracking.md) — adding dotfiles to track
+- [testing](docs/testing.md) — ci pipeline and branch testing
 - [inspiration](docs/inspiration.md) — reference repos and tools
