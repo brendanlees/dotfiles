@@ -179,10 +179,26 @@ jobs:
           cfg="$HOME/.config/chezmoi-ci/config.toml"
           mkdir -p rendered
 
+          # init-only templates use stdinIsATTY / promptStringOnce
+          skip=(
+            "./.chezmoi.toml.tmpl"
+            "./.chezmoiexternal.toml.tmpl"
+          )
+          is_skipped() {
+            local t=$1
+            for s in "${skip[@]}"; do
+              [[ "$t" == "$s" ]] && return 0
+            done
+            return 1
+          }
+
           while IFS= read -r f; do
+            if is_skipped "$f"; then
+              echo "skip $f"
+              continue
+            fi
             out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f")
             [[ -z "$out" ]] && continue
-            base=$(basename "$f" .tmpl)
             safe=$(printf '%s' "$f" | tr '/ ' '__')
             printf '%s\n' "$out" > "rendered/${safe%.tmpl}"
           done < <(find . \( -name '*.yml.tmpl' -o -name '*.yaml.tmpl' -o -name '*.toml.tmpl' \) -not -path './.git/*' -type f)
