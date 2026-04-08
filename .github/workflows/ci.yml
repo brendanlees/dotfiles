@@ -52,13 +52,11 @@ jobs:
           chezmoi_bin="$HOME/.local/bin/chezmoi"
           cfg="$HOME/.config/chezmoi-ci/config.toml"
 
-          # templates that require non-ephemeral data (e.g. .font_family
-          # which is only defined for personal role). excluded from the
-          # ephemeral render pass; revisit in stage 2 with a role matrix.
+          # init-only templates that use functions like stdinIsATTY /
+          # promptStringOnce which are not available to execute-template.
           skip=(
             "./.chezmoi.toml.tmpl"
             "./.chezmoiexternal.toml.tmpl"
-            "./dot_config/ghostty/config.tmpl"
           )
 
           is_skipped() {
@@ -78,7 +76,7 @@ jobs:
               continue
             fi
 
-            if ! out=$("$chezmoi_bin" execute-template --config="$cfg" < "$f" 2>&1); then
+            if ! out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f" 2>&1); then
               echo "FAIL  $f"
               echo "$out" | sed 's/^/      /'
               fails=$((fails+1))
