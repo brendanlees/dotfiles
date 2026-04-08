@@ -54,7 +54,7 @@
 
 #!/bin/bash
 
-set -eufo pipefail
+set -euo pipefail
 
 {{ range $extensions -}}
 code --force --install-extension {{ . }}
