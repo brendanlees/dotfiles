@@ -109,7 +109,9 @@ include = ["{{ .nerd_font }}NerdFontMono-*.ttf"]
 type = "git-repo"
 url = "https://github.com/brendanlees/astronvim-config"
 refreshPeriod = "24h"
-pullArgs = ["--autostash"]
+
+[".config/nvim".pull]
+args = ["--autostash"]
 exclude = [
   "*/.editorconfig",
   "*/.gitattributes",
