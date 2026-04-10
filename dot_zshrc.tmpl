@@ -7,11 +7,14 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 source "$HOME/.zsh_aliases"
 
 # ------------------------------------------
-# api tokens (personal machines only)
+# api tokens
 # ------------------------------------------
 
-{{- if .personal }}
-[[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh"
+{{- if or .personal .work }}
+if command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
+  export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
+  export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
+fi
 {{- end }}
 
 # ------------------------------------------
@@ -113,8 +116,10 @@ fi
 
 {{- if .homelab }}
 # ------------------------------------------
-# homelab 
+# homelab
 # ------------------------------------------
+
+[[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh"
 
 if [[ -d /boot/dietpi ]]; then
   export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
