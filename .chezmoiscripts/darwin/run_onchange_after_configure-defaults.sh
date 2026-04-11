@@ -24,7 +24,7 @@ defaults write -g AppleMiniaturizeOnDoubleClick -int 0
 defaults write -g AppleShowAllExtensions -int 1
 
 # scrolling
-defaults write -g com.apple.swipescrolldirection -int 0
+defaults write -g com.apple.swipescrolldirection -bool false
 
 # trackpad
 defaults write -g com.apple.trackpad.forceClick -int 0
