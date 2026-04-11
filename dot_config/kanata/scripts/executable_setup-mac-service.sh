@@ -6,6 +6,23 @@ set -euo pipefail
 echo "🔧 Setting up Kanata auto-start service..."
 echo ""
 
+# Ensure Karabiner virtual HID device daemon is running (required for kanata output)
+echo "0. Setting up Karabiner virtual HID device daemon (prerequisite)..."
+KARABINER_DAEMONS="/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Privileged Daemons v2.app/Contents/MacOS/Karabiner-Elements Privileged Daemons v2"
+if [ ! -f "$KARABINER_DAEMONS" ]; then
+    echo "   ⚠️  Karabiner-Elements not found — install it first: brew install --cask karabiner-elements"
+    echo "      Kanata requires Karabiner-DriverKit-VirtualHIDDevice for key output."
+    exit 1
+fi
+if pgrep -x karabiner_grabber > /dev/null 2>&1; then
+    echo "   ✓ Karabiner daemon already running"
+else
+    echo "   Starting Karabiner privileged daemons..."
+    sudo "$KARABINER_DAEMONS"
+    echo "   ✓ Karabiner daemon started"
+fi
+echo ""
+
 # Stop any running kanata instances
 echo "1. Stopping any running kanata instances..."
 sudo pkill kanata 2>/dev/null || echo "   No running instances found"
