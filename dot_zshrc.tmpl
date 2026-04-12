@@ -66,21 +66,6 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-# ------------------------------------------
-# clipboard 
-# ------------------------------------------
-
-# copy current command to clipboard
-copy-command() {
-{{- if eq .chezmoi.os "darwin" }}
-  echo -n $BUFFER | pbcopy
-{{- else if eq .chezmoi.os "linux" }}
-  echo -n $BUFFER | xclip -selection clipboard
-{{- end }}
-  zle -M "Copied to clipboard"
-}
-zle -N copy-command
-bindkey '^Xc' copy-command
 
 # ------------------------------------------
 # starship
@@ -165,6 +150,20 @@ bindkey '^P' history-search-backward
 bindkey '^N' history-search-forward
 bindkey '^k' up-line-or-search
 bindkey '^j' down-line-or-search
+
+# --- clipboard ---
+# copy current command to clipboard
+copy-command() {
+{{- if eq .chezmoi.os "darwin" }}
+  echo -n $BUFFER | pbcopy
+{{- else if eq .chezmoi.os "linux" }}
+  local encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
+  printf "\033]52;c;%s\a" "$encoded" > /dev/tty
+{{- end }}
+  zle -M "Copied to clipboard"
+}
+zle -N copy-command
+bindkey '^Xc' copy-command
 
 # --- navigation combos ---
 # cd and ls
