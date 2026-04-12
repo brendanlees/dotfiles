@@ -1,0 +1,35 @@
+#!/bin/bash
+# OSC 52 clipboard wrapper — drop-in replacement for xclip on headless servers
+# Sends clipboard data via OSC 52 escape sequence through SSH/tmux to the local terminal
+
+selection="clipboard"
+mode="copy"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -selection) selection="$2"; shift 2 ;;
+    -o|-out)    mode="paste"; shift ;;
+    -i|-in)     mode="copy"; shift ;;
+    *)          shift ;;  # ignore other xclip flags
+  esac
+done
+
+if [[ "$mode" == "paste" ]]; then
+  # OSC 52 paste (request clipboard) — not widely supported, warn user
+  echo "OSC 52 paste not supported; use terminal paste (Cmd+V)" >&2
+  exit 1
+fi
+
+content=$(cat)
+encoded=$(printf '%s' "$content" | base64 | tr -d '\n')
+
+# Determine the OSC 52 selection target
+case "$selection" in
+  primary)   target="p" ;;
+  clipboard) target="c" ;;
+  *)         target="c" ;;
+esac
+
+# Write to /dev/tty so the escape sequence reaches the terminal,
+# not stdout (which may be piped/captured)
+printf "\033]52;%s;%s\a" "$target" "$encoded" > /dev/tty

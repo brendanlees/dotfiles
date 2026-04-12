@@ -1,0 +1,16 @@
+#!/bin/bash
+# xsel wrapper — translates xsel flags to xclip flags and delegates to the OSC 52 xclip wrapper
+
+args=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --clipboard|-b)  args+=(-selection clipboard); shift ;;
+    --primary|-p)    args+=(-selection primary); shift ;;
+    --input|-i)      args+=(-i); shift ;;
+    --output|-o)     args+=(-o); shift ;;
+    *)               shift ;;  # ignore other flags
+  esac
+done
+
+exec "$(dirname "$0")/xclip" "${args[@]}"

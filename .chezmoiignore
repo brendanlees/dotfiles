@@ -25,6 +25,7 @@ Library
 {{- end }}
 
 {{- if ne .chezmoi.os "linux" }}
+.local/bin
 .local/share/fonts
 {{- end }}
 
