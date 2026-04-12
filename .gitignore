@@ -1,6 +1,7 @@
 _staging/
 .DS_Store
 dot_DS_Store
-local-env.zsh
 .worktrees
 /docs/superpowers/
+.serena
+.claudeignore
