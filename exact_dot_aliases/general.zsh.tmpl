@@ -2,7 +2,7 @@
 # .aliases/general
 # ------------------------------------------
 
-alias sudo="sudo " # make sudo expand aliases
+alias sudo="sudo env PATH=\"\$PATH\" " # expand aliases + preserve PATH for mise tools
 alias dotfiles="cd ~/.local/share/chezmoi"
 alias c="clear"
 alias s='sesh picker -i'
