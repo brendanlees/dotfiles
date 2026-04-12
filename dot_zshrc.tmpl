@@ -75,11 +75,7 @@ copy-command() {
 {{- else if eq .chezmoi.os "linux" }}
   local encoded
   encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
-  if [[ -n "$TMUX" ]]; then
-    printf '\033Ptmux;\033\033]52;c;%s\007\033\\' "$encoded"
-  else
-    printf '\033]52;c;%s\007' "$encoded"
-  fi
+  printf '\033]52;c;%s\007' "$encoded" >/dev/tty
 {{- end }}
   zle -M "Copied to clipboard"
 }
