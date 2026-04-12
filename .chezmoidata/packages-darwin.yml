@@ -13,6 +13,7 @@ taps:
     - macos-fuse-t/cask
     - nikitabobko/tap
     - qmk/qmk
+    - rtk-ai/tap
     - yt-dlp/taps
   work:
     - ddev/ddev
@@ -56,6 +57,9 @@ brews:
     - yt-dlp
     - felixkratz/formulae/borders
     - qmk/qmk/qmk
+    - icm
+    - rtk
+    - libreoffice
   work:
     - awscli
     - ddev/ddev/ddev
