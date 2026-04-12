@@ -14,6 +14,7 @@ taps:
     - nikitabobko/tap
     - qmk/qmk
     - rtk-ai/tap
+    - xykong/tap
     - yt-dlp/taps
   work:
     - ddev/ddev
@@ -144,6 +145,7 @@ casks:
     - vial
     - google-chrome
     - microsoft-edge
+    - xykong/tap/flux-markdown
     - zen-browser
     - font-monaspace-nerd-font
     - font-monaspice-nerd-font
