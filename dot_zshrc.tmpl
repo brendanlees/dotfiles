@@ -75,7 +75,8 @@ copy-command() {
 {{- else if eq .chezmoi.os "linux" }}
   local encoded
   encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
-  printf '\033]52;c;%s\007' "$encoded" >/dev/tty
+  zle -I
+  printf '\033]52;c;%s\007' "$encoded"
 {{- end }}
   zle -M "Copied to clipboard"
 }
