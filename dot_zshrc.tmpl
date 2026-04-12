@@ -70,7 +70,16 @@ setopt hist_find_no_dups
 # clipboard 
 # ------------------------------------------
 
+# copy current command to clipboard
+copy-command() {
+  echo -n $BUFFER | pbcopy
+  zle -M "Copied to clipboard"
+}
+zle -N copy-command
+bindkey '^Xc' copy-command
 
+alias pbcopy="xsel --clipboard --input"
+alias pbpaste="xsel --clipboard --output"
 # ------------------------------------------
 # starship
 # ------------------------------------------
@@ -109,8 +118,6 @@ fi
 # ------------------------------------------
 # homelab
 # ------------------------------------------
-
-[[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/env_tokens.sh"
 
 if [[ -d /boot/dietpi ]]; then
   export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
