@@ -72,16 +72,28 @@ setopt hist_find_no_dups
 copy-command() {
 {{- if eq .chezmoi.os "darwin" }}
   echo -n $BUFFER | pbcopy
-{{- else if eq .chezmoi.os "linux" }}
-  local encoded
-  encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
-  zle -I
-  printf '\033]52;c;%s\007' "$encoded"
-{{- end }}
   zle -M "Copied to clipboard"
+{{- else if eq .chezmoi.os "linux" }}
+  [[ -z "$BUFFER" ]] && return
+  typeset -g _CLIP_PENDING
+  _CLIP_PENDING=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
+  zle -M "Copying..."
+{{- end }}
 }
 zle -N copy-command
 bindkey '^Xc' copy-command
+
+{{- if eq .chezmoi.os "linux" }}
+
+# send clipboard after ZLE exits (OSC 52 doesn't work while ZLE is active)
+_clip_precmd() {
+  [[ -n "${_CLIP_PENDING}" ]] || return
+  printf '\033]52;c;%s\007' "${_CLIP_PENDING}"
+  unset _CLIP_PENDING
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _clip_precmd
+{{- end }}
 
 # ------------------------------------------
 # starship
