@@ -10,11 +10,13 @@ source "$HOME/.zsh_aliases"
 # api tokens
 # ------------------------------------------
 
-{{- if or .personal .work }}
+{{- if .personal }}
 if command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
   export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
   export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 fi
+{{- else }}
+  export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 {{- end }}
 
 # ------------------------------------------
@@ -68,32 +70,6 @@ setopt hist_find_no_dups
 # clipboard 
 # ------------------------------------------
 
-# copy current command to clipboard
-copy-command() {
-{{- if eq .chezmoi.os "darwin" }}
-  echo -n $BUFFER | pbcopy
-  zle -M "Copied to clipboard"
-{{- else if eq .chezmoi.os "linux" }}
-  [[ -z "$BUFFER" ]] && return
-  typeset -g _CLIP_PENDING
-  _CLIP_PENDING=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
-  zle -M "Copying..."
-{{- end }}
-}
-zle -N copy-command
-bindkey '^Xc' copy-command
-
-{{- if eq .chezmoi.os "linux" }}
-
-# send clipboard after ZLE exits (OSC 52 doesn't work while ZLE is active)
-_clip_precmd() {
-  [[ -n "${_CLIP_PENDING}" ]] || return
-  printf '\033]52;c;%s\007' "${_CLIP_PENDING}"
-  unset _CLIP_PENDING
-}
-autoload -Uz add-zsh-hook
-add-zsh-hook precmd _clip_precmd
-{{- end }}
 
 # ------------------------------------------
 # starship
