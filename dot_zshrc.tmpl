@@ -73,7 +73,9 @@ copy-command() {
 {{- if eq .chezmoi.os "darwin" }}
   echo -n $BUFFER | pbcopy
 {{- else if eq .chezmoi.os "linux" }}
-  echo -n $BUFFER | xclip -selection clipboard
+  local encoded
+  encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
+  printf '\033]52;c;%s\a' "$encoded"
 {{- end }}
   zle -M "Copied to clipboard"
 }
