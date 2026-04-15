@@ -12,7 +12,7 @@ options=(
   hidpi=on
   active_color="$blue"
   inactive_color="$transparent"
-  blacklist="Todoist","SoundSource","Todoist Helper", "TodoistWidgets","Tailscale","Sleeve", "PastePal", "Dropover"
+  blacklist="espanso,Todoist,SoundSource,Todoist Helper,TodoistWidgets,Tailscale,Sleeve,PastePal,Dropover"
 )
 
 borders "${options[@]}"
