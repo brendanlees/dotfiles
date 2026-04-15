@@ -1,0 +1,4 @@
+matches:
+  # Paths > Firefox Profile
+  - trigger: ".ffprofile"
+    replace: "/Users/brendan/Library/'Application Support'/Firefox/Profiles"

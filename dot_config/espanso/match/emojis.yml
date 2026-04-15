@@ -1,0 +1,8 @@
+matches:
+  # Emoji > Brain (NC)
+  - trigger: ".nc"
+    replace: "\U0001F9E0"
+
+  # Check Mark Button
+  - trigger: "==e-x"
+    replace: "\u2705"

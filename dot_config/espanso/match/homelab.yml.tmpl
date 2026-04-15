@@ -1,0 +1,6 @@
+{{- if (lookPath "bw") -}}
+{{- $bw := bitwardenFields "item" "007b0e02-0af0-41e4-9779-b42d0156e6aa" -}}
+matches:
+  - trigger: ".stxa"
+    replace: "{{ $bw.url_stxa.value }}"
+{{- end }}

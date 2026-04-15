@@ -1,0 +1,18 @@
+{{- if and .personal (lookPath "bw") -}}
+{{- $bw := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" -}}
+matches:
+  - trigger: ".bname"
+    replace: "{{ $bw.full_name.value }}"
+
+  - trigger: ".bphone"
+    replace: "{{ $bw.phone.value }}"
+
+  - trigger: ".abn"
+    replace: "{{ $bw.abn.value }}"
+
+  - trigger: ".bpo"
+    replace: "{{ $bw.po_box.value }}"
+
+  - trigger: ".bnk"
+    replace: "{{ $bw.bnkn.value }}"
+{{- end }}

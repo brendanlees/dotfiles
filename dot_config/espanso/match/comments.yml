@@ -1,0 +1,128 @@
+matches:
+  # --- CSS ---
+
+  # CSS > Comment (Small / Default)
+  - trigger: ".cts"
+    replace: "/* $|$ */"
+
+  # CSS > Comment (Subtitle)
+  - trigger: ".ctm"
+    replace: "/* --- $|$ --- */"
+
+  # CSS > Comment (Title)
+  - trigger: ".ctl"
+    replace: |
+
+      /* ==========================================
+      =! $|$
+      ------------------------------------------ */
+
+  # Steady CSS Header
+  - trigger: ".cth"
+    replace: |
+      /*
+      ==========================================
+                 w                 8
+           d88b w8ww .d88b .d88 .d88 Yb  dP
+          `Yb.  8   8.dP' 8  8 8  8  YbdP
+      wwww Y88P  Y8P `Y88P `Y88 `Y88   dP
+                                      dP
+      ==========================================
+
+      Template:
+
+      Description:
+
+      License:
+      For use with websites developed by steadydigital.co only.
+
+      ==========================================
+
+      ==========================================
+      $|$
+      ------------------------------------------ */
+
+  # --- JavaScript ---
+
+  # JS > Comment (Title)
+  - trigger: ".ctjl"
+    replace: |
+
+      // ==========================================
+      //=! $|$
+      //------------------------------------------
+
+  # JS > Comment (Subtitle)
+  - trigger: ".ctjm"
+    replace: "// --- $|$ --- //"
+
+  # Steady JS Header
+  - trigger: ".ctjh"
+    replace: |
+      //
+      //==========================================
+      //            w                 8
+      //      d88b w8ww .d88b .d88 .d88 Yb  dP
+      //     ` Yb.  8   8.dP' 8  8 8  8  YbdP
+      // wwww Y88P  Y8P `Y88P `Y88 `Y88   dP
+      //                                 dP
+      //==========================================
+
+      //Template:
+
+      //Description:
+
+      //License:
+
+      //==========================================
+
+      //==========================================
+      //  $|$
+      //------------------------------------------
+
+  # --- PHP ---
+
+  # PHP > Comment (Title)
+  - trigger: ".ctpl"
+    replace: |
+      /** ==========================================
+      * =! $|$
+      *------------------------------------------ */
+
+  # PHP > Comment (Subtitle)
+  - trigger: ".ctpm"
+    replace: |
+      /**
+       * $|$
+       */
+
+  # PHP > Comment
+  - trigger: ".ctps"
+    replace: "/** $|$ */"
+
+  # PHP > Comment (Function)
+  - trigger: ".ctpf"
+    replace: |
+      /*
+       * @function $|$
+       * @since {{mydate}}
+       * @author brendan lees (steadydigital.co)
+       */
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%d-%m-%Y"
+
+  # --- Bash ---
+
+  # Bash > Comment (Title / Large)
+  - trigger: ".ctbl"
+    replace: |
+      # ------------------------------------------
+      # $|$
+      # ------------------------------------------
+
+  # Bash > Comment (Subtitle / Medium)
+  - trigger: ".ctbm"
+    replace: "# --- $|$ ---"

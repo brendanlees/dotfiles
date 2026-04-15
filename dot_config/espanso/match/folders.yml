@@ -1,0 +1,44 @@
+matches:
+  # wk
+  - trigger: ".pfwk"
+    replace: "[{{form1.Who}}] - {{form1.What}} - {{mydate}}"
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%Y-%m-%d"
+      - name: form1
+        type: form
+        params:
+          layout: |
+            Who: [[Who]]
+            What: [[What]]
+
+  # ws
+  - trigger: ".pfws"
+    replace: "[ws] - {{form1.What}} - {{mydate}}"
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%Y-%m-%d"
+      - name: form1
+        type: form
+        params:
+          layout: |
+            What: [[What]]
+
+  # sd
+  - trigger: ".pfsd"
+    replace: "[{{form1.Prefix}}] - {{form1.What}} - {{mydate}}"
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%Y-%m-%d"
+      - name: form1
+        type: form
+        params:
+          layout: |
+            Who (prefix): [[Prefix]]
+            What: [[What]]

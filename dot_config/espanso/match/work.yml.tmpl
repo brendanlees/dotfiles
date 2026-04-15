@@ -1,0 +1,21 @@
+{{- if and .work (lookPath "bw") -}}
+{{- $bw := bitwardenFields "item" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" -}}
+matches:
+  - trigger: ".wmail"
+    replace: "{{ $bw.email_work.value }}"
+
+  - trigger: ".wphone"
+    replace: "{{ $bw.work_phone.value }}"
+
+  - trigger: ".bkcal"
+    replace: "{{ $bw.booking_url.value }}"
+
+  - trigger: ".frm/policies"
+    form: "{{ $bw.form_policies.value }}"
+
+  - trigger: "==stdy-stg"
+    form: "{{ $bw.staging_url.value }}"
+
+  - trigger: ".kmail"
+    replace: "{{ $bw.email_ws.value }}"
+{{- end }}

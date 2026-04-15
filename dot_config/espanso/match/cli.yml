@@ -1,0 +1,91 @@
+matches:
+  # --- Package Management ---
+
+  # brew > update
+  - trigger: "==brew-up"
+    replace: "brew update && brew upgrade && brew cleanup"
+
+  # apt > apt update
+  - trigger: "==apt"
+    replace: "sudo apt update && sudo apt upgrade -y && sudo unattended-upgrade -d && sudo apt autoremove && sudo apt clean"
+
+  # pve > lxc cleaner
+  - trigger: "==pve-lxc-cl"
+    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/clean-lxcs.sh)"'
+
+  # pve > lxc filesystem trim
+  - trigger: "==pve-lxc-tr"
+    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/fstrim.sh)"'
+
+  # pve > kernel clean
+  - trigger: "==pve-kernel-cl"
+    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/kernel-clean.sh)"'
+
+  # --- Spindown Timer ---
+
+  # spindown-timer > stop nas-data
+  - trigger: "==spind-stop-nas"
+    replace: "sudo sh /mnt/app-data/opt/spindown-timer/scripts/spindown-stop--nas.sh"
+
+  # spindown-timer > start nas-data
+  - trigger: "==spind-start-nas"
+    replace: "sudo sh /mnt/app-data/opt/spindown-timer/scripts/spindown-start--nas.sh"
+
+  # spindown-timer > start media-data
+  - trigger: "==spind-start-media"
+    replace: "sudo sh /mnt/app-data/opt/spindown-timer/scripts/spindown-start--media.sh"
+
+  # spindown-timer > stop media-data
+  - trigger: "==spind-stop-media"
+    replace: "sudo sh /mnt/app-data/opt/spindown-timer/scripts/spindown-stop--media.sh"
+
+  # spindown timer > tail media logs
+  - trigger: "==spind-logs-media"
+    replace: "tail -f /mnt/app-data/opt/spindown-timer/logs/spindown-start--media.log"
+
+  # spindown timer > tail nas logs
+  - trigger: "==spind-logs-nas"
+    replace: "tail -f /mnt/app-data/opt/spindown-timer/logs/spindown-start--nas.log"
+
+  # --- System Logs ---
+
+  # linux > tail syslog
+  - trigger: "==syslog"
+    replace: "sudo tail -f /var/log/syslog"
+
+  # linux > tail auth.log
+  - trigger: "==authlog"
+    replace: "sudo tail -f /var/log/auth.log"
+
+  # linux > tail kern.log
+  - trigger: "==kernlog"
+    replace: "sudo tail -f /var/log/kern.log"
+
+  # --- Find ---
+
+  # linux > find all instances of a filename in a certain path
+  - trigger: "==fnd"
+    form: 'find [[path]] -name "[[filename]]" -print'
+
+  # linux > delete all instances of a filename in a certain path
+  - trigger: "==fnd-del"
+    form: 'find [[path]] -name "[[filename]]" -print -delete'
+
+  # --- SSH ---
+
+  # ssh > generate ed25519 key (for gitea)
+  - trigger: "==ssh-gitea-ed"
+    form: 'ssh-keygen -t ed25519 -C "gitea repo - [[hostname]]"'
+
+  # ssh > generate rsa key (for gitea)
+  - trigger: "==ssh-gitea-rsa"
+    form: 'ssh-keygen -t rsa -b 4096 -C "gitea repo - [[hostname]]"'
+
+  # ddev > snapshot
+  - trigger: "==ddv-s"
+    replace: "ddev snapshot --name={{mydate}}_"
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%Y-%m-%d"

@@ -1,0 +1,13 @@
+matches:
+  # Reference > Screen Reader Shortcut
+  - trigger: ".scrnrddr"
+    replace: "cmd + fn + f5"
+
+  # Info > Date (yyyy-MM-dd)
+  - trigger: ".dd8"
+    replace: "{{mydate}}"
+    vars:
+      - name: mydate
+        type: date
+        params:
+          format: "%Y-%m-%d"
