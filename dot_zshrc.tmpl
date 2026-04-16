@@ -1,11 +1,14 @@
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export ESPANSO_CONFIG_DIR="$XDG_CONFIG_HOME/espanso"
 
 # ------------------------------------------
 # aliases / replacements
 # ------------------------------------------
 
-source "$HOME/.zsh_aliases"
+source "$XDG_CONFIG_HOME/zsh/aliases.zsh"
 
 # ------------------------------------------
 # api tokens
@@ -33,10 +36,10 @@ bindkey jj vi-cmd-mode
 # ------------------------------------------
 
 # load zsh-syntax-highlighting
-source "$HOME/.cli-plugins/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$XDG_DATA_HOME/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # load zsh-completions
-fpath=("$HOME/.cli-plugins/zsh/zsh-completions/" $fpath)
+fpath=("$XDG_DATA_HOME/zsh/plugins/zsh-completions/" $fpath)
 
 # completion styling
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
@@ -52,11 +55,11 @@ zstyle ':fzf-tab:*' group-colors \
   $'\033[38;2;158;206;106m'
 
 # load zsh-autosuggestions
-source "$HOME/.cli-plugins/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$XDG_DATA_HOME/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # autosuggestions history config
 export HISTSIZE=10000
-export HISTFILE=$HOME/.zsh_history
+export HISTFILE="$XDG_STATE_HOME/zsh/history"
 export SAVEHIST=$HISTSIZE
 HISTDUP=erase
 setopt appendhistory
@@ -91,8 +94,9 @@ eval "$(mise activate zsh)"
 source <(fzf --zsh)
 
 # load fzf-tab script
-autoload -U compinit; compinit -u
-source "$HOME/.cli-plugins/fzf/fzf-tab/fzf-tab.plugin.zsh"
+mkdir -p "$XDG_CACHE_HOME/zsh" 2>/dev/null
+autoload -U compinit; compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION" -u
+source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
 # ------------------------------------------
 # carapace 

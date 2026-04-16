@@ -7,7 +7,7 @@ set -euo pipefail
 
 # restrict ~/.aliases to owner-only; prevents other processes from dropping
 # files that would be auto-sourced on shell start
-ALIASES_DIR="$HOME/.aliases"
+ALIASES_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d"
 if [ -d "$ALIASES_DIR" ]; then
   chmod 700 "$ALIASES_DIR"
 fi
