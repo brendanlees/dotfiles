@@ -1,5 +1,74 @@
 [commit.generation]
-command = "claude -p 'Write a conventional commit message for this diff. Follow the format type(scope): description. Respond with ONLY the commit message, no explanation.' --output-format text"
+command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
+
+template = """
+<task>Write a conventional commit message for the staged changes below.</task>
+
+<format>
+- Use the format: type(scope): description
+- Types: feat, fix, chore, docs, style, refactor, perf, test, build, ci
+- Scope: the module, component, or area changed (omit parentheses if no clear scope)
+- Subject line under 50 chars
+- For material changes, add a blank line then a body paragraph explaining the change
+- Output only the commit message, no quotes or code blocks
+</format>
+
+<style>
+- Imperative mood: "add feature" not "added feature"
+- Lowercase after the colon
+- No period at the end of the subject line
+{% if recent_commits %}- Match scope conventions from recent commits{% endif %}
+</style>
+
+<diffstat>
+{{ git_diff_stat }}
+</diffstat>
+
+<diff>
+{{ git_diff }}
+</diff>
+
+<context>
+Branch: {{ branch }}
+{% if recent_commits %}<recent_commits>
+{% for commit in recent_commits %}- {{ commit }}
+{% endfor %}</recent_commits>{% endif %}
+</context>
+
+"""
+
+squash-template = """
+<task>Write a conventional commit message for the combined effect of these commits.</task>
+
+<format>
+- Use the format: type(scope): description
+- Types: feat, fix, chore, docs, style, refactor, perf, test, build, ci
+- Scope: the module, component, or area changed (omit parentheses if no clear scope)
+- Subject line under 50 chars
+- For material changes, add a blank line then a body paragraph explaining the change
+- Output only the commit message, no quotes or code blocks
+</format>
+
+<style>
+- Imperative mood: "add feature" not "added feature"
+- Lowercase after the colon
+- No period at the end of the subject line
+- Match the style of commits being squashed
+</style>
+
+<commits branch="{{ branch }}" target="{{ target_branch }}">
+{% for commit in commits %}- {{ commit }}
+{% endfor %}</commits>
+
+<diffstat>
+{{ git_diff_stat }}
+</diffstat>
+
+<diff>
+{{ git_diff }}
+</diff>
+
+"""
 
 [step.copy-ignored]
 exclude = [".mise/"]
