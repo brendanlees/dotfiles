@@ -1,0 +1,68 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "5681beaf-2c62-4f2e-97a3-e900399fa253",
+        "type": "context-bar",
+        "color": ""
+      },
+      {
+        "id": "1",
+        "type": "model",
+        "color": "brightBlack"
+      }
+    ],
+    [
+      {
+        "id": "bd1634f2-5316-495b-b73f-8c8602cd1a6f",
+        "type": "git-branch",
+        "color": "brightBlue"
+      },
+      {
+        "id": "db2bbd69-3783-49bb-828c-38eb50dbdc3d",
+        "type": "git-worktree",
+        "color": "blue"
+      }
+    ],
+    [
+      {
+        "id": "9d3aa21b-f345-4595-a115-4000ab3b857f",
+        "type": "weekly-usage",
+        "metadata": {
+          "display": "time"
+        },
+        "color": "yellow"
+      },
+      {
+        "id": "0fe661bf-1a27-4ee6-b06b-448855f1ff9b",
+        "type": "weekly-reset-timer",
+        "color": "brightBlack"
+      },
+      {
+        "id": "e6b1969b-75d5-45e5-abf7-f7cb66ce06e6",
+        "type": "reset-timer",
+        "color": "brightBlack"
+      }
+    ]
+  ],
+  "flexMode": "full-until-compact",
+  "compactThreshold": 60,
+  "colorLevel": 3,
+  "defaultPadding": " ",
+  "inheritSeparatorColors": true,
+  "globalBold": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "theme": "nord-aurora",
+    "autoAlign": true
+  }
+}
