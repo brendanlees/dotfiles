@@ -7,7 +7,7 @@ set -euo pipefail
 
 # --- theme ---
 
-if [ ! -d "$HOME/.tmux/plugins/tmux-tokyo-night/" ]; then
+if [ ! -d "$HOME/.config/tmux/plugins/tmux-tokyo-night/" ]; then
   echo "installing tmux theme dependencies..."
 
   {{ if (eq .chezmoi.os "linux") -}}
