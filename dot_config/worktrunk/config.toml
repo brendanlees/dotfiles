@@ -3,3 +3,14 @@ command = "claude -p 'Write a conventional commit message for this diff. Follow 
 
 [step.copy-ignored]
 exclude = [".mise/"]
+
+[post-switch]
+tmux-rename = '[ -n "$TMUX" ] && tmux rename-window -t "$TMUX_PANE" {{ branch | sanitize }}'
+
+[post-start]
+tmux-split = '''
+[ -n "$TMUX_PANE" ] && \
+  PANE_COUNT=$(tmux list-panes -t "$TMUX_PANE" -F x | wc -l | tr -d ' ') && \
+  [ "$PANE_COUNT" -eq 1 ] && \
+  tmux split-window -h -t "$TMUX_PANE" -c {{ worktree_path }}
+'''
