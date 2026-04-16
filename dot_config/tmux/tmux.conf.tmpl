@@ -124,6 +124,9 @@ set -g @tokyo-night-tmux_show_git 1
 
 # set -g @tokyo-night-tmux_show_battery_widget 1
 
+# set plugin install path (XDG-compliant, overrides TPM default of ~/.tmux/plugins/)
+set-environment -g TMUX_PLUGIN_MANAGER_PATH '~/.config/tmux/plugins/'
+
 # run tmux plugin manager
 run '~/.config/tmux/plugins/tpm/tpm'
 
