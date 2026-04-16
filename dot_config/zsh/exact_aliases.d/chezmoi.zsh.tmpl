@@ -3,22 +3,18 @@
 # ------------------------------------------
 
 {{- if and .personal (lookPath "bw") }}
-# vault — reuse existing BW_SESSION if set, otherwise unlock once
-_chezmoi_bw_ensure() {
+# wrap chezmoi so BW_SESSION is set once per shell session
+chezmoi() {
     if [ -z "${BW_SESSION:-}" ]; then
         BW_SESSION="$(bw unlock --raw)" || return 1
         export BW_SESSION
     fi
+    command chezmoi "$@"
 }
-{{- else }}
-_chezmoi_bw_ensure() { :; }
 {{- end }}
 
 # apply
-cza() {
-    _chezmoi_bw_ensure || return 1
-    chezmoi apply --force
-}
+cza() { chezmoi apply --force; }
 
 # purge system & reinit
 # refuses if there is unpushed work or extra worktrees in the chezmoi source dir
@@ -54,6 +50,5 @@ czr() {
         return 1
     fi
 
-    _chezmoi_bw_ensure || return 1
     chezmoi purge --force && chezmoi init --apply brendanlees
 }
