@@ -1,0 +1,8 @@
+[projects."github.com/steady-digital/stdy-astro-2026"]
+approved-commands = [
+    "wt step copy-ignored",
+    "bun install",
+    "bunx astro dev --port {{ branch | hash_port }}",
+    "bunx astro check",
+    "mise trust --yes .mise.toml",
+]

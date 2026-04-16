@@ -1,0 +1,5 @@
+[commit.generation]
+command = "claude -p 'Write a conventional commit message for this diff. Follow the format type(scope): description. Respond with ONLY the commit message, no explanation.' --output-format text"
+
+[step.copy-ignored]
+exclude = [".mise/"]
