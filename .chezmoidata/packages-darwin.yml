@@ -43,6 +43,7 @@ brews:
     - cmatrix
     - dockutil
     - mas
+    - mosh
     - ente-cli
     - ffmpeg
     - gemini-cli
