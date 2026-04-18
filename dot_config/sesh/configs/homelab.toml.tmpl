@@ -4,7 +4,11 @@ path = "~"
 
 [[session]]
 name = "docker"
-path = "$DOCKER_ROOT"
+{{ if stat "/opt/docker/compose" -}}
+path = "/opt/docker"
+{{ else -}}
+path = "~/docker/compose"
+{{ end -}}
 
 [[session]]
 name = "opt"
