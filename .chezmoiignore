@@ -6,6 +6,15 @@ Library
 
 {{- if or (ne .chezmoi.os "darwin") .headless }}
 .config/ghostty
+.config/worktrunk
+.config/ccstatusline
+{{- end }}
+
+{{- if not .personal }}
+.config/sesh/configs/personal.toml
+{{- end }}
+{{- if not .work }}
+.config/sesh/configs/work.toml
 {{- end }}
 
 {{- if .headless }}
