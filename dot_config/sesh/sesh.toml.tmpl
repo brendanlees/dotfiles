@@ -1,50 +1,62 @@
-{{- $chezmoi := ".local/share/chezmoi" -}}
-{{- $dev := "Dev" -}}
+# ------------------------------------------
+# config
+# ------------------------------------------
+
+# --- additional configs based on scopes ---
+import = [
+
+{{- if .personal }}
+  "~/.config/sesh/configs/personal.toml",
+{{- end }}
+
+{{- if .work }}
+  "~/.config/sesh/configs/work.toml",
+{{- end }}
+
+{{- if .homelab }}
+  "~/.config/sesh/configs/homelab.toml",
+{{- end }}
+]
+
+
+# ------------------------------------------
+# defaults
+# ------------------------------------------
 
 sort_order = ["config", "tmux", "zoxide"]
 
-[[session]]
-name = "Downloads 📥"
-path = "~/Downloads"
-startup_command = "lst"
+blacklist = [
+  "^_"
+]
+
+[default_session]
+startup_command = "nvim +\"lua Snacks.picker.files()\""
+preview_command = "eza --all --long --git --icons --color=always {}"
+
+
+# ------------------------------------------
+# sessions
+# ------------------------------------------
+
+{{- if eq .chezmoi.os "darwin" }}
 
 [[session]]
-name = "tmux config"
-path = "~/{{ $chezmoi }}/dot_config/tmux/tmux.conf.tmpl"
-startup_command = "nvim ~/{{ $chezmoi }}/dot_config/tmux/tmux.conf.tmpl"
-preview_command = "bat --color=always ~/{{ $chezmoi }}/dot_config/tmux/tmux.conf.tmpl"
+name = "downloads"
+path = "~/Downloads"
+startup_command = "yazi"
+
+{{- end }}
+
+# --- configs ---
 
 [[session]]
 name = "dotfiles"
-path = "~/{{ $chezmoi }}"
-startup_command = "nvim ."
-
-[[session]]
-name = "homelab"
-path = "~/{{ $dev }}/ansible/homelab"
-startup_command = "lst"
-
-[[session]]
-name = "steady-servers"
-path = "~/{{ $dev }}/ansible/steadydigital/steady-servers"
-startup_command = "lst"
-
-[[session]]
-name = "touch-typing"
-path = "~/Downloads/[1] - Projects/touch-typing"
-startup_command = "lst"
-
-[[session]]
-name = "keyboards"
-path = "~/{{ $dev }}/keyboards"
-startup_command = "lst"
+path = "~/{{ .chezmoi_dir }}"
 
 [[session]]
 name = "nvim config"
 path = "~/.config/nvim"
-startup_command = "nvim"
 
 [[session]]
-name = "stdy-astro-2026"
-path = "~/{{ $dev }}/astro/stdy-astro-2026"
-startup_command = "lst"
+name = "tmux config"
+path = "~/{{ .chezmoi_dir }}/dot_config/tmux"
