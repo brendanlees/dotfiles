@@ -8,7 +8,8 @@
 if [[ -d "/opt/docker/compose" ]]; then
   DOCKER_ROOT="/opt/docker"
 else
-  DOCKER_ROOT="$HOME/docker/compose"
+  _dh=("$HOME"/[Dd]ocker(N/))
+  DOCKER_ROOT="${_dh[1]:-$HOME/docker}/compose"
 fi
 
 # lock / unlock permissions
