@@ -51,7 +51,7 @@ startup_command = "yazi"
 
 [[session]]
 name = "dotfiles"
-path = "~/{{ .chezmoi_dir }}"
+path = "~/{{ .chezmoi_dir | default ".local/share/chezmoi" }}"
 
 [[session]]
 name = "nvim config"
@@ -59,4 +59,4 @@ path = "~/.config/nvim"
 
 [[session]]
 name = "tmux config"
-path = "~/{{ .chezmoi_dir }}/dot_config/tmux"
+path = "~/{{ .chezmoi_dir | default ".local/share/chezmoi" }}/dot_config/tmux"
