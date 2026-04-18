@@ -1,2 +1,12 @@
-[[wildcard]]
+[[session]]
+name = "steady-servers"
+path = "~/{{ .code_dir }}/_work/ansible-playbooks/steady-servers"
+startup_command = "tailscale switch steadydigital.co && tailscale up && ansible-playbook update-servers.yml && tailscale down"
+
+[[session]]
+name = "invoice-ninja"
+path = "~/{{ .code_dir }}/_work/ansible-playbooks/steady-servers"
+startup_command = "tailscale switch steadydigital.co && tailscale up && ansible-playbook update-invoice-ninja.yml && tailscale down"
+
+[[ wildcard ]]
 pattern = "~/{{ .code_dir }}/_work/*"

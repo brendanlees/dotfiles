@@ -1,5 +1,10 @@
+[[session]]
+name = "homelab"
+path = "~/{{ .code_dir }}/_homelab/ansible-playbooks/homelab"
+startup_command = "ansible-playbook update-servers.yml"
+
 [[wildcard]]
 pattern = "~/{{ .code_dir }}/*"
 
-[[wildcard]]
-pattern = "~/{{ .code_dir }}/_homelab/*"
+# [[wildcard]]
+# pattern = "~/{{ .code_dir }}/_homelab/*"
