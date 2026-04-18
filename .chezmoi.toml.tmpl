@@ -1,22 +1,25 @@
-{{/* ─── feature flags ─── */}}
+# ------------------------------------------
+# feature flags / scopes
+# ------------------------------------------
+
 {{- $personal  := false -}}
 {{- $work      := false -}}
 {{- $homelab   := false -}}
 {{- $ephemeral := false -}}
 {{- $headless  := false -}}
 
-{{/* ─── hostname ─── */}}
+# --- detect hostname  ---
 {{- $hostname := .chezmoi.hostname -}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{-   $hostname = output "scutil" "--get" "LocalHostName" | trim -}}
 {{- end -}}
 
-{{/* ─── ephemeral detection ─── */}}
+# --- detect if ephemeral  ---
 {{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") (eq .chezmoi.username "ubuntu" "vagrant" "vscode") -}}
 {{-   $ephemeral = true -}}
 {{- end -}}
 
-{{/* ─── env var override ─── */}}
+# --- env var override requirements --- 
 {{- $role := env "CHEZMOI_ROLE" -}}
 {{- if $role -}}
 {{-   if regexMatch "(^|,)personal(,|$)" $role }}{{ $personal = true }}{{ end -}}
@@ -25,15 +28,19 @@
 {{-   if regexMatch "(^|,)headless(,|$)" $role }}{{ $headless = true }}{{ end -}}
 {{- end -}}
 
-{{/* ─── machine type ─── */}}
+# --- identify machine type ---
 {{- if and (not $ephemeral) (not $role) -}}
-{{-   if eq $hostname "bAir" -}}
+
+# via hostname
+{{-   if eq $hostname "bAir" -}} # main machine
 {{-     $personal = true -}}
 {{-     $work = true -}}
-{{-   else if eq $hostname "" -}}{{/* work-only machines */}}
+{{-   else if eq $hostname "" -}} # work only
 {{-     $work = true -}}
-{{-   else if eq $hostname "pve1" "pve2" "truenas" "pihole" "rpi1" "traefik" "servarr" "duplicacy" -}}
+{{-   else if eq $hostname "pve1" "pve2" "truenas" "pihole" "rpi1" "traefik" "servarr" "duplicacy" -}} # main homelab machines
 {{-     $homelab = true -}}
+
+# via prompt
 {{-   else if stdinIsATTY -}}
 {{-     $personal = promptBoolOnce . "personal" "Is this a personal and/or homelab admin machine (y/n)" -}}
 {{-     if $personal -}}
@@ -47,6 +54,8 @@
 {{-     if not (or $personal $work $homelab) -}}
 {{-       warnf "chezmoi: no machine type set — re-run 'chezmoi init' to reconfigure" -}}
 {{-     end -}}
+
+# via script, playbook, command
 {{-   else if or .personal .work .homelab -}}
 {{-     $personal = .personal -}}
 {{-     $work = .work -}}
@@ -56,10 +65,10 @@
 {{-   end -}}
 {{- end -}}
 
-{{/* ─── headless ─── */}}
+# --- if homelab, define type ---
 {{- if $homelab -}}
 {{-   $headless = true -}}
-{{- else if and $work (not $personal) -}}{{/* personal machines assumed GUI */}}
+{{- else if and $work (not $personal) -}} # personal machines assumed GUI
 {{-   if stdinIsATTY -}}
 {{-     $headless = promptBoolOnce . "headless" "Is this a headless machine (no GUI) (y/n)" -}}
 {{-   else if .headless -}}
@@ -67,7 +76,7 @@
 {{-   end -}}
 {{- end -}}
 
-{{/* ─── git identity ─── */}}
+# --- set git identity based on scope ---
 {{- $git_name  := "" -}}
 {{- $git_email := "" -}}
 {{- if and (not $personal) $work -}}
@@ -75,16 +84,31 @@
 {{-   $git_email = promptStringOnce . "git_email" "Git email" -}}
 {{- end -}}
 
+
+# ------------------------------------------
+# global vars / data
+# ------------------------------------------
+
 [data]
+
+# --- feature flags ---
   personal  = {{ $personal }}
   work      = {{ $work }}
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
+
+# --- git ---
 {{- if and (not $personal) $work }}
   git_name  = {{ $git_name | quote }}
   git_email = {{ $git_email | quote }}
 {{- end }}
-  nerd_font   = "JetBrainsMono"
-  font_family = "JetBrainsMono Nerd Font Mono"
+
+# --- directories ---
+  code_dir    = "code" # coding
+  chezmoi_dir = ".local/share/chezmoi" # chezmoi config
+
+# --- font ---
+  nerd_font   = "JetBrainsMono" # active nerd font
+  font_family = "JetBrainsMono Nerd Font Mono" # active nerd font family name
 
