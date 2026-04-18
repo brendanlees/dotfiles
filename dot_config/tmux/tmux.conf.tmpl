@@ -56,8 +56,9 @@ bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 bind -r h resize-pane -L 5
 
-# skip "kill-pane 1? (y/n)" prompt
+# skip "kill-*? (y/n)" prompts
 bind-key x kill-pane 
+bind-key & kill-window
 
 # set status bar to top
 set-option -g status-position top
