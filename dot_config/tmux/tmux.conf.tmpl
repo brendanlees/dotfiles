@@ -68,8 +68,7 @@ set-window-option -g mode-keys vi
 bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
 
 # sesh config / integration
-bind-key "K" display-popup -h 90% -w 50% -E "zsh -i -c 'sesh picker -i'"
-
+bind-key "K" run-shell "~/.config/sesh/scripts/picker.sh --tmux"
 # tmux-yank configuration (cross-platform clipboard)
 # These settings must come BEFORE the plugin is loaded
 set -g @yank_selection 'clipboard'          # Copy to system clipboard (not just tmux buffer)
