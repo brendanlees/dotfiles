@@ -11,14 +11,19 @@ fi
 sesh connect "$(
   sesh list --icons "$@" | fzf $TMUX_FLAG \
     --no-sort --ansi --border-label ' sesh ' --prompt '⚡  ' \
-    --header '  ^a all ^t tmux ^g configs ^x zoxide ^d tmux kill ^f find' \
+    --header '  ^a all ^t tmux ^g configs ^x zoxide ^d tmux kill ^f find{{ if .personal }} ^c code ^h homelab ^w work{{ end }}' \
     --bind 'tab:down,btab:up' \
-    --bind 'ctrl-a:change-prompt(⚡  )+reload(sesh list --icons)' \
+    --bind 'ctrl-a:change-prompt(⚡)+reload(sesh list --icons)' \
     --bind 'ctrl-t:change-prompt(🪟  )+reload(sesh list -t --icons)' \
     --bind 'ctrl-g:change-prompt(⚙️  )+reload(sesh list -c --icons)' \
     --bind 'ctrl-x:change-prompt(📁  )+reload(sesh list -z --icons)' \
     --bind 'ctrl-f:change-prompt(🔎  )+reload(fd -H -d 2 -t d -E .Trash . ~)' \
     --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡  )+reload(sesh list --icons)' \
+    {{- if .personal }}
+    --bind 'ctrl-c:change-prompt(💻  )+reload(fd -d 1 -t d -E _\* . ~/{{ .code_dir }})' \
+    --bind 'ctrl-h:change-prompt(🏠  )+reload(fd -d 1 -t d . ~/{{ .code_dir }}/_homelab)' \
+    --bind 'ctrl-w:change-prompt(💼  )+reload(fd -d 1 -t d . ~/{{ .code_dir }}/_work)' \
+    {{- end }}
     --preview-window 'right:55%' \
     --preview 'sesh preview {}'
 )"
