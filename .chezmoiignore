@@ -41,8 +41,6 @@ Library
 README.md
 key.txt.age
 LICENSE
-.DS_Store
-{{- if or .headless (not (or .personal .work)) }}
-context
 docs
+.DS_Store
 {{- end }}
