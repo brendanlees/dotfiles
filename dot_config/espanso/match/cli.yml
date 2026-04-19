@@ -3,7 +3,7 @@ matches:
 
   # chezmoi > bootstrap install on new machine
   - trigger: "==cz-init"
-    replace: 'sh -c "$(curl -fsLS get.chezmoi.io/lb)" init --apply brendanlees'
+    replace: 'sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
 
   # brew > update
   - trigger: "==brew-up"
