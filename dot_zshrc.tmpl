@@ -72,19 +72,19 @@ setopt hist_find_no_dups
 
 
 # ------------------------------------------
+# mise
+# ------------------------------------------
+
+export PATH=$HOME/.local/bin:$PATH
+eval "$(mise activate zsh)"
+
+# ------------------------------------------
 # starship
 # ------------------------------------------
 
 # start starship prompt
 eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
-
-# ------------------------------------------
-# mise 
-# ------------------------------------------
-
-export PATH=$HOME/.local/bin:$PATH
-eval "$(mise activate zsh)"
 
 # ------------------------------------------
 # fzf 
