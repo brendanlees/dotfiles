@@ -42,5 +42,6 @@ Library
 README.md
 key.txt.age
 LICENSE
+install.sh
 docs
 .DS_Store

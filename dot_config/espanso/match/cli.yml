@@ -1,6 +1,10 @@
 matches:
   # --- Package Management ---
 
+  # chezmoi > bootstrap install on new machine
+  - trigger: "==cz-init"
+    replace: 'sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply brendanlees'
+
   # brew > update
   - trigger: "==brew-up"
     replace: "brew update && brew upgrade && brew cleanup"
