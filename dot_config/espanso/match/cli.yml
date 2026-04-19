@@ -3,7 +3,7 @@ matches:
 
   # chezmoi > bootstrap install on new machine
   - trigger: "==cz-init"
-    replace: 'sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply brendanlees'
+    replace: 'sh -c "$(curl -fsLS get.chezmoi.io/lb)" init --apply brendanlees'
 
   # brew > update
   - trigger: "==brew-up"
@@ -11,19 +11,23 @@ matches:
 
   # apt > apt update
   - trigger: "==apt"
-    replace: "sudo apt update && sudo apt upgrade -y && sudo unattended-upgrade -d && sudo apt autoremove && sudo apt clean"
+    replace: "sudo apt update && sudo apt upgrade -y && sudo unattended-upgrade -d
+      && sudo apt autoremove && sudo apt clean"
 
   # pve > lxc cleaner
   - trigger: "==pve-lxc-cl"
-    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/clean-lxcs.sh)"'
+    replace: 'sudo bash -c "$(curl -fsSL
+      https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/clean-lxcs.sh)"'
 
   # pve > lxc filesystem trim
   - trigger: "==pve-lxc-tr"
-    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/fstrim.sh)"'
+    replace: 'sudo bash -c "$(curl -fsSL
+      https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/fstrim.sh)"'
 
   # pve > kernel clean
   - trigger: "==pve-kernel-cl"
-    replace: 'sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/kernel-clean.sh)"'
+    replace: 'sudo bash -c "$(curl -fsSL
+      https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/kernel-clean.sh)"'
 
   # --- Spindown Timer ---
 
