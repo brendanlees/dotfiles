@@ -7,9 +7,11 @@ set -euo pipefail
 
 # --- set zsh to default shell ---
 
-if [ ! -f ~/.zshrc ]; then
+if ! command -v zsh &>/dev/null; then
+    echo "zsh not found, skipping shell change"
+elif [ ! -f ~/.zshrc ]; then
     echo "Set zsh as default shell"
     chsh -s "$(which zsh)"
 else
-	echo "zsh already default shell, skipping."
+    echo "zsh already default shell, skipping."
 fi

@@ -20,6 +20,21 @@ if [ ${#missing[@]} -gt 0 ]; then
   apt update && apt install -y "${missing[@]}"
 fi
 
+{{ else -}}
+
+# non-root: try sudo
+missing=()
+command -v zsh &>/dev/null || missing+=(zsh)
+command -v git &>/dev/null || missing+=(git)
+
+if [ ${#missing[@]} -gt 0 ]; then
+  if command -v sudo &>/dev/null; then
+    sudo apt update && sudo apt install -y "${missing[@]}"
+  else
+    echo "WARNING: missing packages (${missing[*]}) and no sudo available"
+  fi
+fi
+
 {{ end -}}
 
 # --- all users --- #
