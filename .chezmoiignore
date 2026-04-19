@@ -2,6 +2,7 @@
 dotfiles-mac # only manage mac dotfiles on mac
 Library
 .chezmoiscripts/darwin/**
+.mactop
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") .headless }}
