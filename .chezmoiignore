@@ -43,4 +43,3 @@ key.txt.age
 LICENSE
 docs
 .DS_Store
-{{- end }}
