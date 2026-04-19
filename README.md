@@ -13,7 +13,7 @@ brew install chezmoi && chezmoi init --apply brendanlees
 **linux**
 
 ```sh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply brendanlees
+sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees
 ```
 
 on first run you'll be prompted to set your machine role. see [scoping](docs/scoping.md) to skip prompts or provision via ansible.
