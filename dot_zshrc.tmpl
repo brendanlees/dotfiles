@@ -19,16 +19,6 @@ if command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
   export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
   export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 fi
-{{- else if .homelab }}
-# homelab: resolve from age-encrypted dotfile
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  _age_key="$HOME/.config/chezmoi/key.txt"
-  _enc_token="{{ .chezmoi.sourceDir }}/.github_token.age"
-  if [ -f "$_age_key" ] && [ -f "$_enc_token" ] && command -v age >/dev/null 2>&1; then
-    GITHUB_TOKEN=$(age --decrypt -i "$_age_key" "$_enc_token" 2>/dev/null) || true
-    [ -n "$GITHUB_TOKEN" ] && export GITHUB_TOKEN
-  fi
-fi
 {{- else }}
   export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 {{- end }}

@@ -39,25 +39,13 @@ ansible passes the vault-encrypted token during `chezmoi init` and `chezmoi upda
 
 ### manual bootstrap
 
-**option a — env var:**
+pass the token as an env var:
 ```sh
 GITHUB_TOKEN=ghp_xxx chezmoi init --apply brendanlees
 ```
 
-**option b — age key:**
-
-copy the age private key to the machine before init:
-```sh
-scp ~/.config/chezmoi/key.txt machine:~/.config/chezmoi/key.txt
-chezmoi init --apply brendanlees
-```
-
-the run script will decrypt `.github_token.age` from the dotfiles repo automatically.
-
 ### rotating the token
 
 1. create a new fine-grained PAT (zero permissions) on github
-2. re-encrypt: `echo "ghp_new" | age -r age1<pubkey> -o .github_token.age`
-3. commit and push
-4. update `vault_github_token` in ansible vault
-5. run `chezmoi update` or ansible update playbook on all machines
+2. update `vault_github_token` in ansible vault
+3. run ansible update playbook to propagate to all machines
