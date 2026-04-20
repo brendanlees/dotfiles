@@ -17,11 +17,11 @@ fi
 # ------------------------------------------
 
 # priority: env var > chezmoi data
+{{ if .github_token -}}
 if [ -z "${GITHUB_TOKEN:-}" ]; then
-{{- if .github_token }}
   export GITHUB_TOKEN={{ .github_token | quote }}
-{{- end }}
 fi
+{{ end -}}
 
 # ------------------------------------------
 # install > mise tools (runs on every chezmoi apply)
