@@ -13,6 +13,24 @@ if [ -d "$ALIASES_DIR" ]; then
 fi
 
 # ------------------------------------------
+# resolve github token (rate-limit bypass)
+# ------------------------------------------
+
+# priority: env var > chezmoi data > age-encrypted file
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+{{- if .github_token }}
+  export GITHUB_TOKEN={{ .github_token | quote }}
+{{- else }}
+  _age_key="$HOME/.config/chezmoi/key.txt"
+  _enc_token="{{ .chezmoi.sourceDir }}/.github_token.age"
+  if [ -f "$_age_key" ] && [ -f "$_enc_token" ] && command -v age >/dev/null 2>&1; then
+    GITHUB_TOKEN=$(age --decrypt -i "$_age_key" "$_enc_token" 2>/dev/null) || true
+    [ -n "$GITHUB_TOKEN" ] && export GITHUB_TOKEN
+  fi
+{{- end }}
+fi
+
+# ------------------------------------------
 # install > mise tools (runs on every chezmoi apply)
 # ------------------------------------------
 

@@ -15,6 +15,9 @@ set -euo pipefail
 missing=()
 command -v zsh &>/dev/null || missing+=(zsh)
 command -v git &>/dev/null || missing+=(git)
+{{ if .homelab -}}
+command -v age &>/dev/null || missing+=(age)
+{{ end -}}
 
 if [ ${#missing[@]} -gt 0 ]; then
   apt update && apt install -y "${missing[@]}"
@@ -26,6 +29,9 @@ fi
 missing=()
 command -v zsh &>/dev/null || missing+=(zsh)
 command -v git &>/dev/null || missing+=(git)
+{{ if .homelab -}}
+command -v age &>/dev/null || missing+=(age)
+{{ end -}}
 
 if [ ${#missing[@]} -gt 0 ]; then
   if command -v sudo &>/dev/null; then
