@@ -22,6 +22,8 @@ set -g set-titles on             # Let Moshi/terminal see session and window nam
 set -g set-titles-string "#I: #W"
 set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
 set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
+set -s extended-keys on                  # Distinguish C-S-h from C-h (CSI u / xterm modifyOtherKeys)
+set -as terminal-features ",*:extkeys"   # Advertise extended-keys capability to all terminals
 
 # borders
 set -g pane-border-lines double
@@ -55,6 +57,10 @@ bind -r j resize-pane -D 5
 bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 bind -r h resize-pane -L 5
+
+# move between windows with ctrl+shift+h/l
+bind-key -n C-S-h previous-window
+bind-key -n C-S-l next-window
 
 # skip "kill-*? (y/n)" prompts
 bind-key x kill-pane 
