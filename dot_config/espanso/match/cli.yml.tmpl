@@ -1,14 +1,15 @@
-{{- $gh_token := (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").read_only_token.value -}}
 matches:
   # --- Package Management ---
 
   # chezmoi > bootstrap install on new machine
   - trigger: "==cz-init-d"
     replace: 'sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
+{{- if and .personal (lookPath "bw") }}
 
   # chezmoi > bootstrap install with github token (resolved from bitwarden at apply time)
   - trigger: "==cz-init-gh"
-    replace: 'GITHUB_TOKEN={{ $gh_token }} sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
+    replace: 'GITHUB_TOKEN={{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").read_only_token.value }} sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
+{{- end }}
 
   # brew > update
   - trigger: "==brew-up"
