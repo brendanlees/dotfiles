@@ -69,27 +69,28 @@ brews:
     - ddev/ddev/ddev
     - discoteq/discoteq/flock
     - kubectl
+    - nss
     - wp-cli
 
 mas:
   base: []
   personal:
-    - { id: 937984704, name: Amphetamine }
-    - { id: 1355679052, name: Dropover }
-    - { id: 1503970375, name: "Invoice Ninja" }
-    - { id: 6758070650, name: Itsyhome }
-    - { id: 302584613, name: Kindle }
-    - { id: 472226235, name: LanScan }
-    - { id: 634148309, name: "Logic Pro" }
-    - { id: 1614730313, name: MusicBox }
-    - { id: 1440405750, name: MusicHarbor }
-    - { id: 1643649331, name: OpenIn }
-    - { id: 375589283, name: Parcel }
-    - { id: 1503446680, name: PastePal }
-    - { id: 537211143, name: PhotoBulk }
-    - { id: 1606145041, name: Sleeve }
-    - { id: 1451685025, name: WireGuard }
-    - { id: 1221250572, name: Xnip }
+    - {id: 937984704, name: Amphetamine}
+    - {id: 1355679052, name: Dropover}
+    - {id: 1503970375, name: "Invoice Ninja"}
+    - {id: 6758070650, name: Itsyhome}
+    - {id: 302584613, name: Kindle}
+    - {id: 472226235, name: LanScan}
+    - {id: 634148309, name: "Logic Pro"}
+    - {id: 1614730313, name: MusicBox}
+    - {id: 1440405750, name: MusicHarbor}
+    - {id: 1643649331, name: OpenIn}
+    - {id: 375589283, name: Parcel}
+    - {id: 1503446680, name: PastePal}
+    - {id: 537211143, name: PhotoBulk}
+    - {id: 1606145041, name: Sleeve}
+    - {id: 1451685025, name: WireGuard}
+    - {id: 1221250572, name: Xnip}
   work: []
 
 casks:
