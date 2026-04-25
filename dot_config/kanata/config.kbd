@@ -39,7 +39,7 @@
   ;; bottom row
   lsft z x c v b    n m , . / rsft
   ;; thumb
-  spc
+  lmet spc
   ;; function / media keys
   f1 f2 f7 f8 f9 f10 f11 f12
 )
@@ -73,6 +73,9 @@
   ;; one-shot Shift+Cmd (mirrors QMK OSM(MOD_LSFT|MOD_LGUI) on 'a' in arrows layer)
   osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lmet))
 
+  ;; left cmd: tap for backspace, hold for Command (mirrors QMK LGUI_T(KC_BSPACE) on Iris thumb)
+  cmd_bspc (tap-hold $tap-timeout $hold-timeout bspc lmet)
+
   ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
   spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
 )
@@ -86,7 +89,7 @@
   ;; bottom row
   lsft _ x c _ _    _ _ _ _ _ rsft
   ;; thumb
-  @spc_arr
+  @cmd_bspc @spc_arr
   ;; function / media keys
   brdn brup prev pp next mute vold volu
 )
@@ -101,7 +104,7 @@
   ;; bottom row — S-tab, ctrl, sgui combos, brackets    backslash, pipe, math, pgdn
   S-tab lctl M-S-c M-S-spc lbrc rbrc    \ S-\ min S-eql eql pgdn
   ;; thumb
-  _
+  _ _
   ;; function / media keys
   _ _ _ _ _ _ _ _
 )

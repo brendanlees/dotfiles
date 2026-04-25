@@ -17,6 +17,7 @@ used for re-mapping internal laptop keyboards.
 | `l`    | l   | alt   |
 | `;`    | ;   | cmd   |
 | `caps` | esc | —     |
+| `lmet` | bspc | cmd  |
 
 tap-timeout: 300ms, hold-timeout: 200ms.
 
