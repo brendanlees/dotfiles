@@ -1,10 +1,10 @@
 matches:
   # Reference > Screen Reader Shortcut
-  - trigger: ".scrnrddr"
+  - trigger: ":scrnrddr"
     replace: "cmd + fn + f5"
 
   # Info > Date (yyyy-MM-dd)
-  - trigger: ".dd8"
+  - trigger: ":dd8"
     replace: "{{mydate}}"
     vars:
       - name: mydate

@@ -1,21 +1,21 @@
 {{- if and .personal (lookPath "bw") -}}
 {{- $bw := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" -}}
 matches:
-  - trigger: ".bmail"
+  - trigger: ":bmail"
     replace: "{{ $bw.email.value }}"
 
-  - trigger: ".gmail"
+  - trigger: ":gmail"
     replace: "{{ $bw.email_old.value }}"
 
-  - trigger: ".smail"
+  - trigger: ":smail"
     replace: "$|${{ $bw.email_shop.value }}"
 
-  - trigger: ".pmail"
+  - trigger: ":pmail"
     replace: "{{ $bw.email_pub.value }}"
 
-  - trigger: ".hmail"
+  - trigger: ":hmail"
     replace: "{{ $bw.email_hbd.value }}"
 
-  - trigger: ".rwmail"
+  - trigger: ":rwmail"
     replace: "{{ $bw.email_rw.value }}"
 {{- end }}

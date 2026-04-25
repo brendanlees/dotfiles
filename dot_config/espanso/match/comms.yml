@@ -1,6 +1,6 @@
 matches:
-  - trigger: ".lmk"
+  - trigger: ":lmk"
     replace: "Let me know if any probs/changes etc."
 
-  - trigger: ".chz"
+  - trigger: ":chz"
     replace: "Cheers,"

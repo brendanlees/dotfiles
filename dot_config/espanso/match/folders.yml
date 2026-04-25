@@ -1,6 +1,6 @@
 matches:
   # wk
-  - trigger: ".pfwk"
+  - trigger: ":pfwk"
     replace: "[{{form1.Who}}] - {{form1.What}} - {{mydate}}"
     vars:
       - name: mydate
@@ -15,7 +15,7 @@ matches:
             What: [[What]]
 
   # ws
-  - trigger: ".pfws"
+  - trigger: ":pfws"
     replace: "[ws] - {{form1.What}} - {{mydate}}"
     vars:
       - name: mydate
@@ -29,7 +29,7 @@ matches:
             What: [[What]]
 
   # sd
-  - trigger: ".pfsd"
+  - trigger: ":pfsd"
     replace: "[{{form1.Prefix}}] - {{form1.What}} - {{mydate}}"
     vars:
       - name: mydate

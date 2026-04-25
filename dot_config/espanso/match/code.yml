@@ -1,34 +1,34 @@
 matches:
   # CSS > Media Query - Phone
-  - trigger: ".mq-md"
+  - trigger: ":mq-md"
     replace: |
       @media (max-width: 768px) {
       	$|$
       }
 
   # CSS > Media Query - Small Phone
-  - trigger: ".mq-sm"
+  - trigger: ":mq-sm"
     replace: |
       @media (max-width: 480px) {
       	$|$
       }
 
   # CSS > Media Query - Blank
-  - trigger: ".mq--"
+  - trigger: ":mq--"
     replace: |
       @media (min-width: ) and (max-width: ) {
       	$|$
       }
 
   # CSS > Quick Spacing Utilities
-  - trigger: ".utspace"
+  - trigger: ":utspace"
     replace: |
       --space-m: 1rem;
       --space-l: calc(var(--space-m)*2);
       --space-xl: calc(var(--space-m)*4);
 
   # CSS > Data Selector
-  - trigger: ".csdata"
+  - trigger: ":csdata"
     replace: '[class*="example"]'
 
   # HTML > Break
@@ -40,5 +40,5 @@ matches:
     replace: "&nbsp;"
 
   # HTML > </bl> branding
-  - trigger: ".bl-branding"
+  - trigger: ":bl-branding"
     replace: "&lt;/bl&gt;"

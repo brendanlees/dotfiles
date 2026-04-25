@@ -1,6 +1,6 @@
 matches:
   # Emoji > Brain (NC)
-  - trigger: ".nc"
+  - trigger: ":nc"
     replace: "\U0001F9E0"
 
   # Check Mark Button

@@ -1,22 +1,22 @@
 matches:
   # Web Ipsum > Headline (s)
-  - trigger: ".wipshs"
+  - trigger: ":wipshs"
     replace: "This is just a placeholder."
 
   # Web Ipsum > Headline (m)
-  - trigger: ".wipshm"
+  - trigger: ":wipshm"
     replace: "This is just a placeholder headline."
 
   # Web Ipsum > Headline (l)
-  - trigger: ".wipshl"
+  - trigger: ":wipshl"
     replace: "This is just a placeholder headline, we will replace it once your website copy is finalized."
 
   # Web Ipsum > Paragraph (s)
-  - trigger: ".wipsps"
+  - trigger: ":wipsps"
     replace: "This is just placeholder text. Don't be alarmed, this is just here to fill up space since your finalised copy isn't ready yet. Once we have your content finalised, we'll replace this placeholder text with your real content."
 
   # Web Ipsum > Paragraph (m)
-  - trigger: ".wipspm"
+  - trigger: ":wipspm"
     replace: |
       This is just placeholder text. Don't be alarmed, this is just here to fill up space since your finalised copy isn't ready yet. Once we have your content finalised, we'll replace this placeholder text with your real content.
 
@@ -25,7 +25,7 @@ matches:
       Traditionally our industry has used Lorem Ipsum, which is placeholder text written in Latin. Unfortunately, not everyone is familiar with Lorem Ipsum and that can lead to confusion. I can't tell you how many times clients have asked me why their website is in another language!
 
   # Web Ipsum > Paragraph (l)
-  - trigger: ".wipspl"
+  - trigger: ":wipspl"
     replace: |
       This is just placeholder text. Don't be alarmed, this is just here to fill up space since your finalised copy isn't ready yet. Once we have your content finalised, we'll replace this placeholder text with your real content.
 
@@ -38,7 +38,7 @@ matches:
       If you're curious, this is Website Ipsum. It was specifically developed for the use on development websites. Other than being less confusing than other Ipsum's, Website Ipsum is also formatted in patterns more similar to how real copy is formatted on the web today.
 
   # Web Ipsum > List (Bullet)
-  - trigger: ".wipslb"
+  - trigger: ":wipslb"
     replace: |
       <ul>
         <li>This is just a placeholder</li>
@@ -49,7 +49,7 @@ matches:
       </ul>
 
   # Web Ipsum > List (Numbered)
-  - trigger: ".wipsln"
+  - trigger: ":wipsln"
     replace: |
       <ol>
         <li>This is just a placeholder</li>

@@ -2,15 +2,15 @@ matches:
   # --- CSS ---
 
   # CSS > Comment (Small / Default)
-  - trigger: ".cts"
+  - trigger: ":cts"
     replace: "/* $|$ */"
 
   # CSS > Comment (Subtitle)
-  - trigger: ".ctm"
+  - trigger: ":ctm"
     replace: "/* --- $|$ --- */"
 
   # CSS > Comment (Title)
-  - trigger: ".ctl"
+  - trigger: ":ctl"
     replace: |
 
       /* ==========================================
@@ -18,7 +18,7 @@ matches:
       ------------------------------------------ */
 
   # Steady CSS Header
-  - trigger: ".cth"
+  - trigger: ":cth"
     replace: |
       /*
       ==========================================
@@ -45,7 +45,7 @@ matches:
   # --- JavaScript ---
 
   # JS > Comment (Title)
-  - trigger: ".ctjl"
+  - trigger: ":ctjl"
     replace: |
 
       // ==========================================
@@ -53,11 +53,11 @@ matches:
       //------------------------------------------
 
   # JS > Comment (Subtitle)
-  - trigger: ".ctjm"
+  - trigger: ":ctjm"
     replace: "// --- $|$ --- //"
 
   # Steady JS Header
-  - trigger: ".ctjh"
+  - trigger: ":ctjh"
     replace: |
       //
       //==========================================
@@ -83,25 +83,25 @@ matches:
   # --- PHP ---
 
   # PHP > Comment (Title)
-  - trigger: ".ctpl"
+  - trigger: ":ctpl"
     replace: |
       /** ==========================================
       * =! $|$
       *------------------------------------------ */
 
   # PHP > Comment (Subtitle)
-  - trigger: ".ctpm"
+  - trigger: ":ctpm"
     replace: |
       /**
        * $|$
        */
 
   # PHP > Comment
-  - trigger: ".ctps"
+  - trigger: ":ctps"
     replace: "/** $|$ */"
 
   # PHP > Comment (Function)
-  - trigger: ".ctpf"
+  - trigger: ":ctpf"
     replace: |
       /*
        * @function $|$
@@ -117,12 +117,12 @@ matches:
   # --- Bash ---
 
   # Bash > Comment (Title / Large)
-  - trigger: ".ctbl"
+  - trigger: ":ctbl"
     replace: |
       # ------------------------------------------
       # $|$
       # ------------------------------------------
 
   # Bash > Comment (Subtitle / Medium)
-  - trigger: ".ctbm"
+  - trigger: ":ctbm"
     replace: "# --- $|$ ---"
