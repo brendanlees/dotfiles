@@ -42,9 +42,59 @@ tap-timeout: 300ms, hold-timeout: 200ms.
 | `q` + `w`   | `` ` `` |
 | `tab` + `q` | `~`     |
 
-### layers
+### space-hold layer (arrows)
 
-hold `space` to activate the arrows layer — `h/j/k/l` become left/down/up/right (vim style).
+hold `space` to activate the arrows layer. synced from QMK Layer 1 (Iris split keyboard).
+
+**qwerty row — shifted symbols:**
+
+| key | output |
+| --- | ------ |
+| tab | `~`    |
+| q   | `!`    |
+| w   | `@`    |
+| e   | `#`    |
+| r   | `$`    |
+| t   | `%`    |
+| y   | `^`    |
+| u   | `&`    |
+| i   | `*`    |
+| o   | `(`    |
+| p   | `)`    |
+
+**home row — brackets, arrows, navigation:**
+
+| key  | output         |
+| ---- | -------------- |
+| caps | tab            |
+| a    | OSM(Shift+Cmd) |
+| s    | `(`            |
+| d    | `)`            |
+| f    | `{`            |
+| g    | `}`            |
+| h    | left           |
+| j    | down           |
+| k    | up             |
+| l    | right          |
+| ;    | transparent    |
+| '    | PgUp           |
+
+**bottom row — quantum keys, brackets, symbols, math, navigation:**
+
+| key  | output      |
+| ---- | ----------- |
+| lsft | Shift+Tab   |
+| z    | LCtrl       |
+| x    | Cmd+Shift+C |
+| c    | Cmd+Shift+Space |
+| v    | `[`         |
+| b    | `]`         |
+| n    | `\`         |
+| m    | `\|`        |
+| ,    | `-`         |
+| .    | `+`         |
+| /    | `=`         |
+| rsft | PgDn        |
 
 ## setup
 

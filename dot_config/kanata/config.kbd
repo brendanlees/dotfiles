@@ -30,13 +30,17 @@
   chord-timeout 30
 )
 
-;; define source keys (homerow + caps lock + space + function keys)
+;; define source keys (full alpha block + space + function keys)
 (defsrc
-  tab q w e
-  caps
-  a s d f h j k l ;
-  x c
+  ;; qwerty row
+  tab q w e r t    y u i o p
+  ;; home row
+  caps a s d f g    h j k l ; '
+  ;; bottom row
+  lsft z x c v b    n m , . / rsft
+  ;; thumb
   spc
+  ;; function / media keys
   f1 f2 f7 f8 f9 f10 f11 f12
 )
 
@@ -64,7 +68,10 @@
   j_ctl (tap-hold $tap-timeout $hold-timeout j rctl)  ;; j: tap for 'j', hold for Control
   k_sft (tap-hold $tap-timeout $hold-timeout k rsft)  ;; k: tap for 'k', hold for Shift
   l_alt (tap-hold $tap-timeout $hold-timeout l lalt)  ;; l: tap for 'l', hold for Alt
-  ;_cmd (tap-hold $tap-timeout $hold-timeout ; rmet)  ;; ;: tap for ';', hold for Command (Meta)
+  scln_cmd (tap-hold $tap-timeout $hold-timeout ; rmet)  ;; ;: tap for ';', hold for Command (Meta)
+
+  ;; one-shot Shift+Cmd (mirrors QMK OSM(MOD_LSFT|MOD_LGUI) on 'a' in arrows layer)
+  osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lmet))
 
   ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
   spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
@@ -72,22 +79,29 @@
 
 ;; base layer with homerow mods active
 (deflayer base
-  tab q w e
-  @esc
-  @a_cmd @s_alt @d_sft @f_ctl h @j_ctl @k_sft @l_alt @;_cmd
-  x c
+  ;; qwerty row
+  tab q w e _ _    _ _ _ _ _
+  ;; home row
+  @esc @a_cmd @s_alt @d_sft @f_ctl _    h @j_ctl @k_sft @l_alt @scln_cmd _
+  ;; bottom row
+  lsft _ x c _ _    _ _ _ _ _ rsft
+  ;; thumb
   @spc_arr
+  ;; function / media keys
   brdn brup prev pp next mute vold volu
 )
 
-;; arrows layer: vim-style hjkl navigation
-;; When space is held, hjkl become arrow keys
-;; Left homerow mods (asdf) stay active, right side mods (jkl) are disabled
+;; arrows layer: space-hold produces symbols, brackets, arrows, nav
+;; synced from QMK Layer 1 (Iris split keyboard)
 (deflayer arrows
-  _ _ _ _
+  ;; qwerty row — shifted symbols: ~ ! @ # $ %    ^ & * ( )
+  S-grv S-1 S-2 S-3 S-4 S-5    S-6 S-7 S-8 S-9 S-0
+  ;; home row — tab, OSM(S+G), parens, braces    arrows, transparent, pgup
+  tab @osm_sg S-9 S-0 S-lbrc S-rbrc    left down up rght _ pgup
+  ;; bottom row — S-tab, ctrl, sgui combos, brackets    backslash, pipe, math, pgdn
+  S-tab lctl M-S-c M-S-spc lbrc rbrc    \ S-\ min S-eql eql pgdn
+  ;; thumb
   _
-  @a_cmd @s_alt @d_sft @f_ctl left down up rght ;
-  _ _
-  _
+  ;; function / media keys
   _ _ _ _ _ _ _ _
 )
