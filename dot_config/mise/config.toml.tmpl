@@ -32,5 +32,7 @@ yazi = "latest"
 {{ end -}}
 "github:joshmedeski/sesh" = "latest"
 bat = "latest"
+{{ if ne .chezmoi.osRelease.id "alpine" -}}
 node = "lts"
 python = "latest"
+{{ end -}}
