@@ -2,17 +2,6 @@
 # .aliases/chezmoi
 # ------------------------------------------
 
-{{- if and .personal (lookPath "bw") }}
-# wrap chezmoi so BW_SESSION is set once per shell session
-chezmoi() {
-    if [ -z "${BW_SESSION:-}" ]; then
-        BW_SESSION="$(bw unlock --raw)" || return 1
-        export BW_SESSION
-    fi
-    command chezmoi "$@"
-}
-{{- end }}
-
 # apply
 cza() { chezmoi apply --force; }
 
