@@ -74,7 +74,7 @@
   osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lmet))
 
   ;; left cmd: tap for backspace, hold for Command (mirrors QMK LGUI_T(KC_BSPACE) on Iris thumb)
-  cmd_bspc (tap-hold $tap-timeout $hold-timeout bspc lmet)
+  cmd_bspc (tap-hold-press $tap-timeout $hold-timeout bspc lmet)
 
   ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
   spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
