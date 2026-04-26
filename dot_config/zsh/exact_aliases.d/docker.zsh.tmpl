@@ -12,31 +12,57 @@ else
   DOCKER_ROOT="${_dh[1]:-$HOME/docker}/compose"
 fi
 
-# Edit docker secrets / env files via sudoedit. Files stay root:root 0600
-# throughout — sudoedit copies to a user-owned tempfile, runs $EDITOR, then
-# copies back preserving original ownership and mode. Replaces the old
-# dp777/dp600 toggle pattern (which left files world-writable while editing).
+# Edit docker secrets / env files safely. Files end up root:root 0600 — we
+# copy out to a user-owned tempfile, run $EDITOR, then atomically replace the
+# original via a same-dir sibling rename. Replaces the old dp777/dp600 toggle
+# (which left files world-writable while editing). macOS doesn't ship the
+# `sudoedit` binary, so this implements the same pattern by hand.
 #
 # Usage:
 #   dpedit .env                     → $DOCKER_ROOT/.env
 #   dpedit secrets/foo              → $DOCKER_ROOT/secrets/foo
 #   dpedit compose/<stack>/.env     → $DOCKER_ROOT/compose/<stack>/.env
 #   dpedit /abs/path                → /abs/path (passthrough)
-#   dpedit a b c                    → multiple files in one editor session
 dpedit() {
   if (( $# == 0 )); then
     echo "usage: dpedit <path...>  (relative to \$DOCKER_ROOT, or absolute)" >&2
     return 2
   fi
-  local args=() arg
+  local rc=0 src tmp sibling pre post
   for arg in "$@"; do
-    if [[ "$arg" == /* ]]; then
-      args+=("$arg")
-    else
-      args+=("${DOCKER_ROOT}/${arg}")
+    [[ "$arg" == /* ]] && src="$arg" || src="${DOCKER_ROOT}/${arg}"
+    if ! sudo test -e "$src"; then
+      echo "dpedit: $src: not found" >&2
+      rc=1
+      continue
     fi
+    tmp=$(mktemp "${TMPDIR:-/tmp}/dpedit.XXXXXX") || { rc=1; continue; }
+    if ! sudo cat "$src" > "$tmp"; then
+      rm -f "$tmp"; rc=1; continue
+    fi
+    pre=$(shasum "$tmp" | awk '{print $1}')
+    "${EDITOR:-vi}" "$tmp"
+    post=$(shasum "$tmp" | awk '{print $1}')
+    if [[ "$pre" == "$post" ]]; then
+      echo "dpedit: $src unchanged"
+    else
+      # write to a same-dir sibling, fix perms, then atomic rename into place
+      sibling="${src}.dpedit.$$"
+      if sudo cp "$tmp" "$sibling" \
+          && sudo chown root:root "$sibling" \
+          && sudo chmod 600 "$sibling" \
+          && sudo mv "$sibling" "$src"; then
+        echo "dpedit: $src updated (root:root 0600)"
+      else
+        sudo rm -f "$sibling"
+        echo "dpedit: write-back failed; tempfile preserved at $tmp" >&2
+        rc=1
+        continue
+      fi
+    fi
+    rm -f "$tmp"
   done
-  sudoedit "${args[@]}"
+  return $rc
 }
 
 
