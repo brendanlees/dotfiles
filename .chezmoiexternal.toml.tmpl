@@ -124,3 +124,17 @@ exclude = [
 ]
 {{- end }}
 
+{{- if .personal }}
+[".claude"]
+type = "git-repo"
+url = "https://gitea.lab.brendans.cloud/xbxd/claude-config.git"
+refreshPeriod = "168h"
+exclude = [
+  "*/.editorconfig",
+  "*/.gitattributes",
+  "*/.github",
+  "*/.gitignore",
+  "*/*.md",
+]
+{{- end }}
+
