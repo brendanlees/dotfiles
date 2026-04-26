@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: run shellcheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # v2.0.0
         env:
           SHELLCHECK_OPTS: -e SC1091
         with:
@@ -229,6 +229,50 @@ jobs:
             rendered/*.toml
           )
           taplo lint --no-schema "${toml_files[@]}"
+
+  guard-banned-patterns:
+    name: guard banned patterns
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: scan
+        run: |
+          set -euo pipefail
+          fails=0
+
+          # 1) world-writable octal mode (mode 7-7-7)
+          if grep -nrE 'chmod[[:space:]]+(-[Rr][[:space:]]+)?777\b' \
+              --include='*.sh' --include='*.zsh' --include='*.tmpl' \
+              --include='*.yml' --include='*.yaml' --include='*.toml' \
+              --exclude-dir=.git \
+              --exclude='ci.yml' . ; then
+            echo "::error::world-writable mode found"
+            fails=$((fails+1))
+          fi
+
+          # 2) floating action refs (@master / @main / @latest) in workflows
+          if grep -nrE 'uses:[[:space:]]+[A-Za-z0-9./_-]+@(master|main|latest)([[:space:]#]|$)' \
+              .github/ ; then
+            echo "::error::floating action ref — pin to a SHA"
+            fails=$((fails+1))
+          fi
+
+          # 3) curl|sh / curl|bash outside the bootstrap allowlist
+          allow='get\.chezmoi\.io|mise\.run'
+          unsafe=$(grep -nrE 'curl[^|]+\|[[:space:]]*(sh|bash)\b' \
+            --include='*.sh' --include='*.tmpl' --include='*.yml' --include='*.yaml' \
+            --exclude-dir=.git . \
+            | grep -vE "$allow" || true)
+          if [[ -n "$unsafe" ]]; then
+            echo "::error::new curl|sh outside allowlist (get.chezmoi.io, mise.run)"
+            echo "$unsafe"
+            fails=$((fails+1))
+          fi
+
+          if (( fails > 0 )); then
+            exit 1
+          fi
+          echo "ok: no banned patterns"
 
   plist-lint:
     name: plutil lint plists

@@ -12,9 +12,32 @@ else
   DOCKER_ROOT="${_dh[1]:-$HOME/docker}/compose"
 fi
 
-# lock / unlock permissions
-alias dp600='sudo chown -R root:root $DOCKER_ROOT/secrets ; sudo chmod -R 600 $DOCKER_ROOT/secrets ; sudo chown -R root:root $DOCKER_ROOT/.env ; sudo chmod -R 600 $DOCKER_ROOT/.env; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 600 {} \;' # re-lock permissions
-alias dp777='sudo chown -R $USER:$USER $DOCKER_ROOT/secrets ; sudo chmod -R 777 $DOCKER_ROOT/secrets ; sudo chown -R $USER:$USER $DOCKER_ROOT/.env ; sudo chmod -R 777 $DOCKER_ROOT/.env ; sudo find $DOCKER_ROOT/compose/*/ -type f -name ".env" -exec chmod 777 {} \;' # open permissions for editing
+# Edit docker secrets / env files via sudoedit. Files stay root:root 0600
+# throughout — sudoedit copies to a user-owned tempfile, runs $EDITOR, then
+# copies back preserving original ownership and mode. Replaces the old
+# dp777/dp600 toggle pattern (which left files world-writable while editing).
+#
+# Usage:
+#   dpedit .env                     → $DOCKER_ROOT/.env
+#   dpedit secrets/foo              → $DOCKER_ROOT/secrets/foo
+#   dpedit compose/<stack>/.env     → $DOCKER_ROOT/compose/<stack>/.env
+#   dpedit /abs/path                → /abs/path (passthrough)
+#   dpedit a b c                    → multiple files in one editor session
+dpedit() {
+  if (( $# == 0 )); then
+    echo "usage: dpedit <path...>  (relative to \$DOCKER_ROOT, or absolute)" >&2
+    return 2
+  fi
+  local args=() arg
+  for arg in "$@"; do
+    if [[ "$arg" == /* ]]; then
+      args+=("$arg")
+    else
+      args+=("${DOCKER_ROOT}/${arg}")
+    fi
+  done
+  sudoedit "${args[@]}"
+}
 
 
 # --- functions ---

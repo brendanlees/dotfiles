@@ -1,5 +1,5 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -euo pipefail
 
 sudo softwareupdate --agree-to-license --install-rosetta

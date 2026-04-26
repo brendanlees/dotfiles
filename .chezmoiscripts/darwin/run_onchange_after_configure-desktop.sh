@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -euo pipefail
 
 current=$(osascript -e 'tell application "System Events" to tell desktop 1 to get picture' 2>/dev/null || true)
 

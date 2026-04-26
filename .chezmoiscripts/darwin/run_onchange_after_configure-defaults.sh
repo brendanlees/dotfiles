@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -euo pipefail
 
 # appearance
 defaults write -g AppleInterfaceStyle -string Dark
