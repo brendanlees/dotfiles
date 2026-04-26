@@ -190,12 +190,25 @@ bindkey '^Xc' copy-command
 # cd and ls
 cx() { cd "$@" && ls; } 
 
+# Use fd when available (faster, skips hidden + .gitignore by default);
+# fall back to find with the equivalent hidden-skipping pattern.
+_pick_d() {
+  if (( $+commands[fd] )); then fd -t d
+  else find . -type d -not -path '*/.*'
+  fi
+}
+_pick_f() {
+  if (( $+commands[fd] )); then fd -t f
+  else find . -type f -not -path '*/.*'
+  fi
+}
+
 # find dir and ls
-fcd() { cd "$(find . -type d -not -path '*/.*' | fzf)" && ls; } 
+fcd() { cd "$(_pick_d | fzf)" && ls; }
 
 # find file and copy to clipboard
 f() {
-  echo "$(find . -type f -not -path '*/.*' | fzf)" | \
+  echo "$(_pick_f | fzf)" | \
 {{- if eq .chezmoi.os "darwin" }}
     pbcopy
 {{- else }}
@@ -204,7 +217,7 @@ f() {
 }
 
 # find and open in nvim
-fv() { nvim "$(find . -type f -not -path '*/.*' | fzf)" }
+fv() { nvim "$(_pick_f | fzf)" }
 
 # ------------------------------------------
 # moshi
