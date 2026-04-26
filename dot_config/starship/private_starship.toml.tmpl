@@ -6,8 +6,8 @@ command_timeout = 50000
 right_format = """$os$username$hostname$directory$git_branch$git_status${custom.ddev}"""
 
 
-# palette = 'monokai'
-palette = 'tokyo-night'
+# palette driven by .chezmoidata/themes.yml
+palette = '{{ (index .themes .theme).apps.starship }}'
 
 [palettes.monokai]
 # overrides
@@ -35,6 +35,30 @@ white = '#c0caf5'
 accent = '#73daca'
 primary = '#769ff0'
 neutral = '#a9b1d6'
+
+[palettes.kanagawa-wave]
+# overrides
+red = '#C34043'
+green = '#98BB6C'
+blue = '#7E9CD8'
+white = '#DCD7BA'
+
+# semantic
+accent = '#7AA89F'
+primary = '#7E9CD8'
+neutral = '#C8C093'
+
+[palettes.rosepine]
+# overrides
+red = '#eb6f92'
+green = '#31748f'
+blue = '#9ccfd8'
+white = '#e0def4'
+
+# semantic
+accent = '#9ccfd8'
+primary = '#31748f'
+neutral = '#908caa'
 
 [os]
 format = '[$symbol](bold white) '

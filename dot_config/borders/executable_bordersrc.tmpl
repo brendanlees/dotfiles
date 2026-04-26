@@ -1,10 +1,11 @@
 #!/bin/bash
+{{- $p := (index .themes .theme).palette }}
 
-# colors taken from tokyonight theme
-red="0xfff7768e"
-blue="0xff7aa2f7"
+# colors driven by .chezmoidata/themes.yml (active theme: {{ .theme }})
+red="0xff{{ trimPrefix "#" $p.error | lower }}"
+blue="0xff{{ trimPrefix "#" $p.primary | lower }}"
 transparent="0x00000000"
-grey="0xff414550"
+grey="0xff{{ trimPrefix "#" $p.border | lower }}"
 
 options=(
   style=round

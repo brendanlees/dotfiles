@@ -1,0 +1,16 @@
+{{- $p := (index .themes .theme).palette -}}
+{
+  "foreground": "{{ $p.fg }}",
+  "background": "{{ $p.bg }}",
+  "cpu": "{{ $p.primary }}",
+  "gpu": "{{ $p.secondary }}",
+  "memory": "{{ $p.success }}",
+  "ane": "{{ $p.orange }}",
+  "network": "{{ $p.info_alt }}",
+  "power": "{{ $p.warn }}",
+  "thunderbolt": "{{ $p.info }}",
+  "processList": "{{ $p.primary }}",
+  "processListDim": "{{ $p.comment }}",
+  "processListSelected": "{{ $p.fg }}",
+  "systemInfo": "{{ $p.info }}"
+}

@@ -15,6 +15,8 @@ vscode:
     - eamodio.gitlens
     - ecmel.vscode-html-css
     - enkia.tokyo-night
+    - metaphore.kanagawa-vscode-color-theme
+    - mvllow.rose-pine
     - monokai.theme-monokai-pro-vscode
     - esbenp.prettier-vscode
     - firefox-devtools.vscode-firefox-debug
