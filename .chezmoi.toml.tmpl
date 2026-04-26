@@ -105,13 +105,9 @@
   git_email = {{ $git_email | quote }}
 {{- end }}
 
-# --- directories ---
-  code_dir    = "code" # coding
-  chezmoi_dir = ".local/share/chezmoi" # chezmoi config
-
-# --- font ---
-  nerd_font   = "JetBrainsMono" # active nerd font
-  font_family = "JetBrainsMono Nerd Font Mono" # active nerd font family name
+# Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from
+# .chezmoidata/defaults.yml (chezmoi merges that into .data automatically).
+# Don't redeclare them here — keep one source of truth.
 
 {{ if and $personal (lookPath "bw") }}
 [bitwarden]
