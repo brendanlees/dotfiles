@@ -22,10 +22,11 @@
 # --- env var override requirements --- 
 {{- $role := env "CHEZMOI_ROLE" -}}
 {{- if $role -}}
-{{-   if regexMatch "(^|,)personal(,|$)" $role }}{{ $personal = true }}{{ end -}}
-{{-   if regexMatch "(^|,)work(,|$)"     $role }}{{ $work     = true }}{{ end -}}
-{{-   if regexMatch "(^|,)homelab(,|$)"  $role }}{{ $homelab  = true }}{{ end -}}
-{{-   if regexMatch "(^|,)headless(,|$)" $role }}{{ $headless = true }}{{ end -}}
+{{-   if regexMatch "(^|,)personal(,|$)"  $role }}{{ $personal  = true }}{{ end -}}
+{{-   if regexMatch "(^|,)work(,|$)"      $role }}{{ $work      = true }}{{ end -}}
+{{-   if regexMatch "(^|,)homelab(,|$)"   $role }}{{ $homelab   = true }}{{ end -}}
+{{-   if regexMatch "(^|,)ephemeral(,|$)" $role }}{{ $ephemeral = true }}{{ end -}}
+{{-   if regexMatch "(^|,)headless(,|$)"  $role }}{{ $headless  = true }}{{ end -}}
 {{- end -}}
 
 # --- identify machine type ---
