@@ -34,6 +34,8 @@ themes:
       starship:        "tokyo-night"
       tmux_ukiyo:      "tokyonight/night"
       zed:             "Tokyo Night"
+      nvim:            "tokyonight-night"
+      nvim_background: "dark"
 
   kanagawa-wave:
     palette:
@@ -62,6 +64,8 @@ themes:
       starship:        "kanagawa-wave"
       tmux_ukiyo:      "kanagawa/wave"
       zed:             "Kanagawa Wave"
+      nvim:            "kanagawa-wave"
+      nvim_background: "dark"
 
   kanagawa-dragon:
     palette:
@@ -90,6 +94,8 @@ themes:
       starship:        "kanagawa-wave"
       tmux_ukiyo:      "kanagawa/dragon"
       zed:             "Kanagawa Dragon"
+      nvim:            "kanagawa-dragon"
+      nvim_background: "dark"
 
   monokai-pro:
     palette:
@@ -118,6 +124,8 @@ themes:
       starship:        "monokai"
       tmux_ukiyo:      "gruvbox/dark"
       zed:             "Monokai Pro"
+      nvim:            "monokai-pro"
+      nvim_background: "dark"
 
   rosepine:
     palette:
@@ -146,3 +154,5 @@ themes:
       starship:        "rosepine"
       tmux_ukiyo:      "rose-pine/main"
       zed:             "Rosé Pine"
+      nvim:            "rose-pine-main"
+      nvim_background: "dark"

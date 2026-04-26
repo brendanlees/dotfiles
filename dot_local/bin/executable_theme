@@ -153,6 +153,24 @@ if pgrep -xq borders 2>/dev/null; then
   pkill -USR1 borders 2>/dev/null || true
 fi
 
+# nvim — push colorscheme to every running instance via its auto-listen socket.
+# Each nvim creates a server at $XDG_RUNTIME_DIR/nvim.<pid>.0 (linux) or
+# /tmp/nvim.$USER/<rand>/0 (macos); --remote-send into a <Cmd> mapping avoids
+# clobbering the user's current mode (insert / cmdline / etc).
+if command -v nvim >/dev/null 2>&1; then
+  NVIM_NEW_CS="$(awk -F'"' '/colorscheme =/ {print $2; exit}' "$HOME/.config/chezmoi-theme/active.lua" 2>/dev/null || true)"
+  NVIM_NEW_BG="$(awk -F'"' '/background =/ {print $2; exit}' "$HOME/.config/chezmoi-theme/active.lua" 2>/dev/null || true)"
+  if [[ -n "$NVIM_NEW_CS" ]]; then
+    NVIM_SOCKETS=( $(find /tmp/nvim.$USER -maxdepth 2 -name '0' -type s 2>/dev/null) $(find "${XDG_RUNTIME_DIR:-/tmp}" -maxdepth 1 -name 'nvim.*.0' -type s 2>/dev/null) )
+    if (( ${#NVIM_SOCKETS[@]} > 0 )); then
+      echo ":: nvim colorscheme → $NVIM_NEW_CS (${#NVIM_SOCKETS[@]} instance(s))"
+      for sock in "${NVIM_SOCKETS[@]}"; do
+        nvim --server "$sock" --remote-send "<Cmd>set background=${NVIM_NEW_BG:-dark}<CR><Cmd>colorscheme ${NVIM_NEW_CS}<CR>" 2>/dev/null || true
+      done
+    fi
+  fi
+fi
+
 # espanso — restart so the new colors apply
 if pgrep -xq espanso 2>/dev/null && command -v espanso >/dev/null 2>&1; then
   echo ":: espanso restart"

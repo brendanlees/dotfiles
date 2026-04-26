@@ -1,0 +1,32 @@
+-- Active theme bridge — written by chezmoi from .chezmoidata/themes.yml.
+--
+-- Consumers (e.g. nvim) read this file to learn the active global theme so
+-- they can apply a matching colorscheme without needing their own copy of
+-- the theme registry. Re-rendered automatically on every `chezmoi apply`,
+-- so a `theme <name>` swap propagates here on the next run.
+{{- $apps := (index .themes .theme).apps }}
+{{- $p := (index .themes .theme).palette }}
+return {
+  theme      = {{ .theme | quote }},
+  colorscheme = {{ $apps.nvim | quote }},
+  background = {{ $apps.nvim_background | quote }},
+  palette = {
+    bg          = {{ $p.bg | quote }},
+    surface     = {{ $p.surface | quote }},
+    surface_alt = {{ $p.surface_alt | quote }},
+    border      = {{ $p.border | quote }},
+    comment     = {{ $p.comment | quote }},
+    muted       = {{ $p.muted | quote }},
+    fg          = {{ $p.fg | quote }},
+    accent      = {{ $p.accent | quote }},
+    primary     = {{ $p.primary | quote }},
+    primary_alt = {{ $p.primary_alt | quote }},
+    secondary   = {{ $p.secondary | quote }},
+    success     = {{ $p.success | quote }},
+    warn        = {{ $p.warn | quote }},
+    error       = {{ $p.error | quote }},
+    info        = {{ $p.info | quote }},
+    info_alt    = {{ $p.info_alt | quote }},
+    orange      = {{ $p.orange | quote }},
+  },
+}
