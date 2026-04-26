@@ -14,6 +14,9 @@ set -euo pipefail
 CHEZMOI_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 THEMES_YML="$CHEZMOI_DIR/.chezmoidata/themes.yml"
 DEFAULTS_YML="$CHEZMOI_DIR/.chezmoidata/defaults.yml"
+# Host-local overlay: chezmoi merges .chezmoidata/*.yml lexicographically, so
+# local.yml beats defaults.yml. Gitignored to keep theme switches out of git.
+LOCAL_YML="$CHEZMOI_DIR/.chezmoidata/local.yml"
 
 if [[ ! -f "$THEMES_YML" ]]; then
   echo "error: $THEMES_YML not found" >&2
@@ -37,6 +40,15 @@ mapfile -t VALID_THEMES < <(
 )
 
 current_theme() {
+  # local.yml wins if it has a theme line; otherwise fall back to defaults.yml.
+  if [[ -f "$LOCAL_YML" ]]; then
+    local override
+    override="$(awk -F'[:[:space:]"]+' '/^theme:/ { print $2; exit }' "$LOCAL_YML")"
+    if [[ -n "$override" ]]; then
+      printf '%s\n' "$override"
+      return
+    fi
+  fi
   awk -F'[:[:space:]"]+' '/^theme:/ { print $2 }' "$DEFAULTS_YML"
 }
 
@@ -108,9 +120,19 @@ fi
 
 echo ":: switching $CURRENT → $TARGET"
 
-# Replace the theme: line in defaults.yml in-place (BSD sed compatible).
-sed -i.bak -E "s|^theme:.*$|theme: \"$TARGET\"|" "$DEFAULTS_YML"
-rm -f "${DEFAULTS_YML}.bak"
+# Write to local.yml so theme switches don't pollute tracked defaults.yml.
+# Cases:
+#   - file missing       → create with single theme: line
+#   - has theme: line    → in-place sed (BSD compatible)
+#   - missing theme: line → append theme: line
+if [[ ! -f "$LOCAL_YML" ]]; then
+  printf 'theme: "%s"\n' "$TARGET" > "$LOCAL_YML"
+elif grep -q '^theme:' "$LOCAL_YML"; then
+  sed -i.bak -E "s|^theme:.*$|theme: \"$TARGET\"|" "$LOCAL_YML"
+  rm -f "${LOCAL_YML}.bak"
+else
+  printf 'theme: "%s"\n' "$TARGET" >> "$LOCAL_YML"
+fi
 
 echo ":: chezmoi apply"
 chezmoi apply --source "$CHEZMOI_DIR" -v
