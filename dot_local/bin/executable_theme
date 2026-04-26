@@ -166,6 +166,9 @@ cat <<'EOF'
    - zed
    - vscode (if templated)
 
-:: open a new shell for fzf / sesh / gum to pick up the new $FZF_DEFAULT_OPTS
+:: fzf reads colors from ~/.config/fzf/opts on every launch — no reload needed.
+   If a shell still has a stale $FZF_DEFAULT_OPTS from before the
+   FZF_DEFAULT_OPTS_FILE switchover, run: unset FZF_DEFAULT_OPTS
+:: open a new shell for sesh / gum to pick up other env-var theme vars
    (or run: source ~/.zshrc)
 EOF
