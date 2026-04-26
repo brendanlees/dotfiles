@@ -125,11 +125,15 @@ fi
 
 # ---- live reload ----------------------------------------------------------
 
-# tmux — re-source config in every running server
+# tmux — re-source config + refresh server env so subprocesses launched via
+# run-shell (sesh picker, popups, etc.) inherit the new theme-driven values
+# instead of whatever was captured when the tmux server first started.
 if command -v tmux >/dev/null 2>&1 && pgrep -x tmux >/dev/null 2>&1; then
-  echo ":: tmux source-file"
+  echo ":: tmux source-file + setenv"
   for socket in $(tmux ls -F '#{socket_path}' 2>/dev/null | sort -u); do
     tmux -S "$socket" source-file "$HOME/.config/tmux/tmux.conf" 2>/dev/null || true
+    tmux -S "$socket" setenv -g FZF_DEFAULT_OPTS_FILE "$HOME/.config/fzf/opts" 2>/dev/null || true
+    tmux -S "$socket" setenv -gu FZF_DEFAULT_OPTS 2>/dev/null || true
   done
 fi
 

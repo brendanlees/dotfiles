@@ -2,6 +2,13 @@
 # sesh picker — shared config for shell aliases and tmux keybinding
 # Usage: picker.sh [--tmux] [sesh list flags...]
 
+# Pick up theme-driven fzf colors from the chezmoi-managed opts file. Done here
+# (not just in zshrc) because tmux launches this script via run-shell with its
+# own captured environment, which would otherwise hold a stale FZF_DEFAULT_OPTS
+# from when the tmux server first started.
+export FZF_DEFAULT_OPTS_FILE="$HOME/.config/fzf/opts"
+unset FZF_DEFAULT_OPTS
+
 TMUX_FLAG=""
 if [ "$1" = "--tmux" ]; then
   TMUX_FLAG="--tmux 80%,70%"
