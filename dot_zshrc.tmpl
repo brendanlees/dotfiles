@@ -15,12 +15,20 @@ source "$XDG_CONFIG_HOME/zsh/aliases.zsh"
 # ------------------------------------------
 
 {{- if .personal }}
-if command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
-  export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
+# Lazy accessor — keeps the GitHub token out of `env` and out of every child
+# process by default. Use it explicitly:
+#   GITHUB_TOKEN=$(gh-token) some-tool
+# To restore the old eager export (for tools that read GITHUB_TOKEN from the
+# environment without a way to be told otherwise), set GH_TOKEN_AUTOEXPORT=1
+# in a shell init file before this is sourced.
+gh-token() { command gh auth token 2>/dev/null; }
+if [[ -n "${GH_TOKEN_AUTOEXPORT:-}" ]] && command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
+  export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh-token)
   export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 fi
 {{- else }}
-  export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
+# Work/headless: rely on pre-existing env (direnv, mise, runner secrets).
+[[ -n "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ]] && export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
 {{- end }}
 
 # ------------------------------------------
