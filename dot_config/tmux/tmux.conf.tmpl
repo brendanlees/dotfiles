@@ -23,6 +23,7 @@ set -g set-titles-string "#I: #W"
 set -g status-interval 3        # Update the status bar every 3 seconds (default: 15 seconds)
 set -g allow-passthrough on   # Allow programs in the pane to bypass tmux (e.g. for image preview)
 set -s extended-keys on                  # Distinguish C-S-h from C-h (CSI u / xterm modifyOtherKeys)
+set -s extended-keys-format csi-u        # Use modern CSI u encoding (preferred by Pi, Ghostty, kitty, etc.)
 set -as terminal-features ",*:extkeys"   # Advertise extended-keys capability to all terminals
 
 # borders
