@@ -32,6 +32,14 @@ set -o vi
 bindkey jj vi-cmd-mode
 
 # ------------------------------------------
+# opencode
+# ------------------------------------------
+
+# opentui's SGR mouse stream floods tmux's parser, rendering keys as raw
+# escape codes inside the opencode prompt. https://github.com/sst/opencode/issues/4097
+export OPENCODE_DISABLE_MOUSE=1
+
+# ------------------------------------------
 # zsh plugins
 # ------------------------------------------
 
