@@ -1,23 +1,24 @@
+{{- $p := (index .themes .theme).palette -}}
 gui:
   nerdFontsVersion: "3"
   border: rounded
   theme:
     activeBorderColor:
-      - '#73daca'
+      - '{{ $p.accent }}'
       - bold
     inactiveBorderColor:
-      - '#565f89'
+      - '{{ $p.comment }}'
     optionsTextColor:
-      - '#769ff0'
+      - '{{ $p.primary_alt }}'
     selectedLineBgColor:
-      - '#292e42'
+      - '{{ $p.surface }}'
     selectedRangeBgColor:
-      - '#292e42'
+      - '{{ $p.surface }}'
     cherryPickedCommitBgColor:
-      - '#394b70'
+      - '{{ $p.surface_alt }}'
     cherryPickedCommitFgColor:
-      - '#769ff0'
+      - '{{ $p.primary_alt }}'
     unstagedChangesColor:
-      - '#f7768e'
+      - '{{ $p.error }}'
     defaultFgColor:
-      - '#c0caf5'
+      - '{{ $p.fg }}'

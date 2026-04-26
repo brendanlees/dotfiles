@@ -1,5 +1,5 @@
-# theme
-theme = TokyoNight Night
+# theme (driven by .chezmoidata/themes.yml)
+theme = {{ (index .themes .theme).apps.ghostty }}
 window-padding-x = 8
 window-padding-y = 0
 macos-titlebar-proxy-icon = hidden

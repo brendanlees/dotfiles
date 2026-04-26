@@ -1,0 +1,12 @@
+{{- $p := (index .themes .theme).palette -}}
+gui:
+  theme:
+    activeBorderColor:
+      - '{{ $p.accent }}'
+      - bold
+    inactiveBorderColor:
+      - '{{ $p.comment }}'
+    selectedLineBgColor:
+      - '{{ $p.surface }}'
+    optionsTextColor:
+      - '{{ $p.primary_alt }}'

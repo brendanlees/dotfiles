@@ -47,6 +47,7 @@ brews:
     - ente-cli
     - ffmpeg
     - gemini-cli
+    - gum
     - kanata
     - keka
     - little-snitch
