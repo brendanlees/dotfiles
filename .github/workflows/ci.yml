@@ -199,7 +199,7 @@ jobs:
             fi
             out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f")
             [[ -z "$out" ]] && continue
-            safe=$(printf '%s' "$f" | tr '/ ' '__')
+            safe=$(printf '%s' "${f#./}" | tr '/ ' '__')
             printf '%s\n' "$out" > "rendered/${safe%.tmpl}"
           done < <(find . \( -name '*.yml.tmpl' -o -name '*.yaml.tmpl' -o -name '*.toml.tmpl' \) -not -path './.git/*' -type f)
 
@@ -214,8 +214,6 @@ jobs:
             .github/workflows/*.yml
             .chezmoidata/*.yml
             dot_config/carapace/carapace.yaml
-            dot_config/lazydocker/config.yml
-            dot_config/glow/glow.yml
             rendered/*.yml
             rendered/*.yaml
           )
