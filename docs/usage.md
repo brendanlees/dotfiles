@@ -44,6 +44,16 @@ pass the token as an env var:
 GITHUB_TOKEN=ghp_xxx chezmoi init --apply brendanlees
 ```
 
+### in-shell access (personal hosts)
+
+`GITHUB_TOKEN` is no longer eager-exported into every shell — it's pulled lazily from `gh auth` when needed:
+
+```sh
+GITHUB_TOKEN=$(gh-token) some-tool
+```
+
+if a tool requires `GITHUB_TOKEN` to be present unconditionally, opt in to the old behavior by setting `GH_TOKEN_AUTOEXPORT=1` before zsh sources its config (e.g. in `~/.zshenv` or a launchd `EnvironmentVariables` entry).
+
 ### rotating the token
 
 1. create a new fine-grained PAT (zero permissions) on github
