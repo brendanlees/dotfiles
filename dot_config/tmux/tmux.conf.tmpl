@@ -124,12 +124,10 @@ set -g @ukiyo-theme "{{ (index .themes .theme).apps.tmux_ukiyo }}"
 set -g @ukiyo-ignore-window-colors true   # preserve ghostty's bg in panes
 set -g @ukiyo-show-powerline false        # flat blocks (no separators / caps)
 set -g @ukiyo-show-flags true
-# left icon: hollow circle by default, switches to a files glyph when the
-# prefix key is held (matches janoamaral/tokyo-night-tmux). ukiyo also flips
-# the segment bg via @ukiyo-left-icon-prefix-on-bg = alert.
-#   default = 󰤂 (nf-md-circle_medium)
-#   prefix  = 󰠠 (nf-md-folder_open / files)
-set -g @ukiyo-left-icon "#{?client_prefix,󰠠,󰤂} #S"
+# left icon: skull (nf-md-skull) constant across states. On prefix-hold, ukiyo
+# flips the segment bg to `alert` (warn/yellow); fg uses ukiyo's default
+# (`bg_pane`, aliased to $p.bg) so the skull renders dark on yellow.
+set -g @ukiyo-left-icon "󰚌 #S"
 set -g @ukiyo-military-time true
 set -g @ukiyo-refresh-rate 5
 set -g @ukiyo-plugins ""                  # no right-side plugins
@@ -139,10 +137,11 @@ set -g @ukiyo-plugins ""                  # no right-side plugins
 set -g @ukiyo-color-bg-bar  "{{ $p.bg }}"
 set -g @ukiyo-color-bg-pane "{{ $p.bg }}"
 # subdued left-icon: repurpose `accent` (used as left_icon_bg) to our subtle
-# surface tone, and use `muted` for the fg so the segment whispers instead of
-# shouting. Prefix-on still uses `alert` so it stands out when toggled.
+# surface tone, and alias ukiyo's `muted` slot to our palette's `comment` so
+# the title fg matches inactive window names and fades into the bar.
+# Prefix-on still uses `alert` (warn/yellow bg) so it stands out when toggled.
 set -g @ukiyo-color-accent  "{{ $p.surface }}"
-set -g @ukiyo-color-muted   "{{ $p.muted }}"
+set -g @ukiyo-color-muted   "{{ $p.comment }}"
 set -g @ukiyo-left-icon-fg  "muted"
 
 # set plugin install path (XDG-compliant, overrides TPM default of ~/.tmux/plugins/)
@@ -156,13 +155,16 @@ run '~/.config/tmux/plugins/tpm/tpm'
 # the window list as flat "N: title" cells with no separator caps, and a muted
 # fg for inactive windows.
 set -g window-status-separator ""
-# window title format. The trailing #{?window_zoomed_flag,...} appends a
-# zoom-expand glyph (󰊓 nf-md-arrow_expand_all) when the active pane
-# in that window is maximized via prefix+z (or our C-f).
-set -g window-status-format         " #I #W#{?window_zoomed_flag, 󰊓,} "
-set -g window-status-current-format " #I #W#{?window_zoomed_flag, 󰊓,} "
+# window title format. Inactive windows are padded with 2 spaces per side to
+# match the outer width of the active window's `⣏ ... ⣹` brackets, so cell
+# widths are constant and switching active never shifts the layout.
+# The trailing #{?window_zoomed_flag,...} appends a zoom-expand glyph
+# (󰊓 nf-md-arrow_expand_all) when the active pane in that window is
+# maximized via prefix+z (or our C-f).
+set -g window-status-format         "  #I #W#{?window_zoomed_flag, 󰊓,}  "
+set -g window-status-current-format "#[fg={{ $p.border }}]⣏#[fg={{ $p.comment }}] #I #W#{?window_zoomed_flag, 󰊓,} #[fg={{ $p.border }}]⣹"
 set -g window-status-style          "fg={{ $p.comment }},bg=default"
-set -g window-status-current-style  "fg={{ $p.fg }},bg=default,bold"
+set -g window-status-current-style  "fg={{ $p.comment }},bg=default"
 set -g window-status-activity-style "fg={{ $p.warn }},bg=default"
 
 # right side intentionally empty
