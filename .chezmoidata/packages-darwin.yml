@@ -9,6 +9,7 @@ uv:
 taps:
   base: []
   personal:
+    - anomalyco/tap
     - felixkratz/formulae
     - macos-fuse-t/cask
     - nikitabobko/tap
@@ -47,7 +48,6 @@ brews:
     - ente-cli
     - ffmpeg
     - gemini-cli
-    - gum
     - kanata
     - keka
     - little-snitch
@@ -55,7 +55,7 @@ brews:
     - mactop
     - macwhisper
     - micro-snitch
-    - opencode
+    - anomalyco/tap/opencode
     - soundsource
     - tldr
     - worktrunk
