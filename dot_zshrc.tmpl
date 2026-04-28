@@ -173,18 +173,27 @@ bindkey '^k' up-line-or-search
 bindkey '^j' down-line-or-search
 
 # --- clipboard ---
-# copy current command to clipboard
-copy-command() {
+# pipe stdin to the platform clipboard
+_clip_copy() {
 {{- if eq .chezmoi.os "darwin" }}
-  echo -n $BUFFER | pbcopy
+  pbcopy
 {{- else if eq .chezmoi.os "linux" }}
-  local encoded=$(printf '%s' "$BUFFER" | base64 | tr -d '\n')
+  local encoded
+  encoded=$(base64 | tr -d '\n')
   printf "\033]52;c;%s\a" "$encoded" > /dev/tty
 {{- end }}
+}
+
+# copy current command to clipboard
+copy-command() {
+  print -rn -- "$BUFFER" | _clip_copy
   zle -M "Copied to clipboard"
 }
 zle -N copy-command
 bindkey '^Xc' copy-command
+
+# copy current working directory to clipboard
+alias cpwd='pwd | tr -d "\n" | _clip_copy'
 
 # --- navigation combos ---
 # cd and ls
