@@ -1,2 +1,2 @@
-search_shortcut: SHIFT+SPACE
-backend: clipboard
+search_shortcut: off
+backend: auto
