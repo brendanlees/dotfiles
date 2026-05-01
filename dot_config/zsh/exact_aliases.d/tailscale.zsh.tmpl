@@ -1,0 +1,10 @@
+# ------------------------------------------
+# .aliases/tailscale
+# ------------------------------------------
+
+{{- if lookPath "tailscale" }}
+alias tsu='tailscale up'
+alias tsd='tailscale down'
+alias tsw='tailscale switch'
+alias tss='tailscale status'
+{{- end }}
