@@ -55,8 +55,8 @@
 
 ;; define aliases for homerow mods
 (defalias
-  ;; caps lock: tap for escape, hold for control
-  esc (tap-hold $tap-timeout 200 esc lctl)
+  ;; caps lock: tap for escape, hold for Hyper
+  esc (tap-hold $tap-timeout 200 esc (multi lctl lalt lsft lmet))
 
   ;; left homerow mods
   a_cmd (tap-hold $tap-timeout $hold-timeout a lmet)  ;; a: tap for 'a', hold for Command (Meta)
@@ -102,7 +102,7 @@
   ;; home row — tab, OSM(S+G), parens, braces    arrows, transparent, pgup
   tab @osm_sg S-9 S-0 S-lbrc S-rbrc    left down up rght _ pgup
   ;; bottom row — S-tab, ctrl, sgui combos, brackets    backslash, pipe, math, pgdn
-  S-tab lctl M-S-c M-S-spc lbrc rbrc    \ S-\ min S-eql eql pgdn
+  S-tab lctl M-S-c kp. lbrc rbrc    \ S-\ min S-eql eql pgdn
   ;; thumb
   _ _
   ;; function / media keys

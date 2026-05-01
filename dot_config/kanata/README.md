@@ -16,7 +16,7 @@ used for re-mapping internal laptop keyboards.
 | `k`    | k   | shift |
 | `l`    | l   | alt   |
 | `;`    | ;   | cmd   |
-| `caps` | esc | —     |
+| `caps` | esc | hyper |
 | `lmet` | bspc | cmd  |
 
 tap-timeout: 300ms, hold-timeout: 200ms.
@@ -87,7 +87,7 @@ hold `space` to activate the arrows layer. synced from QMK Layer 1 (Iris split k
 | lsft | Shift+Tab   |
 | z    | LCtrl       |
 | x    | Cmd+Shift+C |
-| c    | Cmd+Shift+Space |
+| c    | keypad dot      |
 | v    | `[`         |
 | b    | `]`         |
 | n    | `\`         |
