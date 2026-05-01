@@ -1,44 +1,27 @@
 matches:
-  # wk
-  - trigger: ":pfwk"
-    replace: "[{{form1.Who}}] - {{form1.What}} - {{mydate}}"
+  # wk — cursor lands inside [brackets] for Who, arrow right to fill What
+  - trigger: ";;pfwk"
+    replace: "[$|$] -  - {{mydate}}"
     vars:
       - name: mydate
         type: date
         params:
           format: "%Y-%m-%d"
-      - name: form1
-        type: form
-        params:
-          layout: |
-            Who: [[Who]]
-            What: [[What]]
 
-  # ws
-  - trigger: ":pfws"
-    replace: "[ws] - {{form1.What}} - {{mydate}}"
+  # ws — cursor lands at What position
+  - trigger: ";;pfws"
+    replace: "[ws] - $|$ - {{mydate}}"
     vars:
       - name: mydate
         type: date
         params:
           format: "%Y-%m-%d"
-      - name: form1
-        type: form
-        params:
-          layout: |
-            What: [[What]]
 
-  # sd
-  - trigger: ":pfsd"
-    replace: "[{{form1.Prefix}}] - {{form1.What}} - {{mydate}}"
+  # sd — cursor lands inside [brackets] for Prefix, arrow right to fill What
+  - trigger: ";;pfsd"
+    replace: "[$|$] -  - {{mydate}}"
     vars:
       - name: mydate
         type: date
         params:
           format: "%Y-%m-%d"
-      - name: form1
-        type: form
-        params:
-          layout: |
-            Who (prefix): [[Prefix]]
-            What: [[What]]
