@@ -158,7 +158,7 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 # ai
 # ------------------------------------------
 
-hermes() { docker exec hermes /opt/hermes/.venv/bin/hermes "$@"; }
+hermes() { docker exec -it hermes /opt/hermes/.venv/bin/hermes "$@"; }
 
 # ------------------------------------------
 # bindings
