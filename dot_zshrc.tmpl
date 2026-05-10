@@ -122,13 +122,22 @@ if command -v carapace &>/dev/null; then
   source <(carapace _carapace zsh)
 fi
 
+{{- if eq .chezmoi.os "linux" }}
+# ------------------------------------------
+# linux
+# ------------------------------------------
+
+# /usr/sbin and /sbin aren't on PATH for non-root shells on many distros
+export PATH="$PATH:/usr/sbin:/sbin"
+{{- end }}
+
 {{- if .homelab }}
 # ------------------------------------------
 # homelab
 # ------------------------------------------
 
 if [[ -d /boot/dietpi ]]; then
-  export PATH=/usr/bin:/boot/dietpi:/bin:/usr/sbin:/sbin:$PATH
+  export PATH="/boot/dietpi:$PATH"
   /boot/dietpi/dietpi-login
 fi
 {{- end }}
