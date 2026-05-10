@@ -9,6 +9,10 @@ Library
 .config/ghostty
 .config/worktrunk
 .config/ccstatusline
+.config/aerospace
+.config/borders
+.config/zed
+.config/espanso
 {{- end }}
 
 {{- if not .personal }}
