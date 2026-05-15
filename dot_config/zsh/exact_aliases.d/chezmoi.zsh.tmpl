@@ -3,7 +3,7 @@
 # ------------------------------------------
 
 # apply
-cza() { chezmoi apply --force; }
+cza() { chezmoi apply --force --refresh-externals; }
 
 # purge system & reinit
 # refuses if there is unpushed work or extra worktrees in the chezmoi source dir
