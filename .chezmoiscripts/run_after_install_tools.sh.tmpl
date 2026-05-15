@@ -39,6 +39,11 @@ echo "installing mise tools..."
 
 echo "mise tools installed."
 
+echo "upgrading mise tools..."
+"$MISE" upgrade --yes
+
+echo "mise tools upgraded."
+
 # rebuild bat theme cache (bat may have just been installed)
 if command -v bat &>/dev/null; then
   echo "Rebuilding bat theme cache..."
