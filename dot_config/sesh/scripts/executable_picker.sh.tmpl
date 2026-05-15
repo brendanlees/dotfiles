@@ -2,6 +2,11 @@
 # sesh picker — shared config for shell aliases and tmux keybinding
 # Usage: picker.sh [--tmux] [sesh list flags...]
 
+# tmux's run-shell doesn't source zshrc, so mise shims aren't on PATH when
+# this script is launched from the tmux keybind. Prepend them so sesh/fzf/fd
+# resolve regardless of caller.
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
+
 # Pick up theme-driven fzf colors from the chezmoi-managed opts file. Done here
 # (not just in zshrc) because tmux launches this script via run-shell with its
 # own captured environment, which would otherwise hold a stale FZF_DEFAULT_OPTS
