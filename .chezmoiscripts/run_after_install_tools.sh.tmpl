@@ -39,10 +39,21 @@ echo "installing mise tools..."
 
 echo "mise tools installed."
 
-echo "upgrading mise tools..."
-"$MISE" upgrade --yes
+# Upgrade all installed tools except starship.
+# starship is the active shell prompt; replacing its binary mid-apply glitches
+# the running session. Upgrade it on demand via the `mise-upgrade-starship`
+# shell alias (see dot_config/zsh/aliases.d/mise.zsh).
+echo "upgrading mise tools (excluding starship)..."
+tools=()
+while IFS= read -r tool; do
+  tools+=("$tool")
+done < <("$MISE" ls --installed 2>/dev/null | awk '$1 != "starship" {print $1}' | sort -u)
 
-echo "mise tools upgraded."
+if [ ${#tools[@]} -gt 0 ]; then
+  "$MISE" upgrade --yes "${tools[@]}"
+fi
+
+echo "mise tools upgraded (starship deferred)."
 
 # rebuild bat theme cache (bat may have just been installed)
 if command -v bat &>/dev/null; then
