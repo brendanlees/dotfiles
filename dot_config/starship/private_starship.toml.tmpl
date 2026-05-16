@@ -1,9 +1,17 @@
 # ~/.config/starship/starship.toml
 
 add_newline = false
-command_timeout = 50000
+command_timeout = 200
+scan_timeout = 10
 
-right_format = """$os$username$hostname$directory$git_branch$git_status${custom.ddev}"""
+# Left prompt: only the character. Default `$all` silently runs ~50 module
+# detection checks (battery, package, every language/cloud module) and adds
+# ~50–80ms per render — none of which produces visible output here.
+format = """$character"""
+right_format = """$os$username$hostname$directory$git_branch$git_status${env_var.DDEV_PROJECT}"""
+
+# STARSHIP_CACHE ramdisk: skipped on macOS (no tmpfs by default). Revisit on
+# Linux hosts where `/dev/shm` or a tmpfs mount is available.
 
 
 # palette driven by .chezmoidata/themes.yml
@@ -125,19 +133,16 @@ renamed = '[󱍸 renamed=${count}](yellow) '
 deleted = '[󰍶 deleted=${count}](red) '
 
 # ddev icon
-[custom.ddev]
-description = "Display icon when inside DDEV project"
-when = """ test -n "${DDEV_PROJECT:1}" """
-symbol = '🐳 '
-command = "echo $DDEV_PROJECT"
-format = "[$symbol$output]($style) "
-style = "bold blue"
+[env_var.DDEV_PROJECT]
+format = '[🐳 $env_value]($style) '
+style = 'bold blue'
+disabled = false
 
 [bun]
 disabled = true
 
 [docker_context]
-format = 'via [🐋 $context](blue bold)'
+disabled = true
 
 [container]
 disabled = true
