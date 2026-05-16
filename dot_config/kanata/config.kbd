@@ -78,6 +78,14 @@
 
   ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
   spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
+
+  ;; bottom-row tap-dance macros (mirrors QMK TD(10-14) -> M0-M4 on z/x/c/v/b)
+  ;; tap = letter, hold past 200ms = Cmd+letter (fires once via macro, no auto-repeat)
+  z_undo  (tap-hold $tap-timeout $hold-timeout z (macro M-z))  ;; z: tap z, hold = undo
+  x_cut   (tap-hold $tap-timeout $hold-timeout x (macro M-x))  ;; x: tap x, hold = cut
+  c_copy  (tap-hold $tap-timeout $hold-timeout c (macro M-c))  ;; c: tap c, hold = copy
+  v_paste (tap-hold $tap-timeout $hold-timeout v (macro M-v))  ;; v: tap v, hold = paste
+  b_all   (tap-hold $tap-timeout $hold-timeout b (macro M-a))  ;; b: tap b, hold = select-all
 )
 
 ;; base layer with homerow mods active
@@ -86,8 +94,8 @@
   tab q w e _ _    _ _ _ _ _
   ;; home row
   @esc @a_cmd @s_alt @d_sft @f_ctl _    h @j_ctl @k_sft @l_alt @scln_cmd _
-  ;; bottom row
-  lsft _ x c _ _    _ _ _ _ _ rsft
+  ;; bottom row — z/x/c/v/b tap-dance macros (tap=letter, hold=Cmd+letter, once)
+  lsft @z_undo @x_cut @c_copy @v_paste @b_all    _ _ _ _ _ rsft
   ;; thumb
   @cmd_bspc @spc_arr
   ;; function / media keys

@@ -21,6 +21,20 @@ used for re-mapping internal laptop keyboards.
 
 tap-timeout: 300ms, hold-timeout: 200ms.
 
+### bottom-row tap-dance macros (tap/hold)
+
+mirrors QMK tap-dance + macro setup on z/x/c/v/b. hold fires once via `(macro ...)` so the OS doesn't auto-repeat the command on long hold.
+
+| key | tap | hold               |
+| --- | --- | ------------------ |
+| `z` | z   | Cmd+Z (undo)       |
+| `x` | x   | Cmd+X (cut)        |
+| `c` | c   | Cmd+C (copy)       |
+| `v` | v   | Cmd+V (paste)      |
+| `b` | b   | Cmd+A (select all) |
+
+timeout matches homerow mods (300ms tap, 200ms hold).
+
 ### persist media function keys
 
 | key   | action          |
