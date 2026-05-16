@@ -59,7 +59,7 @@ themes:
     apps:
       ghostty:         "Kanagawa Wave"
       btop:            "kanagawa"
-      bat:             "Kanagawa"
+      bat:             "kanagawa"
       glow:            "auto"
       starship:        "kanagawa-wave"
       tmux_ukiyo:      "kanagawa/wave"
@@ -89,7 +89,7 @@ themes:
     apps:
       ghostty:         "Kanagawa Dragon"
       btop:            "kanagawa"
-      bat:             "Kanagawa"
+      bat:             "kanagawa"
       glow:            "auto"
       starship:        "kanagawa-wave"
       tmux_ukiyo:      "kanagawa/dragon"
@@ -149,7 +149,7 @@ themes:
     apps:
       ghostty:         "Rose Pine"
       btop:            "rose-pine"
-      bat:             "Rose Pine"
+      bat:             "rose-pine"
       glow:            "auto"
       starship:        "rosepine"
       tmux_ukiyo:      "rose-pine/main"
