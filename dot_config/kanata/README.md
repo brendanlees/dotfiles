@@ -61,6 +61,15 @@ timeout matches homerow mods (300ms tap, 200ms hold).
 
 hold `space` to activate the arrows layer. synced from QMK Layer 1 (Iris split keyboard).
 
+**number row — screenshot shortcuts:**
+
+| key | output      |
+| --- | ----------- |
+| 2   | Cmd+Shift+2 |
+| 3   | Cmd+Shift+3 |
+
+mirrors `SGUI(KC_2)` / `SGUI(KC_3)` from QMK Layer 1 (macOS screenshot-style shortcuts).
+
 **qwerty row — shifted symbols:**
 
 | key | output |

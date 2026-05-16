@@ -32,6 +32,8 @@
 
 ;; define source keys (full alpha block + space + function keys)
 (defsrc
+  ;; number row (partial — synced from QMK Layer 1)
+  2 3
   ;; qwerty row
   tab q w e r t    y u i o p
   ;; home row
@@ -90,6 +92,8 @@
 
 ;; base layer with homerow mods active
 (deflayer base
+  ;; number row
+  _ _
   ;; qwerty row
   tab q w e _ _    _ _ _ _ _
   ;; home row
@@ -105,6 +109,8 @@
 ;; arrows layer: space-hold produces symbols, brackets, arrows, nav
 ;; synced from QMK Layer 1 (Iris split keyboard)
 (deflayer arrows
+  ;; number row — screenshot shortcuts (Cmd+Shift+2/3, synced from QMK SGUI)
+  M-S-2 M-S-3
   ;; qwerty row — shifted symbols: ~ ! @ # $ %    ^ & * ( )
   S-grv S-1 S-2 S-3 S-4 S-5    S-6 S-7 S-8 S-9 S-0
   ;; home row — tab, OSM(S+G), parens, braces    arrows, transparent, pgup
