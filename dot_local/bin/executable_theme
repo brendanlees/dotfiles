@@ -134,6 +134,13 @@ else
   printf 'theme: "%s"\n' "$TARGET" >> "$LOCAL_YML"
 fi
 
+# unlock bw before apply so chezmoi can resolve bitwardenFields
+if command -v bw >/dev/null 2>&1 && bw status 2>/dev/null | grep -q '"status":"locked"'; then
+  echo ":: bw vault locked — unlocking for chezmoi apply"
+  BW_SESSION=$(bw unlock --raw) && export BW_SESSION \
+    || echo "warn: bw unlock failed; bw-backed templates will error" >&2
+fi
+
 echo ":: chezmoi apply"
 chezmoi apply --source "$CHEZMOI_DIR" -v
 
