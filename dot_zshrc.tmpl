@@ -1,8 +1,29 @@
+[[ -n "$ZPROF" ]] && zmodload zsh/zprof
+
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export ESPANSO_CONFIG_DIR="$XDG_CONFIG_HOME/espanso"
+
+# ------------------------------------------
+# helpers
+# ------------------------------------------
+
+# Cache a tool's shell-init output to disk and re-eval from cache. Re-runs the
+# tool only when its binary is newer than the cache. Usage:
+#   _cached_eval <tag> <bin> <init-cmd…>
+_cached_eval() {
+  local tag=$1 bin=$2; shift 2
+  local cache="$XDG_CACHE_HOME/zsh/init/${tag}.zsh"
+  local binpath=$commands[$bin]
+  [[ -n $binpath ]] || return
+  if [[ ! -s $cache || $binpath -nt $cache ]]; then
+    mkdir -p "${cache:h}"
+    "$@" > "$cache"
+  fi
+  source "$cache"
+}
 
 # ------------------------------------------
 # aliases / replacements
@@ -51,9 +72,6 @@ export OPENCODE_DISABLE_MOUSE=1
 # zsh plugins
 # ------------------------------------------
 
-# load zsh-syntax-highlighting
-source "$XDG_DATA_HOME/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
 # load zsh-completions
 fpath=("$XDG_DATA_HOME/zsh/plugins/zsh-completions/" $fpath)
 
@@ -92,35 +110,41 @@ setopt hist_find_no_dups
 # ------------------------------------------
 
 export PATH=$HOME/.local/bin:$PATH
-eval "$(mise activate zsh)"
+_cached_eval mise mise mise activate zsh
 
 # ------------------------------------------
 # starship
 # ------------------------------------------
 
 # start starship prompt
-eval "$(starship init zsh)"
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
+_cached_eval starship starship starship init zsh
 
 # ------------------------------------------
 # fzf 
 # ------------------------------------------
 
 # set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+_cached_eval fzf fzf fzf --zsh
 
 # load fzf-tab script
 mkdir -p "$XDG_CACHE_HOME/zsh" 2>/dev/null
-autoload -U compinit; compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION" -u
+autoload -U compinit
+zcompdump="$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
+# full security check at most once per day; otherwise use the fast -C path
+if [[ -s $zcompdump && -z $zcompdump(#qNmh+24) ]]; then
+  compinit -C -d "$zcompdump"
+else
+  compinit -u -d "$zcompdump"
+fi
+unset zcompdump
 source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
 # ------------------------------------------
 # carapace 
 # ------------------------------------------
 
-if command -v carapace &>/dev/null; then
-  source <(carapace _carapace zsh)
-fi
+_cached_eval carapace carapace carapace _carapace zsh
 
 {{- if eq .chezmoi.os "linux" }}
 # ------------------------------------------
@@ -161,7 +185,7 @@ alias matrix='osascript -e "tell application \"System Events\" to key code 36 us
 # ------------------------------------------
 
 # worktrunk
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+_cached_eval wt wt command wt config shell init zsh
 
 # ------------------------------------------
 # ai
@@ -279,6 +303,20 @@ moshi() {
 # ------------------------------------------
 # !NOTE must be last
 
-if [[ -o interactive ]] && command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init --cmd cd zsh)"
+if [[ -o interactive ]]; then
+  _cached_eval zoxide zoxide zoxide init --cmd cd zsh
 fi
+
+# ------------------------------------------
+# zsh-syntax-highlighting
+# ------------------------------------------
+# !NOTE must be sourced AFTER all other widget-defining plugins, otherwise it
+# silently fails to highlight redefined widgets.
+
+source "$XDG_DATA_HOME/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# ------------------------------------------
+# profiling
+# ------------------------------------------
+
+[[ -n "$ZPROF" ]] && zprof | head -40
