@@ -1,0 +1,5 @@
+# managed by chezmoi - re-runs when packages-windows.yml changes
+{{- $buckets := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .buckets .)) }}
+{{- range $buckets }}
+scoop bucket add {{ . }}
+{{- end }}

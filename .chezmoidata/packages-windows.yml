@@ -1,0 +1,80 @@
+# Windows package manifest — consumed by .chezmoiscripts/windows/*.ps1.tmpl
+# Schema mirrors packages-darwin.yml: each category has base/personal/work buckets
+# merged at apply time by .chezmoitemplates/merge-by-role.tmpl
+#
+# NOTE: the `uv:` key is intentionally NOT redefined here — packages-darwin.yml
+# already defines it and chezmoi loads all .chezmoidata/*.yml on every platform,
+# so the same uv tool list installs on Windows via windows/run_onchange_*-uv.ps1.tmpl.
+#
+# Lines marked "# ?" are best-guess scoop/winget IDs — verify before relying on them.
+
+# Scoop buckets (analogous to brew taps)
+buckets:
+  base:
+    - extras
+    - nerd-fonts
+    - versions
+  personal: []
+  work: []
+
+# Scoop packages (CLI + GUI apps Scoop handles well)
+# Bucket-prefixed IDs (e.g. "extras/obsidian") are explicit; unprefixed = main bucket
+scoops:
+  base:
+    - bun
+    - chezmoi
+    - curl
+    - gh
+    - git
+    - nodejs # brew: node
+    - pnpm
+    - uv
+    - wget
+    # No direct scoop equivalents in base: ansible, bash, mysql, tmux, zsh, bitwarden-cli
+    # (most live more naturally under WSL or winget — see wingets.personal)
+  personal:
+    - ffmpeg
+    - yt-dlp
+    - extras/btop4win # brew: btop                                  # ?
+    - extras/vial # ?
+    - extras/obsidian
+    - extras/notion
+    - extras/discord
+    - extras/spotify
+    - extras/vlc
+    - extras/firefox
+    - extras/googlechrome
+    - extras/vscode
+    - extras/zen-browser # ?
+    - extras/figma
+    - extras/balena-etcher
+    - extras/sqlitebrowser # brew cask: db-browser-for-sqlite
+    - extras/ghostty # ?
+    - nerd-fonts/Monaspace-NF # ?
+    - nerd-fonts/Monaspice-NF # ?
+    # Skipped — macOS-only with no Windows analog:
+    #   aerospace, raycast, karabiner-elements, betterdisplay, airbuddy,
+    #   dockutil, mas, mactop, macmon, soundsource, fuse-t, little-snitch,
+    #   micro-snitch, onyx, daisydisk, pearcleaner, itsycal, jordanbaird-ice,
+    #   orbstack, mimestream, sequel-ace, transmit, textsniper, amphetamine,
+    #   dropover, kindle (mac app), pastepal, photobulk, sleeve, xnip,
+    #   musicbox, musicharbor, openin, parcel, lanscan, invoice-ninja
+  work:
+    - kubectl
+    - extras/awscli
+    # ddev — install via its Windows installer / WSL2; no clean scoop pkg
+    # wp-cli — phar download or scoop "main/wp-cli" if added                   # ?
+
+# Winget IDs (for MSIX / Store / vendor-signed apps Scoop handles poorly)
+wingets:
+  base: []
+  personal:
+    - Bitwarden.CLI
+    - Bitwarden.Bitwarden
+    - tailscale.tailscale
+    - MullvadVPN.MullvadVPN # ?
+    - Doist.Todoist
+    - Zoom.Zoom
+    - Anthropic.Claude # claude desktop / code, verify ID             # ?
+    # Logi Options+ — LogiTech.OptionsPlus                                     # ?
+  work: []

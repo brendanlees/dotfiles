@@ -1,0 +1,7 @@
+# managed by chezmoi - re-runs when packages-darwin.yml changes (.uv shared across platforms)
+{{- $tools := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .uv .)) }}
+{{- if $tools }}
+{{ range $tools -}}
+uv tool install {{ . }}
+{{ end -}}
+{{- end }}

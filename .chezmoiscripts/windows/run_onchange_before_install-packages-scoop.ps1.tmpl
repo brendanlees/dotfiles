@@ -1,0 +1,5 @@
+# managed by chezmoi - re-runs when packages-windows.yml changes
+{{- $apps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .scoops .)) }}
+{{- if $apps }}
+scoop install {{ $apps | join " " }}
+{{- end }}
