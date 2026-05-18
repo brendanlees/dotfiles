@@ -2,11 +2,15 @@
 $ErrorActionPreference = 'Stop'
 
 # ------------------------------------------
-# resolve github token (rate-limit bypass)
+# resolve github token (rate-limit bypass for mise/gh)
 # ------------------------------------------
 {{ if .github_token -}}
-if (-not $env:GITHUB_TOKEN) {
-    $env:GITHUB_TOKEN = {{ .github_token | quote }}
+$token = {{ .github_token | quote }}
+# current process
+if (-not $env:GITHUB_TOKEN) { $env:GITHUB_TOKEN = $token }
+# persist for future shells so mise/gh see it on subsequent runs
+if ([Environment]::GetEnvironmentVariable('GITHUB_TOKEN', 'User') -ne $token) {
+    [Environment]::SetEnvironmentVariable('GITHUB_TOKEN', $token, 'User')
 }
 {{ end -}}
 
