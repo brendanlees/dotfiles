@@ -36,27 +36,6 @@ if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { $env:GITHUB_TOKEN = $env:GITHUB_PERSONA
 {{- end }}
 
 # ------------------------------------------
-# PSReadLine — vi mode, autosuggestions, history search (pwsh's zsh-plugins equivalent)
-# ------------------------------------------
-if (Get-Module -ListAvailable PSReadLine) {
-    Set-PSReadLineOption -EditMode Vi -BellStyle None
-    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
-    Set-PSReadLineOption -PredictionViewStyle ListView
-    Set-PSReadLineOption -HistoryNoDuplicates
-    Set-PSReadLineOption -HistorySearchCursorMovesToEnd
-    Set-PSReadLineOption -MaximumHistoryCount 10000
-    # emacs-style line nav + history search — must register in Vi Insert
-    # mode explicitly, otherwise PSReadLine routes them to Command mode and
-    # they do nothing while you're typing.
-    Set-PSReadLineKeyHandler -Chord Ctrl+a -Function BeginningOfLine       -ViMode Insert
-    Set-PSReadLineKeyHandler -Chord Ctrl+e -Function EndOfLine             -ViMode Insert
-    Set-PSReadLineKeyHandler -Chord Ctrl+p -Function HistorySearchBackward -ViMode Insert
-    Set-PSReadLineKeyHandler -Chord Ctrl+n -Function HistorySearchForward  -ViMode Insert
-    # jj → command mode — matches `bindkey jj vi-cmd-mode` in zshrc
-    Set-PSReadLineKeyHandler -Chord 'j,j' -Function ViCommandMode          -ViMode Insert
-}
-
-# ------------------------------------------
 # mise (PATH/shims) — must come before tool-dependent aliases + starship
 # ------------------------------------------
 if (Get-Command mise -ErrorAction SilentlyContinue) {
