@@ -1,0 +1,25 @@
+# managed by chezmoi - bootstrap scoop + early Bitwarden CLI before package scripts run
+# "0-" prefix orders this before the other onchange package scripts.
+$ErrorActionPreference = 'Stop'
+
+# --- scoop ---
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+    Write-Host "installing scoop..."
+    # CurrentUser scope avoids needing admin
+    if ((Get-ExecutionPolicy -Scope CurrentUser) -in @('Restricted', 'Undefined')) {
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    }
+    Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+} else {
+    Write-Host "scoop already installed, skipping."
+}
+
+# --- Bitwarden CLI (early — chezmoi templates use it for secret access) ---
+{{- if .personal }}
+if (-not (Get-Command bw -ErrorAction SilentlyContinue)) {
+    Write-Host "installing Bitwarden CLI via winget..."
+    winget install --exact --silent --accept-source-agreements --accept-package-agreements --id Bitwarden.CLI
+} else {
+    Write-Host "Bitwarden CLI already installed, skipping."
+}
+{{- end }}

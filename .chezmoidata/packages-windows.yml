@@ -27,14 +27,13 @@ buckets:
 scoops:
   base:
     - bun
-    - chezmoi
     - curl
     - gh
     - git
-    - mysql                     # brew: mysql
-    - nodejs                    # brew: node
+    - mysql # brew: mysql
+    - nodejs # brew: node
     - pnpm
-    - pwsh                      # PowerShell 7 (cross-platform replacement for default WinPS 5)
+    - pwsh # PowerShell 7 (cross-platform replacement for default WinPS 5)
     - uv
     - wget
     # No direct scoop equivalents in base: ansible, bash, tmux, zsh
@@ -42,36 +41,34 @@ scoops:
   personal:
     - ffmpeg
     - yt-dlp
-    - btop                      # brew: btop
-    - mosh-client               # brew: mosh (server-side requires WSL/SSH host)
-    - opencode                  # brew: opencode
-    - tldr                      # brew: tldr
-    - extras/brave              # brew cask: brave-browser
-    - extras/caffeine           # parity with mas: Amphetamine
+    - btop # brew: btop
+    - mosh-client # brew: mosh (server-side requires WSL/SSH host)
+    - opencode # brew: opencode
+    - tldr # brew: tldr
+    - extras/caffeine # parity with mas: Amphetamine
     - extras/discord
-    - extras/ente-auth          # related to brew: ente-cli
-    - extras/etcher             # brew cask: balena-etcher
+    - extras/ente-auth # related to brew: ente-cli
+    - extras/etcher # brew cask: balena-etcher
     - extras/figma
     - extras/firefox
     - extras/googlechrome
-    - extras/kanata             # brew: kanata
-    - extras/libreoffice        # brew cask: libreoffice
+    - extras/kanata # brew: kanata
+    - extras/libreoffice # brew cask: libreoffice
     - extras/notion
     - extras/obsidian
-    - extras/powertoys          # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
-    - extras/qmk-toolbox        # related to brew: qmk
-    - extras/responsively       # brew cask: responsively
+    - extras/powertoys # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
+    - extras/qmk-toolbox # related to brew: qmk
+    - extras/responsively # brew cask: responsively
     - extras/spotify
-    - extras/sqlitebrowser      # brew cask: db-browser-for-sqlite
-    - extras/termius            # brew cask: termius
-    - extras/upscayl            # brew cask: upscayl
-    - extras/vial               # brew cask: vial
+    - extras/sqlitebrowser # brew cask: db-browser-for-sqlite
+    - extras/upscayl # brew cask: upscayl
+    - extras/vial # brew cask: vial
     - extras/vlc
-    - extras/vscode             # brew cask: visual-studio-code
-    - extras/wezterm            # ghostty stand-in (no Windows build yet)
-    - extras/zed                # brew cask: zed
-    - extras/zen-browser        # brew cask: zen-browser
-    - nerd-fonts/JetBrainsMono-NF   # matches .nerd_font in defaults.yml
+    - extras/vscode # brew cask: visual-studio-code
+    - extras/wezterm # ghostty stand-in (no Windows build yet)
+    - extras/zed # brew cask: zed
+    - extras/zen-browser # brew cask: zen-browser
+    - nerd-fonts/JetBrainsMono-NF # matches .nerd_font in defaults.yml
     - nerd-fonts/Monaspace-NF
     # Windows-window-manager / launcher parity (consider — not enabled by default):
     #   extras/glazewm or extras/komorebi  (aerospace equivalent)
@@ -88,8 +85,8 @@ scoops:
     #   affinity-photo (no winget pkg), boltai, flacon, mimestream, dbngin
   work:
     - kubectl
-    - aws                       # brew: awscli
-    - wp-cli                    # brew: wp-cli
+    - aws # brew: awscli
+    - wp-cli # brew: wp-cli
     # ddev — install via its Windows installer / WSL2; no clean scoop pkg
 
 # Winget IDs (for MSIX / Store / vendor-signed apps Scoop handles poorly)
@@ -97,23 +94,19 @@ wingets:
   base: []
   personal:
     - Anthropic.Claude
-    - Anthropic.ClaudeCode      # the CLI tool
+    - Anthropic.ClaudeCode # the CLI tool
     - Bitwarden.Bitwarden
     - Bitwarden.CLI
-    - Cryptomator.Cryptomator   # brew cask: cryptomator
+    - Cryptomator.Cryptomator # brew cask: cryptomator
     - Doist.Todoist
-    - HaystackSoftware.Arq      # brew cask: arq
-    - IDRIX.VeraCrypt           # brew cask: veracrypt
-    - LedgerHQ.LedgerLive       # brew cask: ledger-live
-    - Logitech.OptionsPlus      # brew cask: logi-options-plus
-    - MullvadVPN.MullvadVPN     # brew cask: mullvad-vpn
-    - Plex.Plex                 # brew cask: plex
-    - Plex.Plexamp              # brew cask: plexamp
-    - TheBrowserCompany.Arc     # brew cask: arc
-    - WireGuard.WireGuard       # mas: WireGuard
+    # - HaystackSoftware.Arq      # brew cask: arq
+    # - IDRIX.VeraCrypt           # brew cask: veracrypt
+    # - Logitech.OptionsPlus      # brew cask: logi-options-plus
+    - MullvadVPN.MullvadVPN # brew cask: mullvad-vpn
+    - TheBrowserCompany.Arc # brew cask: arc
+    - WireGuard.WireGuard # mas: WireGuard
     - Zoom.Zoom
-    - ente-io.photos-desktop    # related to brew: ente-cli
-    - tailscale.tailscale       # brew cask: tailscale
+    - tailscale.tailscale # brew cask: tailscale
     # Amazon.Kindle             # mas: Kindle — uncomment if wanted
     # Notion.NotionCalendar     # if you want Notion Calendar separately
   work: []

@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 set -euo pipefail
 
@@ -12,3 +13,4 @@ if [ -f "$HOME/.zsh_history" ] && [ ! -f "$HOME/.local/state/zsh/history" ]; the
   cp "$HOME/.zsh_history" "$HOME/.local/state/zsh/history"
   echo "migrated zsh history -> ~/.local/state/zsh/history"
 fi
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 set -euo pipefail
 
@@ -14,3 +15,4 @@ echo "installing mise..."
 curl https://mise.run | sh
 
 echo "mise installed to ~/.local/bin/mise"
+{{- end -}}
