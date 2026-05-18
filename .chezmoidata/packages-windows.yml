@@ -30,6 +30,7 @@ scoops:
     - curl
     - gh
     - git
+    - mise                    # tool version manager
     - mysql # brew: mysql
     - nodejs # brew: node
     - pnpm

@@ -1,0 +1,45 @@
+# managed by chezmoi - post-apply: install + upgrade mise tools, rebuild bat cache
+$ErrorActionPreference = 'Stop'
+
+# ------------------------------------------
+# resolve github token (rate-limit bypass)
+# ------------------------------------------
+{{ if .github_token -}}
+if (-not $env:GITHUB_TOKEN) {
+    $env:GITHUB_TOKEN = {{ .github_token | quote }}
+}
+{{ end -}}
+
+# ------------------------------------------
+# install > mise tools
+# ------------------------------------------
+if (-not (Get-Command mise -ErrorAction SilentlyContinue)) {
+    Write-Host "mise not on PATH, skipping tool install."
+    exit 0
+}
+
+Write-Host "installing mise tools..."
+mise install
+
+Write-Host "mise tools installed."
+
+# Upgrade all installed tools except starship.
+# starship is the active shell prompt; replacing its binary mid-apply glitches
+# the running session. Upgrade it on demand if needed.
+Write-Host "upgrading mise tools (excluding starship)..."
+$tools = mise ls --installed 2>$null |
+    ForEach-Object { ($_ -split '\s+')[0] } |
+    Where-Object { $_ -and $_ -ne 'starship' } |
+    Sort-Object -Unique
+
+if ($tools.Count -gt 0) {
+    mise upgrade --yes @tools
+}
+
+Write-Host "mise tools upgraded (starship deferred)."
+
+# rebuild bat theme cache (bat may have just been installed)
+if (Get-Command bat -ErrorAction SilentlyContinue) {
+    Write-Host "rebuilding bat theme cache..."
+    bat cache --build
+}
