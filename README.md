@@ -16,6 +16,14 @@ brew install chezmoi && chezmoi init --apply brendanlees
 sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees
 ```
 
+**windows**
+
+```pwsh
+winget install -e --id twpayne.chezmoi --accept-source-agreements --accept-package-agreements
+# open a new terminal so chezmoi lands on PATH, then:
+chezmoi init --apply brendanlees
+```
+
 on first run you'll be prompted to set your machine role. see [scoping](docs/scoping.md) to skip prompts or provision via ansible.
 
 ## architecture
