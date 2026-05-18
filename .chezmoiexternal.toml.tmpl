@@ -1,3 +1,5 @@
+{{- /* zsh + tmux plugins — shell-side only; Windows uses PowerShell, no tmux. */ -}}
+{{- if ne .chezmoi.os "windows" }}
 [".local/share/zsh/plugins/zsh-autosuggestions"]
 type = "archive"
 url = "https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
@@ -87,6 +89,7 @@ exclude = [
   "*/bindings/**",
   "**/*.zwc",
 ]
+{{- end }}
 
 {{- /* Windows installs nerd fonts via scoop (matthewjberger/scoop-nerd-fonts),
        which handles font-registry registration. Only darwin/linux drop ttf
