@@ -1,0 +1,39 @@
+# managed by chezmoi - pwsh 7 profile (CurrentUserAllHosts)
+$ErrorActionPreference = 'Stop'
+
+# ------------------------------------------
+# env
+# ------------------------------------------
+$env:STARSHIP_CONFIG = "$HOME\.config\starship\starship.toml"
+$env:EDITOR = 'nvim'
+
+# ------------------------------------------
+# github token (lazy accessor)
+# ------------------------------------------
+{{- if .personal }}
+# Match the zsh pattern: gh auth provides the token on demand. Set
+# $env:GH_TOKEN_AUTOEXPORT before sourcing this profile (e.g. via user-scope
+# env var) if a tool requires GITHUB_TOKEN unconditionally.
+function gh-token { gh auth token 2>$null }
+if ($env:GH_TOKEN_AUTOEXPORT -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+    $env:GITHUB_PERSONAL_ACCESS_TOKEN = gh-token
+    $env:GITHUB_TOKEN = $env:GITHUB_PERSONAL_ACCESS_TOKEN
+}
+{{- else }}
+# Work/headless: rely on pre-existing env.
+if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { $env:GITHUB_TOKEN = $env:GITHUB_PERSONAL_ACCESS_TOKEN }
+{{- end }}
+
+# ------------------------------------------
+# mise (must come before starship so PATH/shims are set)
+# ------------------------------------------
+if (Get-Command mise -ErrorAction SilentlyContinue) {
+    mise activate pwsh | Out-String | Invoke-Expression
+}
+
+# ------------------------------------------
+# starship
+# ------------------------------------------
+if (Get-Command starship -ErrorAction SilentlyContinue) {
+    Invoke-Expression (&starship init powershell)
+}

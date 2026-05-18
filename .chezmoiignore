@@ -44,6 +44,10 @@ Library
 .local/share/fonts
 {{- end }}
 
+{{- if ne .chezmoi.os "windows" }}
+Documents
+{{- end }}
+
 README.md
 key.txt.age
 LICENSE
