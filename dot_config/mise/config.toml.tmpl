@@ -19,7 +19,9 @@ glow = "latest"
 gum = "latest"
 fd = "latest"
 fzf = "latest"
+{{ if ne .chezmoi.os "windows" -}}
 tmux = "latest"
+{{ end -}}
 jq = "latest"
 gh = "latest"
 duf = "latest"
@@ -31,7 +33,9 @@ yazi = "latest"
 {{ if eq .chezmoi.os "linux" -}}
 "github:aristocratos/btop" = "latest"
 {{ end -}}
+{{ if ne .chezmoi.os "windows" -}}
 "github:joshmedeski/sesh" = "latest"
+{{ end -}}
 bat = "latest"
 {{ if not (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "alpine")) -}}
 node = "lts"

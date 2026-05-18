@@ -1,4 +1,6 @@
 # managed by chezmoi - pwsh 7 profile (CurrentUserAllHosts)
+# Mirrors patterns from dot_zshrc.tmpl where they make sense on Windows.
+
 $ErrorActionPreference = 'Stop'
 
 # ------------------------------------------
@@ -7,13 +9,22 @@ $ErrorActionPreference = 'Stop'
 $env:STARSHIP_CONFIG = "$HOME\.config\starship\starship.toml"
 $env:EDITOR = 'nvim'
 
+# opentui mouse stream floods terminal parsers; opt out in opencode
+$env:OPENCODE_DISABLE_MOUSE = '1'
+
+# fzf: use fd, theme-driven opts file (chezmoi theme switches take effect on next launch)
+$env:FZF_DEFAULT_COMMAND   = 'fd --hidden --strip-cwd-prefix --exclude .git'
+$env:FZF_CTRL_T_COMMAND    = $env:FZF_DEFAULT_COMMAND
+$env:FZF_ALT_C_COMMAND     = 'fd --type=d --hidden --strip-cwd-prefix --exclude .git'
+$env:FZF_DEFAULT_OPTS_FILE = "$HOME\.config\fzf\opts"
+
 # ------------------------------------------
 # github token (lazy accessor)
 # ------------------------------------------
 {{- if .personal }}
-# Match the zsh pattern: gh auth provides the token on demand. Set
-# $env:GH_TOKEN_AUTOEXPORT before sourcing this profile (e.g. via user-scope
-# env var) if a tool requires GITHUB_TOKEN unconditionally.
+# Match zsh pattern — gh auth provides the token on demand. Set
+# $env:GH_TOKEN_AUTOEXPORT (user-scope env var) if a tool requires
+# GITHUB_TOKEN unconditionally.
 function gh-token { gh auth token 2>$null }
 if ($env:GH_TOKEN_AUTOEXPORT -and (Get-Command gh -ErrorAction SilentlyContinue)) {
     $env:GITHUB_PERSONAL_ACCESS_TOKEN = gh-token
@@ -25,14 +36,160 @@ if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { $env:GITHUB_TOKEN = $env:GITHUB_PERSONA
 {{- end }}
 
 # ------------------------------------------
-# mise (must come before starship so PATH/shims are set)
+# PSReadLine — vi mode, autosuggestions, history search (pwsh's zsh-plugins equivalent)
+# ------------------------------------------
+if (Get-Module -ListAvailable PSReadLine) {
+    Set-PSReadLineOption -EditMode Vi -BellStyle None
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+    Set-PSReadLineOption -PredictionViewStyle ListView
+    Set-PSReadLineOption -HistoryNoDuplicates
+    Set-PSReadLineOption -HistorySearchCursorMovesToEnd
+    Set-PSReadLineOption -MaximumHistoryCount 10000
+    Set-PSReadLineKeyHandler -Key Ctrl+p -Function HistorySearchBackward
+    Set-PSReadLineKeyHandler -Key Ctrl+n -Function HistorySearchForward
+    Set-PSReadLineKeyHandler -Key Ctrl+a -Function BeginningOfLine
+    Set-PSReadLineKeyHandler -Key Ctrl+e -Function EndOfLine
+    # jj → command mode (vi) — matches `bindkey jj vi-cmd-mode` in zshrc
+    Set-PSReadLineKeyHandler -Chord 'j,j' -ViMode Insert -Function ViCommandMode
+}
+
+# ------------------------------------------
+# mise (PATH/shims) — must come before tool-dependent aliases + starship
 # ------------------------------------------
 if (Get-Command mise -ErrorAction SilentlyContinue) {
     mise activate pwsh | Out-String | Invoke-Expression
 }
 
 # ------------------------------------------
-# starship
+# aliases — general
+# ------------------------------------------
+Set-Alias -Name c -Value Clear-Host
+function dotfiles { Set-Location "$HOME\.local\share\chezmoi" }
+
+# ------------------------------------------
+# aliases — cat → bat
+# ------------------------------------------
+if (Get-Command bat -ErrorAction SilentlyContinue) {
+    Remove-Item alias:cat -Force -ErrorAction SilentlyContinue
+    function cat { bat --paging never --style plain @args }
+}
+
+# ------------------------------------------
+# aliases — ls → eza
+# ------------------------------------------
+if (Get-Command eza -ErrorAction SilentlyContinue) {
+    Remove-Item alias:ls   -Force -ErrorAction SilentlyContinue
+    Remove-Item alias:tree -Force -ErrorAction SilentlyContinue
+    $script:_ezaMin = @('--no-permissions','--no-filesize','--no-user','--no-time','--git')
+    function ls   { eza -alF --color=always --icons=always @_ezaMin @args }
+    function lsf  { eza -alF --color=always --icons=always --git @args }
+    function ll   { eza -al  --icons=always --color=always --group-directories-first @_ezaMin @args }
+    function llf  { eza -al  --icons=always --color=always --group-directories-first @args }
+    function ld   { eza -lD  --color=always --icons=always @_ezaMin @args }
+    function lf   { eza -lF  --color=always --icons=always @_ezaMin @args }
+    function lh   { eza -ld .* --color=always --icons=always --group-directories-first @_ezaMin @args }
+    function lt   { eza -al  --color=always --icons=always --sort=modified @_ezaMin @args }
+    function tree { eza -alF --tree --level=2 --icons=always --color=always @_ezaMin @args }
+}
+
+# ------------------------------------------
+# aliases — lazyapps, tailscale, network
+# ------------------------------------------
+if (Get-Command lazygit    -ErrorAction SilentlyContinue) { Set-Alias lzg lazygit }
+if (Get-Command lazydocker -ErrorAction SilentlyContinue) { Set-Alias lzd lazydocker }
+if (Get-Command doggo      -ErrorAction SilentlyContinue) { Set-Alias dig doggo }
+if (Get-Command tailscale  -ErrorAction SilentlyContinue) {
+    function tsu { tailscale up      @args }
+    function tsd { tailscale down    @args }
+    function tsw { tailscale switch  @args }
+    function tss { tailscale status  @args }
+}
+
+# ------------------------------------------
+# aliases — chezmoi
+# ------------------------------------------
+function cza { chezmoi apply --force --refresh-externals }
+function czr {
+    $src = chezmoi source-path
+    if (-not $src) { return }
+    $dirty = git -C $src status --porcelain
+    if ($dirty) {
+        Write-Error "czr: refusing — dirty working tree in $src`n$dirty"; return
+    }
+    $unpushed = git -C $src log --branches --not --remotes --oneline 2>$null
+    if ($unpushed) {
+        Write-Error "czr: refusing — local commits not on any remote:`n$unpushed"; return
+    }
+    $wtCount = (git -C $src worktree list | Measure-Object -Line).Lines
+    if ($wtCount -gt 1) {
+        Write-Error "czr: refusing — extra worktrees exist"; return
+    }
+    $reply = Read-Host "czr: this will WIPE $src and reinit. type 'yes' to proceed"
+    if ($reply -ne 'yes') { Write-Host 'czr: aborted' -ForegroundColor Yellow; return }
+    chezmoi purge --force; chezmoi init --apply brendanlees
+}
+
+# ------------------------------------------
+# aliases — mise
+# ------------------------------------------
+function mise-upgrade-starship {
+    mise upgrade starship
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "`nstarship upgraded. start a new shell to reload." -ForegroundColor Green
+    }
+}
+
+# ------------------------------------------
+# navigation helpers (cx, fcd, f, fv, cpwd) — mirror zsh helpers using fd+fzf+nvim
+# ------------------------------------------
+function cx {
+    param([string]$p = '.')
+    Set-Location $p
+    if (Get-Command eza -ErrorAction SilentlyContinue) { ls } else { Get-ChildItem }
+}
+function fcd {
+    if (-not (Get-Command fd -ErrorAction SilentlyContinue)) { return }
+    $d = fd --type=d --hidden --exclude .git . | fzf
+    if ($d) { Set-Location $d }
+}
+function fv {
+    if (-not (Get-Command fd -ErrorAction SilentlyContinue)) { return }
+    $f = fd --type=f --hidden --exclude .git . | fzf
+    if ($f) { nvim $f }
+}
+function f {
+    if (-not (Get-Command fd -ErrorAction SilentlyContinue)) { return }
+    $f = fd --type=f --hidden --exclude .git . | fzf
+    if ($f) { $f | Set-Clipboard; Write-Host "Copied: $f" -ForegroundColor DarkGray }
+}
+function cpwd { (Get-Location).Path | Set-Clipboard; Write-Host "Copied: $((Get-Location).Path)" -ForegroundColor DarkGray }
+
+# ------------------------------------------
+# fzf — PSFzf provides Ctrl+T / Ctrl+R / Alt+C bindings (zsh's fzf-tab equivalent)
+# ------------------------------------------
+if (Get-Module -ListAvailable PSFzf) {
+    Import-Module PSFzf
+    Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+    Enable-PsFzfAliases
+}
+
+# ------------------------------------------
+# zoxide — `cd <fuzzy>` shadowing
+# ------------------------------------------
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell --cmd cd) -join "`n" })
+}
+
+# ------------------------------------------
+# carapace — argument completions for many CLIs
+# ------------------------------------------
+if (Get-Command carapace -ErrorAction SilentlyContinue) {
+    Set-PSReadLineOption -Colors @{ "Selection" = "`e[7m" }
+    carapace _carapace | Out-String | Invoke-Expression
+}
+
+# ------------------------------------------
+# starship — must come AFTER mise (PATH ready) but it sets prompt last
 # ------------------------------------------
 if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (&starship init powershell)
