@@ -88,7 +88,10 @@ exclude = [
   "**/*.zwc",
 ]
 
-{{- if and .personal (not .headless) }}
+{{- /* Windows installs nerd fonts via scoop (matthewjberger/scoop-nerd-fonts),
+       which handles font-registry registration. Only darwin/linux drop ttf
+       files directly via chezmoi-external. */ -}}
+{{- if and .personal (not .headless) (or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux")) }}
 {{-   $fontDir := "" }}
 {{-   if eq .chezmoi.os "darwin" }}
 {{-     $fontDir = "Library/Fonts" }}
