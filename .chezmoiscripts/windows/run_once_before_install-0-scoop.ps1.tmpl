@@ -14,6 +14,14 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Host "scoop already installed, skipping."
 }
 
+# --- git (required for adding scoop buckets like extras / nerd-fonts) ---
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "installing git via scoop..."
+    scoop install git
+} else {
+    Write-Host "git already installed, skipping."
+}
+
 # --- Bitwarden CLI (early — chezmoi templates use it for secret access) ---
 {{- if .personal }}
 if (-not (Get-Command bw -ErrorAction SilentlyContinue)) {
