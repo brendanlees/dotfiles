@@ -28,6 +28,7 @@ scoops:
   base:
     - bun
     - curl
+    - extras/vcredist2022     # MSVC runtime — required by mise + many rust/native crates
     - gh
     - git
     - mise                    # tool version manager
@@ -35,6 +36,7 @@ scoops:
     - nodejs # brew: node
     - pnpm
     - pwsh # PowerShell 7 (cross-platform replacement for default WinPS 5)
+    - rust                    # rustc + cargo — required by mise for some plugins
     - uv
     - wget
     # No direct scoop equivalents in base: ansible, bash, tmux, zsh
