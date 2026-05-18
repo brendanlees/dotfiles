@@ -71,8 +71,9 @@ scoops:
     - extras/wezterm # ghostty stand-in (no Windows build yet)
     - extras/zed # brew cask: zed
     - extras/zen-browser # brew cask: zen-browser
-    - nerd-fonts/JetBrainsMono-NF # matches .nerd_font in defaults.yml
-    - nerd-fonts/Monaspace-NF
+    - nerd-fonts/JetBrainsMono-NF-Mono   # matches .font_family "JetBrainsMono Nerd Font Mono"
+    - nerd-fonts/Monaspace-NF-Mono
+    - nerd-fonts/NerdFontsSymbolsOnly    # icon fallback — robust to primary-font naming drift
     # Windows-window-manager / launcher parity (consider — not enabled by default):
     #   extras/glazewm or extras/komorebi  (aerospace equivalent)
     #   extras/flow-launcher              (raycast equivalent)
