@@ -1,0 +1,8 @@
+# managed by chezmoi - Windows PowerShell 5.1 profile
+# Delegates to the pwsh 7 profile so config stays single-source.
+# Some pwsh-7-only syntax may warn/skip under 5.1 — switch to pwsh
+# (`pwsh.exe`, installed via scoop) for full functionality.
+$pwsh7Profile = "$HOME\Documents\PowerShell\profile.ps1"
+if (Test-Path $pwsh7Profile) {
+    . $pwsh7Profile
+}
