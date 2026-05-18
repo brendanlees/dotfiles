@@ -1,0 +1,61 @@
+-- managed by chezmoi - wezterm config (Windows)
+-- Font + palette pulled from .chezmoidata so a chezmoi theme switch flows here.
+
+local wezterm = require 'wezterm'
+local config = wezterm.config_builder()
+
+-- ------------------------------------------
+-- font (nerd font: needed for eza --icons, starship glyphs, etc.)
+-- ------------------------------------------
+config.font = wezterm.font_with_fallback {
+  '{{ .font_family }}',
+  'Symbols Nerd Font Mono',
+  'Segoe UI Emoji',
+}
+config.font_size = 12.0
+
+-- ------------------------------------------
+-- colors — from .chezmoidata/themes.yml palette of the active theme
+-- ------------------------------------------
+{{- $p := (index .themes .theme).palette }}
+config.colors = {
+  background    = '{{ $p.bg }}',
+  foreground    = '{{ $p.fg }}',
+  cursor_bg     = '{{ $p.accent }}',
+  cursor_fg     = '{{ $p.bg }}',
+  cursor_border = '{{ $p.accent }}',
+  selection_bg  = '{{ $p.surface_alt }}',
+  selection_fg  = '{{ $p.fg }}',
+  ansi = {
+    '{{ $p.bg }}',         -- black
+    '{{ $p.error }}',      -- red
+    '{{ $p.success }}',    -- green
+    '{{ $p.warn }}',       -- yellow
+    '{{ $p.primary }}',    -- blue
+    '{{ $p.secondary }}',  -- magenta
+    '{{ $p.info }}',       -- cyan
+    '{{ $p.muted }}',      -- white
+  },
+  brights = {
+    '{{ $p.comment }}',
+    '{{ $p.error }}',
+    '{{ $p.success }}',
+    '{{ $p.orange }}',
+    '{{ $p.primary_alt }}',
+    '{{ $p.secondary }}',
+    '{{ $p.info_alt }}',
+    '{{ $p.fg }}',
+  },
+}
+
+-- ------------------------------------------
+-- shell + window
+-- ------------------------------------------
+config.default_prog = { 'pwsh.exe', '-NoLogo' }
+config.window_decorations = 'RESIZE'
+config.hide_tab_bar_if_only_one_tab = true
+config.scrollback_lines = 10000
+config.enable_scroll_bar = false
+config.window_padding = { left = 8, right = 8, top = 4, bottom = 4 }
+
+return config

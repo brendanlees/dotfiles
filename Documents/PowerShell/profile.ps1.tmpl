@@ -45,12 +45,15 @@ if (Get-Module -ListAvailable PSReadLine) {
     Set-PSReadLineOption -HistoryNoDuplicates
     Set-PSReadLineOption -HistorySearchCursorMovesToEnd
     Set-PSReadLineOption -MaximumHistoryCount 10000
-    Set-PSReadLineKeyHandler -Key Ctrl+p -Function HistorySearchBackward
-    Set-PSReadLineKeyHandler -Key Ctrl+n -Function HistorySearchForward
-    Set-PSReadLineKeyHandler -Key Ctrl+a -Function BeginningOfLine
-    Set-PSReadLineKeyHandler -Key Ctrl+e -Function EndOfLine
-    # jj → command mode (vi) — matches `bindkey jj vi-cmd-mode` in zshrc
-    Set-PSReadLineKeyHandler -Chord 'j,j' -ViMode Insert -Function ViCommandMode
+    # emacs-style line nav + history search — must register in Vi Insert
+    # mode explicitly, otherwise PSReadLine routes them to Command mode and
+    # they do nothing while you're typing.
+    Set-PSReadLineKeyHandler -Chord Ctrl+a -Function BeginningOfLine       -ViMode Insert
+    Set-PSReadLineKeyHandler -Chord Ctrl+e -Function EndOfLine             -ViMode Insert
+    Set-PSReadLineKeyHandler -Chord Ctrl+p -Function HistorySearchBackward -ViMode Insert
+    Set-PSReadLineKeyHandler -Chord Ctrl+n -Function HistorySearchForward  -ViMode Insert
+    # jj → command mode — matches `bindkey jj vi-cmd-mode` in zshrc
+    Set-PSReadLineKeyHandler -Chord 'j,j' -Function ViCommandMode          -ViMode Insert
 }
 
 # ------------------------------------------
