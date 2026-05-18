@@ -48,6 +48,11 @@ Library
 Documents
 {{- end }}
 
+{{- if eq .chezmoi.os "windows" }}
+.config/tmux
+.config/sesh
+{{- end }}
+
 README.md
 key.txt.age
 LICENSE
