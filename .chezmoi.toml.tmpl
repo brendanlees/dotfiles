@@ -111,7 +111,7 @@
 # happens once at `chezmoi init` and the result is cached in
 # ~/.config/chezmoi/chezmoi.toml. See docs/usage.md for bw item setup.
 {{- if and $personal (lookPath "bw") }}
-  github_token = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").github_token.value | quote }}
+  github_token = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").read_only_token.value | quote }}
 {{- end }}
 
 # Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from

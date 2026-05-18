@@ -48,7 +48,7 @@ ansible passes the vault-encrypted token during `chezmoi init` and `chezmoi upda
 
 ### personal (bitwarden)
 
-on personal hosts the token is pulled from the same Bitwarden item used for git identity (`d256649b-8944-43a3-a016-abc1018ad825`). add a `github_token` custom field to that item and chezmoi will populate `.github_token` at init time, which feeds the after-install scripts that export `GITHUB_TOKEN` (and, on windows, persist it to user-scope env vars for mise/gh).
+on personal hosts the token is pulled from the same Bitwarden item used for git identity (`d256649b-8944-43a3-a016-abc1018ad825`). add a `read_only_token` custom field to that item (a zero-permission fine-grained PAT) and chezmoi maps it onto `.github_token` at init time, which feeds the after-install scripts that export `GITHUB_TOKEN` (and, on windows, persist it to user-scope env vars for mise/gh).
 
 prerequisites:
 - bw installed and on PATH **before** running `chezmoi init` — otherwise the `[bitwarden]` auto-unlock block isn't emitted and the lookup silently falls back to empty. on macos this comes from `run_once_before_install_deps.sh.tmpl`; on windows install it via winget (see the windows install line above) before init.
