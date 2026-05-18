@@ -30,4 +30,8 @@
 
 [credential]
   helper = osxkeychain
+{{- else if eq .chezmoi.os "windows" }}
+
+[credential]
+  helper = manager
 {{- end }}
