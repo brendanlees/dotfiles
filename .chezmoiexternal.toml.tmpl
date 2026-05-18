@@ -111,7 +111,10 @@ include = ["{{ .nerd_font }}NerdFontMono-*.ttf"]
 {{- end }}
 
 {{- if not .ephemeral }}
-[".config/nvim"]
+{{- /* nvim path: ~/.config/nvim on darwin/linux, ~/AppData/Local/nvim on windows */ -}}
+{{- $nvimPath := ".config/nvim" }}
+{{- if eq .chezmoi.os "windows" }}{{ $nvimPath = "AppData/Local/nvim" }}{{ end }}
+["{{ $nvimPath }}"]
 type = "archive"
 url = "https://github.com/brendanlees/astronvim-config/archive/main.tar.gz"
 stripComponents = 1
