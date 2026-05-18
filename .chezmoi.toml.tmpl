@@ -105,6 +105,15 @@
   git_email = {{ $git_email | quote }}
 {{- end }}
 
+# --- secrets (personal hosts only — requires bw installed + unlocked) ---
+# Pulls github_token from the same Bitwarden item used for git identity, so
+# mise/gh get a 5,000 req/hr rate limit instead of the anon 60. The lookup
+# happens once at `chezmoi init` and the result is cached in
+# ~/.config/chezmoi/chezmoi.toml. See docs/usage.md for bw item setup.
+{{- if and $personal (lookPath "bw") }}
+  github_token = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").github_token.value | quote }}
+{{- end }}
+
 # Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from
 # .chezmoidata/defaults.yml (chezmoi merges that into .data automatically).
 # Don't redeclare them here — keep one source of truth.
