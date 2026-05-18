@@ -1,0 +1,9 @@
+# managed by chezmoi - re-runs when vscode.yml changes
+{{- if and (not .headless) (lookPath "code") }}
+{{- $extensions := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .vscode .)) }}
+$ErrorActionPreference = 'Stop'
+
+{{ range $extensions -}}
+code --force --install-extension {{ . }}
+{{ end -}}
+{{- end }}
