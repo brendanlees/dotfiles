@@ -3,3 +3,7 @@ lazy-lock.json
 {{ if ne .chezmoi.os "darwin" }}
 ~/Assets
 {{ end }}
+{{ if ne .chezmoi.os "windows" }}
+~/Documents/PowerShell
+~/Documents/WindowsPowerShell
+{{ end }}

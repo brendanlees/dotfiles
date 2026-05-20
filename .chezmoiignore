@@ -55,6 +55,7 @@ Documents
 
 {{- if ne .chezmoi.os "windows" }}
 .config/wezterm
+.chezmoiscripts/windows/**
 {{- end }}
 
 README.md
