@@ -5,6 +5,17 @@
 # apply
 cza() { chezmoi apply --force --refresh-externals; }
 
+# init with a single bw prompt (unlocks vault once, passes session via env)
+cz-bw-init() {
+    command -v bw >/dev/null || {
+        printf 'cz-bw-init: bw not on PATH\n' >&2
+        return 1
+    }
+    local s
+    s="$(bw unlock --raw)" || return 1
+    BW_SESSION="$s" chezmoi init "$@"
+}
+
 # purge system & reinit
 # refuses if there is unpushed work or extra worktrees in the chezmoi source dir
 czr() {
