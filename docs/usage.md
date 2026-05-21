@@ -52,10 +52,25 @@ ansible passes the vault-encrypted token during `chezmoi init` and `chezmoi upda
 
 prerequisites:
 
-- bw installed and on PATH **before** running `chezmoi init` — otherwise the `[bitwarden]`
-- bw signed in once: `bw login` (chezmoi unlocks the vault automatically via `[bitwarden] unlock = "auto"` — one master-password prompt per init).
+- bw installed and on PATH **before** running `chezmoi init`
+- bw signed in once: `bw login`.
 
-to refresh after rotating any cached field: `chezmoi init` (re-runs the template, re-fetches from bw, updates `~/.config/chezmoi/chezmoi.toml`).
+first-time setup:
+
+- requires export of bw unlock to prevent continous password prompting for each secret token
+
+```sh
+export BW_SESSION=$(bw unlock --raw)
+chezmoi init --apply brendanlees
+```
+
+once dotfile environment is configured, the same command is stored a helper for future use
+
+```sh
+cz-bw-init       # zsh helper: bw unlock --raw → BW_SESSION → chezmoi init
+```
+
+to refresh after rotating any cached field: re-run `cz-bw-init` (or the manual equivalent).
 
 secrets use the namespace `.bw_$name`, using the item id and are stored within relevant scope guards.
 
