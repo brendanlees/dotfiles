@@ -105,6 +105,10 @@
   git_email = {{ $git_email | quote }}
 {{- end }}
 
+# Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from
+# .chezmoidata/defaults.yml (chezmoi merges that into .data automatically).
+# Don't redeclare them here — keep one source of truth.
+
 # --- secrets (sourced once at init from Bitwarden; cached in ~/.config/chezmoi/chezmoi.toml) ---
 # Every value below is fetched at `chezmoi init` time so subsequent `chezmoi apply`
 # runs never touch bw — that means one master-password prompt per init, zero per apply.
@@ -115,13 +119,6 @@
 {{- $bw_github := bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" }}
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
   github_token = {{ $bw_github.read_only_token.value | quote }}
-{{- end }}
-
-# Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from
-# .chezmoidata/defaults.yml (chezmoi merges that into .data automatically).
-# Don't redeclare them here — keep one source of truth.
-
-{{- if and $personal (lookPath "bw") }}
 
 [data.bw_info]
 {{- range $k, $v := $bw_info }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
