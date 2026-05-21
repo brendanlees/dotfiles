@@ -36,6 +36,42 @@ if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { $env:GITHUB_TOKEN = $env:GITHUB_PERSONA
 {{- end }}
 
 # ------------------------------------------
+# PSReadLine — emacs mode for line nav, history search, kill-word, etc.
+# ------------------------------------------
+# Default Windows EditMode treats Ctrl+A as "select all" and Ctrl+E as no-op.
+# Emacs mode gives Ctrl+A/E (line start/end), Ctrl+P/N (history), Ctrl+W
+# (kill word), Ctrl+K/U (kill to eol/bol), Alt+B/F (word back/fwd) — same
+# muscle memory as the zshrc setup, no overrides needed for the basics.
+if (Get-Module -ListAvailable PSReadLine) {
+    Set-PSReadLineOption -EditMode Emacs -BellStyle None
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+    Set-PSReadLineOption -PredictionViewStyle ListView
+    Set-PSReadLineOption -HistoryNoDuplicates
+    Set-PSReadLineOption -HistorySearchCursorMovesToEnd
+    Set-PSReadLineOption -MaximumHistoryCount 10000
+    # Emacs mode's default Ctrl+P/N walks history one entry at a time;
+    # rebind to prefix-search (only matches entries starting with what you've typed).
+    Set-PSReadLineKeyHandler -Chord Ctrl+p -Function HistorySearchBackward
+    Set-PSReadLineKeyHandler -Chord Ctrl+n -Function HistorySearchForward
+
+    # "Edit current line in $EDITOR" — the bash Ctrl+X,Ctrl+E pattern. Opens
+    # the current command line in nvim/vim, save+quit drops the edited line
+    # back into the prompt. Closest emacs-mode equivalent to dropping into
+    # vi for ad-hoc heavy editing.
+    Set-PSReadLineKeyHandler -Chord 'Ctrl+x,Ctrl+e' -BriefDescription EditInEditor -ScriptBlock {
+        $line = $null; $cursor = $null
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+        $tmp = New-TemporaryFile
+        Set-Content -Path $tmp.FullName -Value $line -NoNewline
+        & $env:EDITOR $tmp.FullName
+        $edited = (Get-Content -Path $tmp.FullName -Raw)
+        if ($null -ne $edited) { $edited = $edited.TrimEnd("`r","`n") }
+        Remove-Item -Path $tmp.FullName -ErrorAction SilentlyContinue
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $edited)
+    }
+}
+
+# ------------------------------------------
 # mise (PATH/shims) — must come before tool-dependent aliases + starship
 # ------------------------------------------
 if (Get-Command mise -ErrorAction SilentlyContinue) {
