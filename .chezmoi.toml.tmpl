@@ -105,20 +105,59 @@
   git_email = {{ $git_email | quote }}
 {{- end }}
 
-# --- secrets (personal hosts only — requires bw installed + unlocked) ---
-# Pulls github_token from the same Bitwarden item used for git identity, so
-# mise/gh get a 5,000 req/hr rate limit instead of the anon 60. The lookup
-# happens once at `chezmoi init` and the result is cached in
-# ~/.config/chezmoi/chezmoi.toml. See docs/usage.md for bw item setup.
+# --- secrets (sourced once at init from Bitwarden; cached in ~/.config/chezmoi/chezmoi.toml) ---
+# Every value below is fetched at `chezmoi init` time so subsequent `chezmoi apply`
+# runs never touch bw — that means one master-password prompt per init, zero per apply.
+# Re-run `chezmoi init` whenever a referenced Bitwarden field changes. See docs/usage.md.
+
 {{- if and $personal (lookPath "bw") }}
-  github_token = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").read_only_token.value | quote }}
+{{- $bw_info   := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" }}
+{{- $bw_github := bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" }}
+{{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
+  github_token = {{ $bw_github.read_only_token.value | quote }}
 {{- end }}
 
 # Note: code_dir, chezmoi_dir, nerd_font, font_family are sourced from
 # .chezmoidata/defaults.yml (chezmoi merges that into .data automatically).
 # Don't redeclare them here — keep one source of truth.
 
-{{ if and $personal (lookPath "bw") }}
+{{- if and $personal (lookPath "bw") }}
+
+[data.bw_info]
+{{- range $k, $v := $bw_info }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $v.value | quote }}
+{{- end }}{{ end }}
+
+[data.bw_github]
+{{- range $k, $v := $bw_github }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $v.value | quote }}
+{{- end }}{{ end }}
+
+[data.bw_gitea]
+{{- range $k, $v := $bw_gitea }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $v.value | quote }}
+{{- end }}{{ end }}
+{{- end }}
+
+{{- if and $work (lookPath "bw") }}
+{{- $bw_work := bitwardenFields "item" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" }}
+
+[data.bw_work]
+{{- range $k, $v := $bw_work }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $v.value | quote }}
+{{- end }}{{ end }}
+{{- end }}
+
+{{- if lookPath "bw" }}
+{{- $bw_homelab := bitwardenFields "item" "007b0e02-0af0-41e4-9779-b42d0156e6aa" }}
+
+[data.bw_homelab]
+{{- range $k, $v := $bw_homelab }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $v.value | quote }}
+{{- end }}{{ end }}
+{{- end }}
+
+{{ if lookPath "bw" }}
 [bitwarden]
   unlock = "auto"
 {{ end }}

@@ -1,7 +1,7 @@
 [user]
 {{- if and .personal (lookPath "bw") }}
-  name  = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").name.value }}
-  email = {{ (bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825").email.value }}
+  name  = {{ .bw_github.name }}
+  email = {{ .bw_github.email }}
 {{- else if and (not .personal) .work }}
   name  = {{ .git_name }}
   email = {{ .git_email }}
