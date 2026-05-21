@@ -121,18 +121,18 @@
   github_token = {{ $bw_github.read_only_token.value | quote }}
 
 [data.bw_info]
-{{- range $k, $v := $bw_info }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
-  {{ $k }} = {{ $v.value | quote }}
+{{- range $k, $v := $bw_info }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 
 [data.bw_github]
-{{- range $k, $v := $bw_github }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
-  {{ $k }} = {{ $v.value | quote }}
+{{- range $k, $v := $bw_github }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 
 [data.bw_gitea]
-{{- range $k, $v := $bw_gitea }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
-  {{ $k }} = {{ $v.value | quote }}
+{{- range $k, $v := $bw_gitea }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 {{- end }}
 
@@ -140,8 +140,8 @@
 {{- $bw_work := bitwardenFields "item" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" }}
 
 [data.bw_work]
-{{- range $k, $v := $bw_work }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
-  {{ $k }} = {{ $v.value | quote }}
+{{- range $k, $v := $bw_work }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 {{- end }}
 
@@ -149,8 +149,8 @@
 {{- $bw_homelab := bitwardenFields "item" "007b0e02-0af0-41e4-9779-b42d0156e6aa" }}
 
 [data.bw_homelab]
-{{- range $k, $v := $bw_homelab }}{{ if and $v.value (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
-  {{ $k }} = {{ $v.value | quote }}
+{{- range $k, $v := $bw_homelab }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 {{- end }}
 
