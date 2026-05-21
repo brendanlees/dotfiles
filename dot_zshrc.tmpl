@@ -204,6 +204,13 @@ hermes() { docker exec -it hermes /opt/hermes/.venv/bin/hermes "$@"; }
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 
+# Ctrl+X Ctrl+E opens current command line in $EDITOR (nvim), save+quit
+# returns edited line to prompt. Matches the bash convention + the
+# Windows pwsh profile binding for cross-platform muscle memory.
+autoload -U edit-command-line
+zle -N edit-command-line
+bindkey '^X^E' edit-command-line
+
 # --- history ---
 # navigate zsh history using ctrl+p/n,k/j
 bindkey '^P' history-search-backward
