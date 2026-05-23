@@ -63,6 +63,10 @@ bind-key & kill-window
 # (which doesn't exist on Windows — psmux is the binary name here).
 bind-key "K" display-popup -E -w 80% -h 70% "pwsh -NoProfile -File ~/.config/sesh/scripts/picker.ps1"
 
+# switch to last session — psmux 3.3.4 doesn't ship tmux's default `prefix L`
+# binding, so re-add it explicitly to match Unix tmux muscle memory.
+bind-key L switch-client -l
+
 # status bar at top
 set-option -g status-position top
 
