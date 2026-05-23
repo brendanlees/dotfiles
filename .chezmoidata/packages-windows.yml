@@ -1,19 +1,3 @@
-# Windows package manifest — consumed by .chezmoiscripts/windows/*.ps1.tmpl
-# Schema mirrors packages-darwin.yml: each category has base/personal/work buckets
-# merged at apply time by .chezmoitemplates/merge-by-role.tmpl
-#
-# NOTE: the `uv:` key is intentionally NOT redefined here — packages-darwin.yml
-# already defines it and chezmoi loads all .chezmoidata/*.yml on every platform,
-# so the same uv tool list installs on Windows via windows/run_onchange_*-uv.ps1.tmpl.
-#
-# All scoop names verified against ScoopInstaller/{Main,Extras} trees and
-# matthewjberger/scoop-nerd-fonts. All winget IDs verified against
-# microsoft/winget-pkgs publisher folders.
-
-# Scoop buckets (analogous to brew taps)
-# Entries are either a bare bucket name (for official ScoopInstaller buckets) or
-# "name url" for third-party buckets — both forms get passed verbatim to
-# `scoop bucket add`.
 buckets:
   base:
     - extras
@@ -22,95 +6,75 @@ buckets:
   personal: []
   work: []
 
-# Scoop packages (CLI + GUI apps Scoop handles well)
-# Bucket-prefixed IDs (e.g. "extras/obsidian") are explicit; unprefixed = main bucket
 scoops:
   base:
     - bun
     - curl
-    - extras/vcredist2022     # MSVC runtime — required by mise + many rust/native crates
+    - extras/vcredist2022 # MSVC runtime — required by mise + many rust/native crates
     - gh
     - git
-    - mise                    # tool version manager
-    - mysql # brew: mysql
-    - nodejs # brew: node
+    - mise
+    - mysql
+    - nodejs
     - pnpm
-    - pwsh # PowerShell 7 (cross-platform replacement for default WinPS 5)
-    - rust                    # rustc + cargo — required by mise for some plugins
+    - pwsh
+    - rust
     - uv
     - wget
-    # No direct scoop equivalents in base: ansible, bash, tmux, zsh
-    # (these live more naturally inside WSL)
   personal:
     - ffmpeg
     - yt-dlp
-    - btop # brew: btop
-    - mosh-client # brew: mosh (server-side requires WSL/SSH host)
-    - opencode # brew: opencode
-    - tldr # brew: tldr
-    - extras/caffeine # parity with mas: Amphetamine
+    - btop
+    - mosh-client
+    - opencode
+    - tldr
+    - extras/caffeine
     - extras/discord
-    - extras/ente-auth # related to brew: ente-cli
-    - extras/etcher # brew cask: balena-etcher
+    - extras/ente-auth
+    - extras/etcher
     - extras/figma
     - extras/firefox
     - extras/googlechrome
-    - extras/kanata # brew: kanata
-    - extras/libreoffice # brew cask: libreoffice
+    - extras/kanata
+    - extras/libreoffice
     - extras/notion
     - extras/obsidian
     - extras/powertoys # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
     - extras/qmk-toolbox # related to brew: qmk
-    - extras/responsively # brew cask: responsively
+    - extras/responsively
     - extras/spotify
-    - extras/sqlitebrowser # brew cask: db-browser-for-sqlite
-    - extras/upscayl # brew cask: upscayl
-    - extras/vial # brew cask: vial
+    - extras/sqlitebrowser
+    - extras/upscayl
+    - extras/vial
     - extras/vlc
-    - extras/vscode # brew cask: visual-studio-code
-    - extras/wezterm # ghostty stand-in (no Windows build yet)
-    - extras/zed # brew cask: zed
-    - extras/zen-browser # brew cask: zen-browser
-    - nerd-fonts/JetBrainsMono-NF-Mono   # matches .font_family "JetBrainsMono Nerd Font Mono"
+    - extras/vscode
+    - extras/zed
+    - extras/zen-browser
+    - nerd-fonts/JetBrainsMono-NF-Mono # matches .font_family "JetBrainsMono Nerd Font Mono"
     - nerd-fonts/Monaspace-NF-Mono
-    - nerd-fonts/NerdFontsSymbolsOnly    # icon fallback — robust to primary-font naming drift
-    # Windows-window-manager / launcher parity (consider — not enabled by default):
-    #   extras/glazewm or extras/komorebi  (aerospace equivalent)
-    #   extras/flow-launcher              (raycast equivalent)
-    #   extras/autohotkey                 (karabiner-style remapping)
-    #   extras/tacky-borders              (brew: borders)
-    # Skipped — macOS-only with no Windows analog:
-    #   aerospace, raycast, karabiner-elements, betterdisplay, airbuddy,
-    #   dockutil, mas, mactop, macmon, soundsource, fuse-t, little-snitch,
-    #   micro-snitch, onyx, daisydisk, pearcleaner, itsycal, jordanbaird-ice,
-    #   orbstack, mimestream, sequel-ace, transmit, textsniper, amphetamine,
-    #   dropover, kindle (mac app), pastepal, photobulk, sleeve, xnip,
-    #   musicbox, musicharbor, openin, parcel, lanscan, invoice-ninja,
-    #   affinity-photo (no winget pkg), boltai, flacon, mimestream, dbngin
+    - nerd-fonts/NerdFontsSymbolsOnly # icon fallback — robust to primary-font naming drift
+    - extras/glazewm
+    - extras/zebar
+    - extras/tacky-borders
   work:
     - kubectl
-    - aws # brew: awscli
-    - wp-cli # brew: wp-cli
-    # ddev — install via its Windows installer / WSL2; no clean scoop pkg
+    - aws
+    - wp-cli
 
-# Winget IDs (for MSIX / Store / vendor-signed apps Scoop handles poorly)
 wingets:
   base: []
   personal:
+    - Alacritty.Alacritty
     - Anthropic.Claude
-    - Anthropic.ClaudeCode # the CLI tool
+    - Anthropic.ClaudeCode
     - Bitwarden.Bitwarden
     - Bitwarden.CLI
-    - Cryptomator.Cryptomator # brew cask: cryptomator
+    - Cryptomator.Cryptomator
     - Doist.Todoist
-    # - HaystackSoftware.Arq      # brew cask: arq
-    # - IDRIX.VeraCrypt           # brew cask: veracrypt
-    # - Logitech.OptionsPlus      # brew cask: logi-options-plus
-    - MullvadVPN.MullvadVPN # brew cask: mullvad-vpn
-    - TheBrowserCompany.Arc # brew cask: arc
-    - WireGuard.WireGuard # mas: WireGuard
+    - MullvadVPN.MullvadVPN
+    - psmux
+    - TheBrowserCompany.Arc
+    - WireGuard.WireGuard
     - Zoom.Zoom
-    - tailscale.tailscale # brew cask: tailscale
-    # Amazon.Kindle             # mas: Kindle — uncomment if wanted
-    # Notion.NotionCalendar     # if you want Notion Calendar separately
+    - tailscale.tailscale
   work: []
