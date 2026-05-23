@@ -40,7 +40,7 @@ y = 0
 # font (nerd font: needed for eza --icons, starship glyphs, etc.)
 # ------------------------------------------
 [font]
-size = 20.0
+size = 16
 
 [font.normal]
 family = "{{ .font_family }}"
