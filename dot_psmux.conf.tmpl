@@ -58,6 +58,11 @@ bind-key -n C-S-l next-window
 bind-key x kill-pane
 bind-key & kill-window
 
+# sesh integration — fzf session picker in a psmux popup. Uses display-popup
+# instead of fzf's --tmux mode because fzf shells out to a literal `tmux` binary
+# (which doesn't exist on Windows — psmux is the binary name here).
+bind-key "K" display-popup -E -w 80% -h 70% "pwsh -NoProfile -File ~/.config/sesh/scripts/picker.ps1"
+
 # status bar at top
 set-option -g status-position top
 

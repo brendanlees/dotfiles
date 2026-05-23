@@ -1,0 +1,45 @@
+#!/usr/bin/env pwsh
+# sesh picker — pwsh port of executable_picker.sh.tmpl for psmux + pwsh.
+# Usage: picker.ps1 [--tmux] [sesh list flags...]
+
+# psmux invokes this with `pwsh -NoProfile`, so profile.ps1 (and the
+# `mise activate` block in it) never runs. Hydrate mise PATH here so
+# sesh/fzf/fd resolve regardless of caller. mise itself is on PATH via
+# scoop shims (~\scoop\shims), which psmux inherits at server start.
+if (Get-Command mise -ErrorAction SilentlyContinue) {
+    mise activate pwsh | Out-String | Invoke-Expression
+}
+
+# Theme-driven fzf colors via the chezmoi-managed opts file. Set here (not just
+# in profile.ps1) because psmux launches via run-shell with a captured env.
+$env:FZF_DEFAULT_OPTS_FILE = "$HOME\.config\fzf\opts"
+Remove-Item env:FZF_DEFAULT_OPTS -ErrorAction SilentlyContinue
+
+$seshArgs = @($args)
+$tmuxFlag = @()
+if ($seshArgs.Count -gt 0 -and $seshArgs[0] -eq '--tmux') {
+    $tmuxFlag = @('--tmux', '80%,70%')
+    $seshArgs = if ($seshArgs.Count -gt 1) { $seshArgs[1..($seshArgs.Count - 1)] } else { @() }
+}
+
+$selected = sesh list --icons @seshArgs | fzf @tmuxFlag `
+    --no-sort --ansi --border-label ' sesh ' --prompt '󰚌  ' `
+    --header '  ^a all ^t psmux ^g configs ^x zoxide ^d psmux kill ^f find{{ if .personal }} ^c code ^h homelab ^w work{{ end }}' `
+    --bind 'tab:down,btab:up' `
+    --bind 'ctrl-a:change-prompt(⚡)+reload(sesh list --icons)' `
+    --bind 'ctrl-t:change-prompt(🪟  )+reload(sesh list -t --icons)' `
+    --bind 'ctrl-g:change-prompt(⚙️  )+reload(sesh list -c --icons)' `
+    --bind 'ctrl-x:change-prompt(📁  )+reload(sesh list -z --icons)' `
+    --bind 'ctrl-f:change-prompt(🔎  )+reload(fd -H -d 2 -t d . {{ .chezmoi.homeDir }})' `
+    --bind 'ctrl-d:execute(psmux kill-session -t {2..})+change-prompt(⚡  )+reload(sesh list --icons)' `
+    {{- if .personal }}
+    --bind 'ctrl-c:change-prompt(💻  )+reload(fd -d 1 -t d -E _* . {{ .chezmoi.homeDir }}/{{ .code_dir }})' `
+    --bind 'ctrl-h:change-prompt(🏠  )+reload(fd -d 1 -t d . {{ .chezmoi.homeDir }}/{{ .code_dir }}/_homelab)' `
+    --bind 'ctrl-w:change-prompt(💼  )+reload(fd -d 1 -t d . {{ .chezmoi.homeDir }}/{{ .code_dir }}/_work)' `
+    {{- end }}
+    --preview-window 'right:55%' `
+    --preview 'sesh preview {}'
+
+if ($LASTEXITCODE -eq 0 -and $selected) {
+    sesh connect $selected
+}

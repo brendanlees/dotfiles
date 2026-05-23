@@ -83,6 +83,7 @@ if (Get-Command mise -ErrorAction SilentlyContinue) {
 # ------------------------------------------
 Set-Alias -Name c -Value Clear-Host
 function dotfiles { Set-Location "$HOME\.local\share\chezmoi" }
+function s { & "$HOME\.config\sesh\scripts\picker.ps1" @args }
 
 # ------------------------------------------
 # aliases — cat → bat

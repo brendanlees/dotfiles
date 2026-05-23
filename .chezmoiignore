@@ -57,7 +57,6 @@ AppData
 
 {{- if eq .chezmoi.os "windows" }}
 .config/tmux
-.config/sesh
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
