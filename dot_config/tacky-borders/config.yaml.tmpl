@@ -1,0 +1,59 @@
+{{- $p := (index .themes .theme).palette }}
+# tacky-borders config (active theme: {{ .theme }})
+# Mirrors the macOS JankyBorders bordersrc.tmpl; colors from .chezmoidata/themes.yml.
+
+watch_config_changes: True
+enable_logging: True
+rendering_backend: V2
+
+global:
+  border_width: 6
+  border_offset: 0
+  border_radius: Round
+  border_z_order: AboveWindow
+  follow_native_border: True
+
+  initialize_delay: 200
+  unminimize_delay: 150
+
+  # active = primary; inactive = transparent (alpha 00). Matches JankyBorders.
+  active_color: "{{ $p.primary }}"
+  inactive_color: "#00000000"
+
+  animations:
+    active: []
+    inactive: []
+    fps: 60
+    enabled: False
+
+  effects:
+    active: []
+    inactive: []
+    enabled: False
+
+# Per-app overrides. Mirrors JankyBorders blacklist; Mac-only apps dropped.
+window_rules:
+  # System / WM helpers that shouldn't get borders.
+  - match: Class
+    name: "Windows.UI.Core.CoreWindow"
+    enabled: False
+  - match: Class
+    name: "XamlExplorerHostIslandWindow"
+    enabled: False
+  - match: Process
+    name: "tacky-borders"
+    enabled: False
+  - match: Process
+    name: "zebar"
+    enabled: False
+  - match: Title
+    name: "Picture-in-Picture"
+    enabled: False
+
+  # Ported from JankyBorders blacklist (Windows-applicable).
+  - match: Process
+    name: "Todoist"
+    enabled: False
+  - match: Process
+    name: "Tailscale"
+    enabled: False

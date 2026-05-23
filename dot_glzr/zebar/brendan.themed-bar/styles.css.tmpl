@@ -1,0 +1,160 @@
+{{- $p := (index .themes .theme).palette }}
+/* Zebar topbar styles (active theme: {{ .theme }})
+ * Palette pulled from .chezmoidata/themes.yml at chezmoi apply time. */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 12px;
+  --icon-size: 12px;
+
+  --bg:          {{ $p.bg }};
+  --surface:     {{ $p.surface }};
+  --surface-alt: {{ $p.surface_alt }};
+  --fg:          {{ $p.fg }};
+  --muted:       {{ $p.muted }};
+  --comment:     {{ $p.comment }};
+  --border:      {{ $p.border }};
+  --primary:     {{ $p.primary }};
+  --primary-alt: {{ $p.primary_alt }};
+  --accent:      {{ $p.accent }};
+  --success:     {{ $p.success }};
+  --warn:        {{ $p.warn }};
+  --error:       {{ $p.error }};
+}
+
+body {
+  color: var(--fg);
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-size);
+  overflow: hidden;
+}
+
+i {
+  color: var(--accent);
+  margin-right: 7px;
+  font-size: var(--icon-size);
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+#root {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 1.5vw;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+  color: var(--muted);
+}
+
+.right {
+  justify-self: end;
+}
+
+.logo,
+.binding-mode,
+.tiling-direction,
+.paused-button,
+.network,
+.memory,
+.cpu,
+.battery {
+  margin-right: 20px;
+}
+
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: var(--surface);
+  margin-right: 4px;
+  padding: 4px 8px;
+  color: var(--muted);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &.displayed {
+    background: var(--surface-alt);
+    color: var(--fg);
+  }
+
+  &.focused {
+    background: var(--primary);
+    color: var(--bg);
+  }
+
+  &:hover {
+    background: var(--primary-alt);
+    color: var(--bg);
+  }
+}
+
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: var(--surface-alt);
+  color: var(--fg);
+  border-radius: 3px;
+  line-height: 1;
+  padding: 4px 8px;
+  border: 0;
+  cursor: pointer;
+}
+
+.binding-mode {
+  margin-right: 4px;
+  background: var(--warn);
+  color: var(--bg);
+}
+
+.paused-button {
+  background: var(--error);
+  color: var(--bg);
+}
+
+.cpu .high-usage {
+  color: var(--error);
+}
+
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+  color: var(--success);
+}
