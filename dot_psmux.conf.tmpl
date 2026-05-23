@@ -1,0 +1,101 @@
+# psmux config — Windows-native tmux multiplexer (psmux/psmux).
+# Renders to %USERPROFILE%\.psmux.conf (first in psmux's config search order),
+# kept separate from dot_config/tmux/tmux.conf.tmpl which targets Unix.
+#
+# Active theme: {{ .theme }}
+
+# default shell: PowerShell 7 (scoops.base → pwsh)
+set -g default-shell pwsh.exe
+
+# 256-color and true-color (24-bit)
+set -g default-terminal "tmux-256color"
+set -as terminal-features ",*:RGB"
+
+# general
+set -g focus-events on
+set -g display-time 3000
+set -g set-clipboard on          # psmux handles OSC 52 natively on Windows
+set -g detach-on-destroy off
+set -g escape-time 0
+set -g history-limit 1000000
+set -g mouse on
+set -g set-titles on
+set -g set-titles-string "#I: #W"
+set -g status-interval 3
+set -g allow-passthrough on
+set -s extended-keys on
+set -s extended-keys-format csi-u
+set -as terminal-features ",*:extkeys"
+
+# borders
+set -g pane-border-lines double
+set -g pane-border-indicators both
+set -g pane-active-border-style 'fg=magenta,bg=default'
+set -g pane-border-style 'fg=brightblack,bg=default'
+
+# reload config
+unbind r
+bind r source-file ~/.psmux.conf
+
+# windows
+set-option -g allow-rename off
+set -g base-index 1
+set -g pane-base-index 1
+bind c new-window -c "#{pane_current_path}"
+set -g renumber-windows on
+
+# resize panes with vim motions (after prefix)
+bind -r j resize-pane -D 5
+bind -r k resize-pane -U 5
+bind -r l resize-pane -R 5
+bind -r h resize-pane -L 5
+
+# move between windows with ctrl+shift+h/l
+bind-key -n C-S-h previous-window
+bind-key -n C-S-l next-window
+
+# skip "kill-*? (y/n)" prompts
+bind-key x kill-pane
+bind-key & kill-window
+
+# status bar at top
+set-option -g status-position top
+
+set-window-option -g mode-keys vi
+
+# vi-style copy-mode + Windows clipboard (clip.exe is on PATH in all Windows shells)
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+bind-key -T copy-mode-vi 'y' send -X copy-pipe-and-cancel "clip.exe"
+bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "clip.exe"
+
+# maximize/restore pane
+bind-key -n C-f resize-pane -Z
+
+# binding overrides — allow beginning/end-of-line shortcuts to pass through
+unbind -n C-a
+unbind -n C-e
+
+# ---- theme (driven by .chezmoidata/themes.yml — active: {{ .theme }}) ----
+# Hand-rolled status bar matching the ukiyo aesthetic from the Unix tmux config,
+# without TPM. Plugins (incl. ukiyo) aren't loaded here — layer them later via
+# the psmux-plugins PowerShell TUI if desired.
+{{- $p := (index .themes .theme).palette }}
+
+# status bar background pinned to terminal bg so it merges with Alacritty/WT
+set -g status-style "fg={{ $p.muted }},bg={{ $p.bg }}"
+
+# left: skull + session name. Bg flips to warn when prefix is held.
+set -g status-left-length 40
+set -g status-left "#{?client_prefix,#[fg={{ $p.bg }}]#[bg={{ $p.warn }}],#[fg={{ $p.comment }}]#[bg={{ $p.surface }}]} 󰚌 #S #[fg=default,bg={{ $p.bg }}] "
+
+# right intentionally empty
+set -g status-right ""
+set -g status-right-length 0
+
+# window list — flat cells for inactive, braille brackets for active
+set -g window-status-separator ""
+set -g window-status-format         "  #I #W#{?window_zoomed_flag, 󰊓,}  "
+set -g window-status-current-format "#[fg={{ $p.border }}]⣏#[fg={{ $p.comment }}] #I #W#{?window_zoomed_flag, 󰊓,} #[fg={{ $p.border }}]⣹"
+set -g window-status-style          "fg={{ $p.comment }},bg=default"
+set -g window-status-current-style  "fg={{ $p.comment }},bg=default"
+set -g window-status-activity-style "fg={{ $p.warn }},bg=default"
