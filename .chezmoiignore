@@ -46,11 +46,22 @@ Library
 
 {{- if ne .chezmoi.os "windows" }}
 Documents
+AppData
+.glzr
+.config/tacky-borders
+{{- end }}
+
+{{- if eq .chezmoi.os "windows" }}
+.config/alacritty
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}
 .config/tmux
 .config/sesh
+{{- end }}
+
+{{- if ne .chezmoi.os "windows" }}
+.psmux.conf
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
