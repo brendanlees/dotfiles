@@ -132,15 +132,15 @@ function czr {
     if (-not $src) { return }
     $dirty = git -C $src status --porcelain
     if ($dirty) {
-        Write-Error "czr: refusing — dirty working tree in $src`n$dirty"; return
+        Write-Error "czr: refusing -- dirty working tree in $src`n$dirty"; return
     }
     $unpushed = git -C $src log --branches --not --remotes --oneline 2>$null
     if ($unpushed) {
-        Write-Error "czr: refusing — local commits not on any remote:`n$unpushed"; return
+        Write-Error "czr: refusing -- local commits not on any remote:`n$unpushed"; return
     }
     $wtCount = (git -C $src worktree list | Measure-Object -Line).Lines
     if ($wtCount -gt 1) {
-        Write-Error "czr: refusing — extra worktrees exist"; return
+        Write-Error "czr: refusing -- extra worktrees exist"; return
     }
     $reply = Read-Host "czr: this will WIPE $src and reinit. type 'yes' to proceed"
     if ($reply -ne 'yes') { Write-Host 'czr: aborted' -ForegroundColor Yellow; return }
