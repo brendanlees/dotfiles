@@ -1,0 +1,103 @@
+# managed by chezmoi - alacritty config (cross-platform)
+# Font + palette pulled from .chezmoidata so a chezmoi theme switch flows here.
+{{- $p := (index .themes .theme).palette }}
+
+[general]
+live_config_reload = true
+
+[env]
+TERM = "alacritty"
+
+{{- if eq .chezmoi.os "windows" }}
+
+# ------------------------------------------
+# shell - pwsh 7 (matches wezterm default_prog); avoids Windows PowerShell 5.1
+# which Alacritty would otherwise launch and which skips starship/mise/aliases.
+# ------------------------------------------
+[terminal.shell]
+program = "pwsh.exe"
+args = ["-NoLogo"]
+{{- end }}
+
+# ------------------------------------------
+# window
+# ------------------------------------------
+[window]
+dynamic_title = true
+{{- if eq .chezmoi.os "darwin" }}
+decorations = "Buttonless"
+blur = true
+option_as_alt = "OnlyLeft"
+{{- else }}
+decorations = "Full"
+{{- end }}
+
+[window.padding]
+x = 8
+y = 0
+
+# ------------------------------------------
+# font (nerd font: needed for eza --icons, starship glyphs, etc.)
+# ------------------------------------------
+[font]
+size = 20.0
+
+[font.normal]
+family = "{{ .font_family }}"
+style = "Regular"
+
+[font.bold]
+family = "{{ .font_family }}"
+style = "Bold"
+
+[font.italic]
+family = "{{ .font_family }}"
+style = "Italic"
+
+[font.bold_italic]
+family = "{{ .font_family }}"
+style = "Bold Italic"
+
+# ------------------------------------------
+# mouse / cursor
+# ------------------------------------------
+[mouse]
+hide_when_typing = true
+
+# ------------------------------------------
+# colors - from .chezmoidata/themes.yml palette of the active theme
+# ------------------------------------------
+[colors]
+draw_bold_text_with_bright_colors = true
+
+[colors.primary]
+background = "{{ $p.bg }}"
+foreground = "{{ $p.fg }}"
+
+[colors.cursor]
+text   = "{{ $p.bg }}"
+cursor = "{{ $p.accent }}"
+
+[colors.selection]
+text       = "{{ $p.fg }}"
+background = "{{ $p.surface_alt }}"
+
+[colors.normal]
+black   = "{{ $p.bg }}"
+red     = "{{ $p.error }}"
+green   = "{{ $p.success }}"
+yellow  = "{{ $p.warn }}"
+blue    = "{{ $p.primary }}"
+magenta = "{{ $p.secondary }}"
+cyan    = "{{ $p.info }}"
+white   = "{{ $p.muted }}"
+
+[colors.bright]
+black   = "{{ $p.comment }}"
+red     = "{{ $p.error }}"
+green   = "{{ $p.success }}"
+yellow  = "{{ $p.orange }}"
+blue    = "{{ $p.primary_alt }}"
+magenta = "{{ $p.secondary }}"
+cyan    = "{{ $p.info_alt }}"
+white   = "{{ $p.fg }}"
