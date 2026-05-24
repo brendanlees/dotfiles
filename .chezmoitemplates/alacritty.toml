@@ -23,7 +23,7 @@ args = ["-NoLogo"]
 # window
 # ------------------------------------------
 [window]
-dynamic_title = true
+dynamic_title = false
 {{- if eq .chezmoi.os "darwin" }}
 decorations = "Buttonless"
 blur = true
@@ -101,3 +101,4 @@ blue    = "{{ $p.primary_alt }}"
 magenta = "{{ $p.secondary }}"
 cyan    = "{{ $p.info_alt }}"
 white   = "{{ $p.fg }}"
+
