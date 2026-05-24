@@ -50,9 +50,12 @@ bind -r k resize-pane -U 5
 bind -r l resize-pane -R 5
 bind -r h resize-pane -L 5
 
-# move between windows with ctrl+shift+h/l
-bind-key -n C-S-h previous-window
-bind-key -n C-S-l next-window
+# move between windows with Alt+h/l.
+# Ctrl+Shift+h/l intentionally NOT bound: psmux 3.3.4 loses Shift modifier
+# info through its double-ConPTY input handler (see psmux/psmux PR #159).
+# Re-add bind-key -n C-S-h / C-S-l once that lands.
+bind-key -n M-h previous-window
+bind-key -n M-l next-window
 
 # skip "kill-*? (y/n)" prompts
 bind-key x kill-pane
