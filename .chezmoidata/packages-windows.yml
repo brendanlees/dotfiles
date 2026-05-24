@@ -44,6 +44,7 @@ scoops:
     - extras/responsively
     - extras/spotify
     - extras/sqlitebrowser
+    - extras/twinkle-tray
     - extras/upscayl
     - extras/vial
     - extras/vlc
