@@ -2,6 +2,13 @@
 # sesh picker — pwsh port of executable_picker.sh.tmpl for psmux + pwsh.
 # Usage: picker.ps1 [--tmux] [sesh list flags...]
 
+# Force UTF-8 across the pipeline. Without this, pwsh's default encoding
+# mangles sesh's nerd-font icons when piping to fzf — the selected line
+# comes back as e.g. "¯»ê claudes" and `sesh connect` can't find it.
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new()
+
 # psmux invokes this with `pwsh -NoProfile`, so profile.ps1 (and the
 # `mise activate` block in it) never runs. Hydrate mise PATH here so
 # sesh/fzf/fd resolve regardless of caller. mise itself is on PATH via
@@ -41,5 +48,16 @@ $selected = sesh list --icons @seshArgs | fzf @tmuxFlag `
     --preview 'sesh preview {}'
 
 if ($LASTEXITCODE -eq 0 -and $selected) {
-    sesh connect $selected
+    if ($env:TMUX) {
+        # Inside psmux — `sesh connect` uses switch-client, which works fine.
+        sesh connect $selected
+    } else {
+        # Outside psmux — sesh's spawned `tmux attach` exits 1 on Windows
+        # (stdio passthrough quirk). Use `--switch` so sesh creates the
+        # session without attaching, then attach via tmux directly (which
+        # works when invoked from pwsh's own host).
+        $sessionName = ($selected -split '\s+', 2)[-1]
+        sesh connect --switch $selected 2>&1 | Out-Null
+        tmux attach -t $sessionName
+    }
 }
