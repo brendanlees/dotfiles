@@ -1,0 +1,144 @@
+;; ============================================
+;; kanata - Windows config (laptop keyboard only)
+;; ============================================
+;; mirrors config.kbd (macOS) layout/timing for muscle-memory parity.
+;; key differences vs macOS:
+;;   - device filter uses windows-interception-keyboard-hwids
+;;     (requires kanata_wintercept.exe + Interception driver)
+;;   - z/x/c/v/b tap-dance holds fire Ctrl+letter instead of Cmd+letter
+;;   - arrows-layer screenshot row uses Win+Shift+S (Snipping Tool)
+;;   - osm_sg + M-S-c retranslated to Ctrl
+;; homerow mods on a / ; still hold lmet/rmet (= Win key); swap to lctl/rctl
+;; if you'd rather hold Ctrl there.
+;;
+;; *** machine-specific *** the HWID below matches the built-in ThinkPad
+;; keyboard (ACPI\LEN0071) on hostname THINKPAD-WINDOW. on a different
+;; machine, run:
+;;     kanata_wintercept.exe --list
+;; and replace the byte array below with the one printed for your built-in
+;; keyboard. byte-array form is preferred over the escaped-string form because
+;; ACPI device paths often contain non-ASCII bytes that survive byte arrays
+;; cleanly.
+
+;; config
+(defcfg
+  process-unmapped-keys yes
+  log-layer-changes no
+  concurrent-tap-hold yes
+  chords-v2-min-idle 50
+
+  ;; Only apply to the built-in laptop keyboard (ThinkPad LEN0071).
+  ;; Byte array sourced from `kanata_wintercept.exe --list` -- represents the
+  ;; UTF-16LE encoding of `\\?\ACPI#LEN0071#4&17f9fd69&0#{884...}`.
+  windows-interception-keyboard-hwids (
+    [92, 0, 92, 0, 63, 0, 92, 0, 65, 0, 67, 0, 80, 0, 73, 0, 35, 0, 76, 0, 69, 0, 78, 0, 48, 0, 48, 0, 55, 0, 49, 0, 35, 0, 52, 0, 38, 0, 49, 0, 55, 0, 102, 0, 57, 0, 102, 0, 100, 0, 54, 0, 57, 0, 38, 0, 48, 0, 35, 0, 123, 0, 56, 0, 56, 0, 52, 0]
+    ;; --- reference HWIDs for future projects (NOT active) ---
+    ;; Keebio Iris (VID_CB10&PID_1756, QMK split):
+    ;;   \\?\HID#VID_CB10&PID_1756&MI_00#a&4a6a7b5&0&
+    ;;   [92, 0, 92, 0, 63, 0, 92, 0, 72, 0, 73, 0, 68, 0, 35, 0, 86, 0, 73, 0, 68, 0, 95, 0, 67, 0, 66, 0, 49, 0, 48, 0, 38, 0, 80, 0, 73, 0, 68, 0, 95, 0, 49, 0, 55, 0, 53, 0, 54, 0, 38, 0, 77, 0, 73, 0, 95, 0, 48, 0, 48, 0, 35, 0, 97, 0, 38, 0, 52, 0, 97, 0, 54, 0, 97, 0, 55, 0, 98, 0, 53, 0, 38, 0, 48, 0, 38, 0]
+    ;; if/when activating: kanata won't claim it until the byte array moves
+    ;; above this comment block. note that the Iris already runs QMK with its
+    ;; own layout, so overrides should be additive only (or you'll fight
+    ;; yourself).
+  )
+)
+
+;; vars
+(defvar
+  tap-timeout 300
+  hold-timeout 200
+  hold-timeout-slow 300
+  chord-timeout 30
+)
+
+;; define source keys (full alpha block + space + function keys)
+(defsrc
+  ;; number row (partial — synced from QMK Layer 1)
+  2 3
+  ;; qwerty row
+  tab q w e r t    y u i o p
+  ;; home row
+  caps a s d f g    h j k l ; '
+  ;; bottom row
+  lsft z x c v b    n m , . / rsft
+  ;; thumb
+  lmet spc
+  ;; function / media keys
+  f1 f2 f7 f8 f9 f10 f11 f12
+)
+
+;; chords: simultaneous key presses that produce symbols
+;; chords-v2 intercepts before layer processing - no layer changes needed
+(defchordsv2
+  (w e)   min   $chord-timeout first-release ()  ;; we    = -
+  (x c)   S-min $chord-timeout first-release ()  ;; xc    = _
+  (q w)   grv   $chord-timeout first-release ()  ;; qw    = `
+  (tab q) S-grv $chord-timeout first-release ()  ;; tab+q = ~
+)
+
+;; define aliases for homerow mods
+(defalias
+  ;; caps lock: tap for escape, hold for Hyper
+  esc (tap-hold $tap-timeout 200 esc (multi lctl lalt lsft lmet))
+
+  ;; left homerow mods
+  a_cmd (tap-hold $tap-timeout $hold-timeout a lmet)  ;; a: tap for 'a', hold for Win (Meta)
+  s_alt (tap-hold $tap-timeout $hold-timeout s lalt)  ;; s: tap for 's', hold for Alt
+  d_sft (tap-hold $tap-timeout $hold-timeout d lsft)  ;; d: tap for 'd', hold for Shift
+  f_ctl (tap-hold $tap-timeout $hold-timeout f lctl)  ;; f: tap for 'f', hold for Control
+
+  ;; right homerow mods
+  j_ctl (tap-hold $tap-timeout $hold-timeout j rctl)  ;; j: tap for 'j', hold for Control
+  k_sft (tap-hold $tap-timeout $hold-timeout k rsft)  ;; k: tap for 'k', hold for Shift
+  l_alt (tap-hold $tap-timeout $hold-timeout l lalt)  ;; l: tap for 'l', hold for Alt
+  scln_cmd (tap-hold $tap-timeout $hold-timeout ; rmet)  ;; ;: tap for ';', hold for Win (Meta)
+
+  ;; one-shot Shift+Ctrl (Windows equivalent of macOS OSM(Shift+Cmd))
+  osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lctl))
+
+  ;; left win: tap for backspace, hold for Win
+  cmd_bspc (tap-hold-press $tap-timeout $hold-timeout bspc lmet)
+
+  ;; space: tap for space, hold to activate arrows layer (vim hjkl navigation)
+  spc_arr (tap-hold-press $tap-timeout $hold-timeout spc (layer-while-held arrows))
+
+  ;; bottom-row tap-dance macros — Windows: hold fires Ctrl+letter once via macro
+  z_undo  (tap-hold $tap-timeout $hold-timeout z (macro C-z))  ;; z: tap z, hold = undo
+  x_cut   (tap-hold $tap-timeout $hold-timeout x (macro C-x))  ;; x: tap x, hold = cut
+  c_copy  (tap-hold $tap-timeout $hold-timeout c (macro C-c))  ;; c: tap c, hold = copy
+  v_paste (tap-hold $tap-timeout $hold-timeout v (macro C-v))  ;; v: tap v, hold = paste
+  b_all   (tap-hold $tap-timeout $hold-timeout b (macro C-a))  ;; b: tap b, hold = select-all
+)
+
+;; base layer with homerow mods active
+(deflayer base
+  ;; number row
+  _ _
+  ;; qwerty row
+  tab q w e _ _    _ _ _ _ _
+  ;; home row
+  @esc @a_cmd @s_alt @d_sft @f_ctl _    h @j_ctl @k_sft @l_alt @scln_cmd _
+  ;; bottom row — z/x/c/v/b tap-dance macros (tap=letter, hold=Ctrl+letter, once)
+  lsft @z_undo @x_cut @c_copy @v_paste @b_all    _ _ _ _ _ rsft
+  ;; thumb
+  @cmd_bspc @spc_arr
+  ;; function / media keys
+  brdn brup prev pp next mute vold volu
+)
+
+;; arrows layer: space-hold produces symbols, brackets, arrows, nav
+;; synced from QMK Layer 1 (Iris split keyboard)
+(deflayer arrows
+  ;; number row — 2 = Win+Shift+S (Snipping Tool region capture), 3 transparent
+  M-S-s _
+  ;; qwerty row — shifted symbols: ~ ! @ # $ %    ^ & * ( )
+  S-grv S-1 S-2 S-3 S-4 S-5    S-6 S-7 S-8 S-9 S-0
+  ;; home row — tab, OSM(S+Ctrl), parens, braces    arrows, transparent, pgup
+  tab @osm_sg S-9 S-0 S-lbrc S-rbrc    left down up rght _ pgup
+  ;; bottom row — S-tab, ctrl, ctrl+shift+c, kp., brackets    backslash, pipe, math, pgdn
+  S-tab lctl C-S-c kp. lbrc rbrc    \ S-\ min S-eql eql pgdn
+  ;; thumb
+  _ _
+  ;; function / media keys
+  _ _ _ _ _ _ _ _
+)

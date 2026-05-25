@@ -1,0 +1,115 @@
+# managed by chezmoi - register xbxd.kanata Scheduled Task (auto-start at logon)
+# Mirrors the macOS LaunchAgent (Library/LaunchAgents/xbxd.kanata via plist).
+# Requires admin to register: Interception needs elevated kanata process, so the
+# task is principal'd with RunLevel Highest. If the current PowerShell isn't
+# elevated, this script re-invokes itself via UAC.
+$ErrorActionPreference = 'Stop'
+
+$taskName    = "xbxd.kanata"
+$winterceptExe = Join-Path $HOME ".local\bin\kanata_wintercept.exe"
+$configPath  = Join-Path $HOME ".config\kanata\config-windows.kbd"
+$logDir      = Join-Path $env:LOCALAPPDATA "Kanata"
+$logFile     = Join-Path $logDir "kanata.log"
+
+# Bail early if prerequisites missing -- driver install script must have run first
+if (-not (Test-Path $winterceptExe)) {
+    Write-Host "kanata_wintercept.exe not found at $winterceptExe -- run the install script first. Skipping task registration."
+    return
+}
+if (-not (Test-Path $configPath)) {
+    Write-Host "config-windows.kbd not yet applied -- chezmoi will re-run this on next apply. Skipping."
+    return
+}
+
+# ------------------------------------------
+# self-elevate if needed
+# ------------------------------------------
+$principal = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "task registration requires admin -- re-launching elevated (UAC prompt)..."
+    $tmpScript = Join-Path $env:TEMP "chezmoi-register-kanata-task.ps1"
+    $childLog  = Join-Path $env:TEMP "chezmoi-register-kanata-task.log"
+    # Wrap the child's body in a try/catch that writes everything to $childLog so
+    # diagnostics survive the elevated console closing.
+    $wrapper = @"
+`$ErrorActionPreference = 'Stop'
+Start-Transcript -Path '$childLog' -Force | Out-Null
+try {
+    & '$PSCommandPath'
+    `$code = 0
+} catch {
+    Write-Host "ERROR: `$(`$_.Exception.Message)"
+    Write-Host `$_.ScriptStackTrace
+    `$code = 1
+} finally {
+    Stop-Transcript | Out-Null
+}
+exit `$code
+"@
+    Set-Content -Path $tmpScript -Value $wrapper -Encoding UTF8
+    try {
+        $spArgs = @{
+            FilePath     = 'powershell'
+            Verb         = 'RunAs'
+            Wait         = $true
+            PassThru     = $true
+            ArgumentList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$tmpScript`"")
+        }
+        $proc = Start-Process @spArgs
+        if ($proc.ExitCode -ne 0) {
+            Write-Host "--- elevated child log ($childLog) ---"
+            if (Test-Path $childLog) { Get-Content $childLog | Write-Host }
+            Write-Host "--- end log ---"
+            throw "elevated task registration failed with exit code $($proc.ExitCode)"
+        }
+    } finally {
+        Remove-Item -Path $tmpScript -Force -ErrorAction SilentlyContinue
+    }
+    return
+}
+
+# ------------------------------------------
+# build + register the task (admin context from here)
+# ------------------------------------------
+if (-not (Test-Path $logDir)) {
+    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+}
+
+# Wrap the kanata invocation in cmd.exe so stdout/stderr can be appended to a log.
+# Task Scheduler doesn't capture the action process's stdout natively.
+$cmdLine = "/c `"`"$winterceptExe`" -c `"$configPath`" >> `"$logFile`" 2>&1`""
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument $cmdLine
+
+$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+
+$principalConfig = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest
+
+$settingsArgs = @{
+    MultipleInstances        = 'IgnoreNew'
+    StartWhenAvailable       = $true
+    DontStopIfGoingOnBatteries = $true
+    AllowStartIfOnBatteries  = $true
+    ExecutionTimeLimit       = ([TimeSpan]::Zero)
+}
+$settings = New-ScheduledTaskSettingsSet @settingsArgs
+
+# Idempotent: drop any existing registration and recreate. Cheaper than diffing
+# and guarantees the rendered script matches the live task.
+if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+    Write-Host "unregistering existing $taskName task..."
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+}
+
+Write-Host "registering $taskName task (logon trigger, highest privileges)..."
+$registerArgs = @{
+    TaskName    = $taskName
+    Action      = $action
+    Trigger     = $trigger
+    Principal   = $principalConfig
+    Settings    = $settings
+    Description = "kanata keyboard remapper - built-in laptop keyboard only"
+}
+Register-ScheduledTask @registerArgs | Out-Null
+
+Write-Host "task registered. Logs: $logFile"
+Write-Host "to start now without logging out: Start-ScheduledTask -TaskName $taskName"

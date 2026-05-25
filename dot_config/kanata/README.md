@@ -163,3 +163,48 @@ to reload after any change:
 ```sh
 sudo launchctl kickstart -k system/xbxd.kanata
 ```
+
+## windows setup
+
+windows uses a parallel config `config-windows.kbd` (cmd-style shortcuts retranslated to ctrl, screenshot row uses Win+Shift+S). device filtering requires the [Interception](https://github.com/oblitum/Interception) kernel driver — scoop's `kanata` package only ships the LLHOOK build which cannot scope to a single keyboard.
+
+### one-time install
+
+both steps are automated by chezmoi scripts under `.chezmoiscripts/windows/`:
+
+```powershell
+chezmoi apply    # downloads kanata_wintercept.exe + installs Interception (UAC prompt)
+# REBOOT — Interception only attaches after a restart
+```
+
+### discover the laptop keyboard hwid
+
+after reboot, list Interception-visible devices:
+
+```powershell
+& "$HOME\.local\bin\kanata_wintercept.exe" --list
+```
+
+find the entry matching the built-in keyboard (on Lenovo ThinkPads, this is the `ACPI#LEN...` device; other vendors use similar `ACPI#<vendor-id>` patterns or `HID#VID_<oem>`). copy the **byte array** kanata prints for that device (not the path string) into the `windows-interception-keyboard-hwids (...)` block in `dot_config/kanata/config-windows.kbd`. byte arrays are preferred over escaped strings because ACPI paths often contain bytes that don't round-trip through `\\` escaping. then:
+
+```powershell
+chezmoi apply    # pushes the updated config + registers the Scheduled Task (UAC prompt)
+```
+
+### service management
+
+| action       | command                                                   |
+| ------------ | --------------------------------------------------------- |
+| status       | `Get-ScheduledTask -TaskName xbxd.kanata \| Get-ScheduledTaskInfo` |
+| start        | `Start-ScheduledTask -TaskName xbxd.kanata`               |
+| stop         | `Stop-ScheduledTask -TaskName xbxd.kanata`                |
+| restart      | `Stop-ScheduledTask xbxd.kanata; Start-ScheduledTask xbxd.kanata` |
+| disable      | `Disable-ScheduledTask -TaskName xbxd.kanata`             |
+| enable       | `Enable-ScheduledTask -TaskName xbxd.kanata`              |
+| unregister   | `Unregister-ScheduledTask -TaskName xbxd.kanata -Confirm:$false` |
+
+logs are appended to `%LOCALAPPDATA%\Kanata\kanata.log`.
+
+### external keyboards
+
+usb / bluetooth keyboards (Iris, etc.) are intentionally unaffected — only the HWID listed in `windows-interception-keyboard-hwids` is intercepted. all other inputs pass through to windows untouched, so qmk/vial layouts on external boards keep their native behavior.

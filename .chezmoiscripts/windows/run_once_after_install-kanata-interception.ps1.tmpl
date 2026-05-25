@@ -1,0 +1,136 @@
+# managed by chezmoi - install kanata_wintercept.exe + Interception driver
+# scoop's kanata package ships only the LLHOOK build (kanata.exe), which cannot
+# filter by device. The wintercept build + Oblita's Interception driver are both
+# required to scope kanata to the built-in laptop keyboard.
+$ErrorActionPreference = 'Stop'
+
+$binDir         = Join-Path $HOME ".local\bin"
+$wintercept     = Join-Path $binDir "kanata_wintercept.exe"
+$kanataApiUrl   = "https://api.github.com/repos/jtroo/kanata/releases/latest"
+$interceptUrl   = "https://github.com/oblitum/Interception/releases/download/v1.0.1/Interception.zip"
+# Integrity: relies on GitHub HTTPS + signed kernel driver. To pin a hash, set
+# $interceptHash below (SHA256) and uncomment the verification block.
+$interceptHash  = $null
+
+# GitHub API call (single anonymous request -- rate limit is 60/hr/IP, ample for one install)
+$headers = @{ "User-Agent" = "chezmoi-kanata-installer" }
+
+# ------------------------------------------
+# 1. kanata_wintercept.exe
+# ------------------------------------------
+if (Test-Path $wintercept) {
+    Write-Host "kanata_wintercept.exe already present at $wintercept, skipping download."
+} else {
+    if (-not (Test-Path $binDir)) {
+        New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+    }
+
+    Write-Host "fetching latest kanata release..."
+    $release = Invoke-RestMethod -Uri $kanataApiUrl -Headers $headers
+
+    # Windows binaries ship as a zip with multiple build variants. We want the
+    # TTY (console) wintercept build without cmd_allowed -- matches the existing
+    # defcfg which leaves danger-enable-cmd off.
+    $arch = if ([Environment]::Is64BitOperatingSystem -and $env:PROCESSOR_ARCHITECTURE -ne 'ARM64') { 'x64' } else { 'arm64' }
+    $zipAssetName = "windows-binaries-$arch.zip"
+    $targetExeName = "kanata_windows_tty_wintercept_$arch.exe"
+
+    $asset = $release.assets | Where-Object { $_.name -eq $zipAssetName } | Select-Object -First 1
+    if (-not $asset) {
+        throw "no $zipAssetName asset in release $($release.tag_name)"
+    }
+
+    $zipTmp = Join-Path $env:TEMP "kanata-$($release.tag_name)-$arch.zip"
+    $extractDir = Join-Path $env:TEMP "kanata-$($release.tag_name)-$arch"
+    if (Test-Path $extractDir) { Remove-Item -Recurse -Force $extractDir }
+
+    Write-Host "downloading $zipAssetName ($([math]::Round($asset.size / 1MB, 1)) MB)..."
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipTmp -Headers $headers
+
+    Expand-Archive -Path $zipTmp -DestinationPath $extractDir -Force
+    $extractedExe = Join-Path $extractDir $targetExeName
+    if (-not (Test-Path $extractedExe)) {
+        throw "$targetExeName not found inside $zipAssetName"
+    }
+    Move-Item -Path $extractedExe -Destination $wintercept -Force
+
+    Remove-Item -Recurse -Force $extractDir -ErrorAction SilentlyContinue
+    Remove-Item -Force $zipTmp -ErrorAction SilentlyContinue
+    Write-Host "installed $wintercept"
+}
+
+# ------------------------------------------
+# 2. Interception driver + userspace DLL
+# ------------------------------------------
+# install-interception.exe /install only registers the kernel-mode upper-class
+# filter driver as a Windows service named 'keyboard'. The userspace
+# interception.dll (which kanata_wintercept.exe links against) is NOT deployed
+# by the installer -- it ships in the zip's library/ folder and must be copied
+# next to any consuming program.
+$dllDest = Join-Path $binDir "interception.dll"
+$driverInstalled = $null -ne (Get-Service -Name 'keyboard' -ErrorAction SilentlyContinue)
+if ($driverInstalled -and (Test-Path $dllDest)) {
+    Write-Host "Interception driver service + userspace DLL already in place, skipping."
+    return
+}
+
+$tmp = Join-Path $env:TEMP "interception-install"
+if (Test-Path $tmp) { Remove-Item -Recurse -Force $tmp }
+New-Item -ItemType Directory -Path $tmp | Out-Null
+
+$zipPath = Join-Path $tmp "Interception.zip"
+Write-Host "downloading Interception driver..."
+Invoke-WebRequest -Uri $interceptUrl -OutFile $zipPath
+
+if ($interceptHash) {
+    $actualHash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash
+    if ($actualHash -ne $interceptHash) {
+        throw "Interception.zip hash mismatch: expected $interceptHash, got $actualHash. Refusing to install."
+    }
+}
+
+Expand-Archive -Path $zipPath -DestinationPath $tmp -Force
+
+# Copy the userspace DLL next to kanata_wintercept.exe (always; cheap and idempotent)
+$dllArch = if ([Environment]::Is64BitOperatingSystem -and $env:PROCESSOR_ARCHITECTURE -ne 'ARM64') { 'x64' } else { 'x86' }
+$dllSrc = Get-ChildItem -Path $tmp -Recurse -Filter "interception.dll" |
+    Where-Object { $_.FullName -match "\\library\\$dllArch\\" } |
+    Select-Object -First 1
+if (-not $dllSrc) {
+    throw "interception.dll ($dllArch) not found inside Interception.zip"
+}
+Copy-Item -Path $dllSrc.FullName -Destination $dllDest -Force
+Write-Host "deployed userspace DLL to $dllDest"
+
+# Install the kernel driver service if not already registered
+if (-not $driverInstalled) {
+    $installer = Get-ChildItem -Path $tmp -Recurse -Filter "install-interception.exe" | Select-Object -First 1
+    if (-not $installer) {
+        throw "install-interception.exe not found in extracted archive"
+    }
+    Write-Host "installing Interception kernel driver (UAC prompt incoming; requires admin)..."
+    $installerArgs = @{
+        FilePath     = $installer.FullName
+        ArgumentList = '/install'
+        Verb         = 'RunAs'
+        Wait         = $true
+        PassThru     = $true
+    }
+    $proc = Start-Process @installerArgs
+    if ($proc.ExitCode -ne 0) {
+        Write-Warning "install-interception.exe exited with code $($proc.ExitCode). If the driver was already registered this is harmless; otherwise re-run elevated."
+    }
+} else {
+    Write-Host "Interception kernel driver service already registered, skipping installer."
+}
+
+Write-Host ""
+Write-Host "================================================================" -ForegroundColor Yellow
+Write-Host " REBOOT REQUIRED" -ForegroundColor Yellow
+Write-Host "================================================================" -ForegroundColor Yellow
+Write-Host " The Interception driver only attaches after a reboot."
+Write-Host " After reboot, find your laptop keyboard HWID with:"
+Write-Host "     kanata_wintercept.exe --list"
+Write-Host " Then update dot_config/kanata/config-windows.kbd and re-run"
+Write-Host "     chezmoi apply"
+Write-Host "================================================================" -ForegroundColor Yellow
