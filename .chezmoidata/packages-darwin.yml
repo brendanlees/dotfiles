@@ -50,6 +50,7 @@ brews:
     - gemini-cli
     - kanata
     - keka
+    - localsend
     - little-snitch
     - macmon
     - mactop
