@@ -1,0 +1,67 @@
+# managed by chezmoi - disable PowerToys GrabAndMove module
+#
+# Background: GrabAndMove (Alt+drag to move/resize windows) defaults to
+# shouldAbsorbAlt=true, which globally consumes the first Alt keypress in any
+# alt+<key> combo. That breaks GlazeWM workspace switches (alt+1..9) and focus
+# nav (alt+hjkl) -- the first press is eaten, second press while alt is still
+# held works. Disabling the module entirely fixes it.
+#
+# This script patches only the GrabAndMove key so PowerToys GUI changes to
+# other modules survive `chezmoi apply`.
+$ErrorActionPreference = 'Stop'
+
+$settingsPath = Join-Path $env:LOCALAPPDATA "Microsoft\PowerToys\settings.json"
+
+if (-not (Test-Path $settingsPath)) {
+    Write-Host "PowerToys settings.json not found at $settingsPath -- PowerToys may not be installed yet. Skipping."
+    return
+}
+
+$raw = Get-Content -Path $settingsPath -Raw -Encoding UTF8
+$json = $raw | ConvertFrom-Json
+
+if ($null -eq $json.enabled) {
+    Write-Host "PowerToys settings.json has no 'enabled' map -- unexpected schema. Skipping."
+    return
+}
+
+if ($json.enabled.GrabAndMove -eq $false) {
+    Write-Host "GrabAndMove already disabled. No change."
+    return
+}
+
+Write-Host "disabling PowerToys GrabAndMove (was: $($json.enabled.GrabAndMove))..."
+$json.enabled.GrabAndMove = $false
+
+# Write back compact JSON to match PowerToys' own format (single-line).
+$out = $json | ConvertTo-Json -Depth 100 -Compress
+Set-Content -Path $settingsPath -Value $out -Encoding UTF8 -NoNewline
+
+# PowerToys doesn't hot-reload module enable/disable -- restart if running.
+$ptProcs = Get-Process | Where-Object { $_.Name -like 'PowerToys*' }
+if ($ptProcs) {
+    Write-Host "restarting PowerToys to apply..."
+    $ptProcs | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
+    Start-Sleep -Milliseconds 500
+
+    $ptExe = Get-Command PowerToys.exe -ErrorAction SilentlyContinue
+    if (-not $ptExe) {
+        # Fallbacks: scoop install, then Program Files.
+        $candidates = @(
+            (Join-Path $HOME 'scoop\apps\powertoys\current\PowerToys.exe'),
+            'C:\Program Files\PowerToys\PowerToys.exe'
+        )
+        $ptExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    } else {
+        $ptExe = $ptExe.Source
+    }
+
+    if ($ptExe) {
+        Start-Process $ptExe
+        Write-Host "PowerToys restarted from $ptExe"
+    } else {
+        Write-Host "WARN: couldn't locate PowerToys.exe to restart -- launch it manually."
+    }
+} else {
+    Write-Host "PowerToys not currently running. Change will take effect next launch."
+}
