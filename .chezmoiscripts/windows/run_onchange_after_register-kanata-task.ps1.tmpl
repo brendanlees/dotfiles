@@ -75,10 +75,19 @@ if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
 
-# Wrap the kanata invocation in cmd.exe so stdout/stderr can be appended to a log.
-# Task Scheduler doesn't capture the action process's stdout natively.
-$cmdLine = "/c `"`"$winterceptExe`" -c `"$configPath`" >> `"$logFile`" 2>&1`""
-$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument $cmdLine
+# Launch via wscript.exe + a tiny VBS shim. Reasons:
+#   - Task Scheduler launching cmd.exe directly flashes a console window every
+#     time the task fires (and again whenever Start-ScheduledTask is called).
+#   - wscript running a .vbs never shows a window. The VBS internally calls
+#     WshShell.Run "cmd /c kanata ... >> log 2>&1", 0 (hidden) -- so cmd is
+#     spawned with no window, and kanata inherits that windowless environment.
+#   - We still need cmd in the middle because kanata has no --log-file flag.
+$launchVbs = Join-Path $HOME ".config\kanata\scripts\windows\kanata-launch.vbs"
+if (-not (Test-Path $launchVbs)) {
+    Write-Host "kanata-launch.vbs not found at $launchVbs -- skipping registration."
+    return
+}
+$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$launchVbs`""
 
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 

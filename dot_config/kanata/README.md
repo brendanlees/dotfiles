@@ -185,7 +185,26 @@ after reboot, list Interception-visible devices:
 & "$HOME\.local\bin\kanata_wintercept.exe" --list
 ```
 
-find the entry matching the built-in keyboard (on Lenovo ThinkPads, this is the `ACPI#LEN...` device; other vendors use similar `ACPI#<vendor-id>` patterns or `HID#VID_<oem>`). copy the **byte array** kanata prints for that device (not the path string) into the `windows-interception-keyboard-hwids (...)` block in `dot_config/kanata/config-windows.kbd`. byte arrays are preferred over escaped strings because ACPI paths often contain bytes that don't round-trip through `\\` escaping. then:
+**warning: `--list` is misleading.** it prints the device *path* (e.g. `\\?\ACPI#LEN0071#...`), but kanata's runtime matching uses the device's `HardwareID` property — a totally different value. paste the `--list` byte array and matching silently fails (`is intercepted: false`).
+
+**correct discovery method:** stop the auto-start task, then run kanata in the foreground with debug logging:
+
+```powershell
+Stop-ScheduledTask -TaskName xbxd.kanata
+& "$HOME\.local\bin\kanata_wintercept.exe" -c "$HOME\.config\kanata\config-windows.kbd" -d
+```
+
+(it'll error on parse if the placeholder is empty; that's fine -- we just need it loaded.) press a key on the laptop keyboard. it'll log something like:
+
+```
+[INFO] include check - res 90; device #1 is intercepted: false; hwid [65, 0, 67, 0, 80, 0, 73, 0, ...]
+```
+
+the array after `hwid` is what kanata's matcher compares against -- equality on the full 1024-byte buffer (`HWID_ARR_SZ` in kanata's source). copy the non-zero prefix (everything up to the long run of trailing zeros) into `windows-interception-keyboard-hwids (...)` in `dot_config/kanata/config-windows.kbd`. **syntax must be `N,N,N` -- bare commas, no spaces, no brackets, no surrounding parens.** kanata's parser accepts space-separated numbers too but treats each as a separate single-byte entry, so matching never fires.
+
+decode every other byte as ASCII to verify visually -- on ThinkPads this typically reveals a `REG_MULTI_SZ` containing `ACPI\VEN_LEN&DEV_0071`, `ACPI\LEN0071`, and `*LEN0071` separated by `\0`.
+
+then:
 
 ```powershell
 chezmoi apply    # pushes the updated config + registers the Scheduled Task (UAC prompt)
@@ -204,6 +223,28 @@ chezmoi apply    # pushes the updated config + registers the Scheduled Task (UAC
 | unregister   | `Unregister-ScheduledTask -TaskName xbxd.kanata -Confirm:$false` |
 
 logs are appended to `%LOCALAPPDATA%\Kanata\kanata.log`.
+
+### powershell helpers / raycast integration
+
+mirrors the macOS Raycast scripts. live under `~\.config\kanata\scripts\windows\` with the same `@raycast.*` comment-directives as the Mac side, so Raycast for Windows can index them as Script Commands.
+
+| script                | action                                                |
+| --------------------- | ----------------------------------------------------- |
+| `kanata-start.ps1`    | start the task (will NOT auto-restart on this OS)     |
+| `kanata-stop.ps1`     | stop the running instance; task remains enabled       |
+| `kanata-disable.ps1`  | stop + prevent the task from triggering at next logon |
+| `kanata-enable.ps1`   | re-enable a disabled task and start it                |
+| `kanata-status.ps1`   | show task state, process, and recent log lines        |
+
+invoke from any PowerShell:
+
+```powershell
+& "$HOME\.config\kanata\scripts\windows\kanata-status.ps1"
+```
+
+start/stop/enable/disable do NOT require an elevated shell because we own the task; the actions just call `Start-ScheduledTask` / `Stop-ScheduledTask` etc. against the user's own task store.
+
+to expose them in Raycast: open `Raycast Settings > Extensions > Script Commands > Add Script Directory` and point it at `%USERPROFILE%\.config\kanata\scripts\windows` -- the five commands appear under the "Kanata" package, mirroring the Mac UX. alternatively bind hotkeys via PowerToys Keyboard Manager or AutoHotkey.
 
 ### external keyboards
 

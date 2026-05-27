@@ -28,18 +28,42 @@
   chords-v2-min-idle 50
 
   ;; Only apply to the built-in laptop keyboard (ThinkPad LEN0071).
-  ;; Byte array sourced from `kanata_wintercept.exe --list` -- represents the
-  ;; UTF-16LE encoding of `\\?\ACPI#LEN0071#4&17f9fd69&0#{884...}`.
+  ;;
+  ;; *** IMPORTANT *** kanata's --list is misleading for ACPI keyboards. The
+  ;; "Device" path it prints is NOT what's matched -- runtime matching uses an
+  ;; exact equality comparison against the device's HardwareID property (which
+  ;; the Interception driver returns as a UTF-16LE REG_MULTI_SZ padded to 1024
+  ;; bytes). For the ThinkPad internal keyboard the multi-string is:
+  ;;     ACPI\VEN_LEN&DEV_0071\0 ACPI\LEN0071\0 *LEN0071\0
+  ;; (three NUL-separated hardware IDs from most-specific to most-generic).
+  ;;
+  ;; To find the runtime HWID for a different machine, run kanata with `-d`
+  ;; (debug). When you press a key on the target keyboard, kanata logs an
+  ;; `include check ... hwid [N, N, N, ...]` line. The byte array in that log
+  ;; IS what to paste below (drop the brackets, replace commas-and-spaces with
+  ;; bare commas, and strip the trailing zero padding -- kanata re-pads to
+  ;; 1024). Decode every other byte as ASCII to verify visually.
+  ;;
+  ;; Syntax: each entry is one HWID expressed as comma-separated bytes
+  ;; (NO spaces, NO brackets, NO surrounding parens around the bytes).
+  ;; kanata 1.11's --list prints `[N, N, N]` as an example but the parser
+  ;; rejects that form -- use `N,N,N` instead.
+  ;;
+  ;; Matching is *exact equality* on the whole 1024-byte array (HWID_ARR_SZ
+  ;; in kanata's source), so the configured bytes must equal the device's
+  ;; non-zero prefix exactly. Truncating any of the three multi-string
+  ;; entries causes mismatch even though the prefix looks right.
   windows-interception-keyboard-hwids (
-    [92, 0, 92, 0, 63, 0, 92, 0, 65, 0, 67, 0, 80, 0, 73, 0, 35, 0, 76, 0, 69, 0, 78, 0, 48, 0, 48, 0, 55, 0, 49, 0, 35, 0, 52, 0, 38, 0, 49, 0, 55, 0, 102, 0, 57, 0, 102, 0, 100, 0, 54, 0, 57, 0, 38, 0, 48, 0, 35, 0, 123, 0, 56, 0, 56, 0, 52, 0]
+    65,0,67,0,80,0,73,0,92,0,86,0,69,0,78,0,95,0,76,0,69,0,78,0,38,0,68,0,69,0,86,0,95,0,48,0,48,0,55,0,49,0,0,0,65,0,67,0,80,0,73,0,92,0,76,0,69,0,78,0,48,0,48,0,55,0,49,0,0,0,42,0,76,0,69,0,78,0,48,0,48,0,55,0,49,0,0,0
     ;; --- reference HWIDs for future projects (NOT active) ---
     ;; Keebio Iris (VID_CB10&PID_1756, QMK split):
-    ;;   \\?\HID#VID_CB10&PID_1756&MI_00#a&4a6a7b5&0&
-    ;;   [92, 0, 92, 0, 63, 0, 92, 0, 72, 0, 73, 0, 68, 0, 35, 0, 86, 0, 73, 0, 68, 0, 95, 0, 67, 0, 66, 0, 49, 0, 48, 0, 38, 0, 80, 0, 73, 0, 68, 0, 95, 0, 49, 0, 55, 0, 53, 0, 54, 0, 38, 0, 77, 0, 73, 0, 95, 0, 48, 0, 48, 0, 35, 0, 97, 0, 38, 0, 52, 0, 97, 0, 54, 0, 97, 0, 55, 0, 98, 0, 53, 0, 38, 0, 48, 0, 38, 0]
-    ;; if/when activating: kanata won't claim it until the byte array moves
-    ;; above this comment block. note that the Iris already runs QMK with its
-    ;; own layout, so overrides should be additive only (or you'll fight
-    ;; yourself).
+    ;;   device path: \\?\HID#VID_CB10&PID_1756&MI_00#a&4a6a7b5&0&
+    ;;   note: HID hardware IDs use a different format than ACPI -- discover
+    ;;   the real HWID at runtime with `-d` (look for the `include check ...
+    ;;   hwid [...]` log line; decode every other byte as ASCII).
+    ;; if/when activating: add a sibling comma-separated entry above this
+    ;; comment block. note that the Iris already runs QMK with its own
+    ;; layout, so overrides should be additive only.
   )
 )
 
