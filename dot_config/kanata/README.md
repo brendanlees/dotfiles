@@ -25,7 +25,7 @@ used for re-mapping internal laptop keyboards.
 - **same-hand press** forces *tap* — fast rolls like `asdf`, `kalil`, `sales` come out as letters.
 - **same-hand deliberate mod** still works via the timer: hold A past `$hold-timeout` (200ms), then press S → `Cmd+S`.
 
-hand groupings live in `(defvar left-hand-keys ...)` / `right-hand-keys` and must cover every alpha column in `defsrc` — see `docs/timeless-hrm.md` for the full rationale and the `$tap-keys` polarity gotcha.
+hand groupings live in `(defvar left-hand-keys ...)` / `right-hand-keys` and cover every alpha column in `defsrc` **except the eight HRM positions themselves** (`a`/`s`/`d`/`f`, `j`/`k`/`l`/`;`) — those are excluded so same-hand mod chords like `Alt+Shift+T` still work. see `docs/timeless-hrm.md` for the polarity gotcha and the chord-vs-roll trade-off.
 
 `caps` (esc/hyper) and `lmet` (bspc/cmd) remain plain timing-based tap-hold — not homerow letters, no roll concern.
 

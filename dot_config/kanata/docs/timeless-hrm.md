@@ -44,12 +44,12 @@ a_cmd (tap-hold-release-keys $tap-timeout $hold-timeout a lmet $left-hand-keys)
 j_ctl (tap-hold-release-keys $tap-timeout $hold-timeout j rctl $right-hand-keys)
 ```
 
-hand groupings:
+hand groupings (note: HRM letter positions `a s d f` and `j k l ;` are intentionally **excluded** from their same-hand list — see "same-hand mod chords" under the pitfall section):
 
 ```
 (defvar
-  left-hand-keys  (q w e r t a s d f g z x c v b)
-  right-hand-keys (y u i o p h j k l ; n m , . /)
+  left-hand-keys  (q w e r t g z x c v b)
+  right-hand-keys (y u i o p h n m , . /)
 )
 ```
 
@@ -61,6 +61,8 @@ hand groupings:
 | right-`;` cmd + left-C (`Cmd+C`) | instant `Cmd+C`, same mechanism |
 | fast same-hand roll: "as", "kl", "asdf" | letters; same-hand key is in `$tap-keys`, force-taps immediately |
 | deliberate same-hand mod: hold A past 200 ms, press S | `Cmd+S` — A auto-promotes to hold at `$hold-timeout`, then S press fires under it |
+| same-hand HRM chord: hold S+D past 200 ms, press T | `Alt+Shift+T` — HRMs aren't in each other's `$tap-keys`, so both promote on timer, then T fires under both mods |
+| same-hand HRM chord pressed too fast (S+D+T in <200 ms) | `sdt` — neither S nor D reach `$hold-timeout`; T is in the same-hand list so it force-taps both. Documented trade-off; settle the mods before the alpha |
 | co-press of chord keys (`we`/`xc`/`qw`/`tab+q`) while holding HRM | HRM force-taps (chord keys are in left-hand list), then chord fires. e.g. holding `f` + chording `we` → `f-`. acceptable; you almost never want to hold a HRM while chord-typing |
 | external keyboard (Iris, etc.) | unaffected — `macos-dev-names-include` / `windows-interception-keyboard-hwids` scope kanata to the built-in keyboard only |
 
@@ -72,7 +74,11 @@ this is the inverse of the QMK Chordal-Hold mental model (where you think "oppos
 
 the upshot: if `left-hand-keys` and `right-hand-keys` get swapped between left/right HRMs, you'll get the **opposite** of timeless behaviour — same-hand rolls flub to mods, cross-hand combos always tap. easy to spot in verification step 1.
 
-**incomplete hand lists:** every alpha column in `defsrc` must appear in exactly one hand list. if you add a new key to `defsrc` (e.g. apostrophe was missing from `right-hand-keys` in the first pass — see commit log), it needs adding here too or its press won't force-tap during a same-hand roll. cross-reference against `defsrc`'s alpha block periodically.
+**incomplete hand lists:** every non-HRM alpha column in `defsrc` must appear in exactly one hand list. if you add a new key to `defsrc` (e.g. apostrophe was missing from `right-hand-keys` in the first pass — see commit log), it needs adding here too or its press won't force-tap during a same-hand roll. cross-reference against `defsrc`'s alpha block periodically.
+
+**same-hand mod chords (the second-pass fix):** HRM letter positions (`a`/`s`/`d`/`f` on left, `j`/`k`/`l`/`;` on right) are intentionally **excluded** from their own same-hand list. otherwise pressing D while holding S would match S's `$tap-keys` → force-tap on S → no Alt+Shift possible. with HRMs excluded, holding S+D for at least `$hold-timeout` (200 ms) lets both promote to mods via the timer; then pressing T fires `Alt+Shift+T`. urob's writeup is explicit about this: "I can still use same-hand mod + alpha shortcuts by holding the mod for just a little while before tapping the alpha-key." the felt cost is a brief settle pause; once internalized it disappears.
+
+if you ever notice same-hand mod chords stop firing again, the first thing to check is whether HRM positions snuck back into the hand-keys defvars (e.g. via a copy-paste from `defsrc`). that was the v1 regression that prompted this section.
 
 **chord-v2 + HRM interaction:** `chords-v2-min-idle 50` and `chord-timeout 30` mean chord detection runs before tap-hold resolution. holding an HRM while chord-pressing co-located keys force-taps the HRM (chord keys are in the same-hand list) before the chord fires. for `(w e) → -` etc. this just means `f-` instead of waiting for a hold decision. fine in practice.
 
@@ -96,13 +102,18 @@ run on the **internal laptop keyboard** (kanata's device filter scopes to it). i
 2. **cross-hand fixes land**
    - in tmux: `Ctrl+B` (right-J + left-B) ten times in a row mid-command — prefix every time
    - in any app: `Cmd+C` (right-`;` + left-C), `Cmd+V`, `Cmd+T`
-3. **same-hand deliberate mod still possible**
+3. **same-hand deliberate single mod**
    - hold left-A past 200ms, then press S → `Cmd+S` save dialog
-4. **external keyboards unaffected**
+4. **same-hand HRM chord (the v2 fix)**
+   - hold S + D together for ~250ms, then press T → `Alt+Shift+T`
+   - hold ; + D for ~250ms, then S → `Cmd+Shift+S` (or whatever's bound)
+5. **external keyboards unaffected**
    - type same drills on the Iris; QMK-driven HRMs behave per `iris-lm-config/docs/homerow-mods.md`
    - `macos-dev-names-include ("Apple Internal Keyboard / Trackpad")` should already exclude it
 
-if step 1 regresses: hand lists are inverted or incomplete. re-check that `left-hand-keys` contains left-half alphas and `right-hand-keys` the right half, and that every alpha column in `defsrc` appears in exactly one.
+if step 1 regresses: hand lists are inverted, incomplete, or HRM positions snuck back in. re-check that `left-hand-keys` contains left-half **non-HRM** alphas and `right-hand-keys` the right half (same exclusion). if HRMs are back in their own list, same-hand chords break.
+
+if step 4 regresses: usually means HRMs are back in the same-hand list (see above), OR you're not actually holding S+D past `$hold-timeout` before pressing T (urob's "hold for just a tick" rule).
 
 if step 2 still flubs: opposite-hand key not released fast enough before the typist moves on. try bumping `$hold-timeout` down to 180. last-resort: switch to `tap-hold-press` semantics (commits on opposite-hand press, no list protection) — loses same-hand roll protection so don't go here unless desperate.
 

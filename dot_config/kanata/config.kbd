@@ -29,12 +29,18 @@
   hold-timeout-slow 300
   chord-timeout 30
 
-  ;; positional HRM hand groupings — same-hand keys force tap (preserve rolls);
-  ;; opposite-hand press+release commits hold instantly via tap-hold-release-keys
-  ;; default. polarity gotcha: $tap-keys is the *protect-as-tap* list, not the
-  ;; trigger-hold list. ref: docs/timeless-hrm.md.
-  left-hand-keys  (q w e r t a s d f g z x c v b)
-  right-hand-keys (y u i o p h j k l ; n m , . /)
+  ;; positional HRM hand groupings — same-hand non-HRM keys force tap (preserve
+  ;; rolls); opposite-hand press+release commits hold instantly via
+  ;; tap-hold-release-keys default. polarity gotcha: $tap-keys is the
+  ;; *protect-as-tap* list, not the trigger-hold list.
+  ;;
+  ;; HRM letter positions (a/s/d/f, j/k/l/;) are intentionally EXCLUDED from
+  ;; their own same-hand list so multi-HRM same-hand chords work — pressing D
+  ;; while holding S no longer force-taps S, both promote on timer. Trade-off:
+  ;; deliberate same-hand mod chord requires ~$hold-timeout settle before the
+  ;; alpha key (urob's "hold for just a tick"). ref: docs/timeless-hrm.md.
+  left-hand-keys  (q w e r t g z x c v b)
+  right-hand-keys (y u i o p h n m , . /)
 )
 
 ;; define source keys (full alpha block + space + function keys)
