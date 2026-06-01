@@ -19,6 +19,16 @@ used for re-mapping internal laptop keyboards.
 | `caps` | esc | hyper |
 | `lmet` | bspc | cmd  |
 
+**positional disambiguation (timeless homerow mods).** the eight letter HRMs (a/s/d/f/j/k/l/`;`) use `tap-hold-release-keys` so:
+
+- **opposite-hand press+release** commits the mod-tap to *hold* instantly — `Ctrl+B` (tmux), `Cmd+C`, `Cmd+V` fire without racing the timer.
+- **same-hand press** forces *tap* — fast rolls like `asdf`, `kalil`, `sales` come out as letters.
+- **same-hand deliberate mod** still works via the timer: hold A past `$hold-timeout` (200ms), then press S → `Cmd+S`.
+
+hand groupings live in `(defvar left-hand-keys ...)` / `right-hand-keys` and must cover every alpha column in `defsrc` — see `docs/timeless-hrm.md` for the full rationale and the `$tap-keys` polarity gotcha.
+
+`caps` (esc/hyper) and `lmet` (bspc/cmd) remain plain timing-based tap-hold — not homerow letters, no roll concern.
+
 tap-timeout: 300ms, hold-timeout: 200ms.
 
 ### bottom-row tap-dance macros (tap/hold)

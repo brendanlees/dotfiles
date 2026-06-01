@@ -73,6 +73,13 @@
   hold-timeout 200
   hold-timeout-slow 300
   chord-timeout 30
+
+  ;; positional HRM hand groupings — same-hand keys force tap (preserve rolls);
+  ;; opposite-hand press+release commits hold instantly via tap-hold-release-keys
+  ;; default. polarity gotcha: $tap-keys is the *protect-as-tap* list, not the
+  ;; trigger-hold list. ref: docs/timeless-hrm.md.
+  left-hand-keys  (q w e r t a s d f g z x c v b)
+  right-hand-keys (y u i o p h j k l ; n m , . /)
 )
 
 ;; define source keys (full alpha block + space + function keys)
@@ -105,17 +112,18 @@
   ;; caps lock: tap for escape, hold for Hyper
   esc (tap-hold $tap-timeout 200 esc (multi lctl lalt lsft lmet))
 
-  ;; left homerow mods
-  a_cmd (tap-hold $tap-timeout $hold-timeout a lmet)  ;; a: tap for 'a', hold for Win (Meta)
-  s_alt (tap-hold $tap-timeout $hold-timeout s lalt)  ;; s: tap for 's', hold for Alt
-  d_sft (tap-hold $tap-timeout $hold-timeout d lsft)  ;; d: tap for 'd', hold for Shift
-  f_ctl (tap-hold $tap-timeout $hold-timeout f lctl)  ;; f: tap for 'f', hold for Control
+  ;; left homerow mods — timeless positional: same-hand roll forces tap,
+  ;; opposite-hand press+release commits hold instantly.
+  a_cmd (tap-hold-release-keys $tap-timeout $hold-timeout a lmet $left-hand-keys)  ;; a: tap for 'a', hold for Win (Meta)
+  s_alt (tap-hold-release-keys $tap-timeout $hold-timeout s lalt $left-hand-keys)  ;; s: tap for 's', hold for Alt
+  d_sft (tap-hold-release-keys $tap-timeout $hold-timeout d lsft $left-hand-keys)  ;; d: tap for 'd', hold for Shift
+  f_ctl (tap-hold-release-keys $tap-timeout $hold-timeout f lctl $left-hand-keys)  ;; f: tap for 'f', hold for Control
 
-  ;; right homerow mods
-  j_ctl (tap-hold $tap-timeout $hold-timeout j rctl)  ;; j: tap for 'j', hold for Control
-  k_sft (tap-hold $tap-timeout $hold-timeout k rsft)  ;; k: tap for 'k', hold for Shift
-  l_alt (tap-hold $tap-timeout $hold-timeout l lalt)  ;; l: tap for 'l', hold for Alt
-  scln_cmd (tap-hold $tap-timeout $hold-timeout ; rmet)  ;; ;: tap for ';', hold for Win (Meta)
+  ;; right homerow mods — same positional model, mirrored.
+  j_ctl    (tap-hold-release-keys $tap-timeout $hold-timeout j rctl $right-hand-keys)  ;; j: tap for 'j', hold for Control
+  k_sft    (tap-hold-release-keys $tap-timeout $hold-timeout k rsft $right-hand-keys)  ;; k: tap for 'k', hold for Shift
+  l_alt    (tap-hold-release-keys $tap-timeout $hold-timeout l lalt $right-hand-keys)  ;; l: tap for 'l', hold for Alt
+  scln_cmd (tap-hold-release-keys $tap-timeout $hold-timeout ; rmet $right-hand-keys)  ;; ;: tap for ';', hold for Win (Meta)
 
   ;; one-shot Shift+Ctrl (Windows equivalent of macOS OSM(Shift+Cmd))
   osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lctl))
