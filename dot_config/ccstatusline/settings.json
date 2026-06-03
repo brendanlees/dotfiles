@@ -29,15 +29,19 @@
       {
         "id": "9d3aa21b-f345-4595-a115-4000ab3b857f",
         "type": "weekly-usage",
+        "color": "yellow",
         "metadata": {
           "display": "time"
-        },
-        "color": "yellow"
+        }
       },
       {
         "id": "0fe661bf-1a27-4ee6-b06b-448855f1ff9b",
         "type": "weekly-reset-timer",
         "color": "brightBlack"
+      },
+      {
+        "id": "d2acc617-00e0-46e5-8178-729d8d73934b",
+        "type": "session-usage"
       },
       {
         "id": "e6b1969b-75d5-45e5-abf7-f7cb66ce06e6",
