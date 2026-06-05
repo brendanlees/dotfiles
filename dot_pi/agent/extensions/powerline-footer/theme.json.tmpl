@@ -1,0 +1,26 @@
+{{- $p := (index .themes .theme).palette -}}
+{
+  "colors": {
+    "model": "{{ $p.comment }}",
+    "shellMode": "{{ $p.success }}",
+    "path": "{{ $p.primary }}",
+    "gitDirty": "{{ $p.warn }}",
+    "gitClean": "{{ $p.success }}",
+    "thinking": "{{ $p.border }}",
+    "thinkingMinimal": "{{ $p.border }}",
+    "thinkingLow": "{{ $p.comment }}",
+    "thinkingMedium": "{{ $p.primary_alt }}",
+    "context": "{{ $p.comment }}",
+    "contextWarn": "{{ $p.warn }}",
+    "contextError": "{{ $p.error }}",
+    "cost": "text",
+    "tokens": "{{ $p.comment }}",
+    "separator": "{{ $p.surface }}",
+    "border": "{{ $p.border }}",
+    "lastPrompt": "{{ $p.comment }}"
+  },
+  "icons": {
+    "auto": "↯",
+    "warning": ""
+  }
+}

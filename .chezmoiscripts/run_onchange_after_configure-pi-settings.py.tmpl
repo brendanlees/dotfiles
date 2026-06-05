@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Keep Pi pointed at the chezmoi-generated theme."""
+
+import json
+import os
+from pathlib import Path
+
+PACKAGE = "npm:@ogulcancelik/pi-ghostty-theme-sync"
+
+
+def agent_dir() -> Path:
+    override = os.environ.get("PI_AGENT_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".pi" / "agent"
+
+
+def disable_ghostty_sync(packages):
+    changed = False
+    result = []
+    for package in packages:
+        if package == PACKAGE:
+            result.append({"source": PACKAGE, "extensions": []})
+            changed = True
+            continue
+        if isinstance(package, dict) and package.get("source") == PACKAGE:
+            updated = dict(package)
+            if updated.get("extensions") != []:
+                updated["extensions"] = []
+                changed = True
+            result.append(updated)
+            continue
+        result.append(package)
+    return result, changed
+
+
+def main() -> None:
+    settings_path = agent_dir() / "settings.json"
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if settings_path.exists():
+        data = json.loads(settings_path.read_text())
+        if not isinstance(data, dict):
+            raise SystemExit(f"{settings_path} must contain a JSON object")
+    else:
+        data = {}
+
+    data["theme"] = "chezmoi"
+    packages = data.get("packages", [])
+    if not isinstance(packages, list):
+        raise SystemExit(f"{settings_path}: packages must be a list when present")
+    data["packages"], _ = disable_ghostty_sync(packages)
+
+    settings_path.write_text(json.dumps(data, indent=2) + "\n")
+    print(f"configured Pi theme in {settings_path}")
+
+
+if __name__ == "__main__":
+    main()
