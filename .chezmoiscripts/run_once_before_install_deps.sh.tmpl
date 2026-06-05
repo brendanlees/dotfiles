@@ -2,6 +2,41 @@
 #!/bin/bash
 set -euo pipefail
 
+confirm_remote_script() {
+  local name="$1"
+  local url="$2"
+
+  if [[ "${CHEZMOI_ALLOW_REMOTE_SCRIPTS:-}" == "1" ]]; then
+    echo "CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 set; allowing $name installer."
+    return 0
+  fi
+
+  cat <<EOF
+About to run remote installer: $name
+
+Source:
+  $url
+
+Inspect before running:
+  curl -fsSL "$url" | less
+
+To skip this prompt in automation, rerun with:
+  CHEZMOI_ALLOW_REMOTE_SCRIPTS=1
+
+EOF
+
+  if [[ ! -t 0 ]]; then
+    echo "Refusing to run $name installer without confirmation in non-interactive mode." >&2
+    return 1
+  fi
+
+  read -r -p "Continue running $name installer? [y/N] " answer
+  case "$answer" in
+    [Yy]|[Yy][Ee][Ss]) return 0 ;;
+    *) echo "Skipped $name installer."; return 1 ;;
+  esac
+}
+
 # ------------------------------------------
 # linux
 # ------------------------------------------
@@ -72,8 +107,10 @@ fi
 {{ if eq .chezmoi.os "darwin" -}}
 
 # check for declarative packages
+homebrew_install_url="https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
 if ! command -v brew &>/dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  confirm_remote_script "Homebrew" "$homebrew_install_url"
+  /bin/bash -c "$(curl -fsSL "$homebrew_install_url")"
 fi
 
 {{ if or .personal .work -}}
