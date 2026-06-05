@@ -190,7 +190,15 @@ if command -v nvim >/dev/null 2>&1; then
   NVIM_NEW_CS="$(awk -F'"' '/colorscheme =/ {print $2; exit}' "$HOME/.config/chezmoi-theme/active.lua" 2>/dev/null || true)"
   NVIM_NEW_BG="$(awk -F'"' '/background =/ {print $2; exit}' "$HOME/.config/chezmoi-theme/active.lua" 2>/dev/null || true)"
   if [[ -n "$NVIM_NEW_CS" ]]; then
-    NVIM_SOCKETS=( $(find /tmp/nvim.$USER -maxdepth 2 -name '0' -type s 2>/dev/null) $(find "${XDG_RUNTIME_DIR:-/tmp}" -maxdepth 1 -name 'nvim.*.0' -type s 2>/dev/null) )
+    NVIM_SOCKETS=()
+    if [[ -d "/tmp/nvim.$USER" ]]; then
+      while IFS= read -r -d '' sock; do
+        NVIM_SOCKETS+=("$sock")
+      done < <(find "/tmp/nvim.$USER" -maxdepth 2 -name '0' -type s -print0 2>/dev/null)
+    fi
+    while IFS= read -r -d '' sock; do
+      NVIM_SOCKETS+=("$sock")
+    done < <(find "${XDG_RUNTIME_DIR:-/tmp}" -maxdepth 1 -name 'nvim.*.0' -type s -print0 2>/dev/null)
     if (( ${#NVIM_SOCKETS[@]} > 0 )); then
       echo ":: nvim colorscheme → $NVIM_NEW_CS (${#NVIM_SOCKETS[@]} instance(s))"
       for sock in "${NVIM_SOCKETS[@]}"; do

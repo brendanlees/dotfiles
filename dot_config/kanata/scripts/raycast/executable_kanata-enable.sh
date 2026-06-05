@@ -16,6 +16,7 @@ set -euo pipefail
 # @raycast.author xbxd
 # @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
 
+# shellcheck source=dot_config/kanata/scripts/raycast/_run-with-sudo.sh
 source "$(dirname "$0")/_run-with-sudo.sh"
 
 RESULT=$(run_with_sudo <<'SCRIPT_EOF'

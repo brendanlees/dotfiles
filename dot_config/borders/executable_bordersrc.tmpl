@@ -2,10 +2,8 @@
 {{- $p := (index .themes .theme).palette }}
 
 # colors driven by .chezmoidata/themes.yml (active theme: {{ .theme }})
-red="0xff{{ trimPrefix "#" $p.error | lower }}"
 blue="0xff{{ trimPrefix "#" $p.primary | lower }}"
 transparent="0x00000000"
-grey="0xff{{ trimPrefix "#" $p.border | lower }}"
 
 options=(
   style=round
