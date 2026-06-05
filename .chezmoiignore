@@ -76,4 +76,5 @@ key.txt.age
 LICENSE
 install.sh
 docs
+tests
 .DS_Store

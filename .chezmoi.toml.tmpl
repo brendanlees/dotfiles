@@ -145,7 +145,7 @@
 {{- end }}{{ end }}
 {{- end }}
 
-{{- if lookPath "bw" }}
+{{- if and $personal (lookPath "bw") }}
 {{- $bw_homelab := bitwardenFields "item" "007b0e02-0af0-41e4-9779-b42d0156e6aa" }}
 
 [data.bw_homelab]
@@ -154,7 +154,7 @@
 {{- end }}{{ end }}
 {{- end }}
 
-{{ if lookPath "bw" }}
+{{ if and (or $personal $work) (lookPath "bw") }}
 [bitwarden]
   unlock = "auto"
 {{ end }}
