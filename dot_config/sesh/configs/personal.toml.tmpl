@@ -9,7 +9,12 @@ path = "~/{{ .code_dir }}/_homelab/ansible-playbooks/homelab"
 startup_command = "ansible-playbook update-servers.yml"
 
 [[session]]
-name = "claude-meta"
+name = "pi-config"
+path = "~/.pi"
+startup_command = "pi"
+
+[[session]]
+name = "claude-config"
 path = "~/.claude"
 startup_command = "claude"
 
