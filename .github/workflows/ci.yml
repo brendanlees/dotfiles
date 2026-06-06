@@ -258,14 +258,70 @@ jobs:
           fi
 
           # 3) curl|sh / curl|bash outside the bootstrap allowlist
-          allow='get\.chezmoi\.io|mise\.run'
-          unsafe=$(grep -nrE 'curl[^|]+\|[[:space:]]*(sh|bash)\b' \
+          is_approved_chezmoi_installer() {
+            local line="$1"
+
+            grep -qxE '[[:space:]]*curl[[:space:]]+(-[A-Za-z0-9]+[[:space:]]+)*(https?://)?get\.chezmoi\.io[[:space:]]*\|[[:space:]]*sh[[:space:]]*' <<<"$line"
+          }
+
+          is_approved_mise_installer() {
+            local file="$1"
+            local line_no="$2"
+            local line="$3"
+            local current=""
+            local current_no=0
+            local url_line=0
+            local confirm_line=0
+
+            # shellcheck disable=SC2016 # Match the literal installer variable name.
+            if ! grep -qxE '[[:space:]]*curl[[:space:]]+"\$mise_install_url"[[:space:]]*\|[[:space:]]*sh[[:space:]]*' <<<"$line"; then
+              return 1
+            fi
+
+            while IFS= read -r current; do
+              current_no=$((current_no + 1))
+              if (( current_no >= line_no )); then
+                break
+              fi
+
+              if grep -qE '^[[:space:]]*mise_install_url=' <<<"$current"; then
+                if (( confirm_line > 0 )); then
+                  return 1
+                fi
+                if grep -qxE '^[[:space:]]*mise_install_url="https://mise\.run"[[:space:]]*$' <<<"$current"; then
+                  url_line=$current_no
+                else
+                  url_line=0
+                fi
+              fi
+
+              # shellcheck disable=SC2016 # Match the literal installer variable name.
+              if grep -qxE '^[[:space:]]*confirm_remote_script[[:space:]]+"mise"[[:space:]]+"\$mise_install_url"[[:space:]]*$' <<<"$current"; then
+                if (( url_line == 0 )); then
+                  return 1
+                fi
+                confirm_line=$current_no
+              fi
+            done <"$file"
+
+            [[ "$url_line" -gt 0 && "$confirm_line" -gt "$url_line" ]]
+          }
+
+          unsafe=""
+          while IFS=: read -r file line_no line; do
+            if is_approved_chezmoi_installer "$line"; then
+              continue
+            fi
+            if is_approved_mise_installer "$file" "$line_no" "$line"; then
+              continue
+            fi
+            printf -v unsafe '%s%s:%s:%s\n' "$unsafe" "$file" "$line_no" "$line"
+          done < <(grep -nrE 'curl[^|]+\|[[:space:]]*(sh|bash)\b' \
             --include='*.sh' --include='*.tmpl' --include='*.yml' --include='*.yaml' \
-            --exclude-dir=.git . \
-            | grep -vE "$allow" || true)
+            --exclude-dir=.git . || true)
           if [[ -n "$unsafe" ]]; then
-            echo "::error::new curl|sh outside allowlist (get.chezmoi.io, mise.run)"
-            echo "$unsafe"
+            echo "::error::new curl|sh outside approved allowlist (get.chezmoi.io, checked mise.run installer)"
+            printf '%s' "$unsafe"
             fails=$((fails+1))
           fi
 
