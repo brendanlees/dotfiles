@@ -8,6 +8,7 @@ title = " "
 macos-window-shadow = false
 bold-is-bright = true
 background-blur = macos-glass-regular
+window-colorspace = display-p3
 
 # icons
 #macos-icon = glass
@@ -36,11 +37,12 @@ mouse-hide-while-typing = true
 cursor-click-to-move = true
 
 # keybinds
+macos-option-as-alt = true
 keybind = cmd+shift+,=reload_config
 # send CSI u sequences for tmux C-S-h/l window switching
 keybind = ctrl+shift+h=text:\x1b[104;6u
 keybind = ctrl+shift+l=text:\x1b[108;6u
-
+keybind = alt+backspace=text:\x1b\x7f # pi agent 
 # remotes
 shell-integration = zsh
 keybind = shift+enter=text:\x1b\r
