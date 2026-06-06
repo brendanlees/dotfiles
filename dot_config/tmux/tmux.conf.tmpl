@@ -99,6 +99,11 @@ set -g @plugin 'christoomey/vim-tmux-navigator'
 set -g @plugin 'tmux-plugins/tmux-yank'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'wfxr/tmux-fzf-url'
+
+# urls
+set -g @fzf-url-fzf-options '-p 60%,30% --prompt="   " --border-label=" Open URL "'
+set -g @fzf-url-history-limit '2000'
 
 # save / restore sessions
 set -g @resurrect-capture-pane-contents 'on'
