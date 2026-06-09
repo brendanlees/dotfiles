@@ -47,7 +47,7 @@ brews:
     - mosh
     - ente-cli
     - ffmpeg
-    - gemini-cli
+    - antigravity-cli
     - kanata
     - keka
     - localsend
