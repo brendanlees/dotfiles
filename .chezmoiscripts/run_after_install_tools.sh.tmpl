@@ -56,6 +56,9 @@ fi
 
 echo "mise tools upgraded (starship deferred)."
 
+echo "pruning unused/outdated mise tools..."
+"$MISE" prune --yes
+
 # rebuild bat theme cache (bat may have just been installed)
 if command -v bat &>/dev/null; then
   echo "rebuilding bat theme cache..."
