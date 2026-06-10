@@ -2,7 +2,6 @@
 {{ if eq .chezmoi.username "root" -}}
 trusted_config_paths = ["/home"] # trust user home dirs with mise configs (prevent trust prompts)
 {{ end -}}
-compile = false
 
 [tools]
 uv = "latest"
@@ -35,7 +34,7 @@ yazi = "latest"
 {{ end -}}
 "github:joshmedeski/sesh" = "latest"
 bat = "latest"
-{{ if not (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "alpine")) -}}
+{{ if eq .chezmoi.os "darwin" -}}
 node = "lts"
 python = "latest"
 {{ end -}}
