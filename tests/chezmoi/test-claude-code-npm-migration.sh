@@ -46,6 +46,7 @@ fi
 rendered=$(CHEZMOI_ROLE=personal chezmoi execute-template --source="$repo_root" < "$npm_script")
 printf '%s\n' "$rendered" | grep -Fq 'npm install -g @anthropic-ai/claude-code'
 printf '%s\n' "$rendered" | grep -Fq 'exec node -- npm install -g @anthropic-ai/claude-code'
+printf '%s\n' "$rendered" | grep -Fq 'exec node -- claude install --force latest'
 
 if grep -Fq 'brew install --cask' <<<"$rendered"; then
   echo "npm package script must not use brew casks" >&2

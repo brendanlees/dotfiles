@@ -13,5 +13,9 @@ fi
 "$MISE" install node
 {{ range $packages -}}
 "$MISE" exec node -- npm install -g {{ . }}
+{{ if eq . "@anthropic-ai/claude-code" -}}
+"$MISE" exec node -- claude install --force latest
+"$MISE" exec node -- npm install -g {{ . }}
+{{ end -}}
 {{ end -}}
 {{- end }}
