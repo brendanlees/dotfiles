@@ -6,6 +6,12 @@ uv:
     - jcodemunch-mcp
   work: []
 
+npm:
+  base: []
+  personal:
+    - '@anthropic-ai/claude-code'
+  work: []
+
 taps:
   base: []
   personal:
@@ -139,7 +145,6 @@ casks:
     - termius
     - todoist
     - zoom
-    - claude-code
     - balenaetcher
     - db-browser-for-sqlite
     - dbngin

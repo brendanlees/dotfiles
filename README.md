@@ -35,7 +35,7 @@ on first run you'll be prompted to set your machine role. see [scoping](docs/sco
 .chezmoiscripts/
   run_once_before_*             # bootstrap: install chezmoi deps, mise
   run_after_*                   # post-apply: install tools, tmux plugins
-  darwin/run_onchange_*         # brew taps, packages, casks, mas, uv
+  darwin/run_onchange_*         # brew taps, packages, casks, mas, uv, npm globals
 .chezmoitemplates/              # shared template partials
 dot_zshrc.tmpl                  # zsh config
 dot_config/zsh/                 # aliases.zsh.tmpl + exact_aliases.d/ (per-tool alias files)

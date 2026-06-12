@@ -1,0 +1,17 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when packages-darwin.yml changes
+
+{{- $packages := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .npm .)) }}
+
+{{- if $packages }}
+MISE="$HOME/.local/bin/mise"
+if [ ! -x "$MISE" ]; then
+  echo "mise not found at $MISE, skipping npm package install." >&2
+  exit 1
+fi
+
+"$MISE" install node
+{{ range $packages -}}
+"$MISE" exec node -- npm install -g {{ . }}
+{{ end -}}
+{{- end }}
