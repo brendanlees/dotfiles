@@ -38,3 +38,6 @@ bat = "latest"
 node = "lts"
 python = "latest"
 {{ end -}}
+{{ if .personal -}}
+pi = "latest" # earendil-works/pi coding agent (mise registry; matches .pi external gating)
+{{ end -}}
