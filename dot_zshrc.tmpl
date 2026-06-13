@@ -197,7 +197,7 @@ _cached_eval wt wt command wt config shell init zsh
 # ai
 # ------------------------------------------
 
-hermes() { docker exec -it hermes /opt/hermes/.venv/bin/hermes "$@"; }
+hermes() { docker exec -u hermes -it hermes /opt/hermes/.venv/bin/hermes "$@"; }
 
 # ------------------------------------------
 # bindings
