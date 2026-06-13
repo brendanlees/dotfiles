@@ -1,3 +1,5 @@
+{{- /* Windows has no Python interpreter; the .ps1 sibling in windows/ handles it there. */ -}}
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env python3
 """Keep Pi pointed at the chezmoi-generated theme."""
 
@@ -57,3 +59,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+{{- end -}}
