@@ -144,32 +144,46 @@ hproxy-openrouter() {
     hproxy --openai-api-url https://openrouter.ai/api/v1 "$@"
 }
 
+hproxy-foreground() {
+    hr-env
+
+    printf 'Headroom proxy active while this command is running.
+'
+    printf 'URL: %s
+' "$(hr-proxy-url)"
+    printf 'Workspace: %s
+' "$HEADROOM_WORKSPACE_DIR"
+    printf 'Stop: Ctrl-C
+
+'
+
+    headroom proxy --port "$HEADROOM_PORT" --no-telemetry "$@"
+}
+
 hproxy() {
     hr-env
 
-    local old_tmux_name=""
-    if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
-        old_tmux_name="$(tmux display-message -p '#W' 2>/dev/null || true)"
-        tmux rename-window "hproxy-on" 2>/dev/null || true
+    if [ "${1:-}" = "--foreground" ]; then
+        shift
+        hproxy-foreground "$@"
+        return $?
     fi
 
-    printf 'Headroom proxy active while this command is running.\n'
-    printf 'URL: %s\n' "$(hr-proxy-url)"
-    printf 'Workspace: %s\n' "$HEADROOM_WORKSPACE_DIR"
-    printf 'Stop: Ctrl-C\n\n'
-
-    headroom proxy --port "$HEADROOM_PORT" --no-telemetry "$@"
-    local status=$?
-
     if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
-        tmux rename-window "hproxy-off" 2>/dev/null || true
-        # Leave a visible hproxy-off reminder briefly, then restore prior name.
-        if [ -n "$old_tmux_name" ]; then
-            ( sleep 2; tmux rename-window "$old_tmux_name" 2>/dev/null || true ) >/dev/null 2>&1 &!
-        fi
+        local proxy_args="${(j: :)${(q)@}}"
+        local proxy_cmd="source ~/.config/zsh/aliases.d/headroom.zsh; hproxy --foreground ${proxy_args}; exec zsh -l"
+        local shim_cmd="source ~/.config/zsh/aliases.d/headroom.zsh; headroom-pi-codex-shim; exec zsh -l"
+
+        tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
+        tmux select-pane -T proxy
+        tmux split-window -h "zsh -lc ${(q)shim_cmd}"
+        tmux select-pane -T codex-shim
+        tmux select-layout even-horizontal >/dev/null 2>&1 || true
+        tmux select-pane -L >/dev/null 2>&1 || true
+        return 0
     fi
 
-    return "$status"
+    hproxy-foreground "$@"
 }
 
 hclaude() {
