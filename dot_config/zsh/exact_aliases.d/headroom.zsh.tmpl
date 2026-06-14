@@ -267,7 +267,7 @@ hpix() {
 ' >&2
         return 1
     fi
-    pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.4-mini}" "$@"
+    pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.4-mini}" --models "${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.4-mini,headroom-codex-oauth/gpt-5.5}" "$@"
 }
 
 hstats() {
