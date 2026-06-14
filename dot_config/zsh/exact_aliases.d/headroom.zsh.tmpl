@@ -7,12 +7,14 @@
 export HEADROOM_TELEMETRY=off
 export HEADROOM_TELEMETRY_WARN=off
 export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
+export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
 export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
 
 hr-env() {
     export HEADROOM_TELEMETRY=off
     export HEADROOM_TELEMETRY_WARN=off
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
+    export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
     mkdir -p "$HEADROOM_WORKSPACE_DIR"
 }
@@ -26,6 +28,17 @@ hr-proxy-active() {
     hr-env
     command -v curl >/dev/null 2>&1 || return 127
     curl -fsS "$(hr-proxy-url)/health" >/dev/null 2>&1
+}
+
+hr-codex-shim-url() {
+    hr-env
+    printf 'http://127.0.0.1:%s' "$HEADROOM_CODEX_SHIM_PORT"
+}
+
+hr-codex-shim-active() {
+    hr-env
+    command -v curl >/dev/null 2>&1 || return 127
+    curl -fsS "$(hr-codex-shim-url)/health" >/dev/null 2>&1
 }
 
 hr-require-proxy() {
@@ -43,6 +56,88 @@ hr-require-proxy() {
 hr-pi-provider-exists() {
     local provider="$1"
     pi --list-models "$provider" 2>/dev/null | awk 'NR > 1 { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
+headroom-pi-codex-shim() {
+    hr-env
+    hr-require-proxy || return $?
+
+    printf 'Headroom Codex shim active while this command is running.
+'
+    printf 'URL: %s
+' "$(hr-codex-shim-url)"
+    printf 'Rewrite: /v1/codex/responses -> %s/v1/responses
+' "$(hr-proxy-url)"
+    printf 'Stop: Ctrl-C
+
+'
+
+    python3 - "$HEADROOM_CODEX_SHIM_PORT" "$(hr-proxy-url)" <<'PY'
+import http.client
+import http.server
+import socketserver
+import sys
+from urllib.parse import urlparse
+
+listen_port = int(sys.argv[1])
+headroom = urlparse(sys.argv[2].rstrip('/'))
+if headroom.scheme != 'http':
+    raise SystemExit('headroom-pi-codex-shim currently supports http Headroom proxy URLs only')
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
+    def log_message(self, fmt, *args):
+        sys.stderr.write('[headroom-pi-codex-shim] ' + fmt % args + '\n')
+
+    def do_GET(self):
+        if self.path == '/health':
+            body = b'ok\n'
+            self.send_response(200)
+            self.send_header('content-type', 'text/plain')
+            self.send_header('content-length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(404, 'not found')
+
+    def do_POST(self):
+        if self.path != '/v1/codex/responses':
+            self.send_error(404, 'expected /v1/codex/responses')
+            return
+
+        length = int(self.headers.get('content-length') or 0)
+        body = self.rfile.read(length)
+        headers = {k: v for k, v in self.headers.items() if k.lower() not in {'host', 'content-length', 'connection'}}
+        headers['content-length'] = str(len(body))
+
+        conn = http.client.HTTPConnection(headroom.hostname, headroom.port or 80, timeout=None)
+        try:
+            conn.request('POST', '/v1/responses', body=body, headers=headers)
+            upstream = conn.getresponse()
+            self.send_response(upstream.status, upstream.reason)
+            for key, value in upstream.getheaders():
+                lower = key.lower()
+                if lower in {'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade', 'content-length'}:
+                    continue
+                self.send_header(key, value)
+            self.end_headers()
+            while True:
+                chunk = upstream.read(8192)
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+                self.wfile.flush()
+        finally:
+            conn.close()
+            self.close_connection = True
+
+class ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+ThreadingHTTPServer(('127.0.0.1', listen_port), Handler).serve_forever()
+PY
 }
 
 hproxy-openrouter() {
@@ -104,8 +199,17 @@ hpix() {
     hr-env
     hr-require-proxy || return $?
     if ! hr-pi-provider-exists headroom-codex-oauth; then
-        printf 'Pi provider "headroom-codex-oauth" is not configured yet.\n' >&2
-        printf 'It also needs the local /v1/codex/responses -> /v1/responses shim.\n' >&2
+        printf 'Pi provider "headroom-codex-oauth" is not configured yet.
+' >&2
+        printf 'It also needs the local /v1/codex/responses -> /v1/responses shim.
+' >&2
+        return 1
+    fi
+    if ! hr-codex-shim-active; then
+        printf 'Headroom Codex shim is not running on %s.
+' "$(hr-codex-shim-url)" >&2
+        printf 'Start it in another tmux pane/window with: headroom-pi-codex-shim
+' >&2
         return 1
     fi
     pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.4-mini}" "$@"
