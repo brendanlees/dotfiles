@@ -9,6 +9,7 @@ READY="$TMPDIR/ready"
 FAKE_PORT=18879
 SHIM_PORT=18880
 
+# shellcheck disable=SC2329 # Invoked via trap EXIT.
 cleanup() {
   if [ -n "${SHIM_PID:-}" ]; then
     pkill -P "$SHIM_PID" 2>/dev/null || true

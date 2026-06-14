@@ -37,6 +37,9 @@ assert any('new-window' in line and '-n headroom' in line for line in lines), jo
 assert any('select-pane' in line and '-T proxy' in line for line in lines), joined
 assert any('split-window' in line and '-h' in line for line in lines), joined
 assert any('select-pane' in line and '-T codex-shim' in line for line in lines), joined
+assert any('split-window' in line and '-v' in line for line in lines), joined
+assert any('select-pane' in line and '-T stats' in line for line in lines), joined
+assert 'headroom-watch-stats' in normalized, joined
 assert 'hproxy --foreground' in normalized and '--openai-api-url https://example.invalid/v1' in normalized, joined
 assert 'headroom-pi-codex-shim' in normalized, joined
 PY

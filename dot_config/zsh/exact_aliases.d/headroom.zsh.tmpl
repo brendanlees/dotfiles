@@ -9,6 +9,7 @@ export HEADROOM_TELEMETRY_WARN=off
 export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
 export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
 export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
+export HEADROOM_STATS_INTERVAL="${HEADROOM_STATS_INTERVAL:-300}"
 export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
 
 hr-env() {
@@ -17,6 +18,7 @@ hr-env() {
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
     export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
     export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
+    export HEADROOM_STATS_INTERVAL="${HEADROOM_STATS_INTERVAL:-300}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
     mkdir -p "$HEADROOM_WORKSPACE_DIR"
 }
@@ -162,6 +164,20 @@ ThreadingHTTPServer(('127.0.0.1', listen_port), Handler).serve_forever()
 PY
 }
 
+headroom-watch-stats() {
+    hr-env
+    if command -v watch >/dev/null 2>&1; then
+        watch -n "$HEADROOM_STATS_INTERVAL" hstats
+        return $?
+    fi
+
+    while true; do
+        clear
+        hstats
+        sleep "$HEADROOM_STATS_INTERVAL"
+    done
+}
+
 hproxy-openrouter() {
     hproxy --openai-api-url https://openrouter.ai/api/v1 "$@"
 }
@@ -195,11 +211,14 @@ hproxy() {
         local proxy_args="${(j: :)${(q)@}}"
         local proxy_cmd="source ~/.config/zsh/aliases.d/headroom.zsh; hproxy --foreground ${proxy_args}; exec zsh -l"
         local shim_cmd="source ~/.config/zsh/aliases.d/headroom.zsh; headroom-pi-codex-shim; exec zsh -l"
+        local stats_cmd="source ~/.config/zsh/aliases.d/headroom.zsh; headroom-watch-stats; exec zsh -l"
 
         tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
         tmux select-pane -T proxy
         tmux split-window -h "zsh -lc ${(q)shim_cmd}"
         tmux select-pane -T codex-shim
+        tmux split-window -v "zsh -lc ${(q)stats_cmd}"
+        tmux select-pane -T stats
         tmux select-layout even-horizontal >/dev/null 2>&1 || true
         tmux select-pane -L >/dev/null 2>&1 || true
         return 0
