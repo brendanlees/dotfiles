@@ -8,6 +8,7 @@ export HEADROOM_TELEMETRY=off
 export HEADROOM_TELEMETRY_WARN=off
 export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
 export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
+export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
 export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
 
 hr-env() {
@@ -15,6 +16,7 @@ hr-env() {
     export HEADROOM_TELEMETRY_WARN=off
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
     export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
+    export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
     mkdir -p "$HEADROOM_WORKSPACE_DIR"
 }
@@ -41,6 +43,26 @@ hr-codex-shim-active() {
     curl -fsS "$(hr-codex-shim-url)/health" >/dev/null 2>&1
 }
 
+hr-wait-for-proxy() {
+    hr-env
+    local waited=0
+    while ! hr-proxy-active; do
+        if [ "$waited" -ge "$HEADROOM_PROXY_WAIT_SECONDS" ]; then
+            printf 'Headroom proxy is not running on %s after %ss.
+' "$(hr-proxy-url)" "$HEADROOM_PROXY_WAIT_SECONDS" >&2
+            return 1
+        fi
+        if [ "$waited" -eq 0 ]; then
+            printf 'Waiting for Headroom proxy on %s...
+' "$(hr-proxy-url)" >&2
+        fi
+        sleep 1
+        waited=$((waited + 1))
+    done
+    printf 'Headroom proxy active: %s
+' "$(hr-proxy-url)"
+}
+
 hr-require-proxy() {
     hr-env
     if hr-proxy-active; then
@@ -60,7 +82,7 @@ hr-pi-provider-exists() {
 
 headroom-pi-codex-shim() {
     hr-env
-    hr-require-proxy || return $?
+    hr-wait-for-proxy || return $?
 
     printf 'Headroom Codex shim active while this command is running.
 '
