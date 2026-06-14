@@ -9,7 +9,7 @@ uv:
 npm:
   base: []
   personal:
-    - '@anthropic-ai/claude-code'
+    - "@anthropic-ai/claude-code"
   work: []
 
 taps:
@@ -22,6 +22,7 @@ taps:
     - qmk/qmk
     - rtk-ai/tap
     - xykong/tap
+    - oven-sh/bun
     - yt-dlp/taps
   work:
     - ddev/ddev
@@ -33,16 +34,16 @@ brews:
     - ansible
     - bash
     - bitwarden-cli
-    - bun
+    - oven-sh/bun/bun
     - chezmoi
     - curl
-    - gh
+    # - gh (mise)
     - git
     - mysql
-    - node
+    # - node (mise)
     - pnpm
     - tmux
-    - uv
+    # - uv (mise)
     - wget
     - zsh
   personal:
@@ -62,7 +63,6 @@ brews:
     - mactop
     - macwhisper
     - micro-snitch
-    - anomalyco/tap/opencode
     - soundsource
     - tldr
     - worktrunk
@@ -71,7 +71,6 @@ brews:
     - qmk/qmk/qmk
     - icm
     - rtk
-    - libreoffice
     - gromgit/brewtils/taproom
   work:
     - awscli
@@ -113,6 +112,7 @@ casks:
     - cloudmounter
     - betterzip
     - cryptomator
+    - onlyoffice
     - home-assistant
     - imageoptim
     - karabiner-elements
