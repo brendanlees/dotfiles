@@ -26,7 +26,6 @@ scoops:
     - yt-dlp
     - btop
     - mosh-client
-    - opencode
     - tldr
     - extras/caffeine
     - extras/discord
@@ -36,7 +35,7 @@ scoops:
     - extras/firefox
     - extras/googlechrome
     - extras/kanata
-    - extras/libreoffice
+    - extras/onlyoffice-desktopeditors
     - extras/notion
     - extras/obsidian
     - extras/powertoys # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
