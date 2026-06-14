@@ -98,6 +98,8 @@ GITHUB_TOKEN=$(gh-token) some-tool
 
 if a tool requires `GITHUB_TOKEN` to be present unconditionally, opt in to the old behavior by setting `GH_TOKEN_AUTOEXPORT=1` before zsh sources its config (e.g. in `~/.zshenv` or a launchd `EnvironmentVariables` entry).
 
+if `chezmoi apply` fails while mise is fetching GitHub-backed tools/plugins, refresh the cached Bitwarden token with `chezmoi init --apply brendanlees` and, if needed, update the local mise binary with `mise self-update` first.
+
 ### rotating the token
 
 1. create a new fine-grained PAT (zero permissions) on github

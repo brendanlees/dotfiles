@@ -19,8 +19,12 @@ fi
 
 # priority: env var > chezmoi data
 {{ if .github_token -}}
+github_token={{ .github_token | quote }}
 if [ -z "${GITHUB_TOKEN:-}" ]; then
-  export GITHUB_TOKEN={{ .github_token | quote }}
+  export GITHUB_TOKEN="$github_token"
+fi
+if [ -z "${GITHUB_API_TOKEN:-}" ]; then
+  export GITHUB_API_TOKEN="$github_token"
 fi
 {{ end -}}
 
@@ -34,6 +38,9 @@ if [ ! -x "$MISE" ]; then
   echo "mise not found at $MISE, skipping tool install."
   exit 1
 fi
+
+echo "updating mise..."
+"$MISE" self-update --yes --no-plugins
 
 echo "installing mise tools..."
 "$MISE" install
