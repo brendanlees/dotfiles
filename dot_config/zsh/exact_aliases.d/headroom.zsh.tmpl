@@ -45,6 +45,10 @@ hr-pi-provider-exists() {
     pi --list-models "$provider" 2>/dev/null | awk 'NR > 1 { found = 1 } END { exit(found ? 0 : 1) }'
 }
 
+hproxy-openrouter() {
+    hproxy --openai-api-url https://openrouter.ai/api/v1 "$@"
+}
+
 hproxy() {
     hr-env
 
