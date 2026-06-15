@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HELPER="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
 TMPDIR="${TMPDIR:-/tmp}/headroom-codex-shim-test-$$"
-mkdir -p "$TMPDIR"
+mkdir -p "$TMPDIR/bin"
 FAKE_LOG="$TMPDIR/fake-headroom.log"
 FAKE_PORT=18877
 SHIM_PORT=18878
@@ -52,7 +52,7 @@ for _ in {1..50}; do
 done
 curl -fsS "http://127.0.0.1:$FAKE_PORT/health" >/dev/null
 
-zsh -fc "
+PATH="$TMPDIR/bin:$PATH" zsh -fc "
   source '$HELPER'
   HEADROOM_PORT=$FAKE_PORT HEADROOM_CODEX_SHIM_PORT=$SHIM_PORT headroom-pi-codex-shim
 " &
