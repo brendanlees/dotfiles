@@ -219,7 +219,6 @@ hproxy() {
         tmux select-pane -T codex-shim
         tmux split-window -v "zsh -lc ${(q)stats_cmd}"
         tmux select-pane -T stats
-        tmux select-layout even-horizontal >/dev/null 2>&1 || true
         tmux select-pane -L >/dev/null 2>&1 || true
         return 0
     fi
