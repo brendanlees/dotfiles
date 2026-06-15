@@ -41,6 +41,9 @@ assert any('split-window' in line and '-v' in line for line in lines), joined
 assert any('select-pane' in line and '-T stats' in line for line in lines), joined
 assert 'headroom-watch-stats' in normalized, joined
 assert 'select-layout even-horizontal' not in joined, joined
+stats_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '-T stats' in line)
+shim_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '-T codex-shim' in line)
+assert stats_idx < shim_idx, joined
 assert 'hproxy --foreground' in normalized and '--openai-api-url https://example.invalid/v1' in normalized, joined
 assert 'headroom-pi-codex-shim' in normalized, joined
 PY

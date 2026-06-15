@@ -215,10 +215,10 @@ hproxy() {
 
         tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
         tmux select-pane -T proxy
-        tmux split-window -h "zsh -lc ${(q)shim_cmd}"
-        tmux select-pane -T codex-shim
-        tmux split-window -v "zsh -lc ${(q)stats_cmd}"
+        tmux split-window -h "zsh -lc ${(q)stats_cmd}"
         tmux select-pane -T stats
+        tmux split-window -v "zsh -lc ${(q)shim_cmd}"
+        tmux select-pane -T codex-shim
         tmux select-pane -L >/dev/null 2>&1 || true
         return 0
     fi
