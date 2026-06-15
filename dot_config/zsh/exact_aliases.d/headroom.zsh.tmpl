@@ -2,13 +2,12 @@
 # .aliases/headroom
 # ------------------------------------------
 
-{{- if and .personal (lookPath "w") -}}
 # read only token for improved hugging face access
+{{- if and .personal (lookPath "w") -}}
 export HF_TOKEN={{ .bw_huggingface.read_only_token }}
 {{- end -}}
 
-# Privacy/safety defaults for Headroom. Keep these outside helper functions so
-# child shells and manually-run `headroom` commands inherit them too.
+# defaults (outside of wrapper functions for regular usage)
 export HEADROOM_TELEMETRY=off
 export HEADROOM_TELEMETRY_WARN=off
 export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
@@ -20,7 +19,6 @@ export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private
 hr-env() {
 
     {{- if and .personal (lookPath "w") -}}
-    # read only token for improved hugging face access
     export HF_TOKEN={{ .bw_huggingface.read_only_token }}
     {{- end -}}
     export HEADROOM_TELEMETRY=off
