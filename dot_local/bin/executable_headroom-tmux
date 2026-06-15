@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+set -e
+
+headroom_alias="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d/headroom.zsh"
+proxy_args="${(j: :)${(q)@}}"
+proxy_cmd="source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
+shim_cmd="source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
+stats_cmd="source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
+
+tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
+tmux select-pane -T proxy
+tmux split-window -h "zsh -lc ${(q)stats_cmd}"
+tmux select-pane -T stats
+tmux split-window -v "zsh -lc ${(q)shim_cmd}"
+tmux select-pane -T codex-shim
+tmux select-pane -L >/dev/null 2>&1 || true

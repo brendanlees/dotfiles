@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HELPER="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
 TMPDIR="${TMPDIR:-/tmp}/headroom-codex-shim-wait-test-$$"
-mkdir -p "$TMPDIR"
+mkdir -p "$TMPDIR/bin"
 READY="$TMPDIR/ready"
 FAKE_PORT=18879
 SHIM_PORT=18880
@@ -41,7 +41,7 @@ PY
 FAKE_PID=$!
 sleep 0.2
 
-zsh -fc "
+PATH="$TMPDIR/bin:$PATH" zsh -fc "
   source '$HELPER'
   HEADROOM_PORT=$FAKE_PORT HEADROOM_CODEX_SHIM_PORT=$SHIM_PORT HEADROOM_PROXY_WAIT_SECONDS=5 headroom-pi-codex-shim
 " >/tmp/headroom-wait-shim.out 2>&1 &
