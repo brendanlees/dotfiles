@@ -117,6 +117,8 @@
 {{- if and $personal (lookPath "bw") }}
 {{- $bw_info   := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" }}
 {{- $bw_github := bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" }}
+{{- $bw_huggingface  := bitwardenFields "item" "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" }}
+  hf_token = {{ $bw_huggingface.read_only_token.value | quote }}
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
   github_token = {{ $bw_github.read_only_token.value | quote }}
 
@@ -127,6 +129,11 @@
 
 [data.bw_github]
 {{- range $k, $v := $bw_github }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
+  {{ $k }} = {{ $val | quote }}
+{{- end }}{{ end }}
+
+[data.bw_huggingface]
+{{- range $k, $v := $bw_huggingface }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
   {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 
