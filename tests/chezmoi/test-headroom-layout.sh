@@ -12,6 +12,10 @@ for path in "$ENV_FILE" "$FUNCTIONS_FILE" "$CODEX_SHIM" "$TMUX_LAUNCHER"; do
   [ -f "$path" ] || { echo "missing expected Headroom split file: $path" >&2; exit 1; }
 done
 
+managed="$(chezmoi --source "$ROOT" managed)"
+grep -qx '.local/bin/headroom-codex-shim' <<<"$managed"
+grep -qx '.local/bin/headroom-tmux' <<<"$managed"
+
 line_count="$(wc -l < "$FACADE" | tr -d ' ')"
 [ "$line_count" -lt 90 ] || { echo "facade too large: $line_count lines" >&2; exit 1; }
 

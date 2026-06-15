@@ -44,6 +44,8 @@ Library
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
 !.local/bin/theme
+!.local/bin/headroom-codex-shim
+!.local/bin/headroom-tmux
 .local/share/fonts
 {{- end }}
 
