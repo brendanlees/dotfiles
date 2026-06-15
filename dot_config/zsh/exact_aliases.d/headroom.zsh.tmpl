@@ -3,9 +3,9 @@
 # ------------------------------------------
 
 # read only token for improved hugging face access
-{{- if and .personal (lookPath "w") -}}
-export HF_TOKEN={{ .bw_huggingface.read_only_token }}
-{{- end -}}
+{{ if and .personal (lookPath "w") }}
+export HF_TOKEN={{ .bw_huggingface.read_only_token | quote }}
+{{ end }}
 
 # defaults (outside of wrapper functions for regular usage)
 export HEADROOM_TELEMETRY=off
@@ -18,9 +18,9 @@ export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private
 
 hr-env() {
 
-    {{- if and .personal (lookPath "w") -}}
-    export HF_TOKEN={{ .bw_huggingface.read_only_token }}
-    {{- end -}}
+    {{ if and .personal (lookPath "w") }}
+    export HF_TOKEN={{ .bw_huggingface.read_only_token | quote }}
+    {{ end }}
     export HEADROOM_TELEMETRY=off
     export HEADROOM_TELEMETRY_WARN=off
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
