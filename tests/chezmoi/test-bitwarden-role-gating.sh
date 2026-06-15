@@ -26,6 +26,10 @@ case "$item_id" in
     field_name="read_only_token"
     field_value="github-token"
     ;;
+  7acadcd9-f0cf-4fa5-bed2-b46a00743ba5)
+    field_name="read_only_token"
+    field_value="huggingface-token"
+    ;;
   040ae08a-b331-4d3b-abc6-b303002d2a94)
     field_name="gitea_field"
     field_value="gitea-value"
@@ -131,6 +135,7 @@ assert_zero_bw_calls "homelab"
 assert_bw_item_ids "personal" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
+  "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
   "040ae08a-b331-4d3b-abc6-b303002d2a94" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa"
 
