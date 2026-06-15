@@ -33,6 +33,7 @@ import sys
 lines=open(sys.argv[1]).read().splitlines()
 joined='\n'.join(lines)
 normalized=joined.replace('\\ ', ' ')
+unescaped=joined.replace('\\', '')
 assert any('new-window' in line and '-n headroom' in line for line in lines), joined
 assert any('select-pane' in line and '-T proxy' in line for line in lines), joined
 assert any('split-window' in line and '-h' in line for line in lines), joined
@@ -46,4 +47,8 @@ shim_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '
 assert stats_idx < shim_idx, joined
 assert 'hproxy --foreground' in normalized and '--openai-api-url https://example.invalid/v1' in normalized, joined
 assert 'headroom-pi-codex-shim' in normalized, joined
+
+assert '38;2;101;133;148m' in unescaped, joined  # kanagawa-dragon primary -> proxy
+assert '38;2;138;154;123m' in unescaped, joined  # kanagawa-dragon success -> stats
+assert '38;2;162;146;163m' in unescaped, joined  # kanagawa-dragon secondary -> codex shim
 PY

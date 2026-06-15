@@ -2,10 +2,24 @@
 set -e
 
 headroom_alias="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d/headroom.zsh"
+
+headroom_color_escape() {
+    local hex="${1#\#}"
+    if [[ "$hex" != [[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] ]]; then
+        return 0
+    fi
+
+    printf '\033[38;2;%d;%d;%dm'         $((16#${hex[1,2]}))         $((16#${hex[3,4]}))         $((16#${hex[5,6]}))
+}
+
 proxy_args="${(j: :)${(q)@}}"
-proxy_cmd="source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
-shim_cmd="source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
-stats_cmd="source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
+proxy_color="$(headroom_color_escape "${HEADROOM_PROXY_PANE_COLOR:-}")"
+stats_color="$(headroom_color_escape "${HEADROOM_STATS_PANE_COLOR:-}")"
+shim_color="$(headroom_color_escape "${HEADROOM_SHIM_PANE_COLOR:-}")"
+
+proxy_cmd="printf ${(q)proxy_color}; source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
+shim_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
+stats_cmd="printf ${(q)stats_color}; source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
 
 tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
 tmux select-pane -T proxy
