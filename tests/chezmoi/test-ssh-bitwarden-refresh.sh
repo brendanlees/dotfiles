@@ -117,6 +117,23 @@ JSON
 JSON
 )
         ;;
+      keyless-host)
+        manifest_json=$(cat <<'JSON'
+{
+  "keys": {},
+  "hosts": {
+    "example-tailscale-host": {
+      "scope": "personal",
+      "host": "example-tailscale-host.example.ts.net",
+      "user": "example",
+      "port": 22,
+      "options": {"IdentitiesOnly": "no", "ForwardAgent": "no"}
+    }
+  }
+}
+JSON
+)
+        ;;
       *)
         echo "unexpected manifest variant: ${BW_MANIFEST_VARIANT:-}" >&2
         exit 64
@@ -177,6 +194,14 @@ run_refresh() {
     "$refresh_cmd" "$@"
 }
 
+run_refresh_variant() {
+  local variant=$1
+  local home_dir=$2
+  local role=$3
+  shift 3
+  BW_MANIFEST_VARIANT="$variant" run_refresh "$home_dir" "$role" "$@"
+}
+
 run_refresh_without_config() {
   local home_dir=$1
   shift
@@ -222,6 +247,17 @@ assert_contains() {
   local expected=$2
   if ! grep -Fq -- "$expected" "$file"; then
     echo "expected $file to contain: $expected" >&2
+    echo "actual:" >&2
+    cat "$file" >&2
+    exit 1
+  fi
+}
+
+assert_not_contains() {
+  local file=$1
+  local unexpected=$2
+  if grep -Fq -- "$unexpected" "$file"; then
+    echo "expected $file not to contain: $unexpected" >&2
     echo "actual:" >&2
     cat "$file" >&2
     exit 1
@@ -295,6 +331,24 @@ if BW_MANIFEST_VARIANT=missing-host run_refresh "$malformed_home" personal --fai
   exit 1
 fi
 assert_contains /tmp/cz-ssh-refresh-malformed.out "error: host 'example-malformed-host' requires field 'host'"
+
+# Hosts without a key generate normal SSH config without identity directives or key fetches.
+keyless_home=$(new_home keyless)
+: > "$bw_log"
+run_refresh_variant "keyless-host" "$keyless_home" personal
+keyless_conf="$keyless_home/.ssh/config.d/personal.conf"
+assert_contains "$keyless_conf" "Host example-tailscale-host"
+assert_contains "$keyless_conf" "HostName example-tailscale-host.example.ts.net"
+assert_contains "$keyless_conf" "User example"
+assert_contains "$keyless_conf" "IdentitiesOnly no"
+assert_contains "$keyless_conf" "ForwardAgent no"
+assert_not_contains "$keyless_conf" "IdentityFile"
+assert_not_contains "$keyless_conf" "IdentityAgent"
+if grep -q -- "local-key\|work-key" "$bw_log"; then
+  echo "keyless host must not fetch SSH key items" >&2
+  cat "$bw_log" >&2
+  exit 1
+fi
 
 # local_file writes only scoped personal config and restrictive private key files.
 personal_home=$(new_home personal)

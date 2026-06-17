@@ -156,10 +156,21 @@ Minimal manifest shape:
       "user": "example",
       "key": "example_work_key",
       "options": {"IdentitiesOnly": "yes"}
+    },
+    "example-tailscale-host": {
+      "scope": "personal",
+      "host": "example-tailscale-host.example.ts.net",
+      "user": "example",
+      "options": {"IdentitiesOnly": "no"}
     }
   }
 }
 ```
+
+Hosts may omit `key` for Tailscale SSH/DNS or other entries that should use
+OpenSSH defaults instead of a managed identity. Keyless hosts still get
+`HostName`, `User`, `Port`, and `options`, but no `IdentityFile` or
+`IdentityAgent` lines are generated.
 
 Supported key modes:
 

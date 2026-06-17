@@ -279,7 +279,25 @@ while IFS= read -r host_alias; do
   read_host_required host_name "$host_alias" host
   user_name=$(jq -r --arg host "$host_alias" '.hosts[$host].user // empty' <<< "$manifest_json")
   port=$(jq -r --arg host "$host_alias" '.hosts[$host].port // empty' <<< "$manifest_json")
-  read_host_required key_name "$host_alias" key
+  key_name=$(jq -r --arg host "$host_alias" '.hosts[$host].key // empty' <<< "$manifest_json")
+
+  config_file="$tmpdir/$host_scope.conf"
+  printf 'Host %s\n' "$host_alias" >> "$config_file"
+  printf '  HostName %s\n' "$host_name" >> "$config_file"
+  if [[ -n "$user_name" ]]; then
+    printf '  User %s\n' "$user_name" >> "$config_file"
+  fi
+  if [[ -n "$port" ]]; then
+    printf '  Port %s\n' "$port" >> "$config_file"
+  fi
+
+  if [[ -z "$key_name" ]]; then
+    options=$(jq -r --arg host "$host_alias" '.hosts[$host].options // {} | to_entries[] | [.key, (.value | tostring)] | @tsv' <<< "$manifest_json")
+    append_option_lines "$config_file" "$host_alias" "$options"
+    printf '\n' >> "$config_file"
+    continue
+  fi
+
   key_mode=$(jq -r --arg key "$key_name" '.keys[$key].mode // empty' <<< "$manifest_json")
   key_scope=$(jq -r --arg key "$key_name" '.keys[$key].scope // empty' <<< "$manifest_json")
   key_public=$(jq -r --arg key "$key_name" '.keys[$key].public_key // empty' <<< "$manifest_json")
@@ -291,16 +309,6 @@ while IFS= read -r host_alias; do
   fi
   if [[ -n "$key_scope" && "$key_scope" != "$host_scope" ]]; then
     die_or_skip "host '$host_alias' scope does not match key '$key_name' scope"
-  fi
-
-  config_file="$tmpdir/$host_scope.conf"
-  printf 'Host %s\n' "$host_alias" >> "$config_file"
-  printf '  HostName %s\n' "$host_name" >> "$config_file"
-  if [[ -n "$user_name" ]]; then
-    printf '  User %s\n' "$user_name" >> "$config_file"
-  fi
-  if [[ -n "$port" ]]; then
-    printf '  Port %s\n' "$port" >> "$config_file"
   fi
 
   case "$key_mode" in
