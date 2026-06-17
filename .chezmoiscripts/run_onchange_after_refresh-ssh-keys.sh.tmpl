@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Re-run when the refresh helper or local manifest setting changes.
+# helper-sha256: {{ output "sh" "-c" "path=$1; if [ -f \"$path\" ]; then shasum -a 256 \"$path\" | awk '{print $1}'; else printf missing; fi" "sh" (print .chezmoi.sourceDir "/dot_local/bin/executable_cz-ssh-refresh.tmpl") | trim }}
+# manifest-item: {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ .ssh.bw_manifest_item | sha256sum }}{{ else }}{{ "" | sha256sum }}{{ end }}
+
+# shellcheck disable=SC2050
+if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work }}" != "true" ]]; then
+  exit 0
+fi
+
+if ! command -v cz-ssh-refresh >/dev/null 2>&1; then
+  echo "warn: cz-ssh-refresh is not on PATH; skipping SSH refresh" >&2
+  exit 0
+fi
+
+cz-ssh-refresh || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2
