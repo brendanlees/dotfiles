@@ -105,3 +105,81 @@ if `chezmoi apply` fails while mise is fetching GitHub-backed tools/plugins, ref
 1. create a new fine-grained PAT (zero permissions) on github
 2. update `vault_github_token` in ansible vault
 3. run ansible update playbook to propagate to all machines
+
+## ssh config and keys via bitwarden
+
+This repo manages only generic SSH plumbing. Private host aliases, hostnames,
+addresses, private keys, and real Bitwarden item IDs live outside the public repo:
+local chezmoi config stores the manifest item name/id, and the Bitwarden secure
+note stores the manifest JSON in its `.notes` field.
+
+Setup flow:
+
+1. Install `bw` and `jq`, then sign in/unlock Bitwarden.
+2. Create a private Bitwarden secure note for the SSH manifest.
+3. Re-run `chezmoi init` on personal/work machines and enter the manifest item
+   name or id at the `ssh_bw_manifest_item` prompt. Leave it blank to skip.
+4. Run `chezmoi apply`; the non-blocking hook runs `cz-ssh-refresh` after apply.
+   You can also run `cz-ssh-refresh` manually.
+
+Minimal manifest shape:
+
+```json
+{
+  "keys": {
+    "example_personal_key": {
+      "scope": "personal",
+      "mode": "local_file",
+      "item": "example-local-key-item",
+      "path": "~/.ssh/keys/personal/id_ed25519_example",
+      "public_key": "ssh-ed25519 AAAA-example example_personal_key"
+    },
+    "example_work_key": {
+      "scope": "work",
+      "mode": "bitwarden_agent",
+      "item": "example-work-key-item",
+      "public_key": "ssh-ed25519 AAAA-example example_work_key"
+    }
+  },
+  "hosts": {
+    "example-personal-host": {
+      "scope": "personal",
+      "host": "192.0.2.10",
+      "user": "example",
+      "port": 22,
+      "key": "example_personal_key",
+      "options": {"IdentitiesOnly": "yes"}
+    },
+    "example-work-bastion": {
+      "scope": "work",
+      "host": "work.example.invalid",
+      "user": "example",
+      "key": "example_work_key",
+      "options": {"IdentitiesOnly": "yes"}
+    }
+  }
+}
+```
+
+Supported key modes:
+
+- `local_file`: `cz-ssh-refresh` fetches the referenced Bitwarden SSH key item,
+  writes the private key to the manifest `path` with mode `0600`, writes a
+  sibling `.pub` hint when a public key is available, and generates scoped SSH
+  config in `~/.ssh/config.d/<scope>.conf`.
+- `bitwarden_agent`: `cz-ssh-refresh` never fetches or writes private key
+  material. It writes only `~/.ssh/public-keys/<key>.pub` from manifest
+  `public_key` and emits SSH config with `IdentityAgent` plus that public-key
+  hint file.
+
+To migrate a key from local files to Bitwarden SSH Agent, import the key into
+Bitwarden, change the manifest key entry from `local_file` to
+`bitwarden_agent`, keep `public_key`, and remove `path` after you have manually
+removed any old local private key. If `path` remains and the old file still
+exists, refresh warns but does not delete it.
+
+Refresh is intentionally non-blocking: if Bitwarden, `jq`, or the manifest
+setting is unavailable, `cz-ssh-refresh` prints `warn:` and exits 0 so
+`chezmoi apply` can continue. Use `cz-ssh-refresh --fail` in explicit checks or
+CI-like validation when missing dependencies or Bitwarden errors should be
+fatal.

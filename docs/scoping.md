@@ -12,6 +12,10 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 
 known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
 
+SSH manifest generation also follows role flags. Hosts and keys with `scope: personal`
+are generated only for personal machines, and `scope: work` entries are generated only
+for work machines. Ephemeral/headless CI roles skip SSH refresh.
+
 ## skip prompts via flags
 
 data flags can be added to `chezmoi init` to bypass interactive prompts:

@@ -48,6 +48,7 @@ role flags gate which config and packages are applied per machine type.
 ## docs
 
 - [usage](docs/usage.md) — updating, re-installing, github token
+- [ssh + bitwarden](docs/usage.md#ssh-config-and-keys-via-bitwarden) — local SSH config/key generation from a private Bitwarden manifest
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible
 - [themes](docs/themes.md) — switching theme, adding new themes
 - [file tracking](docs/file-tracking.md) — adding dotfiles to track
