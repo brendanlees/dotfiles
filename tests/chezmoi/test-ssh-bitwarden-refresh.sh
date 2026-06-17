@@ -339,6 +339,34 @@ if grep -q -- "local-key" "$bw_log"; then
   exit 1
 fi
 
+# Symlinked bitwarden_agent public-key hint paths are rejected before writing.
+public_symlink_home=$(new_home public-symlink)
+outside_pub="$tmpdir/outside-public-key.pub"
+mkdir -p "$public_symlink_home/.ssh/public-keys"
+printf 'outside-original
+' > "$outside_pub"
+ln -s "$outside_pub" "$public_symlink_home/.ssh/public-keys/example_work_key.pub"
+: > "$bw_log"
+if ! public_symlink_output=$(run_refresh "$public_symlink_home" work 2>&1); then
+  echo "expected symlinked public key hint path to skip with exit 0" >&2
+  echo "$public_symlink_output" >&2
+  exit 1
+fi
+if [[ "$public_symlink_output" != *"warn: refusing to write SSH key through symlinked path component"* ]]; then
+  echo "expected public-key symlink warning, got: $public_symlink_output" >&2
+  exit 1
+fi
+assert_contains "$outside_pub" "outside-original"
+if grep -q -- "ssh-ed25519 AAAA-work" "$outside_pub"; then
+  echo "public key hint write escaped ~/.ssh through a symlink" >&2
+  exit 1
+fi
+if grep -q -- "work-key" "$bw_log"; then
+  echo "bitwarden_agent public hint path should be rejected without fetching private key item" >&2
+  cat "$bw_log" >&2
+  exit 1
+fi
+
 # bitwarden_agent writes public-key hints and config, never private key material.
 work_home=$(new_home work)
 : > "$bw_log"

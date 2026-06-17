@@ -326,8 +326,12 @@ while IFS= read -r host_alias; do
       printf '%s\n' "$private_key" > "$expanded_key_path"
       chmod 600 "$expanded_key_path"
       if [[ -n "$key_public" ]]; then
-        printf '%s\n' "$key_public" > "$expanded_key_path.pub"
-        chmod 644 "$expanded_key_path.pub"
+        expanded_public_key_path="$expanded_key_path.pub"
+        if [[ -L "$expanded_public_key_path" ]]; then
+          die_or_skip "refusing to write SSH public key through symlinked key path: $key_path.pub"
+        fi
+        printf '%s\n' "$key_public" > "$expanded_public_key_path"
+        chmod 644 "$expanded_public_key_path"
       fi
       printf '  IdentityFile %s\n' "$key_path" >> "$config_file"
       ;;
@@ -336,7 +340,8 @@ while IFS= read -r host_alias; do
       if [[ -z "$key_public" ]]; then
         die_or_skip "bitwarden_agent key '$key_name' requires public_key"
       fi
-      public_path="$public_keys_dir/$safe_name.pub"
+      public_path=""
+      ensure_private_path public_path "$HOME/.ssh/public-keys/$safe_name.pub"
       printf '%s\n' "$key_public" > "$public_path"
       chmod 644 "$public_path"
       if [[ -n "$key_path" ]]; then
