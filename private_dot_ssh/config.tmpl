@@ -1,0 +1,10 @@
+# Managed by chezmoi.
+# Private host entries are generated locally by cz-ssh-refresh into ~/.ssh/config.d/.
+
+Include ~/.ssh/config.d/*.conf
+
+Host *
+  AddKeysToAgent yes
+  HashKnownHosts yes
+  ServerAliveInterval 60
+  ServerAliveCountMax 3
