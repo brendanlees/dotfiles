@@ -46,6 +46,7 @@ Library
 !.local/bin/theme
 !.local/bin/headroom-codex-shim
 !.local/bin/headroom-tmux
+!.local/bin/cz-ssh-refresh
 .local/share/fonts
 {{- end }}
 
