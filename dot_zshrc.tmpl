@@ -6,6 +6,10 @@ export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export ESPANSO_CONFIG_DIR="$XDG_CONFIG_HOME/espanso"
 
+# Bitwarden SSH Agent socket used by generated SSH IdentityAgent entries.
+# Keep SSH_AUTH_SOCK under the user's agent manager; do not override it here.
+export BITWARDEN_SSH_AUTH_SOCK="${BITWARDEN_SSH_AUTH_SOCK:-$HOME/.bitwarden-ssh-agent.sock}"
+
 # ------------------------------------------
 # helpers
 # ------------------------------------------

@@ -119,8 +119,10 @@ Setup flow:
 2. Create a private Bitwarden secure note for the SSH manifest.
 3. Re-run `chezmoi init` on personal/work machines and enter the manifest item
    name or id at the `ssh_bw_manifest_item` prompt. Leave it blank to skip.
-4. Run `chezmoi apply`; the non-blocking hook runs `cz-ssh-refresh` after apply.
-   You can also run `cz-ssh-refresh` manually.
+4. Run `chezmoi apply`; on personal/work machines the non-blocking hook runs
+   `cz-ssh-refresh` after apply. You can also run `cz-ssh-refresh` manually.
+   Homelab use currently requires setting `ssh_bw_manifest_item` explicitly and
+   running a manual refresh, or a future hook expansion.
 
 Minimal manifest shape:
 
@@ -181,7 +183,16 @@ Supported key modes:
 - `bitwarden_agent`: `cz-ssh-refresh` never fetches or writes private key
   material. It writes only `~/.ssh/public-keys/<key>.pub` from manifest
   `public_key` and emits SSH config with `IdentityAgent` plus that public-key
-  hint file.
+  hint file. The generated shell environment exports `BITWARDEN_SSH_AUTH_SOCK`
+  with a default of `$HOME/.bitwarden-ssh-agent.sock`, matching Bitwarden's
+  macOS app socket, and does not override `SSH_AUTH_SOCK`.
+
+`bitwarden_agent` is not work-only: the key mode itself is independent of
+scope. Use it for any enabled manifest scope when the host entry and referenced
+key have matching scope and that machine should use Bitwarden SSH Agent for the
+key. The automatic init/apply flow documented above is currently wired for
+personal/work machines; homelab entries need explicit manifest configuration and
+manual `cz-ssh-refresh` until hook coverage expands.
 
 To migrate a key from local files to Bitwarden SSH Agent, import the key into
 Bitwarden, change the manifest key entry from `local_file` to
