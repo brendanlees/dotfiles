@@ -132,17 +132,17 @@ if role_has ephemeral || template_bool_enabled "$template_ephemeral"; then
 fi
 
 manifest_item="${SSH_BW_MANIFEST_ITEM:-$template_manifest_item}"
-if [[ "$manifest_item" == *'{{'* ]]; then
-  manifest_item=""
-fi
+case "$manifest_item" in
+  *"{"*"{"*) manifest_item="" ;;
+esac
 if [[ -z "$manifest_item" ]]; then
   die_or_skip "SSH Bitwarden manifest item is not configured"
 fi
 
 agent_sock_env="${SSH_BW_AGENT_SOCK_ENV:-$template_agent_sock_env}"
-if [[ -z "$agent_sock_env" || "$agent_sock_env" == *'{{'* ]]; then
-  agent_sock_env="BITWARDEN_SSH_AUTH_SOCK"
-fi
+case "$agent_sock_env" in
+  "" | *"{"*"{"*) agent_sock_env="BITWARDEN_SSH_AUTH_SOCK" ;;
+esac
 agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
 
 require_command bw
