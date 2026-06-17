@@ -28,8 +28,10 @@ fi
 
 item_id=${3:-}
 case "$item_id" in
-  manifest)
-    manifest_json=$(cat <<'JSON'
+  manifest|"manifest'quoted")
+    case "${BW_MANIFEST_VARIANT:-default}" in
+      default)
+        manifest_json=$(cat <<'JSON'
 {
   "keys": {
     "example_personal_key": {
@@ -67,6 +69,59 @@ case "$item_id" in
 }
 JSON
 )
+        ;;
+      symlink-path)
+        manifest_json=$(cat <<'JSON'
+{
+  "keys": {
+    "escape_key": {
+      "scope": "personal",
+      "mode": "local_file",
+      "item": "local-key",
+      "path": "~/.ssh/keys/escape/id_ed25519_escape",
+      "public_key": "ssh-ed25519 AAAA-escape escape_key"
+    }
+  },
+  "hosts": {
+    "example-symlink-host": {
+      "scope": "personal",
+      "host": "192.0.2.20",
+      "user": "example",
+      "key": "escape_key"
+    }
+  }
+}
+JSON
+)
+        ;;
+      missing-host)
+        manifest_json=$(cat <<'JSON'
+{
+  "keys": {
+    "example_personal_key": {
+      "scope": "personal",
+      "mode": "local_file",
+      "item": "local-key",
+      "path": "~/.ssh/keys/personal/id_ed25519_example",
+      "public_key": "ssh-ed25519 AAAA-local example_personal_key"
+    }
+  },
+  "hosts": {
+    "example-malformed-host": {
+      "scope": "personal",
+      "user": "example",
+      "key": "example_personal_key"
+    }
+  }
+}
+JSON
+)
+        ;;
+      *)
+        echo "unexpected manifest variant: ${BW_MANIFEST_VARIANT:-}" >&2
+        exit 64
+        ;;
+    esac
     jq -n --arg notes "$manifest_json" '{id:"manifest", notes:$notes}'
     ;;
   local-key)
@@ -133,6 +188,35 @@ run_refresh_without_config() {
     "$refresh_cmd" "$@"
 }
 
+rendered_refresh_cmd="$tmpdir/cz-ssh-refresh-rendered"
+render_data="$tmpdir/render-data.json"
+cat > "$render_data" <<'JSON'
+{
+  "personal": true,
+  "work": false,
+  "homelab": false,
+  "ephemeral": false,
+  "ssh": {
+    "bw_manifest_item": "manifest'quoted",
+    "bw_agent_sock_env": "BITWARDEN_SSH_AUTH_SOCK"
+  }
+}
+JSON
+chezmoi execute-template --override-data-file "$render_data" < "$refresh_cmd" > "$rendered_refresh_cmd"
+chmod +x "$rendered_refresh_cmd"
+
+run_rendered_refresh() {
+  local home_dir=$1
+  local role=$2
+  shift 2
+  HOME="$home_dir" \
+    PATH="$fake_bin:$PATH" \
+    BW_LOG="$bw_log" \
+    CHEZMOI_ROLE="$role" \
+    BITWARDEN_SSH_AUTH_SOCK="$tmpdir/bw-agent.sock" \
+    "$rendered_refresh_cmd" "$@"
+}
+
 assert_contains() {
   local file=$1
   local expected=$2
@@ -173,6 +257,14 @@ if run_refresh_without_config "$config_home" --fail >/tmp/cz-ssh-refresh-strict.
   exit 1
 fi
 
+# Rendered templates shell-quote config values containing single quotes.
+render_home=$(new_home rendered)
+: > "$bw_log"
+run_rendered_refresh "$render_home" personal
+assert_contains "$bw_log" "get item manifest'quoted"
+assert_contains "$render_home/.ssh/config.d/personal.conf" "Host example-personal-host"
+assert_contains "$render_home/.ssh/keys/personal/id_ed25519_example" "fake-local-private-key"
+
 # Missing Bitwarden session skips by default.
 session_home=$(new_home session)
 if ! session_output=$(BW_MODE=missing-session run_refresh "$session_home" personal 2>&1); then
@@ -184,6 +276,25 @@ if [[ "$session_output" != *warn:* ]]; then
   echo "expected missing session warning, got: $session_output" >&2
   exit 1
 fi
+
+# Malformed required host fields warn and skip by default, and fail with --fail.
+malformed_home=$(new_home malformed)
+if ! malformed_output=$(BW_MANIFEST_VARIANT=missing-host run_refresh "$malformed_home" personal 2>&1); then
+  echo "expected malformed manifest to skip with exit 0" >&2
+  echo "$malformed_output" >&2
+  exit 1
+fi
+if [[ "$malformed_output" != *"warn: host 'example-malformed-host' requires field 'host'"* ]]; then
+  echo "expected malformed manifest warning, got: $malformed_output" >&2
+  exit 1
+fi
+assert_not_exists "$malformed_home/.ssh/config.d/personal.conf"
+if BW_MANIFEST_VARIANT=missing-host run_refresh "$malformed_home" personal --fail >/tmp/cz-ssh-refresh-malformed.out 2>&1; then
+  echo "expected --fail with malformed manifest to exit non-zero" >&2
+  cat /tmp/cz-ssh-refresh-malformed.out >&2
+  exit 1
+fi
+assert_contains /tmp/cz-ssh-refresh-malformed.out "error: host 'example-malformed-host' requires field 'host'"
 
 # local_file writes only scoped personal config and restrictive private key files.
 personal_home=$(new_home personal)
@@ -202,6 +313,28 @@ fi
 assert_not_exists "$personal_home/.ssh/config.d/work.conf"
 if grep -q -- "work-key" "$bw_log"; then
   echo "did not expect work key fetch during personal refresh" >&2
+  cat "$bw_log" >&2
+  exit 1
+fi
+
+# Symlinked private-key path components under ~/.ssh are rejected before writing.
+symlink_home=$(new_home symlink)
+outside_keys="$tmpdir/outside-keys"
+mkdir -p "$symlink_home/.ssh/keys" "$outside_keys"
+ln -s "$outside_keys" "$symlink_home/.ssh/keys/escape"
+: > "$bw_log"
+if ! symlink_output=$(BW_MANIFEST_VARIANT=symlink-path run_refresh "$symlink_home" personal 2>&1); then
+  echo "expected symlinked key path to skip with exit 0" >&2
+  echo "$symlink_output" >&2
+  exit 1
+fi
+if [[ "$symlink_output" != *"warn: refusing to write SSH key through symlinked path component"* ]]; then
+  echo "expected symlink warning, got: $symlink_output" >&2
+  exit 1
+fi
+assert_not_exists "$outside_keys/id_ed25519_escape"
+if grep -q -- "local-key" "$bw_log"; then
+  echo "symlinked key path must be rejected before private key item fetch" >&2
   cat "$bw_log" >&2
   exit 1
 fi

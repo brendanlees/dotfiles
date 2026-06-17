@@ -51,8 +51,14 @@ template_personal='{{ if .personal }}true{{ else }}false{{ end }}'
 template_work='{{ if .work }}true{{ else }}false{{ end }}'
 template_homelab='{{ if .homelab }}true{{ else }}false{{ end }}'
 template_ephemeral='{{ if .ephemeral }}true{{ else }}false{{ end }}'
-template_manifest_item='{{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ .ssh.bw_manifest_item }}{{ end }}'
-template_agent_sock_env='{{ if and (hasKey . "ssh") (hasKey .ssh "bw_agent_sock_env") }}{{ .ssh.bw_agent_sock_env }}{{ else }}BITWARDEN_SSH_AUTH_SOCK{{ end }}'
+# {{ $template_manifest_item := "" }}
+# {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ $template_manifest_item = (.ssh.bw_manifest_item | replace "'" "'\\''") }}{{ end }}
+# {{ $template_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" }}
+# {{ if and (hasKey . "ssh") (hasKey .ssh "bw_agent_sock_env") }}{{ $template_agent_sock_env = (.ssh.bw_agent_sock_env | replace "'" "'\\''") }}{{ end }}
+# shellcheck disable=SC2016
+template_manifest_item='{{ $template_manifest_item }}'
+# shellcheck disable=SC2016
+template_agent_sock_env='{{ $template_agent_sock_env }}'
 
 scope_enabled() {
   local scope=$1
@@ -90,20 +96,96 @@ expand_home_path() {
   esac
 }
 
+canonical_dir() {
+  local dir=$1
+  (cd "$dir" 2>/dev/null && pwd -P)
+}
+
+path_has_symlink_component() {
+  local base=$1
+  local target=$2
+  local rel=${target#"$base"/}
+  local current=$base
+  local component
+
+  IFS='/' read -r -a components <<< "$rel"
+  for component in "${components[@]}"; do
+    [[ -n "$component" ]] || continue
+    current="$current/$component"
+    if [[ -L "$current" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 ensure_private_path() {
-  local path=$1
-  local expanded
+  local target_var=$1
+  local path=$2
+  local expanded key_parent ssh_real parent_real
   if ! expanded=$(expand_home_path "$path"); then
     die_or_skip "unsupported SSH key path '$path'; use a path under ~/.ssh"
   fi
   case "$expanded" in
     "$HOME/.ssh"/*)
-      printf '%s\n' "$expanded"
       ;;
     *)
       die_or_skip "refusing to write SSH key outside ~/.ssh: $path"
       ;;
   esac
+  case "${expanded#"$HOME/.ssh"/}" in
+    "" | /* | *//* | . | ./* | */. | */./* | .. | ../* | */.. | */../*)
+      die_or_skip "unsupported SSH key path '$path'; use a normalized path under ~/.ssh"
+      ;;
+  esac
+  if [[ -L "$HOME/.ssh" ]]; then
+    die_or_skip "refusing to write SSH key through symlinked ~/.ssh: $path"
+  fi
+  if path_has_symlink_component "$HOME/.ssh" "$expanded"; then
+    die_or_skip "refusing to write SSH key through symlinked path component: $path"
+  fi
+  key_parent=$(dirname "$expanded")
+  if ! mkdir -p "$key_parent"; then
+    die_or_skip "unable to create SSH key parent for '$path'"
+  fi
+  if path_has_symlink_component "$HOME/.ssh" "$expanded"; then
+    die_or_skip "refusing to write SSH key through symlinked path component: $path"
+  fi
+  if ! ssh_real=$(canonical_dir "$HOME/.ssh"); then
+    die_or_skip "unable to resolve ~/.ssh for SSH key path '$path'"
+  fi
+  if ! parent_real=$(canonical_dir "$key_parent"); then
+    die_or_skip "unable to resolve SSH key parent for '$path'"
+  fi
+  case "$parent_real/" in
+    "$ssh_real"/*)
+      ;;
+    *)
+      die_or_skip "refusing to write SSH key outside canonical ~/.ssh: $path"
+      ;;
+  esac
+  if [[ -L "$expanded" ]]; then
+    die_or_skip "refusing to write SSH key through symlinked key path: $path"
+  fi
+  printf -v "$target_var" '%s' "$expanded"
+}
+
+read_host_required() {
+  local target_var=$1
+  local host_alias=$2
+  local field=$3
+  local value
+  if ! value=$(jq -er --arg host "$host_alias" --arg field "$field" '.hosts[$host][$field] // empty' <<< "$manifest_json"); then
+    die_or_skip "host '$host_alias' requires field '$field'"
+  fi
+  printf -v "$target_var" '%s' "$value"
+}
+
+validate_agent_sock_env() {
+  local name=$1
+  if [[ ! "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    die_or_skip "invalid SSH agent socket environment variable name '$name'"
+  fi
 }
 
 safe_hint_name() {
@@ -143,6 +225,7 @@ agent_sock_env="${SSH_BW_AGENT_SOCK_ENV:-$template_agent_sock_env}"
 case "$agent_sock_env" in
   "" | *"{"*"{"*) agent_sock_env="BITWARDEN_SSH_AUTH_SOCK" ;;
 esac
+validate_agent_sock_env "$agent_sock_env"
 agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
 
 require_command bw
@@ -179,21 +262,24 @@ fi
 
 while IFS= read -r host_alias; do
   [[ -n "$host_alias" ]] || continue
+  host_scope=""
+  host_name=""
+  key_name=""
   case "$host_alias" in
     *[$'\n\r\t ']* | "")
       die_or_skip "invalid SSH host alias '$host_alias'"
       ;;
   esac
 
-  host_scope=$(jq -er --arg host "$host_alias" '.hosts[$host].scope // empty' <<< "$manifest_json")
+  read_host_required host_scope "$host_alias" scope
   if ! scope_enabled "$host_scope"; then
     continue
   fi
 
-  host_name=$(jq -er --arg host "$host_alias" '.hosts[$host].host' <<< "$manifest_json")
+  read_host_required host_name "$host_alias" host
   user_name=$(jq -r --arg host "$host_alias" '.hosts[$host].user // empty' <<< "$manifest_json")
   port=$(jq -r --arg host "$host_alias" '.hosts[$host].port // empty' <<< "$manifest_json")
-  key_name=$(jq -er --arg host "$host_alias" '.hosts[$host].key' <<< "$manifest_json")
+  read_host_required key_name "$host_alias" key
   key_mode=$(jq -r --arg key "$key_name" '.keys[$key].mode // empty' <<< "$manifest_json")
   key_scope=$(jq -r --arg key "$key_name" '.keys[$key].scope // empty' <<< "$manifest_json")
   key_public=$(jq -r --arg key "$key_name" '.keys[$key].public_key // empty' <<< "$manifest_json")
@@ -222,9 +308,9 @@ while IFS= read -r host_alias; do
       if [[ -z "$key_item" || -z "$key_path" ]]; then
         die_or_skip "local_file key '$key_name' requires item and path"
       fi
-      expanded_key_path=$(ensure_private_path "$key_path")
+      expanded_key_path=""
+      ensure_private_path expanded_key_path "$key_path"
       key_parent=$(dirname "$expanded_key_path")
-      mkdir -p "$key_parent"
       chmod 700 "$key_parent" 2>/dev/null || true
       if ! key_item_json=$(bw get item "$key_item" 2>/dev/null); then
         die_or_skip "unable to read SSH key item '$key_item'"
