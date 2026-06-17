@@ -195,3 +195,14 @@ setting is unavailable, `cz-ssh-refresh` prints `warn:` and exits 0 so
 reads; if the CLI is locked, run `export BW_SESSION=$(bw unlock --raw)` and
 retry. Use `cz-ssh-refresh --fail` in explicit checks or CI-like validation when
 missing dependencies or Bitwarden errors should be fatal.
+
+Manual refresh prints concise progress to stderr so slow Bitwarden reads are
+visible without exposing host aliases or item IDs:
+
+```text
+info: checking Bitwarden status
+info: reading SSH Bitwarden manifest
+info: processing SSH hosts
+info: writing SSH config
+info: SSH refresh complete: 21 hosts (7 local-file, 11 Bitwarden Agent, 3 keyless)
+```

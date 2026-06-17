@@ -312,13 +312,33 @@ if run_refresh_without_config "$config_home" --fail >/tmp/cz-ssh-refresh-strict.
   exit 1
 fi
 
-# Rendered templates shell-quote config values containing single quotes.
+# Rendered templates shell-quote config values containing single quotes and show concise progress.
 render_home=$(new_home rendered)
 : > "$bw_log"
-run_rendered_refresh "$render_home" personal
+render_output=$(run_rendered_refresh "$render_home" personal 2>&1)
 assert_contains "$bw_log" "get item manifest'quoted"
 assert_contains "$render_home/.ssh/config.d/personal.conf" "Host example-personal-host"
 assert_contains "$render_home/.ssh/keys/personal/id_ed25519_example" "fake-local-private-key"
+if [[ "$render_output" != *"info: checking Bitwarden status"* ]]; then
+  echo "expected progress output for Bitwarden status, got: $render_output" >&2
+  exit 1
+fi
+if [[ "$render_output" != *"info: reading SSH Bitwarden manifest"* ]]; then
+  echo "expected progress output for manifest read, got: $render_output" >&2
+  exit 1
+fi
+if [[ "$render_output" != *"info: processing SSH hosts"* ]]; then
+  echo "expected progress output for host processing, got: $render_output" >&2
+  exit 1
+fi
+if [[ "$render_output" != *"info: writing SSH config"* ]]; then
+  echo "expected progress output for config write, got: $render_output" >&2
+  exit 1
+fi
+if [[ "$render_output" != *"info: SSH refresh complete: 1 hosts (1 local-file, 0 Bitwarden Agent, 0 keyless)"* ]]; then
+  echo "expected progress summary, got: $render_output" >&2
+  exit 1
+fi
 
 # Locked Bitwarden skips before attempting item reads.
 locked_home=$(new_home locked)

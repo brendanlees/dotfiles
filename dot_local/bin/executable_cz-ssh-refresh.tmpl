@@ -20,6 +20,7 @@ case "${1:-}" in
 esac
 
 warn() { echo "warn: $*" >&2; }
+info() { echo "info: $*" >&2; }
 
 die_or_skip() {
   if [[ "$FAIL_HARD" == true ]]; then
@@ -231,6 +232,7 @@ agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
 require_command bw
 require_command jq
 
+info "checking Bitwarden status"
 if ! bw_status_json=$(bw status --raw 2>/dev/null); then
   die_or_skip "unable to check Bitwarden CLI status; run 'bw login' or 'bw unlock' and export BW_SESSION"
 fi
@@ -266,6 +268,7 @@ for scope in personal work homelab; do
   fi
 done
 
+info "reading SSH Bitwarden manifest"
 if ! manifest_item_json=$(bw get item "$manifest_item" 2>/dev/null); then
   die_or_skip "unable to read SSH Bitwarden manifest item '$manifest_item'"
 fi
@@ -277,6 +280,12 @@ fi
 if ! jq -e '(.keys | type == "object") and (.hosts | type == "object")' <<< "$manifest_json" >/dev/null; then
   die_or_skip "SSH Bitwarden manifest must contain object keys and hosts"
 fi
+
+info "processing SSH hosts"
+host_count=0
+local_key_count=0
+agent_key_count=0
+keyless_count=0
 
 while IFS= read -r host_alias; do
   [[ -n "$host_alias" ]] || continue
@@ -294,6 +303,8 @@ while IFS= read -r host_alias; do
     continue
   fi
 
+  host_count=$((host_count + 1))
+
   read_host_required host_name "$host_alias" host
   user_name=$(jq -r --arg host "$host_alias" '.hosts[$host].user // empty' <<< "$manifest_json")
   port=$(jq -r --arg host "$host_alias" '.hosts[$host].port // empty' <<< "$manifest_json")
@@ -310,6 +321,7 @@ while IFS= read -r host_alias; do
   fi
 
   if [[ -z "$key_name" ]]; then
+    keyless_count=$((keyless_count + 1))
     options=$(jq -r --arg host "$host_alias" '.hosts[$host].options // {} | to_entries[] | [.key, (.value | tostring)] | @tsv' <<< "$manifest_json")
     append_option_lines "$config_file" "$host_alias" "$options"
     printf '\n' >> "$config_file"
@@ -331,6 +343,7 @@ while IFS= read -r host_alias; do
 
   case "$key_mode" in
     local_file)
+      local_key_count=$((local_key_count + 1))
       if [[ -z "$key_item" || -z "$key_path" ]]; then
         die_or_skip "local_file key '$key_name' requires item and path"
       fi
@@ -362,6 +375,7 @@ while IFS= read -r host_alias; do
       printf '  IdentityFile %s\n' "$key_path" >> "$config_file"
       ;;
     bitwarden_agent)
+      agent_key_count=$((agent_key_count + 1))
       safe_name=$(safe_hint_name "$key_name")
       if [[ -z "$key_public" ]]; then
         die_or_skip "bitwarden_agent key '$key_name' requires public_key"
@@ -388,9 +402,11 @@ while IFS= read -r host_alias; do
   printf '\n' >> "$config_file"
 done < <(jq -r '.hosts | keys[]' <<< "$manifest_json")
 
+info "writing SSH config"
 for scope in personal work homelab; do
   if [[ -f "$tmpdir/$scope.conf" ]]; then
     mv "$tmpdir/$scope.conf" "$config_dir/$scope.conf"
     chmod 600 "$config_dir/$scope.conf"
   fi
 done
+info "SSH refresh complete: $host_count hosts ($local_key_count local-file, $agent_key_count Bitwarden Agent, $keyless_count keyless)"
