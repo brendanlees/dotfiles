@@ -27,34 +27,34 @@ Use JSON in the Bitwarden secure note body (`.notes`) to avoid adding a YAML par
 ```json
 {
   "keys": {
-    "homelab_admin": {
+    "example_personal_key": {
       "scope": "personal",
       "mode": "local_file",
-      "item": "bw-key-local",
-      "path": "~/.ssh/keys/personal/id_ed25519_homelab",
-      "public_key": "ssh-ed25519 AAAA-local homelab_admin"
+      "item": "example-local-key-item",
+      "path": "~/.ssh/keys/personal/id_ed25519_example",
+      "public_key": "ssh-ed25519 AAAA-local example_personal_key"
     },
-    "work_main": {
+    "example_work_key": {
       "scope": "work",
       "mode": "bitwarden_agent",
-      "item": "bw-key-work",
-      "public_key": "ssh-ed25519 AAAA-work work_main"
+      "item": "example-work-key-item",
+      "public_key": "ssh-ed25519 AAAA-work example_work_key"
     }
   },
   "hosts": {
-    "pve1": {
+    "example-personal-host": {
       "scope": "personal",
-      "host": "10.0.0.10",
-      "user": "root",
+      "host": "192.0.2.10",
+      "user": "example",
       "port": 22,
-      "key": "homelab_admin",
+      "key": "example_personal_key",
       "options": { "IdentitiesOnly": "yes" }
     },
-    "work-bastion": {
+    "example-work-host": {
       "scope": "work",
-      "host": "work.example.internal",
-      "user": "brendan",
-      "key": "work_main",
+      "host": "work.example.invalid",
+      "user": "example",
+      "key": "example_work_key",
       "options": { "IdentitiesOnly": "yes" }
     }
   }
@@ -189,11 +189,11 @@ Set `BW_MODE=missing-session`, run refresh, and require warning output containin
 Run with `CHEZMOI_ROLE=personal` and assert:
 
 ```text
-~/.ssh/config.d/personal.conf contains Host pve1
-~/.ssh/config.d/personal.conf contains HostName 10.0.0.10
-~/.ssh/config.d/personal.conf contains IdentityFile ~/.ssh/keys/personal/id_ed25519_homelab
-~/.ssh/keys/personal/id_ed25519_homelab contains fake-local-private-key
-~/.ssh/keys/personal/id_ed25519_homelab mode is 600
+~/.ssh/config.d/personal.conf contains Host example-personal-host
+~/.ssh/config.d/personal.conf contains HostName 192.0.2.10
+~/.ssh/config.d/personal.conf contains IdentityFile ~/.ssh/keys/personal/id_ed25519_example
+~/.ssh/keys/personal/id_ed25519_example contains fake-local-private-key
+~/.ssh/keys/personal/id_ed25519_example mode is 600
 ```
 
 - [ ] **Step 4: Assert `bitwarden_agent` behavior**
@@ -201,17 +201,17 @@ Run with `CHEZMOI_ROLE=personal` and assert:
 Run with `CHEZMOI_ROLE=work` and assert:
 
 ```text
-~/.ssh/config.d/work.conf contains Host work-bastion
+~/.ssh/config.d/work.conf contains Host example-work-host
 ~/.ssh/config.d/work.conf contains IdentityAgent $BITWARDEN_SSH_AUTH_SOCK
-~/.ssh/config.d/work.conf contains IdentityFile ~/.ssh/public-keys/work_main.pub
-~/.ssh/public-keys/work_main.pub contains ssh-ed25519 AAAA-work work_main
+~/.ssh/config.d/work.conf contains IdentityFile ~/.ssh/public-keys/example_work_key.pub
+~/.ssh/public-keys/example_work_key.pub contains ssh-ed25519 AAAA-work example_work_key
 no work private key file is written
 work private key fixture text should-not-be-written appears nowhere under ~/.ssh
 ```
 
 - [ ] **Step 5: Assert stale local private key warning**
 
-Create `~/.ssh/keys/work/id_ed25519_work`, run work refresh where manifest has `mode: bitwarden_agent` and a legacy `path`, then assert stderr contains `local private key still exists`.
+Create `~/.ssh/keys/work/id_ed25519_example_work`, run work refresh where manifest has `mode: bitwarden_agent` and a legacy `path`, then assert stderr contains `local private key still exists`.
 
 - [ ] **Step 6: Verify red test**
 
