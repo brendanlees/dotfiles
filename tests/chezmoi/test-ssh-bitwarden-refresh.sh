@@ -16,6 +16,25 @@ set -euo pipefail
 
 printf '%s\n' "$*" >> "${BW_LOG:?}"
 
+if [[ "${1:-}" == "status" && "${2:-}" == "--raw" ]]; then
+  case "${BW_MODE:-unlocked}" in
+    locked)
+      printf '{"status":"locked"}
+'
+      exit 0
+      ;;
+    missing-session)
+      echo "not logged in" >&2
+      exit 1
+      ;;
+    *)
+      printf '{"status":"unlocked"}
+'
+      exit 0
+      ;;
+  esac
+fi
+
 if [[ "${BW_MODE:-}" == "missing-session" ]]; then
   echo "not logged in" >&2
   exit 1
@@ -300,6 +319,22 @@ run_rendered_refresh "$render_home" personal
 assert_contains "$bw_log" "get item manifest'quoted"
 assert_contains "$render_home/.ssh/config.d/personal.conf" "Host example-personal-host"
 assert_contains "$render_home/.ssh/keys/personal/id_ed25519_example" "fake-local-private-key"
+
+# Locked Bitwarden skips before attempting item reads.
+locked_home=$(new_home locked)
+: > "$bw_log"
+if ! locked_output=$(BW_MODE=locked run_refresh "$locked_home" personal 2>&1); then
+  echo "expected locked Bitwarden to skip with exit 0" >&2
+  echo "$locked_output" >&2
+  exit 1
+fi
+if [[ "$locked_output" != *"warn: Bitwarden CLI is locked"* ]]; then
+  echo "expected locked Bitwarden warning, got: $locked_output" >&2
+  exit 1
+fi
+assert_contains "$bw_log" "status --raw"
+assert_not_contains "$bw_log" "get item"
+assert_not_exists "$locked_home/.ssh/config.d/personal.conf"
 
 # Missing Bitwarden session skips by default.
 session_home=$(new_home session)

@@ -191,6 +191,7 @@ exists, refresh warns but does not delete it.
 
 Refresh is intentionally non-blocking: if Bitwarden, `jq`, or the manifest
 setting is unavailable, `cz-ssh-refresh` prints `warn:` and exits 0 so
-`chezmoi apply` can continue. Use `cz-ssh-refresh --fail` in explicit checks or
-CI-like validation when missing dependencies or Bitwarden errors should be
-fatal.
+`chezmoi apply` can continue. The helper checks `bw status --raw` before item
+reads; if the CLI is locked, run `export BW_SESSION=$(bw unlock --raw)` and
+retry. Use `cz-ssh-refresh --fail` in explicit checks or CI-like validation when
+missing dependencies or Bitwarden errors should be fatal.

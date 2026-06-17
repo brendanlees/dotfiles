@@ -231,6 +231,24 @@ agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
 require_command bw
 require_command jq
 
+if ! bw_status_json=$(bw status --raw 2>/dev/null); then
+  die_or_skip "unable to check Bitwarden CLI status; run 'bw login' or 'bw unlock' and export BW_SESSION"
+fi
+bw_status=$(jq -r '.status // empty' <<< "$bw_status_json" 2>/dev/null || true)
+case "$bw_status" in
+  unlocked)
+    ;;
+  locked)
+    die_or_skip "Bitwarden CLI is locked; run 'bw unlock' and export BW_SESSION"
+    ;;
+  unauthenticated)
+    die_or_skip "Bitwarden CLI is not logged in; run 'bw login'"
+    ;;
+  *)
+    die_or_skip "Bitwarden CLI is not unlocked (status: ${bw_status:-unknown})"
+    ;;
+esac
+
 ssh_dir="$HOME/.ssh"
 config_dir="$ssh_dir/config.d"
 keys_dir="$ssh_dir/keys"
