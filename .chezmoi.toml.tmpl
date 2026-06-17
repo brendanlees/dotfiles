@@ -85,6 +85,20 @@
 {{-   $git_email = promptStringOnce . "git_email" "Git email" -}}
 {{- end -}}
 
+# --- optional ssh/bitwarden manifest settings ---
+{{- $ssh_bw_manifest_item := "" -}}
+{{- $ssh_bw_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" -}}
+{{- if and (or $personal $work) (not $ephemeral) -}}
+{{-   if and (hasKey . "ssh_bw_manifest_item") .ssh_bw_manifest_item -}}
+{{-     $ssh_bw_manifest_item = .ssh_bw_manifest_item -}}
+{{-   else if stdinIsATTY -}}
+{{-     $ssh_bw_manifest_item = promptStringOnce . "ssh_bw_manifest_item" "Bitwarden SSH manifest item id/name (blank to skip)" -}}
+{{-   end -}}
+{{-   if and (hasKey . "ssh_bw_agent_sock_env") .ssh_bw_agent_sock_env -}}
+{{-     $ssh_bw_agent_sock_env = .ssh_bw_agent_sock_env -}}
+{{-   end -}}
+{{- end -}}
+
 
 # ------------------------------------------
 # global vars / data
@@ -98,6 +112,10 @@
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
+
+[data.ssh]
+  bw_manifest_item = {{ $ssh_bw_manifest_item | quote }}
+  bw_agent_sock_env = {{ $ssh_bw_agent_sock_env | quote }}
 
 # --- git ---
 {{- if and (not $personal) $work }}
