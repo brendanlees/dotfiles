@@ -9,6 +9,7 @@ hr-env() {
     export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
     export HEADROOM_STATS_INTERVAL="${HEADROOM_STATS_INTERVAL:-300}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
+    export HEADROOM_SAVINGS_PATH="${HEADROOM_SAVINGS_PATH:-$HEADROOM_WORKSPACE_DIR/proxy_savings.json}"
     mkdir -p "$HEADROOM_WORKSPACE_DIR"
 }
 
@@ -32,6 +33,30 @@ hr-codex-shim-active() {
     hr-env
     command -v curl >/dev/null 2>&1 || return 127
     curl -fsS "$(hr-codex-shim-url)/health" >/dev/null 2>&1
+}
+
+hr-status() {
+    hr-env
+    printf 'Headroom status\n'
+    printf '  proxy:      '
+    if hr-proxy-active; then
+        printf 'active at %s\n' "$(hr-proxy-url)"
+    else
+        printf 'not running at %s\n' "$(hr-proxy-url)"
+    fi
+    printf '  codex shim: '
+    if hr-codex-shim-active; then
+        printf 'active at %s\n' "$(hr-codex-shim-url)"
+    else
+        printf 'not running at %s\n' "$(hr-codex-shim-url)"
+    fi
+    printf '  workspace:  %s\n' "$HEADROOM_WORKSPACE_DIR"
+    printf '  savings:    %s\n' "$HEADROOM_SAVINGS_PATH"
+
+    if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
+        printf '  tmux windows:\n'
+        tmux list-windows -a -F '    #{session_name}:#{window_index}:#{window_name} panes=#{window_panes}' 2>/dev/null | grep ':headroom ' || printf '    none\n'
+    fi
 }
 
 hr-wait-for-proxy() {
@@ -59,7 +84,9 @@ hr-require-proxy() {
     fi
 
     printf 'Headroom proxy is not running on %s.\n' "$(hr-proxy-url)" >&2
-    printf 'Start it in another tmux pane/window with: hproxy\n' >&2
+    printf 'Start it with: hproxy\n' >&2
+    printf 'Diagnostics:\n' >&2
+    hr-status >&2
     return 1
 }
 
@@ -73,13 +100,13 @@ hr-run-headroom-command() {
     local repo_name="$2"
     shift 2
 
-    if command -v "$installed_name" >/dev/null 2>&1; then
-        command "$installed_name" "$@"
+    if command -v "$repo_name" >/dev/null 2>&1; then
+        command "$repo_name" "$@"
         return $?
     fi
 
-    if command -v "$repo_name" >/dev/null 2>&1; then
-        command "$repo_name" "$@"
+    if command -v "$installed_name" >/dev/null 2>&1; then
+        command "$installed_name" "$@"
         return $?
     fi
 
@@ -119,9 +146,17 @@ hproxy-openrouter() {
 hproxy-foreground() {
     hr-env
 
+    case "${1:-}" in
+        -h|--help|help)
+            headroom proxy --help
+            return $?
+            ;;
+    esac
+
     printf 'Headroom proxy active while this command is running.\n'
     printf 'URL: %s\n' "$(hr-proxy-url)"
     printf 'Workspace: %s\n' "$HEADROOM_WORKSPACE_DIR"
+    printf 'Savings: %s\n' "$HEADROOM_SAVINGS_PATH"
     printf 'Stop: Ctrl-C\n\n'
 
     headroom proxy --port "$HEADROOM_PORT" --no-telemetry "$@"
@@ -130,10 +165,22 @@ hproxy-foreground() {
 hproxy() {
     hr-env
 
+    case "${1:-}" in
+        -h|--help|help)
+            hproxy-foreground --help
+            return $?
+            ;;
+    esac
+
     if [ "${1:-}" = "--foreground" ]; then
         shift
         hproxy-foreground "$@"
         return $?
+    fi
+
+    if hr-proxy-active; then
+        printf 'Headroom proxy already active: %s\n' "$(hr-proxy-url)"
+        return 0
     fi
 
     if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
@@ -177,7 +224,8 @@ hpix() {
     fi
     if ! hr-codex-shim-active; then
         printf 'Headroom Codex shim is not running on %s.\n' "$(hr-codex-shim-url)" >&2
-        printf 'Start it in another tmux pane/window with: headroom-pi-codex-shim\n' >&2
+        printf 'This Pi/Codex OAuth path is bespoke and requires the local shim.\n' >&2
+        printf 'Start it with: headroom-pi-codex-shim\n' >&2
         return 1
     fi
     pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.4-mini}" --models "${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.4-mini,headroom-codex-oauth/gpt-5.5}" "$@"

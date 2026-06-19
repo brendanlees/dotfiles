@@ -17,6 +17,21 @@ proxy_color="$(headroom_color_escape "${HEADROOM_PROXY_PANE_COLOR:-}")"
 stats_color="$(headroom_color_escape "${HEADROOM_STATS_PANE_COLOR:-}")"
 shim_color="$(headroom_color_escape "${HEADROOM_SHIM_PANE_COLOR:-}")"
 
+proxy_url="http://127.0.0.1:${HEADROOM_PORT:-8787}"
+existing_headroom_window="$(tmux list-windows -a -F '#{session_name}:#{window_index}:#{window_name}' 2>/dev/null | awk -F: '$3 == "headroom" { print $1 ":" $2; exit }')"
+if command -v curl >/dev/null 2>&1 && curl -fsS "$proxy_url/health" >/dev/null 2>&1; then
+    printf 'Headroom proxy already active: %s\n' "$proxy_url"
+    if [ -n "$existing_headroom_window" ]; then
+        tmux switch-client -t "$existing_headroom_window" 2>/dev/null || true
+    fi
+    exit 0
+fi
+
+if [ -n "$existing_headroom_window" ]; then
+    printf 'Removing stale Headroom tmux window: %s\n' "$existing_headroom_window" >&2
+    tmux kill-window -t "$existing_headroom_window" 2>/dev/null || true
+fi
+
 proxy_cmd="printf ${(q)proxy_color}; source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
 shim_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
 stats_cmd="printf ${(q)stats_color}; source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
