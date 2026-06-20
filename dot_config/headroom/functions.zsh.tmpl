@@ -142,7 +142,7 @@ hr-run-headroom-command() {
     command "$installed_name" "$@"
 }
 
-headroom-pi-codex-shim() {
+hr-codex-shim() {
     hr-env
     hr-wait-for-codex-proxy || return $?
 
@@ -154,25 +154,25 @@ headroom-pi-codex-shim() {
     hr-run-headroom-command headroom-codex-shim executable_headroom-codex-shim "$HEADROOM_CODEX_SHIM_PORT" "$(hr-codex-proxy-url)"
 }
 
-headroom-watch-stats() {
+hr-watch-stats() {
     hr-env
     if command -v watch >/dev/null 2>&1; then
-        watch -n "$HEADROOM_STATS_INTERVAL" hstats
+        watch -n "$HEADROOM_STATS_INTERVAL" hr-stats
         return $?
     fi
 
     while true; do
         clear
-        hstats
+        hr-stats
         sleep "$HEADROOM_STATS_INTERVAL"
     done
 }
 
-hproxy-openrouter() {
-    hproxy --openai-api-url https://openrouter.ai/api/v1 "$@"
+hr-proxy-pi() {
+    hr-proxy-claude --openai-api-url https://openrouter.ai/api/v1 "$@"
 }
 
-hproxy-codex-foreground() {
+hr-proxy-codex() {
     hr-env
 
     case "${1:-}" in
@@ -189,7 +189,7 @@ hproxy-codex-foreground() {
     headroom proxy --port "$HEADROOM_CODEX_PROXY_PORT" --no-telemetry "$@"
 }
 
-hproxy-foreground() {
+hr-proxy-claude-foreground() {
     hr-env
 
     case "${1:-}" in
@@ -208,19 +208,19 @@ hproxy-foreground() {
     headroom proxy --port "$HEADROOM_PORT" --no-telemetry "$@"
 }
 
-hproxy() {
+hr-proxy-claude() {
     hr-env
 
     case "${1:-}" in
         -h|--help|help)
-            hproxy-foreground --help
+            hr-proxy-claude-foreground --help
             return $?
             ;;
     esac
 
     if [ "${1:-}" = "--foreground" ]; then
         shift
-        hproxy-foreground "$@"
+        hr-proxy-claude-foreground "$@"
         return $?
     fi
 
@@ -234,41 +234,41 @@ hproxy() {
         return $?
     fi
 
-    hproxy-foreground "$@"
+    hr-proxy-claude-foreground "$@"
 }
 
-hclaude() {
+hr-claude() {
     hr-env
     hr-require-proxy || return $?
     headroom wrap claude --no-proxy -- "$@"
 }
 
-hcodex() {
+hr-codex() {
     hr-env
     if ! hr-codex-proxy-active; then
         printf 'Headroom Codex proxy is not running on %s.\n' "$(hr-codex-proxy-url)" >&2
-        printf 'Start it with: hproxy-openrouter (starts both OpenRouter and Codex proxies).\n' >&2
+        printf 'Start it with: hr-proxy-pi (starts both OpenRouter and Codex proxies).\n' >&2
         return 1
     fi
     headroom wrap codex --no-proxy --port "$HEADROOM_CODEX_PROXY_PORT" -- "$@"
 }
 
-hpi() {
+hr-pi() {
     hr-env
     hr-require-proxy || return $?
     if ! hr-pi-provider-exists headroom-openrouter; then
         printf 'Pi provider "headroom-openrouter" is not configured yet.\n' >&2
-        printf 'Add it to ~/.pi/agent/models.json before using hpi.\n' >&2
+        printf 'Add it to ~/.pi/agent/models.json before using hr-pi.\n' >&2
         return 1
     fi
     pi --model "${HEADROOM_PI_MODEL:-headroom-openrouter/openai/gpt-5.1-codex-mini}" "$@"
 }
 
-hpix() {
+hr-pix() {
     hr-env
     if ! hr-codex-proxy-active; then
         printf 'Headroom Codex proxy is not running on %s.\n' "$(hr-codex-proxy-url)" >&2
-        printf 'Start it with: hproxy-openrouter (starts both OpenRouter and Codex proxies).\n' >&2
+        printf 'Start it with: hr-proxy-pi (starts both OpenRouter and Codex proxies).\n' >&2
         return 1
     fi
     if ! hr-pi-provider-exists headroom-codex-oauth; then
@@ -279,13 +279,26 @@ hpix() {
     if ! hr-codex-shim-active; then
         printf 'Headroom Codex shim is not running on %s.\n' "$(hr-codex-shim-url)" >&2
         printf 'This Pi/Codex OAuth path is bespoke and requires the local shim.\n' >&2
-        printf 'Start it with: headroom-pi-codex-shim\n' >&2
+        printf 'Start it with: hr-codex-shim\n' >&2
         return 1
     fi
     pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.4-mini}" --models "${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.4-mini,headroom-codex-oauth/gpt-5.5}" "$@"
 }
 
-hstats() {
+hr-stats() {
     hr-env
     headroom perf "$@"
 }
+
+# Legacy compatibility wrappers. Prefer the hr-* commands above.
+headroom-pi-codex-shim() { hr-codex-shim "$@"; }
+headroom-watch-stats() { hr-watch-stats "$@"; }
+hproxy-openrouter() { hr-proxy-pi "$@"; }
+hproxy-codex-foreground() { hr-proxy-codex "$@"; }
+hproxy-foreground() { hr-proxy-claude-foreground "$@"; }
+hproxy() { hr-proxy-claude "$@"; }
+hclaude() { hr-claude "$@"; }
+hcodex() { hr-codex "$@"; }
+hpi() { hr-pi "$@"; }
+hpix() { hr-pix "$@"; }
+hstats() { hr-stats "$@"; }

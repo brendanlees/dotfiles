@@ -46,15 +46,15 @@ assert any('select-pane' in line and '-T codex-proxy' in line for line in lines)
 assert any('select-pane' in line and '-T codex-shim' in line for line in lines), joined
 assert any('split-window' in line and '-v' in line for line in lines), joined
 assert any('select-pane' in line and '-T stats' in line for line in lines), joined
-assert 'headroom-watch-stats' in normalized, joined
+assert 'hr-watch-stats' in normalized, joined
 assert 'select-layout even-horizontal' not in joined, joined
 stats_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '-T stats' in line)
 codex_proxy_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '-T codex-proxy' in line)
 shim_idx = next(i for i, line in enumerate(lines) if 'select-pane' in line and '-T codex-shim' in line)
 assert stats_idx < codex_proxy_idx < shim_idx, joined
-assert 'hproxy --foreground' in normalized and '--openai-api-url https://example.invalid/v1' in normalized, joined
-assert 'hproxy-codex-foreground' in normalized, joined
-assert 'headroom-pi-codex-shim' in normalized, joined
+assert 'hr-proxy-claude --foreground' in normalized and '--openai-api-url https://example.invalid/v1' in normalized, joined
+assert 'hr-proxy-codex' in normalized, joined
+assert 'hr-codex-shim' in normalized, joined
 
 assert '38;2;101;133;148m' in unescaped, joined  # kanagawa-dragon primary -> proxy
 assert '38;2;138;154;123m' in unescaped, joined  # kanagawa-dragon success -> stats
@@ -62,7 +62,7 @@ assert '38;2;162;146;163m' in unescaped, joined  # kanagawa-dragon secondary -> 
 PY
 
 : > "$LOG"
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hproxy --help"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hr-proxy-claude --help"
 python3 - "$LOG" <<'PY'
 import sys
 lines=open(sys.argv[1]).read().splitlines()
@@ -71,7 +71,7 @@ assert lines == ['headroom proxy --help'], joined
 PY
 
 : > "$LOG"
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' zsh -fc "source '$HELPER'; hproxy"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' zsh -fc "source '$HELPER'; hr-proxy-pi"
 python3 - "$LOG" <<'PY'
 import sys
 lines=open(sys.argv[1]).read().splitlines()

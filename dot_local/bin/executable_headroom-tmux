@@ -37,10 +37,10 @@ if [ -n "$existing_headroom_window" ]; then
     tmux kill-window -t "$existing_headroom_window" 2>/dev/null || true
 fi
 
-proxy_cmd="printf ${(q)proxy_color}; source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
-codex_proxy_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; hproxy-codex-foreground; exec zsh -l"
-shim_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
-stats_cmd="printf ${(q)stats_color}; source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
+proxy_cmd="printf ${(q)proxy_color}; source ${(q)headroom_alias}; hr-proxy-claude --foreground ${proxy_args}; exec zsh -l"
+codex_proxy_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; hr-proxy-codex; exec zsh -l"
+shim_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; hr-codex-shim; exec zsh -l"
+stats_cmd="printf ${(q)stats_color}; source ${(q)headroom_alias}; hr-watch-stats; exec zsh -l"
 
 tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
 tmux select-pane -T proxy

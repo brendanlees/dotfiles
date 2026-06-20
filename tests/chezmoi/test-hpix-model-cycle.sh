@@ -24,7 +24,7 @@ printf '%s\n' "$*" > "$PI_STUB_LOG"
 SH
 chmod +x "$BIN/pi"
 
-PATH="$BIN:$PATH" PI_STUB_LOG="$LOG" zsh -fc "source '$HELPER'; HEADROOM_PORT=18881 HEADROOM_CODEX_SHIM_PORT=18882 hpix --no-session -p test"
+PATH="$BIN:$PATH" PI_STUB_LOG="$LOG" zsh -fc "source '$HELPER'; HEADROOM_PORT=18881 HEADROOM_CODEX_SHIM_PORT=18882 hr-pix --no-session -p test"
 
 python3 - "$LOG" <<'PY'
 import sys
