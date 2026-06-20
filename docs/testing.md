@@ -2,7 +2,7 @@
 
 ## headroom
 
-Headroom-specific wrapper tests live under `tests/chezmoi/test-headroom*.sh` and `tests/chezmoi/test-hr-pix*.sh`. Runtime test steps are documented in [headroom](./headroom.md).
+headroom-specific wrapper tests live under `tests/chezmoi/test-headroom*.sh` and `tests/chezmoi/test-hr-pix*.sh`. runtime test steps are documented in [agentic tooling](agentic-tooling.md#headroom).
 
 ## automated ci
 
