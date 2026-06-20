@@ -107,15 +107,26 @@ function Test-SafeHintName([string]$Name) {
     if ($Name -notmatch '^[A-Za-z0-9._-]+$') { Stop-OrSkip "invalid SSH key name '$Name'" }
     return $Name
 }
+function Test-OptionSupported([string]$Name) {
+    switch ($Name.ToLowerInvariant()) {
+        'usekeychain' { return ($TemplateOS -eq 'darwin') }
+        default { return $true }
+    }
+}
+
 function Add-OptionLines([string]$ConfigFile, $OptionsObject) {
     if ($null -eq $OptionsObject) { return }
-    foreach ($prop in $OptionsObject.PSObject.Properties) { Add-Content -Path $ConfigFile -Value ("  {0} {1}" -f $prop.Name, [string]$prop.Value) }
+    foreach ($prop in $OptionsObject.PSObject.Properties) {
+        if (-not (Test-OptionSupported $prop.Name)) { continue }
+        Add-Content -Path $ConfigFile -Value ("  {0} {1}" -f $prop.Name, [string]$prop.Value)
+    }
 }
 
 $TemplatePersonal = {{ if .personal }}$true{{ else }}$false{{ end }}
 $TemplateWork = {{ if .work }}$true{{ else }}$false{{ end }}
 $TemplateHomelab = {{ if .homelab }}$true{{ else }}$false{{ end }}
 $TemplateEphemeral = {{ if .ephemeral }}$true{{ else }}$false{{ end }}
+$TemplateOS = {{ .chezmoi.os | quote }}
 # {{ $template_manifest_item := "" }}
 # {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ $template_manifest_item = .ssh.bw_manifest_item }}{{ end }}
 # {{ $template_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" }}

@@ -52,6 +52,7 @@ template_personal='{{ if .personal }}true{{ else }}false{{ end }}'
 template_work='{{ if .work }}true{{ else }}false{{ end }}'
 template_homelab='{{ if .homelab }}true{{ else }}false{{ end }}'
 template_ephemeral='{{ if .ephemeral }}true{{ else }}false{{ end }}'
+template_os='{{ .chezmoi.os }}'
 # {{ $template_manifest_item := "" }}
 # {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ $template_manifest_item = (.ssh.bw_manifest_item | replace "'" "'\\''") }}{{ end }}
 # {{ $template_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" }}
@@ -199,14 +200,28 @@ safe_hint_name() {
   printf '%s\n' "$name"
 }
 
+option_supported() {
+  local name=$1
+  case "${name,,}" in
+    usekeychain)
+      [[ "$template_os" == "darwin" ]]
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
 append_option_lines() {
   local config_file=$1
   local host_alias=$2
   local option_lines=$3
   local name value
-  while IFS=$'\t' read -r name value; do
+  while IFS=$'	' read -r name value; do
     [[ -n "$name" ]] || continue
-    printf '  %s %s\n' "$name" "$value" >> "$config_file"
+    option_supported "$name" || continue
+    printf '  %s %s
+' "$name" "$value" >> "$config_file"
   done <<< "$option_lines"
 }
 

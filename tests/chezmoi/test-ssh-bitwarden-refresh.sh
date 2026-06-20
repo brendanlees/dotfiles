@@ -75,14 +75,14 @@ case "$item_id" in
       "user": "example",
       "port": 22,
       "key": "example_personal_key",
-      "options": {"IdentitiesOnly": "yes"}
+      "options": {"IdentitiesOnly": "yes", "UseKeychain": "yes"}
     },
     "example-work-bastion": {
       "scope": "work",
       "host": "work.example.invalid",
       "user": "example",
       "key": "example_work_key",
-      "options": {"IdentitiesOnly": "yes"}
+      "options": {"IdentitiesOnly": "yes", "UseKeychain": "yes"}
     }
   }
 }
@@ -146,7 +146,7 @@ JSON
       "host": "example-tailscale-host.example.ts.net",
       "user": "example",
       "port": 22,
-      "options": {"IdentitiesOnly": "no", "ForwardAgent": "no"}
+      "options": {"IdentitiesOnly": "no", "ForwardAgent": "no", "UseKeychain": "yes"}
     }
   }
 }
@@ -249,6 +249,40 @@ JSON
 chezmoi execute-template --override-data-file "$render_data" < "$refresh_cmd" > "$rendered_refresh_cmd"
 chmod +x "$rendered_refresh_cmd"
 
+rendered_linux_refresh_cmd="$tmpdir/cz-ssh-refresh-linux-rendered"
+rendered_darwin_refresh_cmd="$tmpdir/cz-ssh-refresh-darwin-rendered"
+render_data_linux="$tmpdir/render-data-linux.json"
+render_data_darwin="$tmpdir/render-data-darwin.json"
+cat > "$render_data_linux" <<'JSON'
+{
+  "chezmoi": {"os": "linux"},
+  "personal": true,
+  "work": false,
+  "homelab": false,
+  "ephemeral": false,
+  "ssh": {
+    "bw_manifest_item": "manifest",
+    "bw_agent_sock_env": "BITWARDEN_SSH_AUTH_SOCK"
+  }
+}
+JSON
+cat > "$render_data_darwin" <<'JSON'
+{
+  "chezmoi": {"os": "darwin"},
+  "personal": true,
+  "work": false,
+  "homelab": false,
+  "ephemeral": false,
+  "ssh": {
+    "bw_manifest_item": "manifest",
+    "bw_agent_sock_env": "BITWARDEN_SSH_AUTH_SOCK"
+  }
+}
+JSON
+chezmoi execute-template --override-data-file "$render_data_linux" < "$refresh_cmd" > "$rendered_linux_refresh_cmd"
+chezmoi execute-template --override-data-file "$render_data_darwin" < "$refresh_cmd" > "$rendered_darwin_refresh_cmd"
+chmod +x "$rendered_linux_refresh_cmd" "$rendered_darwin_refresh_cmd"
+
 run_rendered_refresh() {
   local home_dir=$1
   local role=$2
@@ -259,6 +293,19 @@ run_rendered_refresh() {
     CHEZMOI_ROLE="$role" \
     BITWARDEN_SSH_AUTH_SOCK="$tmpdir/bw-agent.sock" \
     "$rendered_refresh_cmd" "$@"
+}
+
+run_specific_rendered_refresh() {
+  local rendered_cmd=$1
+  local home_dir=$2
+  local role=$3
+  shift 3
+  HOME="$home_dir" \
+    PATH="$fake_bin:$PATH" \
+    BW_LOG="$bw_log" \
+    CHEZMOI_ROLE="$role" \
+    BITWARDEN_SSH_AUTH_SOCK="$tmpdir/bw-agent.sock" \
+    "$rendered_cmd" "$@"
 }
 
 assert_contains() {
@@ -340,6 +387,17 @@ if [[ "$render_output" != *"info: SSH refresh complete: 1 hosts (1 local-file, 0
   exit 1
 fi
 
+# Darwin-only SSH options are preserved only for Darwin renders.
+linux_options_home=$(new_home linux-options)
+run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$linux_options_home" personal
+assert_contains "$linux_options_home/.ssh/config.d/personal.conf" "IdentitiesOnly yes"
+assert_not_contains "$linux_options_home/.ssh/config.d/personal.conf" "UseKeychain"
+
+darwin_options_home=$(new_home darwin-options)
+run_specific_rendered_refresh "$rendered_darwin_refresh_cmd" "$darwin_options_home" personal
+assert_contains "$darwin_options_home/.ssh/config.d/personal.conf" "IdentitiesOnly yes"
+assert_contains "$darwin_options_home/.ssh/config.d/personal.conf" "UseKeychain yes"
+
 # Locked Bitwarden skips before attempting item reads.
 locked_home=$(new_home locked)
 : > "$bw_log"
@@ -397,6 +455,7 @@ assert_contains "$keyless_conf" "HostName example-tailscale-host.example.ts.net"
 assert_contains "$keyless_conf" "User example"
 assert_contains "$keyless_conf" "IdentitiesOnly no"
 assert_contains "$keyless_conf" "ForwardAgent no"
+assert_not_contains "$keyless_conf" "UseKeychain"
 assert_not_contains "$keyless_conf" "IdentityFile"
 assert_not_contains "$keyless_conf" "IdentityAgent"
 if grep -q -- "local-key\|work-key" "$bw_log"; then
@@ -414,6 +473,8 @@ personal_key="$personal_home/.ssh/keys/personal/id_ed25519_example"
 assert_contains "$personal_conf" "Host example-personal-host"
 assert_contains "$personal_conf" "HostName 192.0.2.10"
 assert_contains "$personal_conf" "IdentityFile ~/.ssh/keys/personal/id_ed25519_example"
+assert_contains "$personal_conf" "IdentitiesOnly yes"
+assert_not_contains "$personal_conf" "UseKeychain"
 assert_contains "$personal_key" "fake-local-private-key"
 if [[ "$(file_mode "$personal_key")" != "600" ]]; then
   echo "expected $personal_key mode 600, got $(file_mode "$personal_key")" >&2
