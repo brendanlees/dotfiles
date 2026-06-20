@@ -6,7 +6,7 @@ set -euo pipefail
 # manifest-item: {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ .ssh.bw_manifest_item | sha256sum }}{{ else }}{{ "" | sha256sum }}{{ end }}
 
 # shellcheck disable=SC2050
-if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work }}" != "true" ]]; then
+if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work .homelab }}" != "true" ]]; then
   exit 0
 fi
 

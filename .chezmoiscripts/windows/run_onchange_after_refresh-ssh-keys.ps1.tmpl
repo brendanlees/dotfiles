@@ -1,0 +1,16 @@
+# managed by chezmoi - refresh Bitwarden-backed SSH config/keys on Windows
+# helper-sha256: {{ includeTemplate "dot_local/bin/executable_cz-ssh-refresh.ps1.tmpl" . | sha256sum }}
+# manifest-item: {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ .ssh.bw_manifest_item | sha256sum }}{{ else }}{{ "" | sha256sum }}{{ end }}
+
+$ErrorActionPreference = 'Stop'
+
+if ('{{ .ephemeral }}' -eq 'true' -or '{{ or .personal .work .homelab }}' -ne 'true') { exit 0 }
+
+$helper = Join-Path $HOME '.local\bin\cz-ssh-refresh.ps1'
+if (-not (Test-Path $helper)) {
+    Write-Warning 'cz-ssh-refresh.ps1 is not installed; skipping SSH refresh'
+    exit 0
+}
+
+& $helper
+if ($LASTEXITCODE -ne 0) { Write-Warning 'SSH refresh failed; continuing chezmoi apply' }

@@ -7,3 +7,6 @@ lazy-lock.json
 ~/Documents/PowerShell
 ~/Documents/WindowsPowerShell
 {{ end }}
+{{ if eq .chezmoi.os "windows" }}
+.local/bin/cz-ssh-refresh
+{{ end }}

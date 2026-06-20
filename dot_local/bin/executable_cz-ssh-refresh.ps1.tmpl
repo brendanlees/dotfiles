@@ -1,0 +1,253 @@
+#!/usr/bin/env pwsh
+$ErrorActionPreference = 'Stop'
+
+$FailHard = $false
+$RunningOnWindows = ($env:OS -eq 'Windows_NT')
+if ($args.Count -gt 0) {
+    switch ($args[0]) {
+        '--fail' { $FailHard = $true }
+        '-h' { Write-Host 'Usage: cz-ssh-refresh [--fail]'; exit 0 }
+        '--help' { Write-Host 'Usage: cz-ssh-refresh [--fail]'; exit 0 }
+        default { Write-Error 'Usage: cz-ssh-refresh [--fail]'; exit 2 }
+    }
+    if ($args.Count -gt 1) { Write-Error 'Usage: cz-ssh-refresh [--fail]'; exit 2 }
+}
+
+function Write-Warn([string]$Message) { Write-Warning $Message }
+function Write-Info([string]$Message) { Write-Host "info: $Message" }
+function Stop-OrSkip([string]$Message) {
+    if ($script:FailHard) { Write-Error "error: $Message"; exit 1 }
+    Write-Warn $Message
+    exit 0
+}
+function Require-Command([string]$Name) {
+    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) { Stop-OrSkip "$Name is required for SSH Bitwarden refresh" }
+}
+function Test-RoleHas([string]$Scope) {
+    $role = [string]$env:CHEZMOI_ROLE
+    return (",$role," -like "*,$Scope,*")
+}
+function Test-ScopeEnabled([string]$Scope) {
+    switch ($Scope) {
+        'personal' { return ((Test-RoleHas personal) -or $TemplatePersonal) }
+        'work' { return ((Test-RoleHas work) -or $TemplateWork) }
+        'homelab' { return ((Test-RoleHas homelab) -or $TemplateHomelab) }
+        default { return $false }
+    }
+}
+function Get-Prop($Object, [string]$Name, $Default = '') {
+    if ($null -eq $Object) { return $Default }
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($null -eq $prop -or $null -eq $prop.Value) { return $Default }
+    return $prop.Value
+}
+function Convert-JsonOrSkip([string]$Json, [string]$Message) {
+    try { return ($Json | ConvertFrom-Json -ErrorAction Stop) }
+    catch { Stop-OrSkip $Message }
+}
+function Invoke-ExternalText([string]$Command, [string[]]$Arguments) {
+    $output = & $Command @Arguments 2>$null
+    if ($LASTEXITCODE -ne 0) { return $null }
+    return ($output -join "`n")
+}
+function Expand-HomePath([string]$Path) {
+    if ($Path -eq '~') { return $HOME }
+    if ($Path -like '~/*' -or $Path -like '~\*') { return (Join-Path $HOME $Path.Substring(2)) }
+    if ($Path.StartsWith($HOME, [StringComparison]::OrdinalIgnoreCase)) { return $Path }
+    return $null
+}
+function Test-ReparsePoint([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+    return [bool]((Get-Item -LiteralPath $Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)
+}
+function Test-PathHasReparseComponent([string]$Base, [string]$Target) {
+    $baseFull = [IO.Path]::GetFullPath($Base).TrimEnd('\','/')
+    $targetFull = [IO.Path]::GetFullPath($Target)
+    if (-not $targetFull.StartsWith($baseFull, [StringComparison]::OrdinalIgnoreCase)) { return $true }
+    $relative = $targetFull.Substring($baseFull.Length).TrimStart('\','/')
+    if (-not $relative) { return $false }
+    $current = $baseFull
+    foreach ($component in ($relative -split '[\\/]')) {
+        if (-not $component) { continue }
+        $current = Join-Path $current $component
+        if (Test-ReparsePoint $current) { return $true }
+    }
+    return $false
+}
+function Ensure-PrivatePath([string]$Path) {
+    $expanded = Expand-HomePath $Path
+    if (-not $expanded) { Stop-OrSkip "unsupported SSH key path '$Path'; use a path under ~/.ssh" }
+    $sshRoot = [IO.Path]::GetFullPath((Join-Path $HOME '.ssh')).TrimEnd('\','/')
+    $full = [IO.Path]::GetFullPath($expanded)
+    if (-not ($full.StartsWith($sshRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase))) {
+        Stop-OrSkip "refusing to write SSH key outside ~/.ssh: $Path"
+    }
+    if (Test-ReparsePoint $sshRoot) { Stop-OrSkip "refusing to write SSH key through symlinked ~/.ssh: $Path" }
+    $parent = Split-Path -Parent $full
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    if (Test-PathHasReparseComponent $sshRoot $full) { Stop-OrSkip "refusing to write SSH key through symlinked path component: $Path" }
+    return $full
+}
+function Set-PrivateFileAcl([string]$Path) {
+    if ($RunningOnWindows -and (Get-Command icacls -ErrorAction SilentlyContinue)) {
+        $account = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        & icacls $Path /inheritance:r /grant:r "${account}:F" | Out-Null
+    } elseif (Get-Command chmod -ErrorAction SilentlyContinue) { & chmod 600 $Path 2>$null | Out-Null }
+}
+function Set-PublicFileAcl([string]$Path) {
+    if (-not $RunningOnWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { & chmod 644 $Path 2>$null | Out-Null }
+}
+function Read-HostRequired($HostsObject, [string]$HostAlias, [string]$Field) {
+    $hostObject = Get-Prop $HostsObject $HostAlias $null
+    $value = Get-Prop $hostObject $Field ''
+    if ([string]::IsNullOrWhiteSpace([string]$value)) { Stop-OrSkip "host '$HostAlias' requires field '$Field'" }
+    return [string]$value
+}
+function Test-SafeHintName([string]$Name) {
+    if ($Name -notmatch '^[A-Za-z0-9._-]+$') { Stop-OrSkip "invalid SSH key name '$Name'" }
+    return $Name
+}
+function Add-OptionLines([string]$ConfigFile, $OptionsObject) {
+    if ($null -eq $OptionsObject) { return }
+    foreach ($prop in $OptionsObject.PSObject.Properties) { Add-Content -Path $ConfigFile -Value ("  {0} {1}" -f $prop.Name, [string]$prop.Value) }
+}
+
+$TemplatePersonal = {{ if .personal }}$true{{ else }}$false{{ end }}
+$TemplateWork = {{ if .work }}$true{{ else }}$false{{ end }}
+$TemplateHomelab = {{ if .homelab }}$true{{ else }}$false{{ end }}
+$TemplateEphemeral = {{ if .ephemeral }}$true{{ else }}$false{{ end }}
+# {{ $template_manifest_item := "" }}
+# {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ $template_manifest_item = .ssh.bw_manifest_item }}{{ end }}
+# {{ $template_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" }}
+# {{ if and (hasKey . "ssh") (hasKey .ssh "bw_agent_sock_env") }}{{ $template_agent_sock_env = .ssh.bw_agent_sock_env }}{{ end }}
+$TemplateManifestItem = {{ $template_manifest_item | quote }}
+$TemplateAgentSockEnv = {{ $template_agent_sock_env | quote }}
+
+if ((Test-RoleHas ephemeral) -or $TemplateEphemeral) { exit 0 }
+$ManifestItem = if ($env:SSH_BW_MANIFEST_ITEM) { $env:SSH_BW_MANIFEST_ITEM } else { $TemplateManifestItem }
+if ([string]::IsNullOrWhiteSpace($ManifestItem) -or $ManifestItem.Contains('{')) { Stop-OrSkip 'SSH Bitwarden manifest item is not configured' }
+$AgentSockEnv = if ($env:SSH_BW_AGENT_SOCK_ENV) { $env:SSH_BW_AGENT_SOCK_ENV } else { $TemplateAgentSockEnv }
+if ([string]::IsNullOrWhiteSpace($AgentSockEnv) -or $AgentSockEnv.Contains('{')) { $AgentSockEnv = 'BITWARDEN_SSH_AUTH_SOCK' }
+if ($AgentSockEnv -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') { Stop-OrSkip "invalid SSH agent socket environment variable name '$AgentSockEnv'" }
+$AgentSockValue = [Environment]::GetEnvironmentVariable($AgentSockEnv)
+if ([string]::IsNullOrWhiteSpace($AgentSockValue)) { $AgentSockValue = '$' + $AgentSockEnv }
+
+Require-Command bw
+Write-Info 'checking Bitwarden status'
+$bwStatusText = Invoke-ExternalText bw @('status','--raw')
+if ($null -eq $bwStatusText) { Stop-OrSkip "unable to check Bitwarden CLI status; run 'bw login' or 'bw unlock' and export BW_SESSION" }
+if ($bwStatusText.TrimStart().StartsWith('{')) {
+    $bwStatusObject = Convert-JsonOrSkip $bwStatusText 'unable to parse Bitwarden CLI status'
+    $bwStatus = [string](Get-Prop $bwStatusObject 'status' '')
+} else { $bwStatus = $bwStatusText.Trim() }
+switch ($bwStatus) {
+    'unlocked' { }
+    'locked' { Stop-OrSkip "Bitwarden CLI is locked; run 'bw unlock' and export BW_SESSION" }
+    'unauthenticated' { Stop-OrSkip 'Bitwarden CLI is not logged in; run bw login' }
+    default {
+        $displayStatus = if ($bwStatus) { $bwStatus } else { 'unknown' }
+        Stop-OrSkip "Bitwarden CLI is not unlocked (status: $displayStatus)"
+    }
+}
+
+$SshDir = Join-Path $HOME '.ssh'
+$ConfigDir = Join-Path $SshDir 'config.d'
+$KeysDir = Join-Path $SshDir 'keys'
+$PublicKeysDir = Join-Path $SshDir 'public-keys'
+foreach ($dir in @($SshDir, $ConfigDir, $KeysDir, $PublicKeysDir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+$TmpDir = Join-Path ([IO.Path]::GetTempPath()) ("cz-ssh-refresh.{0}" -f ([guid]::NewGuid().ToString('N')))
+New-Item -ItemType Directory -Force -Path $TmpDir | Out-Null
+try {
+    foreach ($scope in @('personal','work','homelab')) {
+        if (Test-ScopeEnabled $scope) { New-Item -ItemType File -Force -Path (Join-Path $TmpDir "$scope.conf") | Out-Null }
+    }
+    Write-Info 'reading SSH Bitwarden manifest'
+    $manifestItemJson = Invoke-ExternalText bw @('get','item',$ManifestItem)
+    if ($null -eq $manifestItemJson) { Stop-OrSkip "unable to read SSH Bitwarden manifest item '$ManifestItem'" }
+    $manifestItemObject = Convert-JsonOrSkip $manifestItemJson "unable to parse SSH Bitwarden manifest item '$ManifestItem'"
+    $manifestNotes = [string](Get-Prop $manifestItemObject 'notes' '')
+    if ([string]::IsNullOrWhiteSpace($manifestNotes)) { Stop-OrSkip 'SSH Bitwarden manifest item notes must contain manifest JSON' }
+    $manifest = Convert-JsonOrSkip $manifestNotes 'SSH Bitwarden manifest item notes must contain manifest JSON'
+    if ($null -eq (Get-Prop $manifest 'keys' $null) -or $null -eq (Get-Prop $manifest 'hosts' $null)) { Stop-OrSkip 'SSH Bitwarden manifest must contain object keys and hosts' }
+
+    Write-Info 'processing SSH hosts'
+    $hostCount = 0; $localKeyCount = 0; $agentKeyCount = 0; $keylessCount = 0
+    $hostsObject = $manifest.hosts; $keysObject = $manifest.keys
+    foreach ($hostAlias in ($hostsObject.PSObject.Properties.Name | Sort-Object)) {
+        if ($hostAlias -match '[\r\n\t ]' -or [string]::IsNullOrWhiteSpace($hostAlias)) { Stop-OrSkip "invalid SSH host alias '$hostAlias'" }
+        $hostScope = Read-HostRequired $hostsObject $hostAlias 'scope'
+        if (-not (Test-ScopeEnabled $hostScope)) { continue }
+        $hostCount++
+        $hostObject = Get-Prop $hostsObject $hostAlias $null
+        $hostName = Read-HostRequired $hostsObject $hostAlias 'host'
+        $userName = [string](Get-Prop $hostObject 'user' '')
+        $port = [string](Get-Prop $hostObject 'port' '')
+        $keyName = [string](Get-Prop $hostObject 'key' '')
+        $configFile = Join-Path $TmpDir "$hostScope.conf"
+        Add-Content -Path $configFile -Value "Host $hostAlias"
+        Add-Content -Path $configFile -Value "  HostName $hostName"
+        if ($userName) { Add-Content -Path $configFile -Value "  User $userName" }
+        if ($port) { Add-Content -Path $configFile -Value "  Port $port" }
+        if (-not $keyName) {
+            $keylessCount++
+            Add-OptionLines $configFile (Get-Prop $hostObject 'options' $null)
+            Add-Content -Path $configFile -Value ''
+            continue
+        }
+        $keyObject = Get-Prop $keysObject $keyName $null
+        $keyMode = [string](Get-Prop $keyObject 'mode' '')
+        $keyScope = [string](Get-Prop $keyObject 'scope' '')
+        $keyPublic = [string](Get-Prop $keyObject 'public_key' '')
+        $keyPath = [string](Get-Prop $keyObject 'path' '')
+        $keyItem = [string](Get-Prop $keyObject 'item' '')
+        if (-not $keyMode) { Stop-OrSkip "host '$hostAlias' references missing key '$keyName'" }
+        if ($keyScope -and $keyScope -ne $hostScope) { Stop-OrSkip "host '$hostAlias' scope does not match key '$keyName' scope" }
+        switch ($keyMode) {
+            'local_file' {
+                $localKeyCount++
+                if (-not $keyItem -or -not $keyPath) { Stop-OrSkip "local_file key '$keyName' requires item and path" }
+                $expandedKeyPath = Ensure-PrivatePath $keyPath
+                $keyItemJson = Invoke-ExternalText bw @('get','item',$keyItem)
+                if ($null -eq $keyItemJson) { Stop-OrSkip "unable to read SSH key item '$keyItem'" }
+                $keyItemObject = Convert-JsonOrSkip $keyItemJson "unable to parse SSH key item '$keyItem'"
+                $sshKeyObject = Get-Prop $keyItemObject 'sshKey' $null
+                $privateKey = [string](Get-Prop $sshKeyObject 'privateKey' '')
+                if (-not $privateKey) { Stop-OrSkip "SSH key item '$keyItem' has no private key" }
+                $itemPublic = [string](Get-Prop $sshKeyObject 'publicKey' '')
+                if (-not $keyPublic) { $keyPublic = $itemPublic }
+                [IO.File]::WriteAllText($expandedKeyPath, $privateKey.TrimEnd("`r","`n") + "`n", [Text.UTF8Encoding]::new($false))
+                Set-PrivateFileAcl $expandedKeyPath
+                if ($keyPublic) {
+                    $publicPath = "$expandedKeyPath.pub"
+                    if (Test-ReparsePoint $publicPath) { Stop-OrSkip "refusing to write SSH public key through symlinked key path: $keyPath.pub" }
+                    [IO.File]::WriteAllText($publicPath, $keyPublic.TrimEnd("`r","`n") + "`n", [Text.UTF8Encoding]::new($false))
+                    Set-PublicFileAcl $publicPath
+                }
+                Add-Content -Path $configFile -Value "  IdentityFile $keyPath"
+            }
+            'bitwarden_agent' {
+                $agentKeyCount++
+                $safeName = Test-SafeHintName $keyName
+                if (-not $keyPublic) { Stop-OrSkip "bitwarden_agent key '$keyName' requires public_key" }
+                $publicPath = Ensure-PrivatePath (Join-Path (Join-Path $HOME '.ssh/public-keys') "$safeName.pub")
+                [IO.File]::WriteAllText($publicPath, $keyPublic.TrimEnd("`r","`n") + "`n", [Text.UTF8Encoding]::new($false))
+                Set-PublicFileAcl $publicPath
+                if ($keyPath) {
+                    $stalePath = Expand-HomePath $keyPath
+                    if ($stalePath -and (Test-Path -LiteralPath $stalePath)) { Write-Warn "local private key still exists for bitwarden_agent key '$keyName': $keyPath" }
+                }
+                Add-Content -Path $configFile -Value "  IdentityAgent $AgentSockValue"
+                Add-Content -Path $configFile -Value "  IdentityFile ~/.ssh/public-keys/$safeName.pub"
+            }
+            default { Stop-OrSkip "unsupported SSH key mode '$keyMode' for key '$keyName'" }
+        }
+        Add-OptionLines $configFile (Get-Prop $hostObject 'options' $null)
+        Add-Content -Path $configFile -Value ''
+    }
+    Write-Info 'writing SSH config'
+    foreach ($scope in @('personal','work','homelab')) {
+        $sourceConfig = Join-Path $TmpDir "$scope.conf"
+        if (Test-Path -LiteralPath $sourceConfig) { Move-Item -Force -Path $sourceConfig -Destination (Join-Path $ConfigDir "$scope.conf") }
+    }
+    Write-Info "SSH refresh complete: $hostCount hosts ($localKeyCount local-file, $agentKeyCount Bitwarden Agent, $keylessCount keyless)"
+} finally { Remove-Item -Recurse -Force -Path $TmpDir -ErrorAction SilentlyContinue }

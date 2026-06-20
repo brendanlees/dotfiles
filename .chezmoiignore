@@ -46,7 +46,9 @@ Library
 !.local/bin/theme
 !.local/bin/headroom-codex-shim
 !.local/bin/headroom-tmux
-{{- if ne .chezmoi.os "windows" }}
+{{- if eq .chezmoi.os "windows" }}
+!.local/bin/cz-ssh-refresh.ps1
+{{- else }}
 !.local/bin/cz-ssh-refresh
 {{- end }}
 .local/share/fonts
@@ -57,6 +59,7 @@ Documents
 AppData
 .glzr
 .config/tacky-borders
+.local/bin/cz-ssh-refresh.ps1
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}

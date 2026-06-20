@@ -16,27 +16,41 @@ ignored_for_os() {
     --no-tty
 }
 
-ssh_script=".chezmoiscripts/refresh-ssh-keys.sh"
-ssh_helper=".local/bin/cz-ssh-refresh"
-
-windows_ignored=$(ignored_for_os windows)
-for path in "$ssh_script" "$ssh_helper"; do
-  if ! grep -Fxq "$path" <<<"$windows_ignored"; then
-    echo "expected Windows to ignore $path" >&2
-    echo "$windows_ignored" >&2
+assert_ignored() {
+  local haystack=$1 path=$2 label=$3
+  if ! grep -Fxq "$path" <<<"$haystack"; then
+    echo "expected $label to ignore $path" >&2
+    echo "$haystack" >&2
     exit 1
   fi
-done
+}
+
+assert_not_ignored() {
+  local haystack=$1 path=$2 label=$3
+  if grep -Fxq "$path" <<<"$haystack"; then
+    echo "expected $label not to ignore $path" >&2
+    echo "$haystack" >&2
+    exit 1
+  fi
+}
+
+posix_runner=".chezmoiscripts/refresh-ssh-keys.sh"
+windows_runner=".chezmoiscripts/windows/refresh-ssh-keys.ps1"
+posix_helper=".local/bin/cz-ssh-refresh"
+windows_helper=".local/bin/cz-ssh-refresh.ps1"
+
+windows_ignored=$(ignored_for_os windows)
+assert_ignored "$windows_ignored" "$posix_runner" windows
+assert_ignored "$windows_ignored" "$posix_helper" windows
+assert_not_ignored "$windows_ignored" "$windows_runner" windows
+assert_not_ignored "$windows_ignored" "$windows_helper" windows
 
 for os in darwin linux; do
   ignored=$(ignored_for_os "$os")
-  for path in "$ssh_script" "$ssh_helper"; do
-    if grep -Fxq "$path" <<<"$ignored"; then
-      echo "expected $os not to ignore $path" >&2
-      echo "$ignored" >&2
-      exit 1
-    fi
-  done
+  assert_not_ignored "$ignored" "$posix_runner" "$os"
+  assert_not_ignored "$ignored" "$posix_helper" "$os"
+  assert_ignored "$ignored" "$windows_runner" "$os"
+  assert_ignored "$ignored" "$windows_helper" "$os"
 done
 
-echo "windows posix ssh refresh ignore ok"
+echo "windows ssh refresh target selection ok"

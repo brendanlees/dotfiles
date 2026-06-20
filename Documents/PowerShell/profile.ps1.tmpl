@@ -9,6 +9,15 @@ $ErrorActionPreference = 'Stop'
 $env:STARSHIP_CONFIG = "$HOME\.config\starship\starship.toml"
 $env:EDITOR = 'nvim'
 
+# chezmoi-managed local helpers (for example cz-ssh-refresh.ps1)
+$localBin = "$HOME\.local\bin"
+if (Test-Path $localBin) {
+    $pathParts = @($env:PATH -split [IO.Path]::PathSeparator | Where-Object { $_ })
+    if ($pathParts -notcontains $localBin) {
+        $env:PATH = $localBin + [IO.Path]::PathSeparator + $env:PATH
+    }
+}
+
 # opentui mouse stream floods terminal parsers; opt out in opencode
 $env:OPENCODE_DISABLE_MOUSE = '1'
 
