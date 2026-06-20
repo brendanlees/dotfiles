@@ -12,14 +12,6 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 
 known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
 
-SSH manifest generation also follows role flags. Hosts and keys with `scope: personal`
-are generated only for personal machines, `scope: work` entries only for work machines,
-and `scope: homelab` entries only for homelab machines. Ephemeral/headless CI roles
-skip SSH refresh. The `local_file` and `bitwarden_agent` key modes are independent of
-scope; `bitwarden_agent` can be used for any enabled scope when the host and referenced
-key have matching scope. The documented automatic init/apply setup currently covers
-personal/work machines; homelab SSH entries require explicit manifest configuration and
-manual refresh, or future hook expansion.
 
 ## skip prompts via flags
 
