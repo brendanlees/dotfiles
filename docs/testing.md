@@ -1,5 +1,9 @@
 # testing
 
+## headroom
+
+Headroom-specific wrapper tests live under `tests/chezmoi/test-headroom*.sh` and `tests/chezmoi/test-hr-pix*.sh`. Runtime test steps are documented in [headroom](./headroom.md).
+
 ## automated ci
 
 every push and pull request runs `.github/workflows/ci.yml`:

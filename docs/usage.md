@@ -1,5 +1,9 @@
 # usage
 
+## headroom wrappers
+
+Headroom proxy and Pi/Codex wrapper usage is documented in [headroom](./headroom.md).
+
 ## updating
 
 pull the latest dotfiles and re-apply:
