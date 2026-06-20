@@ -38,8 +38,3 @@ chezmoi init --apply brendanlees
 
 on first run, choose the machine role. see [scoping](./scoping.md) for non-interactive role setup and ansible usage.
 
-## related docs
-
-- [secrets](./secrets.md) — github token bootstrap, rate limits, and bitwarden cache refresh
-- [ssh](./ssh.md) — ssh config and bitwarden-backed keys
-- [agentic tooling](./agentic-tooling.md) — headroom wrappers and pi/codex routing
