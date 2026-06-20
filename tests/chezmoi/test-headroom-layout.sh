@@ -44,7 +44,7 @@ PATH="$ROOT/dot_local/bin:$TMPDIR/bin:$PATH" HOME="$TMPDIR/home" XDG_CONFIG_HOME
     whence -w \"\$name\" >/dev/null || { echo \"missing command/function: \$name\" >&2; exit 1; }
   done
   for legacy in hproxy hproxy-openrouter hproxy-foreground hproxy-codex-foreground hclaude hcodex hpi hpix hstats headroom-pi-codex-shim headroom-watch-stats; do
-    if whence -w "\$legacy" >/dev/null 2>&1; then
+    if whence -w \"\$legacy\" >/dev/null 2>&1; then
       echo \"legacy command should be absent: \$legacy\" >&2
       exit 1
     fi
