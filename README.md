@@ -1,4 +1,4 @@
-# dotfiles
+k dotfiles
 
 managed by [chezmoi](https://www.chezmoi.io/)
 
@@ -47,7 +47,7 @@ role flags gate which config and packages are applied per machine type.
 
 ## docs
 
-- [usage](docs/usage.md) — updating, re-installing, github token
+- [usage](docs/usage.md) — updating, re-installing, tokens, agentic tool integration
 - [ssh + bitwarden](docs/usage.md#ssh-config-and-keys-via-bitwarden) — local SSH config/key generation from a private Bitwarden manifest
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible
 - [themes](docs/themes.md) — switching theme, adding new themes
