@@ -1,9 +1,5 @@
 # usage
 
-## headroom wrappers
-
-Headroom proxy and Pi/Codex wrapper usage is documented in [headroom](./headroom.md).
-
 ## updating
 
 pull the latest dotfiles and re-apply:
@@ -154,20 +150,20 @@ Minimal manifest shape:
       "user": "example",
       "port": 22,
       "key": "example_personal_key",
-      "options": {"IdentitiesOnly": "yes"}
+      "options": { "IdentitiesOnly": "yes" }
     },
     "example-work-bastion": {
       "scope": "work",
       "host": "work.example.invalid",
       "user": "example",
       "key": "example_work_key",
-      "options": {"IdentitiesOnly": "yes"}
+      "options": { "IdentitiesOnly": "yes" }
     },
     "example-tailscale-host": {
       "scope": "personal",
       "host": "example-tailscale-host.example.ts.net",
       "user": "example",
-      "options": {"IdentitiesOnly": "no"}
+      "options": { "IdentitiesOnly": "no" }
     }
   }
 }
@@ -221,3 +217,7 @@ info: processing SSH hosts
 info: writing SSH config
 info: SSH refresh complete: 21 hosts (7 local-file, 11 Bitwarden Agent, 3 keyless)
 ```
+
+## headroom wrappers
+
+Headroom proxy and Pi/Codex wrapper usage is documented in [headroom](./headroom.md).
