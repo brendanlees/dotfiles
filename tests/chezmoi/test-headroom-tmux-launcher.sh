@@ -31,7 +31,7 @@ exit 0
 SH
 chmod +x "$BIN/headroom"
 
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hproxy --openai-api-url https://example.invalid/v1"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hr-proxy-claude --openai-api-url https://example.invalid/v1"
 
 python3 - "$LOG" <<'PY'
 import sys

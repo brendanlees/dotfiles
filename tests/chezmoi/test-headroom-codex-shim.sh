@@ -54,7 +54,7 @@ curl -fsS "http://127.0.0.1:$FAKE_PORT/health" >/dev/null
 
 PATH="$TMPDIR/bin:$PATH" zsh -fc "
   source '$HELPER'
-  HEADROOM_CODEX_PROXY_PORT=$FAKE_PORT HEADROOM_CODEX_SHIM_PORT=$SHIM_PORT headroom-pi-codex-shim
+  HEADROOM_CODEX_PROXY_PORT=$FAKE_PORT HEADROOM_CODEX_SHIM_PORT=$SHIM_PORT hr-codex-shim
 " &
 SHIM_PID=$!
 

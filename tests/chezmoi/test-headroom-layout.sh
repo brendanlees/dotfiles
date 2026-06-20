@@ -24,8 +24,8 @@ if grep -q "python3 -" "$FACADE" || grep -q "<<'PY'" "$FACADE"; then
   exit 1
 fi
 
-if grep -q '^headroom-pi-codex-shim()' "$FACADE"; then
-  echo 'public command implementations should live in functions.zsh.tmpl, not facade' >&2
+if grep -Eq '^(headroom-pi-codex-shim|headroom-watch-stats|hproxy|hproxy-openrouter|hproxy-foreground|hproxy-codex-foreground|hclaude|hcodex|hpi|hpix|hstats)\(\)' "$FUNCTIONS_FILE"; then
+  echo 'legacy Headroom wrapper commands should not be defined' >&2
   exit 1
 fi
 
@@ -40,10 +40,14 @@ PATH="$ROOT/dot_local/bin:$TMPDIR/bin:$PATH" HOME="$TMPDIR/home" XDG_CONFIG_HOME
     hr-codex-proxy-active hr-codex-shim-active hr-status hr-wait-for-url \
     hr-wait-for-proxy hr-wait-for-codex-proxy hr-require-proxy hr-pi-provider-exists hr-run-headroom-command \
     hr-proxy-claude hr-proxy-pi hr-proxy-claude-foreground hr-proxy-codex \
-    hr-claude hr-codex hr-pi hr-pix hr-stats hr-watch-stats hr-codex-shim \
-    hproxy hproxy-openrouter hproxy-foreground hproxy-codex-foreground hclaude hcodex \
-    headroom-pi-codex-shim hpi hpix hstats headroom-watch-stats; do
+    hr-claude hr-codex hr-pi hr-pix hr-stats hr-watch-stats hr-codex-shim; do
     whence -w \"\$name\" >/dev/null || { echo \"missing command/function: \$name\" >&2; exit 1; }
+  done
+  for legacy in hproxy hproxy-openrouter hproxy-foreground hproxy-codex-foreground hclaude hcodex hpi hpix hstats headroom-pi-codex-shim headroom-watch-stats; do
+    if whence -w "\$legacy" >/dev/null 2>&1; then
+      echo \"legacy command should be absent: \$legacy\" >&2
+      exit 1
+    fi
   done
   command -v executable_headroom-codex-shim >/dev/null
   command -v executable_headroom-tmux >/dev/null

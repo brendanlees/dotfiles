@@ -113,7 +113,7 @@ hr-require-proxy() {
     fi
 
     printf 'Headroom proxy is not running on %s.\n' "$(hr-proxy-url)" >&2
-    printf 'Start it with: hproxy\n' >&2
+    printf 'Start it with: hr-proxy-claude\n' >&2
     printf 'Diagnostics:\n' >&2
     hr-status >&2
     return 1
@@ -290,15 +290,3 @@ hr-stats() {
     headroom perf "$@"
 }
 
-# Legacy compatibility wrappers. Prefer the hr-* commands above.
-headroom-pi-codex-shim() { hr-codex-shim "$@"; }
-headroom-watch-stats() { hr-watch-stats "$@"; }
-hproxy-openrouter() { hr-proxy-pi "$@"; }
-hproxy-codex-foreground() { hr-proxy-codex "$@"; }
-hproxy-foreground() { hr-proxy-claude-foreground "$@"; }
-hproxy() { hr-proxy-claude "$@"; }
-hclaude() { hr-claude "$@"; }
-hcodex() { hr-codex "$@"; }
-hpi() { hr-pi "$@"; }
-hpix() { hr-pix "$@"; }
-hstats() { hr-stats "$@"; }

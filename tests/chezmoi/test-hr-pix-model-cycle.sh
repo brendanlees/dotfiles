@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HELPER="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
-TMPDIR="${TMPDIR:-/tmp}/hpix-model-cycle-test-$$"
+TMPDIR="${TMPDIR:-/tmp}/hr-pix-model-cycle-test-$$"
 BIN="$TMPDIR/bin"
 LOG="$TMPDIR/pi.log"
 mkdir -p "$BIN"
