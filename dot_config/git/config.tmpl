@@ -18,6 +18,18 @@
 
 [push]
   autoSetupRemote = true
+
+[core]
+  pager = hunk pager
+
+[diff]
+  tool = hunk
+
+[difftool]
+  prompt = false
+
+[difftool "hunk"]
+  cmd = hunk difftool "$LOCAL" "$REMOTE" "$MERGED"
 {{- if .personal }}
 
 [includeIf "hasconfig:remote.*.url:*gitea.lab.brendans.cloud*"]
