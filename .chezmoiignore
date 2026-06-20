@@ -46,7 +46,9 @@ Library
 !.local/bin/theme
 !.local/bin/headroom-codex-shim
 !.local/bin/headroom-tmux
+{{- if ne .chezmoi.os "windows" }}
 !.local/bin/cz-ssh-refresh
+{{- end }}
 .local/share/fonts
 {{- end }}
 
@@ -59,6 +61,9 @@ AppData
 
 {{- if eq .chezmoi.os "windows" }}
 .config/alacritty
+# POSIX SSH refresh plumbing is not executable on Windows.
+.chezmoiscripts/refresh-ssh-keys.sh
+.chezmoiscripts/run_onchange_after_refresh-ssh-keys.sh.tmpl
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}
