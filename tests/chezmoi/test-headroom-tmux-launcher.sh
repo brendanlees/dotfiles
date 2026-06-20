@@ -31,7 +31,7 @@ exit 0
 SH
 chmod +x "$BIN/headroom"
 
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hr-proxy-claude --openai-api-url https://example.invalid/v1"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; HEADROOM_PORT=18883 HEADROOM_CODEX_PROXY_PORT=18884 HEADROOM_CODEX_SHIM_PORT=18885 hr-proxy-claude --openai-api-url https://example.invalid/v1"
 
 python3 - "$LOG" <<'PY'
 import sys
@@ -62,6 +62,14 @@ assert '38;2;162;146;163m' in unescaped, joined  # kanagawa-dragon secondary -> 
 PY
 
 : > "$LOG"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" zsh -fc "source '$HELPER'; HEADROOM_CODEX_PROXY_PORT=18889 hr-proxy-codex"
+python3 - "$LOG" <<'PY'
+import sys
+joined='\n'.join(open(sys.argv[1]).read().splitlines())
+assert 'headroom proxy --port 18889 --no-telemetry --no-optimize' in joined, joined
+PY
+
+: > "$LOG"
 PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub zsh -fc "source '$HELPER'; hr-proxy-claude --help"
 python3 - "$LOG" <<'PY'
 import sys
@@ -71,7 +79,7 @@ assert lines == ['headroom proxy --help'], joined
 PY
 
 : > "$LOG"
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' zsh -fc "source '$HELPER'; hr-proxy-pi"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' zsh -fc "source '$HELPER'; HEADROOM_PORT=18883 HEADROOM_CODEX_PROXY_PORT=18884 HEADROOM_CODEX_SHIM_PORT=18885 hr-proxy-pi"
 python3 - "$LOG" <<'PY'
 import sys
 lines=open(sys.argv[1]).read().splitlines()

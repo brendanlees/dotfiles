@@ -7,6 +7,7 @@ hr-env() {
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
     export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
     export HEADROOM_CODEX_PROXY_PORT="${HEADROOM_CODEX_PROXY_PORT:-8789}"
+    export HEADROOM_CODEX_PROXY_OPTIMIZE="${HEADROOM_CODEX_PROXY_OPTIMIZE:-off}"
     export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
     export HEADROOM_STATS_INTERVAL="${HEADROOM_STATS_INTERVAL:-300}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
@@ -68,6 +69,7 @@ hr-status() {
     else
         printf 'not running at %s\n' "$(hr-codex-shim-url)"
     fi
+    printf '  codex optimize: %s\n' "$HEADROOM_CODEX_PROXY_OPTIMIZE"
     printf '  workspace:  %s\n' "$HEADROOM_WORKSPACE_DIR"
     printf '  savings:    %s\n' "$HEADROOM_SAVINGS_PATH"
 
@@ -184,9 +186,15 @@ hr-proxy-codex() {
 
     printf 'Headroom Codex proxy active while this command is running.\n'
     printf 'URL: %s\n' "$(hr-codex-proxy-url)"
+    printf 'Optimize: %s\n' "$HEADROOM_CODEX_PROXY_OPTIMIZE"
     printf 'Stop: Ctrl-C\n\n'
 
-    headroom proxy --port "$HEADROOM_CODEX_PROXY_PORT" --no-telemetry "$@"
+    if [ "$HEADROOM_CODEX_PROXY_OPTIMIZE" = "on" ]; then
+        headroom proxy --port "$HEADROOM_CODEX_PROXY_PORT" --no-telemetry "$@"
+        return $?
+    fi
+
+    headroom proxy --port "$HEADROOM_CODEX_PROXY_PORT" --no-telemetry --no-optimize "$@"
 }
 
 hr-proxy-claude-foreground() {
