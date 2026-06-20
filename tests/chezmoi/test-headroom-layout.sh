@@ -36,9 +36,10 @@ trap 'rm -rf "$TMPDIR"' EXIT
 PATH="$ROOT/dot_local/bin:$TMPDIR/bin:$PATH" HOME="$TMPDIR/home" XDG_CONFIG_HOME="$TMPDIR/home/.config" zsh -fc "
   source '$FACADE'
   for name in \
-    hr-env hr-proxy-url hr-proxy-active hr-codex-shim-url hr-codex-shim-active \
-    hr-status hr-wait-for-proxy hr-require-proxy hr-pi-provider-exists hr-run-headroom-command \
-    hproxy hproxy-openrouter hproxy-foreground hclaude hcodex \
+    hr-env hr-proxy-url hr-proxy-active hr-codex-shim-url hr-codex-proxy-url \
+    hr-codex-proxy-active hr-codex-shim-active hr-status hr-wait-for-url \
+    hr-wait-for-proxy hr-wait-for-codex-proxy hr-require-proxy hr-pi-provider-exists hr-run-headroom-command \
+    hproxy hproxy-openrouter hproxy-foreground hproxy-codex-foreground hclaude hcodex \
     headroom-pi-codex-shim hpi hpix hstats headroom-watch-stats; do
     whence -w \"\$name\" >/dev/null || { echo \"missing command/function: \$name\" >&2; exit 1; }
   done

@@ -6,6 +6,7 @@ hr-env() {
     export HEADROOM_TELEMETRY_WARN=off
     export HEADROOM_PORT="${HEADROOM_PORT:-8787}"
     export HEADROOM_CODEX_SHIM_PORT="${HEADROOM_CODEX_SHIM_PORT:-8788}"
+    export HEADROOM_CODEX_PROXY_PORT="${HEADROOM_CODEX_PROXY_PORT:-8789}"
     export HEADROOM_PROXY_WAIT_SECONDS="${HEADROOM_PROXY_WAIT_SECONDS:-15}"
     export HEADROOM_STATS_INTERVAL="${HEADROOM_STATS_INTERVAL:-300}"
     export HEADROOM_WORKSPACE_DIR="${HEADROOM_WORKSPACE_DIR:-$HOME/.headroom-private}"
@@ -29,6 +30,17 @@ hr-codex-shim-url() {
     printf 'http://127.0.0.1:%s' "$HEADROOM_CODEX_SHIM_PORT"
 }
 
+hr-codex-proxy-url() {
+    hr-env
+    printf 'http://127.0.0.1:%s' "$HEADROOM_CODEX_PROXY_PORT"
+}
+
+hr-codex-proxy-active() {
+    hr-env
+    command -v curl >/dev/null 2>&1 || return 127
+    curl -fsS "$(hr-codex-proxy-url)/health" >/dev/null 2>&1
+}
+
 hr-codex-shim-active() {
     hr-env
     command -v curl >/dev/null 2>&1 || return 127
@@ -43,6 +55,12 @@ hr-status() {
         printf 'active at %s\n' "$(hr-proxy-url)"
     else
         printf 'not running at %s\n' "$(hr-proxy-url)"
+    fi
+    printf '  codex proxy:'
+    if hr-codex-proxy-active; then
+        printf ' active at %s\n' "$(hr-codex-proxy-url)"
+    else
+        printf ' not running at %s\n' "$(hr-codex-proxy-url)"
     fi
     printf '  codex shim: '
     if hr-codex-shim-active; then
@@ -59,21 +77,32 @@ hr-status() {
     fi
 }
 
-hr-wait-for-proxy() {
-    hr-env
+hr-wait-for-url() {
+    local label="$1"
+    local url="$2"
     local waited=0
-    while ! hr-proxy-active; do
+    while ! curl -fsS "$url/health" >/dev/null 2>&1; do
         if [ "$waited" -ge "$HEADROOM_PROXY_WAIT_SECONDS" ]; then
-            printf 'Headroom proxy is not running on %s after %ss.\n' "$(hr-proxy-url)" "$HEADROOM_PROXY_WAIT_SECONDS" >&2
+            printf '%s is not running on %s after %ss.\n' "$label" "$url" "$HEADROOM_PROXY_WAIT_SECONDS" >&2
             return 1
         fi
         if [ "$waited" -eq 0 ]; then
-            printf 'Waiting for Headroom proxy on %s...\n' "$(hr-proxy-url)" >&2
+            printf 'Waiting for %s on %s...\n' "$label" "$url" >&2
         fi
         sleep 1
         waited=$((waited + 1))
     done
-    printf 'Headroom proxy active: %s\n' "$(hr-proxy-url)"
+    printf '%s active: %s\n' "$label" "$url"
+}
+
+hr-wait-for-proxy() {
+    hr-env
+    hr-wait-for-url 'Headroom proxy' "$(hr-proxy-url)"
+}
+
+hr-wait-for-codex-proxy() {
+    hr-env
+    hr-wait-for-url 'Headroom Codex proxy' "$(hr-codex-proxy-url)"
 }
 
 hr-require-proxy() {
@@ -115,14 +144,14 @@ hr-run-headroom-command() {
 
 headroom-pi-codex-shim() {
     hr-env
-    hr-wait-for-proxy || return $?
+    hr-wait-for-codex-proxy || return $?
 
     printf 'Headroom Codex shim active while this command is running.\n'
     printf 'URL: %s\n' "$(hr-codex-shim-url)"
-    printf 'Rewrite: /v1/codex/responses -> %s/v1/responses\n' "$(hr-proxy-url)"
+    printf 'Rewrite: /v1/codex/responses -> %s/v1/responses\n' "$(hr-codex-proxy-url)"
     printf 'Stop: Ctrl-C\n\n'
 
-    hr-run-headroom-command headroom-codex-shim executable_headroom-codex-shim "$HEADROOM_CODEX_SHIM_PORT" "$(hr-proxy-url)"
+    hr-run-headroom-command headroom-codex-shim executable_headroom-codex-shim "$HEADROOM_CODEX_SHIM_PORT" "$(hr-codex-proxy-url)"
 }
 
 headroom-watch-stats() {
@@ -141,6 +170,23 @@ headroom-watch-stats() {
 
 hproxy-openrouter() {
     hproxy --openai-api-url https://openrouter.ai/api/v1 "$@"
+}
+
+hproxy-codex-foreground() {
+    hr-env
+
+    case "${1:-}" in
+        -h|--help|help)
+            headroom proxy --help
+            return $?
+            ;;
+    esac
+
+    printf 'Headroom Codex proxy active while this command is running.\n'
+    printf 'URL: %s\n' "$(hr-codex-proxy-url)"
+    printf 'Stop: Ctrl-C\n\n'
+
+    headroom proxy --port "$HEADROOM_CODEX_PROXY_PORT" --no-telemetry "$@"
 }
 
 hproxy-foreground() {
@@ -199,8 +245,12 @@ hclaude() {
 
 hcodex() {
     hr-env
-    hr-require-proxy || return $?
-    headroom wrap codex --no-proxy -- "$@"
+    if ! hr-codex-proxy-active; then
+        printf 'Headroom Codex proxy is not running on %s.\n' "$(hr-codex-proxy-url)" >&2
+        printf 'Start it with: hproxy-openrouter (starts both OpenRouter and Codex proxies).\n' >&2
+        return 1
+    fi
+    headroom wrap codex --no-proxy --port "$HEADROOM_CODEX_PROXY_PORT" -- "$@"
 }
 
 hpi() {
@@ -216,7 +266,11 @@ hpi() {
 
 hpix() {
     hr-env
-    hr-require-proxy || return $?
+    if ! hr-codex-proxy-active; then
+        printf 'Headroom Codex proxy is not running on %s.\n' "$(hr-codex-proxy-url)" >&2
+        printf 'Start it with: hproxy-openrouter (starts both OpenRouter and Codex proxies).\n' >&2
+        return 1
+    fi
     if ! hr-pi-provider-exists headroom-codex-oauth; then
         printf 'Pi provider "headroom-codex-oauth" is not configured yet.\n' >&2
         printf 'It also needs the local /v1/codex/responses -> /v1/responses shim.\n' >&2

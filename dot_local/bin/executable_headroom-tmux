@@ -18,9 +18,14 @@ stats_color="$(headroom_color_escape "${HEADROOM_STATS_PANE_COLOR:-}")"
 shim_color="$(headroom_color_escape "${HEADROOM_SHIM_PANE_COLOR:-}")"
 
 proxy_url="http://127.0.0.1:${HEADROOM_PORT:-8787}"
+codex_proxy_url="http://127.0.0.1:${HEADROOM_CODEX_PROXY_PORT:-8789}"
+codex_shim_url="http://127.0.0.1:${HEADROOM_CODEX_SHIM_PORT:-8788}"
 existing_headroom_window="$(tmux list-windows -a -F '#{session_name}:#{window_index}:#{window_name}' 2>/dev/null | awk -F: '$3 == "headroom" { print $1 ":" $2; exit }')"
-if command -v curl >/dev/null 2>&1 && curl -fsS "$proxy_url/health" >/dev/null 2>&1; then
-    printf 'Headroom proxy already active: %s\n' "$proxy_url"
+if command -v curl >/dev/null 2>&1 \
+    && curl -fsS "$proxy_url/health" >/dev/null 2>&1 \
+    && curl -fsS "$codex_proxy_url/health" >/dev/null 2>&1 \
+    && curl -fsS "$codex_shim_url/health" >/dev/null 2>&1; then
+    printf 'Headroom proxies already active: %s and %s; shim %s\n' "$proxy_url" "$codex_proxy_url" "$codex_shim_url"
     if [ -n "$existing_headroom_window" ]; then
         tmux switch-client -t "$existing_headroom_window" 2>/dev/null || true
     fi
@@ -33,6 +38,7 @@ if [ -n "$existing_headroom_window" ]; then
 fi
 
 proxy_cmd="printf ${(q)proxy_color}; source ${(q)headroom_alias}; hproxy --foreground ${proxy_args}; exec zsh -l"
+codex_proxy_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; hproxy-codex-foreground; exec zsh -l"
 shim_cmd="printf ${(q)shim_color}; source ${(q)headroom_alias}; headroom-pi-codex-shim; exec zsh -l"
 stats_cmd="printf ${(q)stats_color}; source ${(q)headroom_alias}; headroom-watch-stats; exec zsh -l"
 
@@ -40,6 +46,8 @@ tmux new-window -n headroom "zsh -lc ${(q)proxy_cmd}"
 tmux select-pane -T proxy
 tmux split-window -h "zsh -lc ${(q)stats_cmd}"
 tmux select-pane -T stats
+tmux split-window -v "zsh -lc ${(q)codex_proxy_cmd}"
+tmux select-pane -T codex-proxy
 tmux split-window -v "zsh -lc ${(q)shim_cmd}"
 tmux select-pane -T codex-shim
 tmux select-pane -L >/dev/null 2>&1 || true
