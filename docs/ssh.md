@@ -1,14 +1,14 @@
 # ssh
 
-this repo keeps only generic ssh plumbing. private hostnames, aliases, keys, and bitwarden item ids live in a private bitwarden manifest referenced by local chezmoi config.
+this repo maintains only generic ssh plumbing, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.
 
 ## setup
 
-1. install `bw` and `jq`.
+1. install `bw` (and `jq`).
 2. sign in and unlock bitwarden: `export BW_SESSION=$(bw unlock --raw)`.
 3. create a bitwarden secure note whose notes field contains the manifest json.
 4. re-run `chezmoi init --apply brendanlees` on an enabled machine and set `ssh_bw_manifest_item` to that item name or id.
-5. run `chezmoi apply`, or refresh manually with `cz-ssh-refresh`.
+5. run `chezmoi apply`, or refresh manually with helper alias `cz-ssh-refresh`.
 
 leave `ssh_bw_manifest_item` blank to skip ssh generation.
 
