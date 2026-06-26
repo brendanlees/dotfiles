@@ -170,7 +170,15 @@ set -g window-status-format         "  #I #W#{?window_zoomed_flag, 󰊓,}  "
 set -g window-status-current-format "#[fg={{ $p.border }}]⣏#[fg={{ $p.comment }}] #I #W#{?window_zoomed_flag, 󰊓,} #[fg={{ $p.border }}]⣹"
 set -g window-status-style          "fg={{ $p.comment }},bg=default"
 set -g window-status-current-style  "fg={{ $p.comment }},bg=default"
+
+# Agent completion/bell notifications. Agent hooks/extensions emit BEL and
+# briefly rename the window to a semantic completion state; tmux highlights
+# windows that receive bells using the active chezmoi theme's success color.
+setw -g monitor-bell on
+set -g bell-action other
+set -g visual-bell off
 set -g window-status-activity-style "fg={{ $p.warn }},bg=default"
+set -g window-status-bell-style     "fg={{ $p.success }},bg=default,underscore"
 
 # right side intentionally empty
 set -g status-right ""
