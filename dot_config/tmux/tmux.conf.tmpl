@@ -175,7 +175,7 @@ set -g window-status-current-style  "fg={{ $p.comment }},bg=default"
 # marks windows that receive bells by changing only the window cell background
 # to the active chezmoi theme's success color.
 setw -g monitor-bell on
-set -g bell-action other
+set -g bell-action any
 set -g visual-bell off
 set -g window-status-activity-style "fg={{ $p.warn }},bg=default"
 set -g window-status-bell-style     "bg={{ $p.success }}"
