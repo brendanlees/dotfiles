@@ -7,7 +7,7 @@ Approved for implementation.
 2026-06-26
 
 ## Goal
-When Claude or Pi agents finish a turn, tmux should receive a bell and mark the window by changing only the window-status background color. The state should follow the semantic palette conventions already defined in `.chezmoidata/themes.yml` and consumed by `dot_config/chezmoi-theme/active.lua.tmpl` and `dot_config/tmux/tmux.conf.tmpl`.
+When Claude or Pi agents finish a turn, tmux should receive a bell internally and mark only the tmux window number color, leaving the background unchanged. The state should follow the semantic palette conventions already defined in `.chezmoidata/themes.yml` and consumed by `dot_config/chezmoi-theme/active.lua.tmpl` and `dot_config/tmux/tmux.conf.tmpl`.
 
 ## Context
 The reference repository `vossenwout/pookie-dotfiles` uses a Pi extension that writes `\x07` on `agent_end`, paired with tmux `monitor-bell on`, `bell-action other`, and `window-status-bell-style` settings. This repo already has a themed tmux status bar, a Pi tmux-window-name extension, and a Claude `Stop` hook, `~/.claude/hooks/tmux-window-name.sh`, that derives the normal tmux window name from session context.
@@ -21,8 +21,9 @@ Use a layered design:
 4. Add a Pi extension in `~/.pi/agent/extensions/` that uses Pi's documented `agent_end` lifecycle event and `ctx.hasPendingMessages()` guard to avoid signaling while follow-up work is queued.
 
 ## Behavior
-- On agent completion: emit BEL only; tmux should mark the window via `window-status-bell-style`.
+- On agent completion: emit BEL only; tmux should mark the window via `window_bell_flag` in `window-status-format`.
 - The helper and Pi extension must not rename tmux windows.
+- tmux should keep bell handling private with `visual-bell on` so Ghostty does not receive terminal bell alerts.
 - If not inside tmux, hooks/extensions should exit successfully without noise.
 - If tmux commands fail, hooks/extensions should not block the agent.
 

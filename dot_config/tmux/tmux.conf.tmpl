@@ -166,19 +166,19 @@ set -g window-status-separator ""
 # The trailing #{?window_zoomed_flag,...} appends a zoom-expand glyph
 # (󰊓 nf-md-arrow_expand_all) when the active pane in that window is
 # maximized via prefix+z (or our C-f).
-set -g window-status-format         "  #I #W#{?window_zoomed_flag, 󰊓,}  "
-set -g window-status-current-format "#[fg={{ $p.border }}]⣏#[fg={{ $p.comment }}] #I #W#{?window_zoomed_flag, 󰊓,} #[fg={{ $p.border }}]⣹"
+set -g window-status-format         "  #{?window_bell_flag,#[fg={{ $p.success }}],#[fg={{ $p.comment }}]}#I#[fg={{ $p.comment }}] #W#{?window_zoomed_flag, 󰊓,}  "
+set -g window-status-current-format "#[fg={{ $p.border }}]⣏#[fg={{ $p.comment }}] #{?window_bell_flag,#[fg={{ $p.success }}],#[fg={{ $p.comment }}]}#I#[fg={{ $p.comment }}] #W#{?window_zoomed_flag, 󰊓,} #[fg={{ $p.border }}]⣹"
 set -g window-status-style          "fg={{ $p.comment }},bg=default"
 set -g window-status-current-style  "fg={{ $p.comment }},bg=default"
 
-# Agent completion/bell notifications. Agent hooks/extensions emit BEL; tmux
-# marks windows that receive bells by changing only the window cell background
-# to the active chezmoi theme's success color.
+# Agent completion/bell notifications. Agent hooks/extensions emit BEL into
+# tmux; tmux keeps the terminal bell private with visual-bell and marks only
+# the window number with the active chezmoi theme's success color.
 setw -g monitor-bell on
 set -g bell-action any
-set -g visual-bell off
+set -g visual-bell on
 set -g window-status-activity-style "fg={{ $p.warn }},bg=default"
-set -g window-status-bell-style     "bg={{ $p.success }}"
+set -g window-status-bell-style     "fg={{ $p.comment }},bg=default"
 
 # right side intentionally empty
 set -g status-right ""
