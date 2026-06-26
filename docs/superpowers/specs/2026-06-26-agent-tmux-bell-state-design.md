@@ -7,7 +7,7 @@ Approved for implementation.
 2026-06-26
 
 ## Goal
-When Claude or Pi agents finish a turn, tmux should receive a bell and show a short-lived semantic completion state in the window title. The state should follow the semantic palette conventions already defined in `.chezmoidata/themes.yml` and consumed by `dot_config/chezmoi-theme/active.lua.tmpl` and `dot_config/tmux/tmux.conf.tmpl`.
+When Claude or Pi agents finish a turn, tmux should receive a bell and mark the window by changing only the window-status background color. The state should follow the semantic palette conventions already defined in `.chezmoidata/themes.yml` and consumed by `dot_config/chezmoi-theme/active.lua.tmpl` and `dot_config/tmux/tmux.conf.tmpl`.
 
 ## Context
 The reference repository `vossenwout/pookie-dotfiles` uses a Pi extension that writes `\x07` on `agent_end`, paired with tmux `monitor-bell on`, `bell-action other`, and `window-status-bell-style` settings. This repo already has a themed tmux status bar, a Pi tmux-window-name extension, and a Claude `Stop` hook, `~/.claude/hooks/tmux-window-name.sh`, that derives the normal tmux window name from session context.
@@ -16,13 +16,13 @@ The reference repository `vossenwout/pookie-dotfiles` uses a Pi extension that w
 Use a layered design:
 
 1. Update the chezmoi-managed tmux template to enable bell monitoring and style bell/activity states with existing semantic palette colors.
-2. Add a small shared tmux state helper script for transient agent states. It will ring the terminal bell, rename the current tmux window to a semantic completion label, and restore the prior title after a short delay.
-3. Add/adjust Claude Stop hook configuration so Claude keeps its existing session-derived tmux name behavior, then briefly overlays the completion state.
+2. Add a small shared bell helper script. It emits BEL only; it does not rename tmux windows.
+3. Add/adjust Claude Stop hook configuration so Claude rings the completion bell after its existing session-derived tmux name hook runs.
 4. Add a Pi extension in `~/.pi/agent/extensions/` that uses Pi's documented `agent_end` lifecycle event and `ctx.hasPendingMessages()` guard to avoid signaling while follow-up work is queued.
 
 ## Behavior
-- On agent completion: emit bell, show a transient title such as `✓ complete`, then restore the previous tmux window title.
-- On active/next prompt: any stale transient state should be cleared by normal window naming or agent-start handling.
+- On agent completion: emit BEL only; tmux should mark the window via `window-status-bell-style`.
+- The helper and Pi extension must not rename tmux windows.
 - If not inside tmux, hooks/extensions should exit successfully without noise.
 - If tmux commands fail, hooks/extensions should not block the agent.
 
