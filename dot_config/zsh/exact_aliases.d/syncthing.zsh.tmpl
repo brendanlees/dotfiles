@@ -28,17 +28,17 @@ syncthing-up() {
 }
 
 syncthing-down() {
-    local tunnel_control status
+    local tunnel_control stop_status
     tunnel_control="$(_syncthing_tunnel_control_path)"
-    status=0
+    stop_status=0
 
-    brew services stop syncthing || status=$?
+    brew services stop syncthing || stop_status=$?
 
     if ! ssh -S "$tunnel_control" -O exit local-stdy01 >/dev/null 2>&1; then
         pkill -f 'ssh .*127[.]0[.]0[.]1:8385:127[.]0[.]0[.]1:8384.*local-stdy01' >/dev/null 2>&1 || true
     fi
 
     rm -f "$tunnel_control"
-    return "$status"
+    return "$stop_status"
 }
 {{- end }}
