@@ -1,0 +1,19 @@
+# ------------------------------------------
+# .aliases/syncthing
+# ------------------------------------------
+
+{{- if and .personal (eq .chezmoi.os "darwin") }}
+syncthing-up() {
+    brew services start syncthing || return
+
+    ssh -fN \
+        -L 127.0.0.1:8385:127.0.0.1:8384 \
+        -o ExitOnForwardFailure=yes \
+        -o ServerAliveInterval=30 \
+        -o ServerAliveCountMax=3 \
+        local-stdy01 || return
+
+    open http://127.0.0.1:8384
+    open http://127.0.0.1:8385
+}
+{{- end }}
