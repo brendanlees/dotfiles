@@ -3,17 +3,42 @@
 # ------------------------------------------
 
 {{- if and .personal (eq .chezmoi.os "darwin") }}
+_syncthing_tunnel_control_path() {
+    printf '%s\n' "${TMPDIR:-/tmp}/syncthing-local-stdy01.ctl"
+}
+
 syncthing-up() {
+    local tunnel_control
+    tunnel_control="$(_syncthing_tunnel_control_path)"
+
     brew services start syncthing || return
 
-    ssh -fN \
-        -L 127.0.0.1:8385:127.0.0.1:8384 \
-        -o ExitOnForwardFailure=yes \
-        -o ServerAliveInterval=30 \
-        -o ServerAliveCountMax=3 \
-        local-stdy01 || return
+    if ! ssh -S "$tunnel_control" -O check local-stdy01 >/dev/null 2>&1; then
+        rm -f "$tunnel_control"
+        ssh -M -S "$tunnel_control" -fN \
+            -L 127.0.0.1:8385:127.0.0.1:8384 \
+            -o ExitOnForwardFailure=yes \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            local-stdy01 || return
+    fi
 
     open http://127.0.0.1:8384
     open http://127.0.0.1:8385
+}
+
+syncthing-down() {
+    local tunnel_control status
+    tunnel_control="$(_syncthing_tunnel_control_path)"
+    status=0
+
+    brew services stop syncthing || status=$?
+
+    if ! ssh -S "$tunnel_control" -O exit local-stdy01 >/dev/null 2>&1; then
+        pkill -f 'ssh .*127[.]0[.]0[.]1:8385:127[.]0[.]0[.]1:8384.*local-stdy01' >/dev/null 2>&1 || true
+    fi
+
+    rm -f "$tunnel_control"
+    return "$status"
 }
 {{- end }}
