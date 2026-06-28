@@ -15,8 +15,10 @@ while IFS= read -r workspace; do
 
   if [ "$workspace" = "$FOCUSED" ]; then
     IC_COLOR=$WHITE
+    SPACE_BG_Drawing=on
   else
     IC_COLOR=$MUTED
+    SPACE_BG_Drawing=off
   fi
 
   sketchybar --add item space."$workspace" left \
@@ -24,14 +26,18 @@ while IFS= read -r workspace; do
       icon="$num" \
       icon.font="$FONT:Bold:13.0" \
       icon.color="$IC_COLOR" \
-      icon.padding_left=6 \
-      icon.padding_right=2 \
-      background.drawing=off \
+      icon.padding_left=8 \
+      icon.padding_right=4 \
+      background.color="$SPACE_ACTIVE_BG" \
+      background.border_width=0 \
+      background.corner_radius=6 \
+      background.height=20 \
+      background.drawing="$SPACE_BG_Drawing" \
       label.drawing=off \
       label.font="$APP_FONT:Regular:14.0" \
       label.color="$IC_COLOR" \
       label.padding_left=2 \
-      label.padding_right=6 \
+      label.padding_right=8 \
       update_freq=60 \
       script="$PLUGIN_DIR/aerospace.sh $workspace" \
       click_script="aerospace workspace $workspace" \

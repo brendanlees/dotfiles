@@ -21,12 +21,14 @@ fi
 
 item_name="${NAME:-space.$workspace}"
 
-# Focus is conveyed by icon/label color inside the shared spaces pill;
-# the pill itself is drawn by the `spaces` bracket, not per-item backgrounds.
+# Focus is conveyed by icon/label color plus a highlight block drawn behind
+# the focused space item, inside the shared `spaces` pill.
 if [ "$workspace" = "$focused_workspace" ]; then
   IC_COLOR="$WHITE"
+  SPACE_BG_Drawing=on
 else
   IC_COLOR="$MUTED"
+  SPACE_BG_Drawing=off
 fi
 
 representative_app() {
@@ -71,12 +73,14 @@ if [ -n "$app_name" ]; then
 
   sketchybar --set "$item_name" \
     icon.color="$IC_COLOR" \
+    background.drawing="$SPACE_BG_Drawing" \
     label="$app_icon" \
     label.color="$IC_COLOR" \
     label.drawing=on
 else
   sketchybar --set "$item_name" \
     icon.color="$IC_COLOR" \
+    background.drawing="$SPACE_BG_Drawing" \
     label="" \
     label.drawing=off
 fi

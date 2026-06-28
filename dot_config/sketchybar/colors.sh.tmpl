@@ -19,9 +19,9 @@ export MUTED=0xff{{ trimPrefix "#" $p.muted | lower }}
 export SURFACE=0xff{{ trimPrefix "#" $p.surface | lower }}
 export TRANSPARENT=0x00000000
 
-# bar
-export BAR_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
-export BAR_BORDER_COLOR=0xff{{ trimPrefix "#" $p.surface | lower }}
+# bar (transparent so only the pills are visible)
+export BAR_COLOR=$TRANSPARENT
+export BAR_BORDER_COLOR=$TRANSPARENT
 export ICON_COLOR=$WHITE
 export LABEL_COLOR=$WHITE
 export POPUP_BACKGROUND_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
@@ -35,3 +35,6 @@ export SPOTIFY_COLOR=$ACCENT     # accent
 
 # pill background (translucent surface)
 export PILL_BG=0x88{{ trimPrefix "#" $p.surface | lower }}
+
+# active-space highlight block (translucent lighter surface)
+export SPACE_ACTIVE_BG=0xaa{{ trimPrefix "#" $p.surface_alt | lower }}

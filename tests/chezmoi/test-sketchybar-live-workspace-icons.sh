@@ -28,6 +28,7 @@ export FRONT_APP_COLOR=$MAGENTA
 export CALENDAR_COLOR=$CYAN
 export SPOTIFY_COLOR=$ACCENT
 export PILL_BG=0x88262626
+export SPACE_ACTIVE_BG=0xaa4a4253
 SH
 
 cp "$ROOT/dot_config/sketchybar/icons.sh" "$CONFIG/icons.sh"
@@ -137,12 +138,14 @@ assert_log_contains 'background.border_color=0xffffff00'
 : > "$LOG"
 SENDER=front_app_switched INFO=Arc NAME=space.4-files FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
 assert_log_contains 'space.4-files icon.color=0xffffffff'
+assert_log_contains 'background.drawing=on'
 assert_log_contains 'label=:arc:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.2-code FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
 assert_log_contains 'space.2-code icon.color=0xff808080'
+assert_log_contains 'background.drawing=off'
 assert_log_contains 'label=:ghostty:'
 assert_log_contains 'label.drawing=on'
 

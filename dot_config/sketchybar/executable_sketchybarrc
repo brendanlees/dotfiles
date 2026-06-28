@@ -21,8 +21,8 @@ sketchybar --bar \
   position=top \
   topmost=window \
   sticky=on \
-  padding_right=10 \
-  padding_left=10 \
+  padding_right=14 \
+  padding_left=14 \
   corner_radius=9 \
   y_offset=6 \
   margin=8 \
@@ -49,8 +49,8 @@ sketchybar --default \
   background.color="$PILL_BG" \
   background.border_width=1 \
   background.drawing=on \
-  background.padding_left=6 \
-  background.padding_right=6 \
+  background.padding_left=12 \
+  background.padding_right=12 \
   popup.background.border_width=2 \
   popup.background.corner_radius=9 \
   popup.background.border_color="$POPUP_BORDER_COLOR" \
