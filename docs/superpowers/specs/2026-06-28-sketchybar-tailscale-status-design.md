@@ -107,19 +107,19 @@ Behavior, by precedence (first match wins):
    `drawing=off` (the pill is hidden while Tailscale is off or inactive).
 4. `BackendState == Running`:
    - Any peer with `ExitNode == true` →
-     `drawing=on, icon=exit-glyph, color=BLUE, label=<HostName truncated
+     `drawing=on, icon=lock, color=BLUE, label=<HostName truncated
      before first ".">`. Exit node takes precedence over health warnings
      because "you are routing all traffic through an exit node" is the
      most privacy-relevant signal and the easiest to forget.
    - Else if `Health` is non-empty →
-     `drawing=on, icon=alert, color=YELLOW, label=<first health string
+     `drawing=on, icon=lock, color=YELLOW, label=<first health string
      truncated to ~20 chars>`.
    - Else if `Self.Online == false` →
-     `drawing=on, icon=alert, color=RED, label="offline"`.
+     `drawing=on, icon=lock, color=RED, label="offline"`.
    - Else (healthy, online, no exit node) →
-     `drawing=on, icon=shield, color=GREEN, label=<tailnet name from CurrentTailnet.Name, or "connected" if missing, truncated to ~20 chars>`. The item is a persistent connected indicator, not signal-only.
+     `drawing=on, icon=lock, color=GREEN, label=<tailnet name from CurrentTailnet.Name, or "connected" if missing, truncated to ~20 chars>`. The item is a persistent connected indicator; state is conveyed by color + label + border, not the glyph.
 5. Any other `BackendState` (e.g. `NeedsMachineAuth`, `Starting`) →
-   `drawing=on, icon=alert, color=YELLOW, label=<state lowercase, ~12 chars>`.
+   `drawing=on, icon=lock, color=YELLOW, label=<state lowercase, ~12 chars>`.
 
 ### `dot_config/sketchybar/executable_sketchybarrc`
 
@@ -145,25 +145,34 @@ visually adjacent to battery.
 | 1 | tailscale missing / status error / bad JSON | off | — | — | — |
 | 2 | NeedsLogin / no node key / empty state | off | — | — | — (hidden) |
 | 3 | Stopped (has key) | off | — | — | — (hidden) |
-| 4a | Running, exit node in use | on | exit | BLUE | exit-node host (before first `.`) |
-| 4b | Running, Health non-empty | on | alert | YELLOW | health (~20 chars) |
-| 4c | Running, Self.Online=false | on | alert | RED | `offline` |
-| 4d | Running, healthy, online, no exit node | on | shield (green) | GREEN | tailnet name (or `connected` if unknown) |
-| 5 | Other BackendState | on | alert | YELLOW | state (~12 chars) |
+| 4a | Running, exit node in use | on | lock | BLUE | exit-node host (before first `.`) |
+| 4b | Running, Health non-empty | on | lock | YELLOW | health (~20 chars) |
+| 4c | Running, Self.Online=false | on | lock | RED | `offline` |
+| 4d | Running, healthy, online, no exit node | on | lock | GREEN | tailnet name (or `connected` if unknown) |
+| 5 | Other BackendState | on | lock | YELLOW | state (~12 chars) |
 
 The same semantic `<color>` drives both `icon.color` and `background.border_color`,
 so the pill frame tracks state (matching the existing battery/calendar/spaces pills,
 which each color the border by their semantic state). The item definition sets a
 neutral `GREY` border up front until the first plugin refresh recolors it.
 
+**Single glyph:** every visible state shows the same closed-padlock glyph (fa-lock
+U+F023 = "VPN secured"); state is conveyed by `color` + `label` + `border_color`,
+not by swapping the glyph. This keeps one consistent Nerd Font icon at the same
+size as the battery pill (`$FONT:Bold:16.0`) and eliminates per-state glyph-tofu
+risk.
+
 ## Visual / icons
 
-No Nerd-Font Tailscale brand glyph exists, so use generic semantic glyphs
-(shield/lock/exit/alert). Exact glyph codepoints are chosen during
-implementation but belong to the Nerd Font Symbols range. Final glyph rendering
-is verified during dogfooding (`chezmoi apply && sketchybar --reload`, swap any
-tofu glyph). Colors reuse `$BLUE $YELLOW $RED $GREY` from `colors.sh`; no new
-palette entries needed.
+A single closed-padlock Nerd Font glyph, fa-lock (U+F023), is used for every
+visible state — "VPN secured". State is distinguished by `icon.color` and a
+matching `background.border_color` (green = connected, blue = exit node in use,
+yellow = health warning or transient, red = offline), plus the `label` (tailnet
+name, exit-node host, health text, or `offline`). U+F023 is confirmed a real
+outline (gid 2557) in JetBrainsMonoNerdFontMono-Bold/Regular; the test suite's
+font-glyph-validity guard fails the build if it ever resolves to `.notdef`. The
+item's icon font is `$FONT:Bold:16.0` (JetBrainsMono Nerd Font Mono), matching the
+battery/soundsource/itsycal system pills for consistent family + size.
 
 ## Data flow
 

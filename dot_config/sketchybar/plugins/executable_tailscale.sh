@@ -4,13 +4,10 @@
 source "$CONFIG_DIR/colors.sh"
 
 # Nerd Font glyphs (present in JetBrainsMono Nerd Font Mono).
-ICON_TS_LOCK=󰌾
-ICON_TS_EXIT=󰢷
-ICON_TS_ALERT=󰂚
-ICON_TS_SHIELD=    # fa-shield (U+F132; real glyph, was F3ED=.notdef)
+ICON_TS_LOCK=    # fa-lock (U+F023, closed padlock = VPN secured); one glyph for all visible states
 
 export TS_COLOR_GREY="$GREY" TS_COLOR_BLUE="$BLUE" TS_COLOR_YELLOW="$YELLOW" TS_COLOR_RED="$RED" TS_COLOR_GREEN="$GREEN"
-export TS_ICON_LOCK="$ICON_TS_LOCK" TS_ICON_EXIT="$ICON_TS_EXIT" TS_ICON_ALERT="$ICON_TS_ALERT" TS_ICON_SHIELD="$ICON_TS_SHIELD"
+export TS_ICON_LOCK="$ICON_TS_LOCK"
 
 hide_item() {
   sketchybar --set "$NAME" drawing=off label=""
@@ -44,8 +41,7 @@ def env(name):
 GREY, BLUE, YELLOW, RED, GREEN = (env("TS_COLOR_GREY"), env("TS_COLOR_BLUE"),
                                   env("TS_COLOR_YELLOW"), env("TS_COLOR_RED"),
                                   env("TS_COLOR_GREEN"))
-ICON_LOCK, ICON_EXIT, ICON_ALERT, ICON_SHIELD = (env("TS_ICON_LOCK"), env("TS_ICON_EXIT"),
-                                                  env("TS_ICON_ALERT"), env("TS_ICON_SHIELD"))
+ICON_LOCK = env("TS_ICON_LOCK")
 
 def trunc(s, n):
     s = s or ""
@@ -84,19 +80,19 @@ if not have_key or state in ("NeedsLogin", "Stopped", ""):
 
 if state != "Running":
     # Starting / NeedsMachineAuth / other transient states: surface as a warning.
-    print(on(ICON_ALERT, YELLOW, trunc(state.lower(), 12)))
+    print(on(ICON_LOCK, YELLOW, trunc(state.lower(), 12)))
     raise SystemExit(0)
 
 # Running: visible in every sub-state so the pill always shows while connected.
 if exit_host:
-    print(on(ICON_EXIT, BLUE, trunc(exit_host.split(".", 1)[0], 20)))
+    print(on(ICON_LOCK, BLUE, trunc(exit_host.split(".", 1)[0], 20)))
 elif health:
-    print(on(ICON_ALERT, YELLOW, trunc(health[0], 20)))
+    print(on(ICON_LOCK, YELLOW, trunc(health[0], 20)))
 elif not online:
-    print(on(ICON_ALERT, RED, "offline"))
+    print(on(ICON_LOCK, RED, "offline"))
 else:
     tailnet = ((d.get("CurrentTailnet") or {}).get("Name", "")) or "connected"
-    print(on(ICON_SHIELD, GREEN, trunc(tailnet, 20)))
+    print(on(ICON_LOCK, GREEN, trunc(tailnet, 20)))
 PY
 )"
 

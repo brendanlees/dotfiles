@@ -4,7 +4,7 @@
 sketchybar --add item tailscale right \
     --set tailscale \
     drawing=off \
-    icon.font="$FONT:Bold:14.0" \
+    icon.font="$FONT:Bold:16.0" \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
     background.color="$PILL_BG" \
