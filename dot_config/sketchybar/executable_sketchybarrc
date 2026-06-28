@@ -7,7 +7,7 @@ ITEM_DIR="$CONFIG_DIR/items"
 export PLUGIN_DIR="$CONFIG_DIR/plugins"
 
 FONT="JetBrainsMono Nerd Font Mono"
-PADDINGS=3
+PADDINGS=6
 
 # ------------------------------------------
 # bar appearance
@@ -21,9 +21,9 @@ sketchybar --bar \
   position=top \
   topmost=window \
   sticky=on \
-  padding_right=14 \
-  padding_left=14 \
-  corner_radius=9 \
+  padding_right=0 \
+  padding_left=2 \
+  corner_radius=2 \
   y_offset=6 \
   margin=8 \
   blur_radius=20 \
@@ -45,14 +45,14 @@ sketchybar --default \
   padding_left=$PADDINGS \
   padding_right=$PADDINGS \
   background.height=26 \
-  background.corner_radius=12 \
+  background.corner_radius=2 \
   background.color="$PILL_BG" \
   background.border_width=1 \
   background.drawing=on \
-  background.padding_left=12 \
-  background.padding_right=12 \
+  background.padding_left=3 \
+  background.padding_right=3 \
   popup.background.border_width=2 \
-  popup.background.corner_radius=9 \
+  popup.background.corner_radius=2 \
   popup.background.border_color="$POPUP_BORDER_COLOR" \
   popup.background.color="$POPUP_BACKGROUND_COLOR" \
   popup.blur_radius=20 \
