@@ -86,3 +86,13 @@ preview_wrapper="$repo_root/dot_config/sesh/scripts/executable_preview-with-agen
 combined_preview=$("$preview_wrapper" 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
 [[ "$combined_preview" == *'agent: claude'* ]]
 [[ "$combined_preview" == *'sesh preview: agent:%12 claude done dotfiles:3 agent-window /tmp/project'* ]]
+
+
+picker="$repo_root/dot_config/sesh/scripts/executable_picker.sh.tmpl"
+tmux_conf="$repo_root/dot_config/tmux/tmux.conf.tmpl"
+
+grep -q "ctrl-e:change-prompt" "$picker"
+grep -q "list-agent-sessions.sh" "$picker"
+grep -q "preview-with-agent-state.sh" "$picker"
+grep -q "agent-next.sh --target" "$picker"
+grep -q "bind-key A run-shell '~/.config/sesh/scripts/agent-next.sh'" "$tmux_conf"
