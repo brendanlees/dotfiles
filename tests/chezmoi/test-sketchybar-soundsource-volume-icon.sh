@@ -5,8 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP="${TMPDIR:-/tmp}/sketchybar-soundsource-volume-icon-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
+BIN_NO_BD="$TMP/bin-no-bd"
 LOG="$TMP/sketchybar.log"
-mkdir -p "$CONFIG/plugins" "$BIN"
+mkdir -p "$CONFIG/plugins" "$BIN" "$BIN_NO_BD"
 trap 'rm -rf "$TMP"' EXIT
 
 cat > "$CONFIG/colors.sh" <<'SH'
@@ -26,6 +27,8 @@ cat > "$BIN/sketchybar" <<'SH'
 printf '%s\n' "$*" >> "$SKETCHYBAR_STUB_LOG"
 SH
 chmod +x "$BIN/sketchybar"
+cp "$BIN/sketchybar" "$BIN_NO_BD/sketchybar"
+chmod +x "$BIN_NO_BD/sketchybar"
 
 cat > "$BIN/betterdisplaycli" <<'SH'
 #!/usr/bin/env sh
@@ -80,7 +83,7 @@ assert_log_contains 'icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'
 
 : > "$LOG"
-PATH="/usr/bin:/bin:/usr/sbin:/sbin" CONFIG_DIR="$CONFIG" SKETCHYBAR_STUB_LOG="$LOG" NAME=soundsource "$CONFIG/plugins/soundsource.sh"
+PATH="$BIN_NO_BD:/usr/bin:/bin:/usr/sbin:/sbin" CONFIG_DIR="$CONFIG" SKETCHYBAR_STUB_LOG="$LOG" NAME=soundsource "$CONFIG/plugins/soundsource.sh"
 assert_log_contains 'soundsource icon=󰕾'
 assert_log_contains 'icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'

@@ -19,3 +19,8 @@ export ICON_BATTERY_CHARGING=󰂄
 # calendar
 export ICON_CALENDAR=󰃭
 export ICON_CLOCK=󰥔
+
+# volume
+export ICON_VOLUME=󰕾
+export ICON_VOLUME_MUTED=󰖁
+export ICON_VOLUME_UNKNOWN=󰕾
