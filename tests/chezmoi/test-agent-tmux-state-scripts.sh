@@ -61,6 +61,7 @@ list_output=$("$script" list)
 [[ "$list_output" == *pi* ]]
 [[ "$list_output" == *done* ]]
 [[ "$list_output" == *dotfiles:3* ]]
+[[ "$list_output" == *$'\033[38;5;245m'* ]]
 [[ "$list_output" == *live-window* ]]
 [[ "$list_output" != *agent:%12* ]]
 [[ "$list_output" != *'🤖'* ]]

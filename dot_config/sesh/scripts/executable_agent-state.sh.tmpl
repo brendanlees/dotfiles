@@ -92,6 +92,10 @@ color_state() {
   esac
 }
 
+color_context() {
+  ansi_fg 245
+}
+
 strip_ansi() {
   sed -E $'s/\x1B\[[0-9;]*[[:alpha:]]//g'
 }
@@ -102,10 +106,11 @@ format_agent_row() {
   local session_name=${3:?session required}
   local window_index=${4:?window index required}
   local window_name=${5:?window name required}
-  printf '%b%s%b  %b%s%b  %s:%s  %s\n' \
+  printf '%b%s%b  %b%s%b  %b%s:%s%b  %s\n' \
     "$(color_harness "$harness")" "$harness" "$(ansi_reset)" \
     "$(color_state "$state")" "$state" "$(ansi_reset)" \
-    "$session_name" "$window_index" "$window_name"
+    "$(color_context)" "$session_name" "$window_index" "$(ansi_reset)" \
+    "$window_name"
 }
 
 write_done() {
