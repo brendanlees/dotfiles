@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+agent_state=${AGENT_TMUX_STATE_SCRIPT:-$script_dir/agent-state.sh}
+
+if [[ -x "$agent_state" ]]; then
+  "$agent_state" preview "$@" || true
+fi
+
+exec sesh preview "$@"
