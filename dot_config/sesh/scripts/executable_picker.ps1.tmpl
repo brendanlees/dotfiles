@@ -31,7 +31,7 @@ if ($seshArgs.Count -gt 0 -and $seshArgs[0] -eq '--tmux') {
 
 $selected = sesh list --icons @seshArgs | fzf @tmuxFlag `
     --no-sort --ansi --border-label ' sesh ' --prompt '󰚌  ' `
-    --header '  ^a all ^t psmux ^g configs ^x zoxide ^d psmux kill ^f find{{ if .personal }} ^c code ^h homelab ^w work{{ end }}' `
+    --header '  ^a all ^t psmux ^g configs ^x zoxide ^d psmux kill ^f find' `
     --bind 'tab:down,btab:up' `
     --bind 'ctrl-a:change-prompt(⚡)+reload(sesh list --icons)' `
     --bind 'ctrl-t:change-prompt(🪟  )+reload(sesh list -t --icons)' `
@@ -39,11 +39,6 @@ $selected = sesh list --icons @seshArgs | fzf @tmuxFlag `
     --bind 'ctrl-x:change-prompt(📁  )+reload(sesh list -z --icons)' `
     --bind 'ctrl-f:change-prompt(🔎  )+reload(fd -H -d 2 -t d . {{ .chezmoi.homeDir }})' `
     --bind 'ctrl-d:execute(psmux kill-session -t {2..})+change-prompt(⚡  )+reload(sesh list --icons)' `
-    {{- if .personal }}
-    --bind 'ctrl-c:change-prompt(💻  )+reload(fd -d 1 -t d -E _* . {{ .chezmoi.homeDir }}/{{ .code_dir }})' `
-    --bind 'ctrl-h:change-prompt(🏠  )+reload(fd -d 1 -t d . {{ .chezmoi.homeDir }}/{{ .code_dir }}/_homelab)' `
-    --bind 'ctrl-w:change-prompt(💼  )+reload(fd -d 1 -t d . {{ .chezmoi.homeDir }}/{{ .code_dir }}/_work)' `
-    {{- end }}
     --preview-window 'right:55%' `
     --preview 'sesh preview {}'
 

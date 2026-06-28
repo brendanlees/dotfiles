@@ -26,7 +26,8 @@ import = [
 sort_order = ["tmux", "config", "zoxide"]
 
 blacklist = [
-  "^_"
+    "^_",
+    "~/{{ .code_dir | title }}/*",
 ]
 
 [default_session]
