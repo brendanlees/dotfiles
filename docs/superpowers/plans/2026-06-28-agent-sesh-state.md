@@ -55,7 +55,7 @@ These live outside this chezmoi repo but are referenced by `.chezmoiexternal.tom
   - After ringing the existing bell, call `~/.config/sesh/scripts/agent-state.sh write-done --harness claude`.
   - Must remain no-op outside tmux and must not block Claude.
 - Modify `~/.pi/agent/extensions/agent-tmux-state.ts`
-  - When invoking the helper, pass `AGENT_TMUX_HARNESS=pi` in the child process environment, or call `~/.config/sesh/scripts/agent-state.sh write-done --harness pi` directly after bell signaling.
+  - When invoking the helper, pass `complete --harness pi`. Pi docs for `pi.exec` document `signal`/`timeout` but not child-process `env`, so use arguments instead of relying on undocumented env support.
   - Preserve `ctx.hasPendingMessages()` guard.
 
 ---
@@ -673,24 +673,19 @@ Expected: PASS with no output.
 
 - [ ] **Step 4: Modify Pi extension**
 
-In `/Users/brendan/.pi/agent/extensions/agent-tmux-state.ts`, ensure the child process that invokes the helper includes this environment override:
+In `/Users/brendan/.pi/agent/extensions/agent-tmux-state.ts`, change the helper invocation from:
 
 ```ts
-env: {
-  ...process.env,
-  AGENT_TMUX_HARNESS: "pi",
-},
+const result = await pi.exec(script, ["complete"], { timeout: 1_000 });
 ```
 
-If the extension writes state directly instead of going through the helper, use:
+to:
 
 ```ts
-await pi.execFile(join(home, ".config", "sesh", "scripts", "agent-state.sh"), ["write-done", "--harness", "pi"], {
-  env: process.env,
-});
+const result = await pi.exec(script, ["complete", "--harness", "pi"], { timeout: 1_000 });
 ```
 
-and wrap it so failures are ignored exactly like the existing bell helper path.
+Keep the existing `try`/`catch` so helper failures are ignored exactly like the existing bell helper path.
 
 - [ ] **Step 5: Type/syntax-check Pi extension where possible**
 
