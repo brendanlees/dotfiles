@@ -6,6 +6,7 @@
 start-at-login = true
 after-login-command = []
 after-startup-command = ['exec-and-forget borders']
+exec-on-workspace-change = ['/bin/bash', '-c', '"$HOME/.config/aerospace/notify-sketchybar.sh"']
 
 # Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
 enable-normalization-flatten-containers = true

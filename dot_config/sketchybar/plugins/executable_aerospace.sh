@@ -1,16 +1,29 @@
 #!/bin/bash
 
+CONFIG_DIR="${CONFIG_DIR:-${HOME}/.config/sketchybar}"
+# shellcheck source=dot_config/sketchybar/colors.sh
 source "$CONFIG_DIR/colors.sh"
 
-# $1 = workspace name set at creation time
-# $FOCUSED_WORKSPACE set by sketchybar on aerospace_workspace_change
-# On initial run FOCUSED_WORKSPACE is empty, query aerospace directly
-if [ -z "$FOCUSED_WORKSPACE" ]; then
-  FOCUSED_WORKSPACE=$(aerospace list-workspaces --focused)
+workspace="${1:-}"
+if [ -z "$workspace" ]; then
+  exit 0
 fi
 
-if [ "$1" = "$FOCUSED_WORKSPACE" ]; then
-  sketchybar --set "$NAME" background.drawing=on icon.color=$WHITE
+# FOCUSED_WORKSPACE is provided by AeroSpace via SketchyBar's custom event.
+# On initial/manual runs, fall back to querying AeroSpace directly.
+focused_workspace="${FOCUSED_WORKSPACE:-}"
+if [ -z "$focused_workspace" ] && command -v aerospace >/dev/null 2>&1; then
+  focused_workspace="$(aerospace list-workspaces --focused 2>/dev/null || true)"
+fi
+
+if [ -z "$focused_workspace" ]; then
+  exit 0
+fi
+
+item_name="${NAME:-space.$workspace}"
+
+if [ "$workspace" = "$focused_workspace" ]; then
+  sketchybar --set "$item_name" background.drawing=on icon.color="$WHITE"
 else
-  sketchybar --set "$NAME" background.drawing=off icon.color=$GREY
+  sketchybar --set "$item_name" background.drawing=off icon.color="$GREY"
 fi
