@@ -17,5 +17,7 @@ sketchybar --add item calendar right \
     background.corner_radius=12 \
     background.height=26 \
     background.drawing=on \
+    padding_left=6 \
+    padding_right=6 \
     update_freq=30 \
     script="$PLUGIN_DIR/calendar.sh"

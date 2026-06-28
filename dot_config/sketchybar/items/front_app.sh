@@ -16,5 +16,7 @@ sketchybar --add item front_app center \
     background.corner_radius=12 \
     background.height=26 \
     background.drawing=on \
+    padding_left=6 \
+    padding_right=6 \
     script="$PLUGIN_DIR/front_app.sh" \
   --subscribe front_app front_app_switched

@@ -53,6 +53,6 @@ sketchybar --add bracket spaces '/space\..*/' \
     background.border_width=1 \
     background.corner_radius=12 \
     background.height=26 \
-    background.padding_left=4 \
-    background.padding_right=4 \
+    background.padding_left=2 \
+    background.padding_right=2 \
     blur_radius=0

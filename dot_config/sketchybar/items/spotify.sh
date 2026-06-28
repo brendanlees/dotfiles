@@ -14,6 +14,8 @@ sketchybar --add item spotify right \
     background.corner_radius=12 \
     background.height=26 \
     background.drawing=on \
+    padding_left=6 \
+    padding_right=6 \
     update_freq=15 \
     script="$PLUGIN_DIR/spotify.sh" \
     click_script="osascript -e 'tell application \"Spotify\" to activate'"
