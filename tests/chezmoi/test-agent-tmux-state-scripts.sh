@@ -58,16 +58,17 @@ grep -q "^PANE_ID='%12'$" "$record"
 grep -q "^SESSION_NAME='dotfiles'$" "$record"
 
 list_output=$("$script" list)
-[[ "$list_output" == *pi* ]]
-[[ "$list_output" == *done* ]]
-[[ "$list_output" == *dotfiles:3* ]]
+plain_list_output=$(printf '%s' "$list_output" | sed -E $'s/\x1B\[[0-9;]*[[:alpha:]]//g')
+[[ "$plain_list_output" == *pi* ]]
+[[ "$plain_list_output" == *done* ]]
+[[ "$plain_list_output" == *dotfiles:3* ]]
 [[ "$list_output" == *$'\033[38;5;245m'* ]]
 [[ "$list_output" == *$'\033[4m'* ]]
 [[ "$list_output" == *$'\033[24m'* ]]
-[[ "$list_output" == *live-window* ]]
-[[ "$list_output" != *agent:%12* ]]
-[[ "$list_output" != *'🤖'* ]]
-[[ "$list_output" != *'/tmp/live'* ]]
+[[ "$plain_list_output" == *live-window* ]]
+[[ "$plain_list_output" != *agent:%12* ]]
+[[ "$plain_list_output" != *'🤖'* ]]
+[[ "$plain_list_output" != *'/tmp/live'* ]]
 
 preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
 [[ "$preview_output" == *'agent: pi'* ]]
@@ -129,14 +130,15 @@ UPDATED_AT='1'
 STALE
 
 stale_list=$("$script" list)
-[[ "$stale_list" == *'pi'* ]]
-[[ "$stale_list" == *'done'* ]]
-[[ "$stale_list" == *'dotfiles:3'* ]]
-[[ "$stale_list" == *'live-window'* ]]
-[[ "$stale_list" != *'/tmp/live'* ]]
-[[ "$stale_list" != *'agent:%12'* ]]
-[[ "$stale_list" != *'🤖'* ]]
-[[ "$stale_list" != *'stale-window'* ]]
+plain_stale_list=$(printf '%s' "$stale_list" | sed -E $'s/\x1B\[[0-9;]*[[:alpha:]]//g')
+[[ "$plain_stale_list" == *'pi'* ]]
+[[ "$plain_stale_list" == *'done'* ]]
+[[ "$plain_stale_list" == *'dotfiles:3'* ]]
+[[ "$plain_stale_list" == *'live-window'* ]]
+[[ "$plain_stale_list" != *'/tmp/live'* ]]
+[[ "$plain_stale_list" != *'agent:%12'* ]]
+[[ "$plain_stale_list" != *'🤖'* ]]
+[[ "$plain_stale_list" != *'stale-window'* ]]
 
 stale_preview=$("$script" preview 'agent:%12 claude done stale-session:1 stale-window /tmp/stale')
 [[ "$stale_preview" == *'agent: pi'* ]]
