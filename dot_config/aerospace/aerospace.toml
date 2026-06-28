@@ -175,9 +175,17 @@ alt-shift-l = ['join-with right', 'mode main']
 if.app-id = 'company.thebrowser.Browser'
 run = 'move-node-to-workspace 1-browser'
 
+[[on-window-detected]]
+if.app-id = 'company.thebrowser.Browser'
+run = 'app.zen-browser.zen'
+
 # --- 2. code ---
 [[on-window-detected]]
 if.app-id = 'com.microsoft.VSCode'
+run = 'move-node-to-workspace 2-code'
+
+[[on-window-detected]]
+if.app-id = 'dev.zed.Zed'
 run = 'move-node-to-workspace 2-code'
 
 # --- 3. email / work ---
@@ -204,12 +212,16 @@ if.app-id = 'com.figma.Desktop'
 run = 'move-node-to-workspace 5-docs'
 
 [[on-window-detected]]
-if.app-id = 'com.microsoft.Word'
+if.app-id = 'asc.onlyoffice.ONLYOFFICE'
 run = 'move-node-to-workspace 5-docs'
 
-# --- 6. misc1 ---
+# --- 6/7. misc ---
 [[on-window-detected]]
 if.app-id = 'com.hnc.Discord'
+run = 'move-node-to-workspace 6-misc1'
+
+[[on-window-detected]]
+if.app-id = 'com.nousresearch.hermes'
 run = 'move-node-to-workspace 6-misc1'
 
 # --- 8. notes ---
