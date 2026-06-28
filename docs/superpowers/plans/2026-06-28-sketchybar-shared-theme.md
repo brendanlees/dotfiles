@@ -89,7 +89,7 @@ Expected: `dot_config/sketchybar/colors.sh.tmpl` exists and `dot_config/sketchyb
 Run:
 
 ```bash
-chezmoi execute-template < dot_config/sketchybar/colors.sh.tmpl > /tmp/sketchybar-colors.sh
+chezmoi --source "$PWD" execute-template < dot_config/sketchybar/colors.sh.tmpl > /tmp/sketchybar-colors.sh
 bash -n /tmp/sketchybar-colors.sh
 grep -q '^# Active theme: ' /tmp/sketchybar-colors.sh
 grep -Eq '^export BAR_COLOR=0xcc[0-9a-f]{6}$' /tmp/sketchybar-colors.sh
@@ -226,7 +226,7 @@ Expected: commit succeeds with the theme script and docs updated.
 Run:
 
 ```bash
-chezmoi execute-template < dot_config/sketchybar/colors.sh.tmpl > /tmp/sketchybar-colors.sh
+chezmoi --source "$PWD" execute-template < dot_config/sketchybar/colors.sh.tmpl > /tmp/sketchybar-colors.sh
 bash -n /tmp/sketchybar-colors.sh
 sed -n '1,24p' /tmp/sketchybar-colors.sh
 ```
@@ -239,7 +239,7 @@ Run:
 
 ```bash
 git status --short
-chezmoi execute-template < dot_config/sketchybar/colors.sh.tmpl >/tmp/sketchybar-colors.sh
+chezmoi --source "$PWD" execute-template < dot_config/sketchybar/colors.sh.tmpl >/tmp/sketchybar-colors.sh
 ```
 
 Expected: `git status --short` is clean after Task 2 commit; template render exits `0`.
