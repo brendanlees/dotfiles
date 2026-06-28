@@ -66,6 +66,48 @@ effective_harness() {
   esac
 }
 
+ansi_fg() {
+  printf '\033[38;5;%sm' "$1"
+}
+
+ansi_reset() {
+  printf '\033[0m'
+}
+
+color_harness() {
+  case "${1:-agent}" in
+    pi) ansi_fg 75 ;;
+    claude) ansi_fg 208 ;;
+    *) ansi_fg 141 ;;
+  esac
+}
+
+color_state() {
+  case "${1:-done}" in
+    done) ansi_fg 114 ;;
+    running) ansi_fg 221 ;;
+    error) ansi_fg 203 ;;
+    stale) ansi_fg 244 ;;
+    *) ansi_fg 245 ;;
+  esac
+}
+
+strip_ansi() {
+  sed -E $'s/\x1B\[[0-9;]*[[:alpha:]]//g'
+}
+
+format_agent_row() {
+  local harness=${1:?harness required}
+  local state=${2:?state required}
+  local session_name=${3:?session required}
+  local window_index=${4:?window index required}
+  local window_name=${5:?window name required}
+  printf '%b%s%b  %b%s%b  %s:%s  %s\n' \
+    "$(color_harness "$harness")" "$harness" "$(ansi_reset)" \
+    "$(color_state "$state")" "$state" "$(ansi_reset)" \
+    "$session_name" "$window_index" "$window_name"
+}
+
 write_done() {
   local harness=agent
   while [[ $# -gt 0 ]]; do
@@ -139,22 +181,35 @@ valid_records() {
   done < <(record_files)
 }
 list_records() {
-  valid_records | sort -n | while IFS=$'\t' read -r _updated pane harness _session_id session_name _window_id window_index window_name path command _pid; do
-    printf 'agent:%s  🤖 %s  done  %s:%s  %s  %s  [%s]\n' "$pane" "$harness" "$session_name" "$window_index" "$window_name" "$path" "${command:-?}"
+  valid_records | sort -n | while IFS=$'\t' read -r _updated _pane harness _session_id session_name _window_id window_index window_name _path _command _pid; do
+    format_agent_row "$harness" done "$session_name" "$window_index" "$window_name"
   done
 }
 
 pane_from_selection() {
   local selection=${1:-}
-  selection=${selection#agent:}
-  printf '%s\n' "${selection%%[[:space:]]*}"
+  if [[ "$selection" == agent:%* || "$selection" == %* ]]; then
+    selection=${selection#agent:}
+    printf '%s\n' "${selection%%[[:space:]]*}"
+    return 0
+  fi
+
+  local plain harness state session_window session_name window_index window_name
+  plain=$(printf '%s' "$selection" | strip_ansi)
+  read -r harness state session_window window_name <<< "$plain"
+  [[ -n "$harness" && -n "$state" && -n "$session_window" && -n "$window_name" ]] || return 1
+  session_name=${session_window%:*}
+  window_index=${session_window##*:}
+
+  valid_records | sort -n | awk -F '\t' \
+    -v harness="$harness" -v session="$session_name" -v win_index="$window_index" -v window="$window_name" \
+    '$3 == harness && $5 == session && $7 == win_index && $8 == window { print $2; found = 1; exit } END { exit found ? 0 : 1 }'
 }
 
 preview_selection() {
   local selection=${*:-}
   local pane file
-  if [[ "$selection" == agent:%* ]]; then
-    pane=$(pane_from_selection "$selection")
+  if pane=$(pane_from_selection "$selection" 2>/dev/null); then
     file=$(record_path_for_pane "$pane")
     if load_record "$file" && live=$(live_pane_metadata "$pane"); then
       local live_pane live_session_id live_session_name live_window_id live_window_index live_window_name live_path live_command live_pid
@@ -173,7 +228,7 @@ preview_selection() {
   fi
 
   local stripped session_name
-  stripped=$(printf '%s' "$selection" | sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g')
+  stripped=$(printf '%s' "$selection" | strip_ansi)
   session_name=${stripped##* }
   valid_records | sort -n | awk -F '\t' -v session="$session_name" '$5 == session {print; found=1; exit} END {exit found ? 0 : 1}' | while IFS=$'\t' read -r updated pane harness _session_id session window_id window_index window_name path command _pid; do
     printf 'agent: %s\nstate: done\npane: %s\nsession: %s\nwindow: %s:%s %s\npath: %s\ncommand: %s\nupdated: %s\n\n' \
@@ -183,13 +238,14 @@ preview_selection() {
 
 jump_to_pane() {
   local pane=${1:?pane required}
-  local file
+  local file live live_pane live_session_id live_session_name live_window_id live_window_index live_window_name live_path live_command live_pid
   file=$(record_path_for_pane "$pane")
   load_record "$file" || return 1
-  pane_exists "${PANE_ID:-}" || return 1
-  tmux switch-client -t "${SESSION_ID:-${SESSION_NAME:-}}" >/dev/null 2>&1 || true
-  tmux select-window -t "${WINDOW_ID:-}" >/dev/null 2>&1 || true
-  tmux select-pane -t "${PANE_ID:-}" >/dev/null 2>&1 || true
+  live=$(live_pane_metadata "${PANE_ID:-$pane}") || return 1
+  IFS=$'\t' read -r live_pane live_session_id live_session_name live_window_id live_window_index live_window_name live_path live_command live_pid <<< "$live"
+  tmux switch-client -t "${live_session_id:-${SESSION_ID:-${SESSION_NAME:-}}}" >/dev/null 2>&1 || true
+  tmux select-window -t "${live_window_id:-${WINDOW_ID:-}}" >/dev/null 2>&1 || true
+  tmux select-pane -t "${live_pane:-${PANE_ID:-$pane}}" >/dev/null 2>&1 || true
 }
 
 jump_oldest() {
