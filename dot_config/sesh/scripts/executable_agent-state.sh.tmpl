@@ -60,8 +60,9 @@ write_done() {
   [[ -n "${TMUX:-}" && -n "${TMUX_PANE:-}" ]] || exit 0
   command -v tmux >/dev/null 2>&1 || exit 0
 
-  local line
-  line=$(tmux display-message -p -t "$TMUX_PANE" '#{pane_id}\t#{session_id}\t#{session_name}\t#{window_id}\t#{window_index}\t#{window_name}\t#{pane_current_path}' 2>/dev/null || true)
+  local line format
+  format=$'#{pane_id}	#{session_id}	#{session_name}	#{window_id}	#{window_index}	#{window_name}	#{pane_current_path}'
+  line=$(tmux display-message -p -t "$TMUX_PANE" "$format" 2>/dev/null || true)
   [[ -n "$line" ]] || exit 0
 
   local pane_id session_id session_name window_id window_index window_name pane_current_path

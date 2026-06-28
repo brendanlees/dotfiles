@@ -17,7 +17,11 @@ printf '%s\n' "$*" >> "${TMUX_LOG:?}"
 case "$1" in
   display-message)
     if [[ "$*" == *'#{pane_id}'* ]]; then
-      printf '%%12\t$1\tdotfiles\t@2\t3\tagent-window\t/tmp/project\n'
+      if [[ "$*" == *$'\t'* ]]; then
+        printf '%%12\t$1\tdotfiles\t@2\t3\tagent-window\t/tmp/project\n'
+      else
+        printf '%%12\\t$1\\tdotfiles\\t@2\\t3\\tagent-window\\t/tmp/project\n'
+      fi
     fi
     ;;
   list-panes)
