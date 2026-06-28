@@ -8,6 +8,8 @@
 
 **Tech Stack:** chezmoi source files, Bash, SketchyBar CLI, BetterDisplay CLI (`betterdisplaycli` or `BetterDisplayCLI`), Python 3 only for bounded subprocess timeout/parsing in the plugin and for test assertions.
 
+> Superseded: SoundSource status polling was dropped after dogfooding. The item is now launcher-only and sends the SoundSource widget hotkey.
+
 ## Global Constraints
 
 - Work in `/Users/brendan/.local/share/chezmoi.feat-sketchybar-soundsource-volume-icon` on branch `feat/sketchybar-soundsource-volume-icon`.

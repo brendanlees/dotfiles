@@ -1,5 +1,7 @@
 # SketchyBar SoundSource volume icon design
 
+> Superseded: SoundSource status polling was dropped after dogfooding. The item is now launcher-only and sends the SoundSource widget hotkey.
+
 ## Goal
 
 Turn the existing unused SoundSource SketchyBar item into a compact right-side audio status icon and launcher. The first slice should answer one simple question: is output volume effectively active or silent?

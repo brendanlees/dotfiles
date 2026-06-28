@@ -4,8 +4,6 @@ sketchybar --add item soundsource right \
   --set soundsource \
     icon="$ICON_VOLUME_UNKNOWN" \
     icon.font="$FONT:Bold:16.0" \
-    icon.color="$GREY" \
+    icon.color="$ICON_COLOR" \
     label.drawing=off \
-    update_freq=60 \
-    script="$PLUGIN_DIR/soundsource.sh" \
-    click_script="osascript -e 'tell application \"SoundSource\" to activate'"
+    click_script="osascript -e 'tell application \"System Events\" to key code 0 using {control down, option down}'"
