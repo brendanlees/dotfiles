@@ -68,6 +68,7 @@ brews:
     - worktrunk
     - yt-dlp
     - felixkratz/formulae/borders
+    - felixkratz/formulae/sketchybar
     - qmk/qmk/qmk
     - icm
     - rtk
@@ -160,6 +161,7 @@ casks:
     - font-monaspace-nerd-font
     - font-monaspice-nerd-font
     - font-noto-sans-symbols-2
+    - font-sketchybar-app-font
     - fuse-t
     - ghostty
     - itsycal

@@ -1,0 +1,81 @@
+#!/bin/bash
+
+source "$CONFIG_DIR/colors.sh"
+source "$CONFIG_DIR/icons.sh"
+
+ITEM_DIR="$CONFIG_DIR/items"
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+FONT="JetBrainsMono Nerd Font Mono"
+PADDINGS=3
+
+# ------------------------------------------
+# bar appearance
+# ------------------------------------------
+
+sketchybar --bar \
+  height=37 \
+  color=$BAR_COLOR \
+  border_color=$BAR_BORDER_COLOR \
+  shadow=off \
+  position=top \
+  topmost=window \
+  sticky=on \
+  padding_right=10 \
+  padding_left=10 \
+  corner_radius=9 \
+  y_offset=6 \
+  margin=8 \
+  blur_radius=20 \
+  notch_width=0
+
+# ------------------------------------------
+# global defaults
+# ------------------------------------------
+
+sketchybar --default \
+  icon.font="$FONT:Bold:14.0" \
+  icon.color=$ICON_COLOR \
+  icon.padding_left=$PADDINGS \
+  icon.padding_right=$PADDINGS \
+  label.font="$FONT:Regular:13.0" \
+  label.color=$LABEL_COLOR \
+  label.padding_left=$PADDINGS \
+  label.padding_right=$PADDINGS \
+  padding_left=$PADDINGS \
+  padding_right=$PADDINGS \
+  background.height=26 \
+  background.corner_radius=9 \
+  popup.background.border_width=2 \
+  popup.background.corner_radius=9 \
+  popup.background.border_color=$POPUP_BORDER_COLOR \
+  popup.background.color=$POPUP_BACKGROUND_COLOR \
+  popup.blur_radius=20 \
+  popup.background.shadow.drawing=on
+
+# ------------------------------------------
+# events
+# ------------------------------------------
+
+sketchybar --add event aerospace_workspace_change
+
+# ------------------------------------------
+# left items
+# ------------------------------------------
+
+source "$ITEM_DIR/spaces.sh"
+source "$ITEM_DIR/front_app.sh"
+
+# ------------------------------------------
+# right items
+# ------------------------------------------
+
+source "$ITEM_DIR/calendar.sh"
+source "$ITEM_DIR/battery.sh"
+
+# ------------------------------------------
+# finalise
+# ------------------------------------------
+
+sketchybar --hotload on
+sketchybar --update
