@@ -24,4 +24,5 @@ sketchybar --set "$NAME" \
   drawing=on \
   icon="$ICON" \
   icon.color="$COLOR" \
-  label="${PERCENTAGE}%"
+  label="${PERCENTAGE}%" \
+  background.border_color="$COLOR"

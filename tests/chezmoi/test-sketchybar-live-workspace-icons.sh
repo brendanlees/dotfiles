@@ -13,11 +13,21 @@ cat > "$CONFIG/colors.sh" <<'SH'
 #!/bin/bash
 export WHITE=0xffffffff
 export GREY=0xff808080
+export MUTED=0xff808080
 export GREEN=0xff00ff00
 export YELLOW=0xffffff00
 export ORANGE=0xffffa500
 export RED=0xffff0000
 export BLUE=0xff0000ff
+export MAGENTA=0xffff00ff
+export CYAN=0xff00ffff
+export ACCENT=0xff00ff80
+export LABEL_COLOR=$WHITE
+export SPACES_COLOR=$BLUE
+export FRONT_APP_COLOR=$MAGENTA
+export CALENDAR_COLOR=$CYAN
+export SPOTIFY_COLOR=$ACCENT
+export PILL_BG=0x88262626
 SH
 
 cp "$ROOT/dot_config/sketchybar/icons.sh" "$CONFIG/icons.sh"
@@ -122,22 +132,21 @@ assert_log_contains 'battery drawing=off'
 PMSET_SCENARIO=battery NAME=battery run_plugin "$CONFIG/plugins/battery.sh"
 assert_log_contains 'battery drawing=on'
 assert_log_contains 'label=42%'
+assert_log_contains 'background.border_color=0xffffff00'
 
 : > "$LOG"
 SENDER=front_app_switched INFO=Arc NAME=space.4-files FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
-assert_log_contains 'space.4-files background.drawing=on'
-assert_log_contains 'icon.color=0xffffffff'
+assert_log_contains 'space.4-files icon.color=0xffffffff'
 assert_log_contains 'label=:arc:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.2-code FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
-assert_log_contains 'space.2-code background.drawing=off'
-assert_log_contains 'icon.color=0xff808080'
+assert_log_contains 'space.2-code icon.color=0xff808080'
 assert_log_contains 'label=:ghostty:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.6-misc1 FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 6-misc1
-assert_log_contains 'space.6-misc1 background.drawing=off'
+assert_log_contains 'space.6-misc1 icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'

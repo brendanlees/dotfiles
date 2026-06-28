@@ -36,7 +36,10 @@ chmod +x "$BIN/sketchybar"
 PATH="$BIN:$PATH" \
   SKETCHYBAR_STUB_LOG="$LOG" \
   FONT="JetBrainsMono Nerd Font Mono" \
-  GREY=0xff808080 \
+  ICON_CALENDAR=CAL \
+  CALENDAR_COLOR=0xff00ffff \
+  WHITE=0xffffffff \
+  PILL_BG=0x88262626 \
   PLUGIN_DIR=/tmp/plugins \
   bash "$CALENDAR"
 
@@ -46,8 +49,10 @@ import sys
 
 log = Path(sys.argv[1]).read_text()
 assert '--add item calendar right' in log, log
-assert 'icon=⣿' in log, log
-assert 'icon.color=0xff808080' in log, log
+assert 'icon=CAL' in log, log
+assert 'icon.color=0xff00ffff' in log, log
+assert 'background.border_color=0xff00ffff' in log, log
+assert 'background.drawing=on' in log, log
 assert 'icon.drawing=off' not in log, log
 assert 'script=/tmp/plugins/calendar.sh' in log, log
 PY

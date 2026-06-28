@@ -45,7 +45,12 @@ sketchybar --default \
   padding_left=$PADDINGS \
   padding_right=$PADDINGS \
   background.height=26 \
-  background.corner_radius=9 \
+  background.corner_radius=12 \
+  background.color="$PILL_BG" \
+  background.border_width=1 \
+  background.drawing=on \
+  background.padding_left=6 \
+  background.padding_right=6 \
   popup.background.border_width=2 \
   popup.background.corner_radius=9 \
   popup.background.border_color="$POPUP_BORDER_COLOR" \
@@ -60,10 +65,15 @@ sketchybar --default \
 sketchybar --add event aerospace_workspace_change
 
 # ------------------------------------------
-# left items
+# left items (spaces)
 # ------------------------------------------
 
 source "$ITEM_DIR/spaces.sh"
+
+# ------------------------------------------
+# center items (focused app)
+# ------------------------------------------
+
 source "$ITEM_DIR/front_app.sh"
 
 # ------------------------------------------

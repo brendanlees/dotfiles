@@ -14,6 +14,7 @@ cat > "$CONFIG/colors.sh" <<'SH'
 export ICON_COLOR=0xffffffff
 export LABEL_COLOR=0xffeeeeee
 export GREY=0xff808080
+export SPOTIFY_COLOR=0xff00ff80
 SH
 
 cp "$ROOT/dot_config/sketchybar/plugins/executable_spotify.sh" "$CONFIG/plugins/spotify.sh" 2>/dev/null || : > "$CONFIG/plugins/spotify.sh"
@@ -86,6 +87,8 @@ PY
 SPOTIFY_SCENARIO=playing run_plugin
 assert_log_contains 'spotify drawing=on'
 assert_log_contains 'icon=:spotify:'
+assert_log_contains 'icon.color=0xff00ff80'
+assert_log_contains 'background.border_color=0xff00ff80'
 assert_log_contains 'label=Emma Ruth Rundle — Haunted Houses'
 
 : > "$LOG"
@@ -106,10 +109,12 @@ assert_log_contains 'spotify drawing=on'
 assert_log_contains 'label=Very Long Artist Na…'
 
 : > "$LOG"
-CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$ROOT/dot_config/sketchybar/items/spotify.sh"
+CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SPOTIFY_COLOR=0xff00ff80 WHITE=0xffffffff PILL_BG=0x88262626 SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$ROOT/dot_config/sketchybar/items/spotify.sh"
 assert_log_contains '--add item spotify right'
 assert_log_contains 'icon=:spotify:'
 assert_log_contains 'icon.font=sketchybar-app-font:Regular:16.0'
+assert_log_contains 'icon.color=0xff00ff80'
+assert_log_contains 'background.border_color=0xff00ff80'
 assert_log_contains 'drawing=off'
 assert_log_contains 'update_freq=15'
 assert_log_contains 'script='

@@ -57,6 +57,7 @@ PY
 sketchybar --set "$NAME" \
   drawing=on \
   icon=":spotify:" \
-  icon.color="$ICON_COLOR" \
+  icon.color="$SPOTIFY_COLOR" \
   label="$label" \
-  label.color="$LABEL_COLOR"
+  label.color="$LABEL_COLOR" \
+  background.border_color="$SPOTIFY_COLOR"

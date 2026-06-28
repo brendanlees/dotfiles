@@ -5,9 +5,15 @@ sketchybar --add item spotify right \
     drawing=off \
     icon=":spotify:" \
     icon.font="sketchybar-app-font:Regular:16.0" \
-    icon.color="$ICON_COLOR" \
+    icon.color="$SPOTIFY_COLOR" \
     label.font="$FONT:Regular:13.0" \
-    label.color="$LABEL_COLOR" \
+    label.color="$WHITE" \
+    background.color="$PILL_BG" \
+    background.border_color="$SPOTIFY_COLOR" \
+    background.border_width=1 \
+    background.corner_radius=12 \
+    background.height=26 \
+    background.drawing=on \
     update_freq=15 \
     script="$PLUGIN_DIR/spotify.sh" \
     click_script="osascript -e 'tell application \"Spotify\" to activate'"

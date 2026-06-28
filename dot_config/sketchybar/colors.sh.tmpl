@@ -13,7 +13,10 @@ export YELLOW=0xff{{ trimPrefix "#" $p.warn | lower }}
 export ORANGE=0xff{{ trimPrefix "#" $p.orange | lower }}
 export MAGENTA=0xff{{ trimPrefix "#" $p.secondary | lower }}
 export CYAN=0xff{{ trimPrefix "#" $p.info | lower }}
+export ACCENT=0xff{{ trimPrefix "#" $p.accent | lower }}
 export GREY=0xff{{ trimPrefix "#" $p.border | lower }}
+export MUTED=0xff{{ trimPrefix "#" $p.muted | lower }}
+export SURFACE=0xff{{ trimPrefix "#" $p.surface | lower }}
 export TRANSPARENT=0x00000000
 
 # bar
@@ -23,3 +26,12 @@ export ICON_COLOR=$WHITE
 export LABEL_COLOR=$WHITE
 export POPUP_BACKGROUND_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
 export POPUP_BORDER_COLOR=0xff{{ trimPrefix "#" $p.surface | lower }}
+
+# section accent colors (semantic palette keys, theme-driven)
+export SPACES_COLOR=$BLUE        # primary
+export FRONT_APP_COLOR=$MAGENTA  # secondary
+export CALENDAR_COLOR=$CYAN      # info
+export SPOTIFY_COLOR=$ACCENT     # accent
+
+# pill background (translucent surface)
+export PILL_BG=0x88{{ trimPrefix "#" $p.surface | lower }}
