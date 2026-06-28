@@ -171,4 +171,5 @@ casks:
     - zed
     - nikitabobko/tap/aerospace
     - macos-fuse-t/cask/fuse-t-sshfs
+    - keyclu
   work: []
