@@ -1,0 +1,25 @@
+#!/bin/bash
+{{ $p := (index .themes .theme).palette }}
+# Sketchybar color palette
+# Active theme: {{ .theme }}
+# Format: 0xAARRGGBB
+
+export BLACK=0xff{{ trimPrefix "#" $p.bg | lower }}
+export WHITE=0xff{{ trimPrefix "#" $p.fg | lower }}
+export RED=0xff{{ trimPrefix "#" $p.error | lower }}
+export GREEN=0xff{{ trimPrefix "#" $p.success | lower }}
+export BLUE=0xff{{ trimPrefix "#" $p.primary | lower }}
+export YELLOW=0xff{{ trimPrefix "#" $p.warn | lower }}
+export ORANGE=0xff{{ trimPrefix "#" $p.orange | lower }}
+export MAGENTA=0xff{{ trimPrefix "#" $p.secondary | lower }}
+export CYAN=0xff{{ trimPrefix "#" $p.info | lower }}
+export GREY=0xff{{ trimPrefix "#" $p.border | lower }}
+export TRANSPARENT=0x00000000
+
+# bar
+export BAR_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
+export BAR_BORDER_COLOR=0xff{{ trimPrefix "#" $p.surface | lower }}
+export ICON_COLOR=$WHITE
+export LABEL_COLOR=$WHITE
+export POPUP_BACKGROUND_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
+export POPUP_BORDER_COLOR=0xff{{ trimPrefix "#" $p.surface | lower }}
