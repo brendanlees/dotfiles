@@ -136,4 +136,76 @@ SKETCHYBAR_STUB_LOG="$TMP/missing.log" TS_STATUS_JSON='{}' \
   bash "$CONFIG/plugins/tailscale.sh"
 grep -q -- "--set tailscale drawing=off" "$TMP/missing.log" || fail "missing-tailscale: expected drawing=off"
 
+
+# --------------------------------------------------------------------------
+# Font-glyph-validity guard (host-aware; catches the class of bug where a chosen
+# Nerd Font codepoint maps to .notdef and renders blank in the bar). Reads the
+# plugin file's actual ICON_TS_* glyph literals and asserts each maps to a real
+# (non-.notdef) glyph in JetBrainsMono Nerd Font Mono Bold. Soft-skips (exit 0)
+# when fc-match / the font / python3 are unavailable (ephemeral,headless non-macOS
+# CI). A genuine .notdef mapping exits 1 and FAILS the test (not swallowed).
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "skip: font glyph-validity guard needs python3"
+else
+  GLYPHGUARD_PLUGIN="$ROOT/dot_config/sketchybar/plugins/executable_tailscale.sh" python3 - <<'GLYPHGUARD' || fail "font glyph-validity guard failed (a chosen glyph maps to .notdef); see stderr"
+import sys, struct, subprocess, shutil, os
+def u16(b,o): return int.from_bytes(b[o:o+2],'big',signed=False)
+def u32(b,o): return struct.unpack('>I', b[o:o+4])[0]
+plugin = os.environ.get("GLYPHGUARD_PLUGIN","")
+if not plugin or not os.path.exists(plugin):
+    print("skip: plugin path not found:", plugin); sys.exit(0)
+src = open(plugin, encoding="utf-8").read()
+glyphs = {}
+for m in __import__("re").finditer(r'^ICON_TS_([A-Z]+)=(\S)', src, __import__("re").MULTILINE):
+    name, first = m.group(1), m.group(2)
+    if first == "$":  # byte-escape form, not a literal; cannot validate
+        print("skip: plugin uses a byte-escape glyph literal; cannot validate", file=sys.stderr)
+        sys.exit(0)
+    glyphs["TS_" + name] = ord(first)
+if not glyphs:
+    print("skip: no ICON_TS_* literals found in plugin"); sys.exit(0)
+if not shutil.which("fc-match"):
+    print("skip: fc-match not on PATH"); sys.exit(0)
+fp = subprocess.run(["fc-match","-f","%{file}","JetBrainsMono Nerd Font Mono:Bold"],
+                    capture_output=True, text=True).stdout.strip()
+if not fp or "Nerd" not in fp:
+    print("skip: JetBrainsMono Nerd Font Mono not resolved, got:", fp); sys.exit(0)
+try:
+    b = open(fp,"rb").read()
+except OSError as e:
+    print("skip: font file unreadable:", e); sys.exit(0)
+ntabs = u16(b,4); tables={}
+for i in range(ntabs):
+    rec = 12+i*16; tag = b[rec:rec+4].decode("latin1"); tables[tag] = (u32(b,rec+8), u32(b,rec+12))
+if "cmap" not in tables or "maxp" not in tables:
+    print("skip: font missing cmap/maxp"); sys.exit(0)
+numGlyphs = u16(b, tables["maxp"][0]+4)
+cmap_off = tables["cmap"][0]; nsub = u16(b, cmap_off+2)
+f12base = None; o = cmap_off+4
+for _ in range(nsub):
+    base = cmap_off + u32(b,o+4)
+    if u16(b,base) == 12: f12base = base
+    o += 8
+if f12base is None:
+    print("skip: no format-12 cmap subtable"); sys.exit(0)
+ngrp = u32(b, f12base+12)
+def gid(cp):
+    for g in range(ngrp):
+        off = f12base + 16 + g*12
+        sc=u32(b,off); ec=u32(b,off+4); sg=u32(b,off+8)
+        if sc <= cp <= ec: return sg + (cp - sc)
+    return 0
+bad = []
+for name, cp in glyphs.items():
+    g = gid(cp)
+    if not (0 < g < numGlyphs):
+        bad.append(f"{name} U+{cp:04X} -> gid={g} (.notdef/invalid)")
+if bad:
+    for x in bad: print("FAIL: glyph not real in", fp, ":", x, file=sys.stderr)
+    sys.exit(1)
+print("ok: all tailscale glyphs map to real outlines in", fp)
+GLYPHGUARD
+fi
+
+
 echo "ALL CASES PASSED"
