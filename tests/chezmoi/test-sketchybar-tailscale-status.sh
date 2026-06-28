@@ -73,10 +73,14 @@ assert_hidden() {
 # Visible states: drawing=on + label + semantic color on both icon AND pill border.
 assert_visible() {
   local scenario="$1"; local label="$2"; local color="$3"
+  local log="$TMP/$scenario.log"
   assert_field "$scenario" "drawing" "on"
   assert_field "$scenario" "label" "$label"
   assert_field "$scenario" "icon.color" "$color"
   assert_field "$scenario" "background.border_color" "$color"
+  # icon must carry a glyph (regression guard: an empty icon= once slipped through
+  # because only icon.color was asserted). Match "icon=" followed by a non-space.
+  grep -Eq -- "icon=[^ ]" "$log" || fail "$scenario: icon glyph is empty in $(cat "$log")"
 }
 
 J_NEEDS_LOGIN='{"BackendState":"NeedsLogin","HaveNodeKey":false,"Self":{"Online":false},"Health":[],"Peer":{}}'
