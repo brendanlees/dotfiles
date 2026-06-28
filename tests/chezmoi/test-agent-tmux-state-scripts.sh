@@ -77,7 +77,7 @@ preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-windo
 
 "$script" target 'agent:%12 claude done dotfiles:3 agent-window /tmp/project'
 "$script" target "$list_output"
-grep -q 'switch-client -t $1' "$TMUX_LOG"
+grep -Fq "switch-client -t \$1" "$TMUX_LOG"
 grep -q 'select-window -t @9' "$TMUX_LOG"
 grep -q 'select-pane -t %12' "$TMUX_LOG"
 
