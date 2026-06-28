@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir() {
+  if [[ -n "${AGENT_TMUX_STATE_DIR:-}" ]]; then
+    printf '%s\n' "$AGENT_TMUX_STATE_DIR"
+  elif [[ -n "${XDG_STATE_HOME:-}" ]]; then
+    printf '%s/agent-tmux\n' "$XDG_STATE_HOME"
+  else
+    printf '%s/.local/state/agent-tmux\n' "$HOME"
+  fi
+}
+
+quote_value() {
+  local value=${1:-}
+  printf "'%s'" "${value//\'/\'\\\'\'}"
+}
+
+record_path_for_pane() {
+  local pane=${1:?pane required}
+  printf '%s/pane-%s.env\n' "$(state_dir)" "$pane"
+}
+
+write_assignment() {
+  local key=${1:?key required}
+  local value=${2:-}
+  printf '%s=%s\n' "$key" "$(quote_value "$value")"
+}
+
+load_record() {
+  local file=${1:?file required}
+  [[ -f "$file" ]] || return 1
+  if grep -Evq "^[A-Z_][A-Z0-9_]*=" "$file"; then
+    return 1
+  fi
+  # shellcheck disable=SC1090
+  source "$file"
+}
+
+pane_exists() {
+  local pane=${1:?pane required}
+  command -v tmux >/dev/null 2>&1 || return 1
+  tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -Fxq "$pane"
+}
+
+write_done() {
+  local harness=agent
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --harness)
+        harness=${2:?--harness requires value}
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  [[ -n "${TMUX:-}" && -n "${TMUX_PANE:-}" ]] || exit 0
+  command -v tmux >/dev/null 2>&1 || exit 0
+
+  local line
+  line=$(tmux display-message -p -t "$TMUX_PANE" '#{pane_id}\t#{session_id}\t#{session_name}\t#{window_id}\t#{window_index}\t#{window_name}\t#{pane_current_path}' 2>/dev/null || true)
+  [[ -n "$line" ]] || exit 0
+
+  local pane_id session_id session_name window_id window_index window_name pane_current_path
+  IFS=$'\t' read -r pane_id session_id session_name window_id window_index window_name pane_current_path <<< "$line"
+  [[ -n "$pane_id" ]] || exit 0
+
+  local dir file tmp
+  dir=$(state_dir)
+  mkdir -p "$dir"
+  file=$(record_path_for_pane "$pane_id")
+  tmp="$file.$$"
+
+  {
+    write_assignment HARNESS "$harness"
+    write_assignment STATE done
+    write_assignment PANE_ID "$pane_id"
+    write_assignment SESSION_ID "$session_id"
+    write_assignment SESSION_NAME "$session_name"
+    write_assignment WINDOW_ID "$window_id"
+    write_assignment WINDOW_INDEX "$window_index"
+    write_assignment WINDOW_NAME "$window_name"
+    write_assignment PANE_CURRENT_PATH "$pane_current_path"
+    write_assignment UPDATED_AT "$(date +%s)"
+  } > "$tmp"
+  mv "$tmp" "$file"
+}
+
+record_files() {
+  local dir
+  dir=$(state_dir)
+  [[ -d "$dir" ]] || return 0
+  find "$dir" -maxdepth 1 -type f -name 'pane-*.env' -print
+}
+
+valid_records() {
+  local file
+  while IFS= read -r file; do
+    unset HARNESS STATE PANE_ID SESSION_ID SESSION_NAME WINDOW_ID WINDOW_INDEX WINDOW_NAME PANE_CURRENT_PATH UPDATED_AT
+    if load_record "$file" && [[ "${STATE:-}" == done ]] && [[ -n "${PANE_ID:-}" ]] && pane_exists "$PANE_ID"; then
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "${UPDATED_AT:-0}" "${PANE_ID:-}" "${HARNESS:-agent}" "${SESSION_ID:-}" "${SESSION_NAME:-}" \
+        "${WINDOW_ID:-}" "${WINDOW_INDEX:-}" "${WINDOW_NAME:-}" "${PANE_CURRENT_PATH:-}"
+    else
+      rm -f "$file" 2>/dev/null || true
+    fi
+  done < <(record_files)
+}
+
+list_records() {
+  valid_records | sort -n | while IFS=$'\t' read -r _updated pane harness _session_id session_name _window_id window_index window_name path; do
+    printf 'agent:%s  🤖 %s  done  %s:%s  %s  %s\n' "$pane" "$harness" "$session_name" "$window_index" "$window_name" "$path"
+  done
+}
+
+pane_from_selection() {
+  local selection=${1:-}
+  selection=${selection#agent:}
+  printf '%s\n' "${selection%%[[:space:]]*}"
+}
+
+preview_selection() {
+  local selection=${*:-}
+  local pane file
+  if [[ "$selection" == agent:%* ]]; then
+    pane=$(pane_from_selection "$selection")
+    file=$(record_path_for_pane "$pane")
+    if load_record "$file"; then
+      printf 'agent: %s\n' "${HARNESS:-agent}"
+      printf 'state: %s\n' "${STATE:-unknown}"
+      printf 'pane: %s\n' "${PANE_ID:-$pane}"
+      printf 'session: %s\n' "${SESSION_NAME:-unknown}"
+      printf 'window: %s:%s %s\n' "${WINDOW_INDEX:-?}" "${WINDOW_ID:-?}" "${WINDOW_NAME:-unknown}"
+      printf 'path: %s\n' "${PANE_CURRENT_PATH:-unknown}"
+      printf 'updated: %s\n' "${UPDATED_AT:-unknown}"
+      printf '\n'
+    fi
+    return 0
+  fi
+
+  local stripped session_name
+  stripped=$(printf '%s' "$selection" | sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g')
+  session_name=${stripped##* }
+  valid_records | sort -n | awk -F '\t' -v session="$session_name" '$5 == session {print; found=1; exit} END {exit found ? 0 : 1}' | while IFS=$'\t' read -r updated pane harness _session_id session window_id window_index window_name path; do
+    printf 'agent: %s\nstate: done\npane: %s\nsession: %s\nwindow: %s:%s %s\npath: %s\nupdated: %s\n\n' \
+      "$harness" "$pane" "$session" "$window_index" "$window_id" "$window_name" "$path" "$updated"
+  done || true
+}
+
+jump_to_pane() {
+  local pane=${1:?pane required}
+  local file
+  file=$(record_path_for_pane "$pane")
+  load_record "$file" || return 1
+  pane_exists "${PANE_ID:-}" || return 1
+  tmux switch-client -t "${SESSION_ID:-${SESSION_NAME:-}}" >/dev/null 2>&1 || true
+  tmux select-window -t "${WINDOW_ID:-}" >/dev/null 2>&1 || true
+  tmux select-pane -t "${PANE_ID:-}" >/dev/null 2>&1 || true
+}
+
+jump_oldest() {
+  local row pane
+  row=$(valid_records | sort -n | head -n 1 || true)
+  if [[ -z "$row" ]]; then
+    tmux display-message 'No actionable agent panes' 2>/dev/null || true
+    return 0
+  fi
+  IFS=$'\t' read -r _updated pane _rest <<< "$row"
+  jump_to_pane "$pane"
+}
+
+case "${1:-}" in
+  write-done)
+    shift
+    write_done "$@"
+    ;;
+  list)
+    list_records
+    ;;
+  preview)
+    shift
+    preview_selection "$@"
+    ;;
+  jump)
+    jump_oldest
+    ;;
+  target)
+    shift
+    jump_to_pane "$(pane_from_selection "${*:-}")"
+    ;;
+  *)
+    printf 'usage: %s {write-done|list|preview|jump|target}\n' "$0" >&2
+    exit 2
+    ;;
+esac
