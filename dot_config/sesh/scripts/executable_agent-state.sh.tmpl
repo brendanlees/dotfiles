@@ -74,6 +74,14 @@ ansi_reset() {
   printf '\033[0m'
 }
 
+ansi_underline() {
+  printf '\033[4m'
+}
+
+ansi_no_underline() {
+  printf '\033[24m'
+}
+
 color_harness() {
   case "${1:-agent}" in
     pi) ansi_fg 75 ;;
@@ -106,10 +114,10 @@ format_agent_row() {
   local session_name=${3:?session required}
   local window_index=${4:?window index required}
   local window_name=${5:?window name required}
-  printf '%b%s%b  %b%s%b  %b%s:%s%b  %s\n' \
+  printf '%b%s%b  %b%s%b  %b%b%s%b:%s%b  %s\n' \
     "$(color_harness "$harness")" "$harness" "$(ansi_reset)" \
     "$(color_state "$state")" "$state" "$(ansi_reset)" \
-    "$(color_context)" "$session_name" "$window_index" "$(ansi_reset)" \
+    "$(color_context)" "$(ansi_underline)" "$session_name" "$(ansi_no_underline)" "$window_index" "$(ansi_reset)" \
     "$window_name"
 }
 
