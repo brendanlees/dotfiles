@@ -176,8 +176,8 @@ if.app-id = 'company.thebrowser.Browser'
 run = 'move-node-to-workspace 1-browser'
 
 [[on-window-detected]]
-if.app-id = 'company.thebrowser.Browser'
-run = 'app.zen-browser.zen'
+if.app-id = 'app.zen-browser.zen'
+run = 'move-node-to-workspace 1-browser'
 
 # --- 2. code ---
 [[on-window-detected]]
