@@ -70,10 +70,10 @@ source "$ITEM_DIR/front_app.sh"
 # right items
 # ------------------------------------------
 
-source "$ITEM_DIR/spotify.sh"
-# source "$ITEM_DIR/app_soundsource.sh" # shelved for now
-source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/calendar.sh"
+source "$ITEM_DIR/battery.sh"
+# source "$ITEM_DIR/app_soundsource.sh" # shelved for now
+source "$ITEM_DIR/spotify.sh"
 
 # ------------------------------------------
 # finalise

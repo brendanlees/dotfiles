@@ -22,8 +22,9 @@ assert '# source "$ITEM_DIR/app_soundsource.sh" # shelved for now' in source_lin
 assert 'source "$ITEM_DIR/app_soundsource.sh"' not in source_lines, source_lines
 assert 'source "$ITEM_DIR/battery.sh"' in source_lines, source_lines
 assert 'source "$ITEM_DIR/calendar.sh"' in source_lines, source_lines
-assert source_lines.index('source "$ITEM_DIR/battery.sh"') < source_lines.index('source "$ITEM_DIR/calendar.sh"'), source_lines
-assert source_lines[-1] == 'source "$ITEM_DIR/calendar.sh"', source_lines
+assert source_lines.index('source "$ITEM_DIR/calendar.sh"') < source_lines.index('source "$ITEM_DIR/battery.sh"'), source_lines
+assert source_lines.index('source "$ITEM_DIR/battery.sh"') < source_lines.index('source "$ITEM_DIR/spotify.sh"'), source_lines
+assert source_lines[2] == 'source "$ITEM_DIR/calendar.sh"', source_lines
 PY
 
 cat > "$BIN/sketchybar" <<'SH'
