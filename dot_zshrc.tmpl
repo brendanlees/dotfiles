@@ -214,6 +214,19 @@ hermes() { docker exec -u hermes -it hermes /opt/hermes/.venv/bin/hermes "$@"; }
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 
+# Make accidental backspace at the start of the prompt a no-op instead of
+# emitting BEL. This preserves real terminal bells from tmux/agent hooks.
+_no_bell_backward_delete_char() {
+  if (( CURSOR > 0 )); then
+    zle .backward-delete-char
+  fi
+}
+zle -N no-bell-backward-delete-char _no_bell_backward_delete_char
+bindkey -M viins '^?' no-bell-backward-delete-char
+bindkey -M viins '^H' no-bell-backward-delete-char
+bindkey -M emacs '^?' no-bell-backward-delete-char
+bindkey -M emacs '^H' no-bell-backward-delete-char
+
 # Ctrl+X Ctrl+E opens current command line in $EDITOR (nvim), save+quit
 # returns edited line to prompt. Matches the bash convention + the
 # Windows pwsh profile binding for cross-platform muscle memory.
