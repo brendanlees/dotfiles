@@ -3,18 +3,17 @@
 # shellcheck source=../colors.sh
 source "$CONFIG_DIR/colors.sh"
 
-# Nerd Font glyphs (present in JetBrainsMono Nerd Font Mono).
-ICON_TS_LOCK=    # fa-lock (U+F023, closed padlock = VPN secured); one glyph for all visible states
-
-export TS_COLOR_GREY="$GREY" TS_COLOR_BLUE="$BLUE" TS_COLOR_YELLOW="$YELLOW" TS_COLOR_RED="$RED" TS_COLOR_GREEN="$GREEN"
-export TS_ICON_LOCK="$ICON_TS_LOCK"
+# State colors (VPN secured): green=connected, yellow=health warning or transient,
+# red=running-but-offline. The icon is the static `:tailscale:` token set by the
+# item; this plugin only toggles drawing and recolors icon + pill border.
+export TS_COLOR_GREY="$GREY" TS_COLOR_YELLOW="$YELLOW" TS_COLOR_RED="$RED" TS_COLOR_GREEN="$GREEN"
 
 hide_item() {
   sketchybar --set "$NAME" drawing=off label=""
   exit 0
 }
 
-# Off/inactive, broken-machine, or no-tailscale: hide the pill entirely.
+# Off / inactive / broken-machine: hide the pill entirely.
 if ! command -v tailscale >/dev/null 2>&1; then
   hide_item
 fi
@@ -26,10 +25,7 @@ if [ ! -x /usr/bin/python3 ]; then
   hide_item
 fi
 
-# JSON is passed as argv[1]; the program comes from the heredoc on stdin
-# (same pattern as the spotify plugin). Output TSV: drawing\ticon\tcolor\tlabel.
-# The same semantic <color> drives icon.color AND background.border_color so the
-# pill frame tracks state (green=connected, blue=exit node, yellow/red=alert).
+# TSV from python: drawing\tcolor\tlabel. drawing is "on" or "off".
 result="$(/usr/bin/python3 - "$status_json" <<'PY'
 import json
 import os
@@ -38,10 +34,7 @@ import sys
 def env(name):
     return os.environ.get(name, "")
 
-GREY, BLUE, YELLOW, RED, GREEN = (env("TS_COLOR_GREY"), env("TS_COLOR_BLUE"),
-                                  env("TS_COLOR_YELLOW"), env("TS_COLOR_RED"),
-                                  env("TS_COLOR_GREEN"))
-ICON_LOCK = env("TS_ICON_LOCK")
+GREEN, YELLOW, RED = env("TS_COLOR_GREEN"), env("TS_COLOR_YELLOW"), env("TS_COLOR_RED")
 
 def trunc(s, n):
     s = s or ""
@@ -49,11 +42,11 @@ def trunc(s, n):
         s = s[: n - 1] + "…"
     return s
 
-def on(icon, color, label):
-    return "on\t" + icon + "\t" + color + "\t" + label
+def on(color, label):
+    return "on\t" + color + "\t" + label
 
 def off():
-    return "off\t\t\t"
+    return "off\t\t"
 
 try:
     d = json.loads(sys.argv[1])
@@ -66,12 +59,6 @@ have_key = bool(d.get("HaveNodeKey", False))
 self_node = d.get("Self") or {}
 online = bool(self_node.get("Online", False))
 health = d.get("Health") or []
-peers = d.get("Peer") or {}
-exit_host = ""
-for n in peers.values():
-    if n.get("ExitNode"):
-        exit_host = n.get("HostName", "") or ""
-        break
 
 # Off / inactive states are hidden: no node key, needs-login, stopped, or unknown.
 if not have_key or state in ("NeedsLogin", "Stopped", ""):
@@ -80,30 +67,27 @@ if not have_key or state in ("NeedsLogin", "Stopped", ""):
 
 if state != "Running":
     # Starting / NeedsMachineAuth / other transient states: surface as a warning.
-    print(on(ICON_LOCK, YELLOW, trunc(state.lower(), 12)))
+    print(on(YELLOW, trunc(state.lower(), 12)))
     raise SystemExit(0)
 
 # Running: visible in every sub-state so the pill always shows while connected.
-if exit_host:
-    print(on(ICON_LOCK, BLUE, trunc(exit_host.split(".", 1)[0], 20)))
-elif health:
-    print(on(ICON_LOCK, YELLOW, trunc(health[0], 20)))
+if health:
+    print(on(YELLOW, trunc(health[0], 20)))
 elif not online:
-    print(on(ICON_LOCK, RED, "offline"))
+    print(on(RED, "offline"))
 else:
     tailnet = ((d.get("CurrentTailnet") or {}).get("Name", "")) or "connected"
-    print(on(ICON_LOCK, GREEN, trunc(tailnet, 20)))
+    print(on(GREEN, trunc(tailnet, 20)))
 PY
 )"
 
-IFS=$'\t' read -r drawing icon color label <<< "$result"
+IFS=$'\t' read -r drawing color label <<< "$result"
 
 if [ "$drawing" = "off" ]; then
   sketchybar --set "$NAME" drawing=off label=""
 else
   sketchybar --set "$NAME" \
     drawing=on \
-    icon="$icon" \
     icon.color="$color" \
     background.border_color="$color" \
     label="$label" \

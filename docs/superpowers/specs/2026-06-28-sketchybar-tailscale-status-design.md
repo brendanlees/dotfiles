@@ -6,11 +6,11 @@ Branch: feat/sketchybar-tailscale-status
 
 ## Goal
 
-Add a signal-only Tailscale status item to the right side of the SketchyBar,
-grouped with system-status items (battery, date). It is hidden when Tailscale
-is healthy and not routing through an exit node, and visible whenever something
-is worth glancing at: stopped, unhealthy, needs-login, offline, or an exit node
-is in use.
+Add a Tailscale status pill to the right side of the SketchyBar, grouped with
+system-status items (battery, date). It is hidden when Tailscale is off or
+inactive (stopped, needs-login, no node key, broken-machine), and visible only
+while Tailscale is running. The icon is the `:tailscale:` token rendered by
+`sketchybar-app-font`; exit-node surfacing is out of scope (server-side only).
 
 ## Scope
 
@@ -18,8 +18,7 @@ In scope:
 
 - A single SketchyBar item + plugin backed by `tailscale status --json`.
 - Right-side placement adjacent to battery.
-- Signal-only visibility (hidden in the boring healthy state, except exit node).
-- A distinct, always-visible state when an exit node is active.
+- Signal-only visibility (hidden while off/inactive).
 - Two bash tests under `tests/chezmoi/`.
 
 Out of scope:
@@ -41,11 +40,7 @@ machine-parseable. Key fields used (verified against tailscale 1.98.5):
 - `HaveNodeKey` — whether the node is logged in at all.
 - `Health` — array of human strings; empty means healthy.
 - `Self.Online` — bool, whether the local node is online.
-- `Self.ExitNode` / `Self.ExitNodeOption` — exit-node flags on the self node.
 - `CurrentTailnet.Name` — tailnet name shown in the healthy connected state.
-- `Peer` — map of peer nodes; each peer has `HostName`, `Online`, `ExitNode`,
-  `ExitNodeOption`. A peer with `ExitNode == true` is the currently selected
-  exit node.
 
 `scutil --nc list` is NOT used. The Tailscale system-extension row there can
 read "Connected" while the CLI reports `Stopped`, so the CLI is authoritative.
@@ -87,8 +82,8 @@ Pill defaults mirror `battery.sh` / `calendar.sh` (`PILL_BG` background, 1px bor
 height 26, corner_radius 8). The plugin recolors `background.border_color` on each
 refresh so the frame tracks the semantic state.
 
-`update_freq=30` — Tailscale state changes are slow (up/down, exit node toggle);
-30s is responsive enough for a signal-only item without hammering the CLI.
+`update_freq=30` — Tailscale state changes are slow (up/down); 30s is responsive
+enough without hammering the CLI.
 `system_woke` subscription refreshes state after sleep, matching `battery.sh`.
 
 ### `dot_config/sketchybar/plugins/executable_tailscale.sh`
@@ -105,19 +100,16 @@ Behavior, by precedence (first match wins):
    environment.
 2. `HaveNodeKey == false`, or `BackendState` in `{NeedsLogin, Stopped, ""}` →
    `drawing=off` (the pill is hidden while Tailscale is off or inactive).
-4. `BackendState == Running`:
-   - Any peer with `ExitNode == true` →
-     `drawing=on, icon=lock, color=BLUE, label=<HostName truncated
-     before first ".">`. Exit node takes precedence over health warnings
-     because "you are routing all traffic through an exit node" is the
-     most privacy-relevant signal and the easiest to forget.
-   - Else if `Health` is non-empty →
-     `drawing=on, icon=lock, color=YELLOW, label=<first health string
-     truncated to ~20 chars>`.
+4. `BackendState == Running` (icon stays the static `:tailscale:` token; only color + label + border change):
+   - If `Health` is non-empty →
+     `drawing=on, color=YELLOW, label=<first health string truncated to ~20 chars>`.
    - Else if `Self.Online == false` →
-     `drawing=on, icon=lock, color=RED, label="offline"`.
-   - Else (healthy, online, no exit node) →
-     `drawing=on, icon=lock, color=GREEN, label=<tailnet name from CurrentTailnet.Name, or "connected" if missing, truncated to ~20 chars>`. The item is a persistent connected indicator; state is conveyed by color + label + border, not the glyph.
+     `drawing=on, color=RED, label="offline"`.
+   - Else (healthy, online) →
+     `drawing=on, color=GREEN, label=<tailnet name from CurrentTailnet.Name, or "connected" if missing, truncated to ~20 chars>`. The item is a persistent connected indicator; state is conveyed by color + label + border, not the glyph.
+5. Any other `BackendState` (e.g. `NeedsMachineAuth`, `Starting`) →
+   `drawing=on, color=YELLOW, label=<state lowercase, ~12 chars>`.
+
 5. Any other `BackendState` (e.g. `NeedsMachineAuth`, `Starting`) →
    `drawing=on, icon=lock, color=YELLOW, label=<state lowercase, ~12 chars>`.
 
@@ -145,34 +137,41 @@ visually adjacent to battery.
 | 1 | tailscale missing / status error / bad JSON | off | — | — | — |
 | 2 | NeedsLogin / no node key / empty state | off | — | — | — (hidden) |
 | 3 | Stopped (has key) | off | — | — | — (hidden) |
-| 4a | Running, exit node in use | on | lock | BLUE | exit-node host (before first `.`) |
-| 4b | Running, Health non-empty | on | lock | YELLOW | health (~20 chars) |
-| 4c | Running, Self.Online=false | on | lock | RED | `offline` |
-| 4d | Running, healthy, online, no exit node | on | lock | GREEN | tailnet name (or `connected` if unknown) |
-| 5 | Other BackendState | on | lock | YELLOW | state (~12 chars) |
+| 4a | Running, Health non-empty | on | `:tailscale:` | YELLOW | health (~20 chars) |
+| 4b | Running, Self.Online=false | on | `:tailscale:` | RED | `offline` |
+| 4c | Running, healthy, online | on | `:tailscale:` | GREEN | tailnet name (or `connected` if unknown) |
+| 5 | Other BackendState | on | `:tailscale:` | YELLOW | state (~12 chars) |
 
 The same semantic `<color>` drives both `icon.color` and `background.border_color`,
 so the pill frame tracks state (matching the existing battery/calendar/spaces pills,
 which each color the border by their semantic state). The item definition sets a
 neutral `GREY` border up front until the first plugin refresh recolors it.
 
-**Single glyph:** every visible state shows the same closed-padlock glyph (fa-lock
-U+F023 = "VPN secured"); state is conveyed by `color` + `label` + `border_color`,
-not by swapping the glyph. This keeps one consistent Nerd Font icon at the same
-size as the battery pill (`$FONT:Bold:16.0`) and eliminates per-state glyph-tofu
-risk.
+**Single icon, recolored:** every visible state shows the same `:tailscale:` token
+(rendered by `sketchybar-app-font`, the icon library also used by spaces /
+front_app / spotify); state is conveyed by `icon.color` + `label` +
+`background.border_color`, not by swapping the glyph. This reuses the existing
+icon pipeline, matches the other app-icon items' font/size, and eliminates
+hand-picked Nerd-Font-codepoint tofu risk (the token resolves via the app-font's
+GSUB ligature, validated by the test suite's icon-token guard).
 
 ## Visual / icons
 
-A single closed-padlock Nerd Font glyph, fa-lock (U+F023), is used for every
-visible state — "VPN secured". State is distinguished by `icon.color` and a
-matching `background.border_color` (green = connected, blue = exit node in use,
-yellow = health warning or transient, red = offline), plus the `label` (tailnet
-name, exit-node host, health text, or `offline`). U+F023 is confirmed a real
-outline (gid 2557) in JetBrainsMonoNerdFontMono-Bold/Regular; the test suite's
-font-glyph-validity guard fails the build if it ever resolves to `.notdef`. The
-item's icon font is `$FONT:Bold:16.0` (JetBrainsMono Nerd Font Mono), matching the
-battery/soundsource/itsycal system pills for consistent family + size.
+A single icon, the `:tailscale:` token, is rendered by
+`sketchybar-app-font` (installed at `~/Library/Fonts/sketchybar-app-font.ttf`) via
+its GSUB ligature table — the same mechanism and font used by `spaces.sh`,
+`front_app.sh`, and `spotify.sh`. The item sets `icon=":tailscale:"` and
+`icon.font="sketchybar-app-font:Regular:16.0"` statically; the plugin never
+changes the icon string, only `icon.color` and `background.border_color` per
+state (green = connected, yellow = health warning or transient, red = offline).
+
+No hand-picked Nerd Font codepoint is used, so the `.notdef`-tofu class of bug
+is structurally avoided. The test suite's icon-token guard asserts the installed
+app-font binary contains the literal ligature input `tailscale` (with `spotify`
+as a sanity anchor); it soft-skips on hosts without the font/python3 so
+dry-run CI passes. The item's label font stays `$FONT:Regular:13.0`
+(JetBrainsMono Nerd Font Mono) for the tailnet/health/offline text.
+
 
 ## Data flow
 
@@ -239,16 +238,6 @@ Standard verification alongside the tests:
 
 ## Risks / open questions
 
-- **Exit-node flag semantics**: `ExitNode == true` on a peer is intended to mean
-  "this is the currently selected exit node". This is not yet verified with a
-  live exit node (Tailscale was Stopped during design). The plugin type and the
-  tests use it as specified; dogfooding will toggle an exit node on to confirm.
-  If the flag does not behave as expected, fall back to parsing
-  `tailscale exit-node list` for the in-use exit node. The test uses canned
-  JSON so it is independent of this risk.
-- **Glyph tofu**: a chosen Nerd Font codepoint may not render in
-  `JetBrainsMono Nerd Font Mono`. Mitigated by dogfood verification and trivial
-  glyph swaps.
 - **JSON format warning**: `tailscale status --json` docs warn the format is
   subject to change. The parser only reads the documented fields above and
   fails closed (hide) on malformed output, so a future change degrades to
@@ -256,6 +245,7 @@ Standard verification alongside the tests:
 
 ## Non-goals / future slices
 
+- Exit-node surfacing (intentionally removed; exit-node use is server-side here).
 - Click action (`tailscale up`/`down` or a popup with peers).
 - Generic macOS/system VPN surfacing.
 - A popup listing tailnet peers with online/offline state.
