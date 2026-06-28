@@ -182,6 +182,12 @@ if pgrep -xq borders 2>/dev/null; then
   pkill -USR1 borders 2>/dev/null || true
 fi
 
+# sketchybar — reload config so the rendered colors apply
+if pgrep -xq sketchybar 2>/dev/null && command -v sketchybar >/dev/null 2>&1; then
+  echo ":: sketchybar reload"
+  sketchybar --reload >/dev/null 2>&1 || true
+fi
+
 # nvim — push colorscheme to every running instance via its auto-listen socket.
 # Each nvim creates a server at $XDG_RUNTIME_DIR/nvim.<pid>.0 (linux) or
 # /tmp/nvim.$USER/<rand>/0 (macos); --remote-send into a <Cmd> mapping avoids

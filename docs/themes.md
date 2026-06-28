@@ -1,6 +1,6 @@
 # themes
 
-a single `theme` key in `.chezmoidata/defaults.yml` drives colors across ghostty, pi, tmux, nvim, btop, bat, starship, glow, zed, espanso, and yabai borders.
+a single `theme` key in `.chezmoidata/defaults.yml` drives colors across ghostty, pi, tmux, nvim, btop, bat, starship, glow, zed, espanso, Sketchybar, and yabai borders.
 
 ## switching
 
@@ -11,7 +11,7 @@ theme --list             # list available themes (active marked)
 theme --current          # print active theme
 ```
 
-the script writes the choice to `.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, borders, nvim (over its socket), and espanso.
+the script writes the choice to `.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, borders, Sketchybar, nvim (over its socket), and espanso.
 
 a few apps need a manual restart to pick up the new theme:
 
