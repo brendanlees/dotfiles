@@ -61,6 +61,12 @@ for window in windows:
 
 app_name="$(representative_app "$workspace" || true)"
 
+if [ -n "$app_name" ] || [ "$workspace" = "$focused_workspace" ]; then
+  SPACE_Drawing=on
+else
+  SPACE_Drawing=off
+fi
+
 if [ -n "$app_name" ]; then
   icon_map="$CONFIG_DIR/plugins/icon_map.sh"
   app_icon=":default:"
@@ -72,6 +78,7 @@ if [ -n "$app_name" ]; then
   fi
 
   sketchybar --set "$item_name" \
+    drawing="$SPACE_Drawing" \
     icon.color="$IC_COLOR" \
     background.drawing="$SPACE_BG_Drawing" \
     label="$app_icon" \
@@ -79,6 +86,7 @@ if [ -n "$app_name" ]; then
     label.drawing=on
 else
   sketchybar --set "$item_name" \
+    drawing="$SPACE_Drawing" \
     icon.color="$IC_COLOR" \
     background.drawing="$SPACE_BG_Drawing" \
     label="" \

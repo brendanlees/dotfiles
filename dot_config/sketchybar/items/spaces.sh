@@ -8,6 +8,19 @@ WORKSPACES=$(aerospace list-workspaces --all)
 FOCUSED=$(aerospace list-workspaces --focused)
 APP_FONT="sketchybar-app-font"
 
+# Returns success (0) if the given workspace currently contains any windows.
+workspace_has_windows() {
+    aerospace list-windows --workspace "$1" --json 2>/dev/null \
+        | /usr/bin/python3 -c '
+import json, sys
+try:
+    windows = json.load(sys.stdin)
+except Exception:
+    windows = []
+sys.exit(0 if windows else 1)
+'
+}
+
 while IFS= read -r workspace; do
     [ -n "$workspace" ] || continue
 
@@ -21,8 +34,18 @@ while IFS= read -r workspace; do
         SPACE_BG_Drawing=off
     fi
 
+    # Only show spaces that hold windows, plus the focused space (so you never
+    # lose track of where you are). Empty non-focused spaces stay hidden until
+    # a window appears; aerospace.sh keeps `drawing` in sync on later events.
+    if [ "$workspace" = "$FOCUSED" ] || workspace_has_windows "$workspace"; then
+        SPACE_Drawing=on
+    else
+        SPACE_Drawing=off
+    fi
+
     sketchybar --add item space."$workspace" left \
         --set space."$workspace" \
+        drawing="$SPACE_Drawing" \
         icon="$num" \
         icon.font="$FONT:Bold:13.0" \
         icon.color="$IC_COLOR" \
