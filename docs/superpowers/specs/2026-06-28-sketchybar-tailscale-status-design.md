@@ -42,6 +42,7 @@ machine-parseable. Key fields used (verified against tailscale 1.98.5):
 - `Health` — array of human strings; empty means healthy.
 - `Self.Online` — bool, whether the local node is online.
 - `Self.ExitNode` / `Self.ExitNodeOption` — exit-node flags on the self node.
+- `CurrentTailnet.Name` — tailnet name shown in the healthy connected state.
 - `Peer` — map of peer nodes; each peer has `HostName`, `Online`, `ExitNode`,
   `ExitNodeOption`. A peer with `ExitNode == true` is the currently selected
   exit node.
@@ -62,12 +63,29 @@ controls all of those so each state sets exactly the fields it needs.
 ```bash
 #!/bin/bash
 
+# Item starts hidden; the plugin reveals it only when Tailscale is running.
 sketchybar --add item tailscale right \
-  --set tailscale \
+    --set tailscale \
+    drawing=off \
+    icon.font="$FONT:Bold:14.0" \
+    label.font="$FONT:Regular:13.0" \
+    label.color="$WHITE" \
+    background.color="$PILL_BG" \
+    background.border_color="$GREY" \
+    background.border_width=1 \
+    background.corner_radius=8 \
+    background.height=26 \
+    background.drawing=on \
+    padding_left=8 \
+    padding_right=8 \
     update_freq=30 \
     script="$PLUGIN_DIR/tailscale.sh" \
-  --subscribe tailscale system_woke
+    --subscribe tailscale system_woke
 ```
+
+Pill defaults mirror `battery.sh` / `calendar.sh` (`PILL_BG` background, 1px border,
+height 26, corner_radius 8). The plugin recolors `background.border_color` on each
+refresh so the frame tracks the semantic state.
 
 `update_freq=30` — Tailscale state changes are slow (up/down, exit node toggle);
 30s is responsive enough for a signal-only item without hammering the CLI.
@@ -85,10 +103,8 @@ Behavior, by precedence (first match wins):
 1. `tailscale` binary missing, or `tailscale status --json` exits non-zero, or
    JSON is unparseable → `drawing=off`, exit 0. Never spam the bar on a broken
    environment.
-2. `HaveNodeKey == false` or `BackendState == NeedsLogin` →
-   `drawing=on, icon=lock, color=GREY, label="login"`.
-3. `BackendState == Stopped` (has node key) →
-   `drawing=on, icon=lock, color=GREY, label="off"`.
+2. `HaveNodeKey == false`, or `BackendState` in `{NeedsLogin, Stopped, ""}` →
+   `drawing=off` (the pill is hidden while Tailscale is off or inactive).
 4. `BackendState == Running`:
    - Any peer with `ExitNode == true` →
      `drawing=on, icon=exit-glyph, color=BLUE, label=<HostName truncated
@@ -101,7 +117,7 @@ Behavior, by precedence (first match wins):
    - Else if `Self.Online == false` →
      `drawing=on, icon=alert, color=RED, label="offline"`.
    - Else (healthy, online, no exit node) →
-     `drawing=off` (the boring state).
+     `drawing=on, icon=shield, color=GREEN, label=<tailnet name from CurrentTailnet.Name, or "connected" if missing, truncated to ~20 chars>`. The item is a persistent connected indicator, not signal-only.
 5. Any other `BackendState` (e.g. `NeedsMachineAuth`, `Starting`) →
    `drawing=on, icon=alert, color=YELLOW, label=<state lowercase, ~12 chars>`.
 
@@ -127,13 +143,18 @@ visually adjacent to battery.
 | Precedence | Condition | Drawing | Icon | Color | Label |
 |---|---|---|---|---|---|
 | 1 | tailscale missing / status error / bad JSON | off | — | — | — |
-| 2 | NeedsLogin / no node key | on | lock | GREY | `login` |
-| 3 | Stopped (has key) | on | lock | GREY | `off` |
+| 2 | NeedsLogin / no node key / empty state | off | — | — | — (hidden) |
+| 3 | Stopped (has key) | off | — | — | — (hidden) |
 | 4a | Running, exit node in use | on | exit | BLUE | exit-node host (before first `.`) |
 | 4b | Running, Health non-empty | on | alert | YELLOW | health (~20 chars) |
 | 4c | Running, Self.Online=false | on | alert | RED | `offline` |
-| 4d | Running, healthy, online, no exit node | off | — | — | — (boring state) |
+| 4d | Running, healthy, online, no exit node | on | shield (green) | GREEN | tailnet name (or `connected` if unknown) |
 | 5 | Other BackendState | on | alert | YELLOW | state (~12 chars) |
+
+The same semantic `<color>` drives both `icon.color` and `background.border_color`,
+so the pill frame tracks state (matching the existing battery/calendar/spaces pills,
+which each color the border by their semantic state). The item definition sets a
+neutral `GREY` border up front until the first plugin refresh recolors it.
 
 ## Visual / icons
 

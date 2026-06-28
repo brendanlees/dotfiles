@@ -14,6 +14,7 @@ export GREY=0xff808080
 export BLUE=0xff3b82f6
 export YELLOW=0xffe3b341
 export RED=0xffef4444
+export GREEN=0xff22c55e
 export LABEL_COLOR=0xffeeeeee
 COL
 
@@ -51,10 +52,10 @@ run_case() {
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
-assert_set() {
-  # Every asserted field is followed by another --set arg in the captured line,
-  # so a trailing-space boundary disambiguates "label=off" from "label=offline"
-  # without relying on regex end-anchors (label values may contain spaces).
+# Every asserted field is followed by another --set arg, so a trailing-space
+# boundary disambiguates "label=off" from "label=offline" without end-anchors
+# (label values may contain spaces).
+assert_field() {
   local scenario="$1"; local field="$2"; local want="$3"
   local log="$TMP/$scenario.log"
   grep -Eq -- "${field}=${want} " "$log" || fail "$scenario: expected ${field}=${want} in $(cat "$log")"
@@ -69,45 +70,47 @@ assert_hidden() {
   fi
 }
 
+# Visible states: drawing=on + label + semantic color on both icon AND pill border.
+assert_visible() {
+  local scenario="$1"; local label="$2"; local color="$3"
+  assert_field "$scenario" "drawing" "on"
+  assert_field "$scenario" "label" "$label"
+  assert_field "$scenario" "icon.color" "$color"
+  assert_field "$scenario" "background.border_color" "$color"
+}
+
 J_NEEDS_LOGIN='{"BackendState":"NeedsLogin","HaveNodeKey":false,"Self":{"Online":false},"Health":[],"Peer":{}}'
 J_STOPPED='{"BackendState":"Stopped","HaveNodeKey":true,"Self":{"Online":false},"Health":["Tailscale is stopped."],"Peer":{}}'
-J_RUNNING_OK='{"BackendState":"Running","HaveNodeKey":true,"Self":{"Online":true},"Health":[],"Peer":{}}'
+J_RUNNING_OK='{"BackendState":"Running","HaveNodeKey":true,"Self":{"Online":true},"Health":[],"CurrentTailnet":{"Name":"steadydigital.co"},"Peer":{}}'
 J_RUNNING_EXIT='{"BackendState":"Running","HaveNodeKey":true,"Self":{"Online":true,"ExitNode":true},"Health":[],"Peer":{"abc":{"HostName":"vultr-syd01.example.ts.net","ExitNode":true,"Online":true}}}'
 J_RUNNING_SICK='{"BackendState":"Running","HaveNodeKey":true,"Self":{"Online":true},"Health":["could not connect to the Sydney relay server"],"Peer":{}}'
 J_RUNNING_OFFLINE='{"BackendState":"Running","HaveNodeKey":true,"Self":{"Online":false},"Health":[],"Peer":{}}'
 J_OTHER_STATE='{"BackendState":"Starting","HaveNodeKey":true,"Self":{"Online":false},"Health":[],"Peer":{}}'
 
-echo "# tailscale plugin state matrix"
+echo "# tailscale plugin state matrix (hide when off/inactive; pill while running)"
 
-run_case needs_login "$J_NEEDS_LOGIN"
-assert_set needs_login "drawing" "on"
-assert_set needs_login "label" "login"
+# Off / inactive states are hidden.
+run_case needs_login "$J_NEEDS_LOGIN"; assert_hidden needs_login
+run_case stopped "$J_STOPPED"; assert_hidden stopped
 
-run_case stopped "$J_STOPPED"
-assert_set stopped "drawing" "on"
-assert_set stopped "label" "off"
-
+# Running states are visible with a state-tracking pill.
 run_case running_healthy "$J_RUNNING_OK"
-assert_hidden running_healthy
+assert_visible running_healthy "steadydigital.co" "0xff22c55e"
 
 run_case running_exit "$J_RUNNING_EXIT"
-assert_set running_exit "drawing" "on"
-assert_set running_exit "label" "vultr-syd01"
+assert_visible running_exit "vultr-syd01" "0xff3b82f6"
 
 run_case running_unhealthy "$J_RUNNING_SICK"
-assert_set running_unhealthy "drawing" "on"
-assert_set running_unhealthy "label" "could not connect t…"
+assert_visible running_unhealthy "could not connect t…" "0xffe3b341"
 
 run_case running_offline "$J_RUNNING_OFFLINE"
-assert_set running_offline "drawing" "on"
-assert_set running_offline "label" "offline"
+assert_visible running_offline "offline" "0xffef4444"
 
 run_case other_state "$J_OTHER_STATE"
-assert_set other_state "drawing" "on"
-assert_set other_state "label" "starting"
+assert_visible other_state "starting" "0xffe3b341"
 
-run_case bad_json 'not-json-at-all'
-assert_hidden bad_json
+# Broken-machine paths hide.
+run_case bad_json 'not-json-at-all'; assert_hidden bad_json
 
 # tailscale exits non-zero
 : > "$TMP/nz.log"
@@ -120,12 +123,10 @@ if grep -q -- "--set tailscale drawing=on" "$TMP/nz.log"; then
 fi
 
 # tailscale missing from PATH
-: > "$TMP/missing.log"
-# "tailscale missing": PATH has the sketchybar stub (in its own dir) but no
-# tailscale binary anywhere, so the plugin's missing-binary hide guard fires.
 MBIN="$TMP/mbin"
 mkdir -p "$MBIN"
 cp "$BIN/sketchybar" "$MBIN/sketchybar"
+: > "$TMP/missing.log"
 SKETCHYBAR_STUB_LOG="$TMP/missing.log" TS_STATUS_JSON='{}' \
   PATH="$MBIN:/usr/bin:/bin" NAME=tailscale CONFIG_DIR="$CONFIG" PLUGIN_DIR="$CONFIG/plugins" \
   bash "$CONFIG/plugins/tailscale.sh"
