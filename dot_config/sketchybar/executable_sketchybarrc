@@ -71,9 +71,9 @@ source "$ITEM_DIR/front_app.sh"
 # ------------------------------------------
 
 source "$ITEM_DIR/spotify.sh"
-source "$ITEM_DIR/app_soundsource.sh"
-source "$ITEM_DIR/calendar.sh"
+# source "$ITEM_DIR/app_soundsource.sh" # shelved for now
 source "$ITEM_DIR/battery.sh"
+source "$ITEM_DIR/calendar.sh"
 
 # ------------------------------------------
 # finalise
