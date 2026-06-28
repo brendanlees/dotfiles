@@ -126,6 +126,11 @@ assert_log_contains 'front_app icon=:arc:'
 assert_log_contains 'label=Arc'
 
 : > "$LOG"
+SENDER=front_app_switched INFO='Hermes Agent Desktop' NAME=front_app run_plugin "$CONFIG/plugins/front_app.sh"
+assert_log_contains 'front_app icon=:hermes_agent:'
+assert_log_contains 'label=Hermes Agent Desktop'
+
+: > "$LOG"
 PMSET_SCENARIO=ac NAME=battery run_plugin "$CONFIG/plugins/battery.sh"
 assert_log_contains 'battery drawing=off'
 
@@ -137,19 +142,19 @@ assert_log_contains 'background.border_color=0xffffff00'
 
 : > "$LOG"
 SENDER=front_app_switched INFO=Arc NAME=space.4-files FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
-assert_log_contains 'space.4-files icon.color=0xffffffff'
+assert_log_contains 'space.4-files drawing=on icon.color=0xffffffff'
 assert_log_contains 'background.drawing=on'
 assert_log_contains 'label=:arc:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.2-code FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
-assert_log_contains 'space.2-code icon.color=0xff808080'
+assert_log_contains 'space.2-code drawing=on icon.color=0xff808080'
 assert_log_contains 'background.drawing=off'
 assert_log_contains 'label=:ghostty:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.6-misc1 FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 6-misc1
-assert_log_contains 'space.6-misc1 icon.color=0xff808080'
+assert_log_contains 'space.6-misc1 drawing=off icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'

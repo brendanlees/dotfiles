@@ -19,6 +19,7 @@ case "$1" in
   "Mimestream")                  icon_result=":mimestream:" ;;
   "Notion")                      icon_result=":notion:" ;;
   "Obsidian")                    icon_result=":obsidian:" ;;
+  Hermes* | hermes*)             icon_result=":hermes_agent:" ;;
   "Spotify")                     icon_result=":spotify:" ;;
   "System Preferences" | "System Settings") icon_result=":system_preferences:" ;;
   "Todoist")                     icon_result=":todoist:" ;;
