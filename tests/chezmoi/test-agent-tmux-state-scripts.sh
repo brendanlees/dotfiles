@@ -63,3 +63,26 @@ preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-windo
 grep -q 'switch-client -t $1' "$TMUX_LOG"
 grep -q 'select-window -t @2' "$TMUX_LOG"
 grep -q 'select-pane -t %12' "$TMUX_LOG"
+
+
+for wrapper in \
+  "$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl" \
+  "$repo_root/dot_config/sesh/scripts/executable_list-agent-sessions.sh.tmpl" \
+  "$repo_root/dot_config/sesh/scripts/executable_agent-next.sh.tmpl"; do
+  bash -n "$wrapper"
+done
+
+cat > "$fake_bin/sesh" <<'SESH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" == preview ]]; then
+  printf 'sesh preview: %s\n' "${2:-}"
+fi
+SESH
+chmod +x "$fake_bin/sesh"
+
+export AGENT_TMUX_STATE_SCRIPT="$script"
+preview_wrapper="$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl"
+combined_preview=$("$preview_wrapper" 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
+[[ "$combined_preview" == *'agent: claude'* ]]
+[[ "$combined_preview" == *'sesh preview: agent:%12 claude done dotfiles:3 agent-window /tmp/project'* ]]
