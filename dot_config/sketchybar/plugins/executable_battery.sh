@@ -3,10 +3,11 @@
 source "$CONFIG_DIR/colors.sh"
 source "$CONFIG_DIR/icons.sh"
 
-PERCENTAGE="$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)"
-CHARGING="$(pmset -g batt | grep 'AC Power')"
+BATTERY_INFO="$(pmset -g batt)"
+PERCENTAGE="$(printf '%s\n' "$BATTERY_INFO" | grep -Eo '[0-9]+%' | head -n 1 | cut -d% -f1)"
+AC_POWER="$(printf '%s\n' "$BATTERY_INFO" | grep 'AC Power' || true)"
 
-if [ "$PERCENTAGE" = "" ]; then
+if [ -z "$PERCENTAGE" ] || [ -n "$AC_POWER" ]; then
   sketchybar --set "$NAME" drawing=off
   exit 0
 fi
@@ -18,11 +19,6 @@ case ${PERCENTAGE} in
   [1-2][0-9]) ICON="$ICON_BATTERY_25";  COLOR="$ORANGE" ;;
   *)          ICON="$ICON_BATTERY_0";    COLOR="$RED" ;;
 esac
-
-if [ -n "$CHARGING" ]; then
-  ICON="$ICON_BATTERY_CHARGING"
-  COLOR="$GREEN"
-fi
 
 sketchybar --set "$NAME" \
   drawing=on \
