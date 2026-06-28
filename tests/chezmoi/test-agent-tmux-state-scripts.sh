@@ -25,7 +25,11 @@ case "$1" in
     fi
     ;;
   list-panes)
-    printf '%%12\n'
+    if [[ "$*" == *'#{session_name}'* ]]; then
+      printf '%%12\t$1\tdotfiles\t@9\t3\tlive-window\t/tmp/live\tpi\t12345\n'
+    else
+      printf '%%12\n'
+    fi
     ;;
   has-session|switch-client|select-window|select-pane|display-popup)
     exit 0
@@ -55,11 +59,11 @@ grep -q "^SESSION_NAME='dotfiles'$" "$record"
 
 list_output=$("$script" list)
 [[ "$list_output" == agent:%12* ]]
-[[ "$list_output" == *claude* ]]
+[[ "$list_output" == *pi* ]]
 [[ "$list_output" == *dotfiles* ]]
 
 preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
-[[ "$preview_output" == *'agent: claude'* ]]
+[[ "$preview_output" == *'agent: pi'* ]]
 [[ "$preview_output" == *'state: done'* ]]
 [[ "$preview_output" == *'pane: %12'* ]]
 
@@ -88,7 +92,7 @@ chmod +x "$fake_bin/sesh"
 export AGENT_TMUX_STATE_SCRIPT="$script"
 preview_wrapper="$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl"
 combined_preview=$("$preview_wrapper" 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
-[[ "$combined_preview" == *'agent: claude'* ]]
+[[ "$combined_preview" == *'agent: pi'* ]]
 [[ "$combined_preview" == *'sesh preview: agent:%12 claude done dotfiles:3 agent-window /tmp/project'* ]]
 
 
@@ -100,3 +104,32 @@ grep -q "list-agent-sessions.sh" "$picker"
 grep -q "preview-with-agent-state.sh" "$picker"
 grep -q "agent-next.sh --target" "$picker"
 grep -q "bind-key A run-shell '~/.config/sesh/scripts/agent-next.sh'" "$tmux_conf"
+
+
+# Reader output should refresh live tmux metadata instead of showing stale record values.
+cat > "$record" <<'STALE'
+HARNESS='claude'
+STATE='done'
+PANE_ID='%12'
+SESSION_ID='$1'
+SESSION_NAME='stale-session'
+WINDOW_ID='@2'
+WINDOW_INDEX='1'
+WINDOW_NAME='stale-window'
+PANE_CURRENT_PATH='/tmp/stale'
+UPDATED_AT='1'
+STALE
+
+stale_list=$("$script" list)
+[[ "$stale_list" == *'🤖 pi'* ]]
+[[ "$stale_list" == *'dotfiles:3'* ]]
+[[ "$stale_list" == *'live-window'* ]]
+[[ "$stale_list" == *'/tmp/live'* ]]
+[[ "$stale_list" != *'stale-window'* ]]
+
+stale_preview=$("$script" preview 'agent:%12 claude done stale-session:1 stale-window /tmp/stale')
+[[ "$stale_preview" == *'agent: pi'* ]]
+[[ "$stale_preview" == *'session: dotfiles'* ]]
+[[ "$stale_preview" == *'window: 3:@9 live-window'* ]]
+[[ "$stale_preview" == *'path: /tmp/live'* ]]
+[[ "$stale_preview" == *'command: pi'* ]]
