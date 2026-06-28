@@ -58,9 +58,13 @@ grep -q "^PANE_ID='%12'$" "$record"
 grep -q "^SESSION_NAME='dotfiles'$" "$record"
 
 list_output=$("$script" list)
-[[ "$list_output" == agent:%12* ]]
 [[ "$list_output" == *pi* ]]
-[[ "$list_output" == *dotfiles* ]]
+[[ "$list_output" == *done* ]]
+[[ "$list_output" == *dotfiles:3* ]]
+[[ "$list_output" == *live-window* ]]
+[[ "$list_output" != *agent:%12* ]]
+[[ "$list_output" != *'🤖'* ]]
+[[ "$list_output" != *'/tmp/live'* ]]
 
 preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
 [[ "$preview_output" == *'agent: pi'* ]]
@@ -68,8 +72,9 @@ preview_output=$("$script" preview 'agent:%12 claude done dotfiles:3 agent-windo
 [[ "$preview_output" == *'pane: %12'* ]]
 
 "$script" target 'agent:%12 claude done dotfiles:3 agent-window /tmp/project'
+"$script" target "$list_output"
 grep -q 'switch-client -t $1' "$TMUX_LOG"
-grep -q 'select-window -t @2' "$TMUX_LOG"
+grep -q 'select-window -t @9' "$TMUX_LOG"
 grep -q 'select-pane -t %12' "$TMUX_LOG"
 
 
@@ -121,10 +126,13 @@ UPDATED_AT='1'
 STALE
 
 stale_list=$("$script" list)
-[[ "$stale_list" == *'🤖 pi'* ]]
+[[ "$stale_list" == *'pi'* ]]
+[[ "$stale_list" == *'done'* ]]
 [[ "$stale_list" == *'dotfiles:3'* ]]
 [[ "$stale_list" == *'live-window'* ]]
-[[ "$stale_list" == *'/tmp/live'* ]]
+[[ "$stale_list" != *'/tmp/live'* ]]
+[[ "$stale_list" != *'agent:%12'* ]]
+[[ "$stale_list" != *'🤖'* ]]
 [[ "$stale_list" != *'stale-window'* ]]
 
 stale_preview=$("$script" preview 'agent:%12 claude done stale-session:1 stale-window /tmp/stale')
