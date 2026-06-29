@@ -18,4 +18,5 @@ sketchybar --add item spotify right \
     padding_right="$ITEM_PADDING" \
     update_freq=15 \
     script="$PLUGIN_DIR/spotify.sh" \
-    click_script="osascript -e 'tell application \"Spotify\" to activate'"
+    click_script="osascript -e 'tell application \"Spotify\" to activate'" \
+    --subscribe spotify spotify_change media_change

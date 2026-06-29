@@ -89,6 +89,8 @@ add_spacer() {
 # ------------------------------------------
 
 sketchybar --add event aerospace_workspace_change
+# Spotify posts this distributed notification on playback/track changes.
+sketchybar --add event spotify_change com.spotify.client.PlaybackStateChanged
 
 # ------------------------------------------
 # left items (spaces)
