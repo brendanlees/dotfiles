@@ -38,7 +38,7 @@ sketchybar --add item sync_dot_syncthing right \
 sketchybar --add item sync_status right \
   --set sync_status \
   icon="$SYNC_ICON" \
-  icon.font="$FONT:Bold:18.0" \
+  icon.font="$FONT:Bold:20.0" \
   icon.color="$ICON_COLOR" \
   icon.padding_left=8 \
   icon.padding_right=4 \

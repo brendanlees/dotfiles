@@ -39,7 +39,7 @@ sketchybar --add item backup_status right \
   --set backup_status \
   drawing=off \
   icon="$BACKUP_ICON" \
-  icon.font="sketchybar-app-font:Regular:15.0" \
+  icon.font="sketchybar-app-font:Regular:12.0" \
   icon.color="$ICON_COLOR" \
   icon.padding_left=8 \
   icon.padding_right=5 \
