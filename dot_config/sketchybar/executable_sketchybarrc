@@ -12,6 +12,7 @@ PILL_HEIGHT=28
 ITEM_PADDING=8
 BAR_EDGE_PADDING=4
 GROUP_GAP=4
+MEDIA_GAP=8
 BORDER_RADIUS=8
 
 # ------------------------------------------
@@ -70,14 +71,17 @@ add_spacer() {
   local name="$1"
   local side="$2"
   local gap="${3:-$GROUP_GAP}"
+  local drawing="${4:-on}"
 
   sketchybar --add item "spacer.$name" "$side" \
     --set "spacer.$name" \
+    drawing="$drawing" \
     icon.drawing=off \
     label.drawing=off \
     background.drawing=off \
-    padding_left="$gap" \
-    padding_right="$gap"
+    width="$gap" \
+    padding_left=0 \
+    padding_right=0
 }
 
 # ------------------------------------------
@@ -105,11 +109,12 @@ source "$ITEM_DIR/front_app.sh"
 source "$ITEM_DIR/calendar.sh"
 add_spacer calendar_status right
 source "$ITEM_DIR/battery.sh"
+add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
-add_spacer status_sync right
+add_spacer status_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/sync_status.sh"
 source "$ITEM_DIR/tailscale.sh"
-add_spacer status_spotify right
+add_spacer status_spotify right "$MEDIA_GAP"
 # source "$ITEM_DIR/app_soundsource.sh" # shelved for now
 source "$ITEM_DIR/spotify.sh"
 

@@ -8,7 +8,9 @@ PERCENTAGE="$(printf '%s\n' "$BATTERY_INFO" | grep -Eo '[0-9]+%' | head -n 1 | c
 AC_POWER="$(printf '%s\n' "$BATTERY_INFO" | grep 'AC Power' || true)"
 
 if [ -z "$PERCENTAGE" ] || [ -n "$AC_POWER" ]; then
-  sketchybar --set "$NAME" drawing=off
+  sketchybar \
+    --set "$NAME" drawing=off \
+    --set spacer.backup_sync drawing=off
   exit 0
 fi
 
@@ -20,9 +22,11 @@ case ${PERCENTAGE} in
   *)          ICON="$ICON_BATTERY_0";    COLOR="$RED" ;;
 esac
 
-sketchybar --set "$NAME" \
+sketchybar \
+  --set "$NAME" \
   drawing=on \
   icon="$ICON" \
   icon.color="$COLOR" \
   label="${PERCENTAGE}%" \
-  background.border_color="$COLOR"
+  background.border_color="$COLOR" \
+  --set spacer.backup_sync drawing=on

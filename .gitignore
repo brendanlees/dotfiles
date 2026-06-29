@@ -4,6 +4,7 @@ dot_DS_Store
 .worktrees
 .serena
 .claudeignore
+superpowers/
 
 # host-local chezmoi data overlay (theme switcher, runtime state)
 .chezmoidata/local.yml
