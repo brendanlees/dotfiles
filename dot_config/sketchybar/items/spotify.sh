@@ -5,6 +5,8 @@ sketchybar --add item spotify right \
     drawing=off \
     icon=":spotify:" \
     icon.font="sketchybar-app-font:Regular:14.0" \
+    icon.padding_left=14 \
+    icon.padding_right=4 \
     icon.color="$SPOTIFY_COLOR" \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
