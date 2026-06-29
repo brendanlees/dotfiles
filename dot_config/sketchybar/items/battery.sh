@@ -12,8 +12,8 @@ sketchybar --add item battery right \
     background.corner_radius=8 \
     background.height=26 \
     background.drawing=on \
-    padding_left=8 \
-    padding_right=8 \
+    padding_left="$ITEM_PADDING" \
+    padding_right="$ITEM_PADDING" \
     update_freq=120 \
     script="$PLUGIN_DIR/battery.sh" \
     --subscribe battery power_source_change system_woke

@@ -13,8 +13,8 @@ sketchybar --add item sync_status right \
   icon.color="$ICON_COLOR" \
   label.drawing=off \
   background.drawing=off \
-  padding_left=2 \
-  padding_right=2 \
+  padding_left="$ITEM_PADDING" \
+  padding_right="$ITEM_PADDING" \
   update_freq=15 \
   script="$PLUGIN_DIR/sync_status.sh" \
   --subscribe sync_status system_woke

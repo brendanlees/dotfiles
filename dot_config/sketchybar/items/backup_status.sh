@@ -16,8 +16,8 @@ sketchybar --add item backup_status right \
   icon.padding_right=0 \
   label.drawing=off \
   background.drawing=off \
-  padding_left=$PADDINGS \
-  padding_right=$PADDINGS \
+  padding_left="$ITEM_PADDING" \
+  padding_right="$ITEM_PADDING" \
   update_freq=30 \
   script="$PLUGIN_DIR/backup_status.sh" \
   --subscribe backup_status system_woke

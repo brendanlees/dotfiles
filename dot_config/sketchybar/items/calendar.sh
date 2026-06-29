@@ -13,8 +13,8 @@ sketchybar --add item calendar_time right \
     icon.padding_right=4 \
     label.drawing=off \
     background.drawing=off \
-    padding_left="$PADDINGS" \
-    padding_right="$PADDINGS" \
+    padding_left="$ITEM_PADDING" \
+    padding_right="$ITEM_PADDING" \
     update_freq=0 \
     click_script="$ITSYCAL_CLICK"
 

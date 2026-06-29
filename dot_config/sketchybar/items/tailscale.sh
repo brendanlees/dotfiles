@@ -16,8 +16,8 @@ sketchybar --add item tailscale right \
     background.corner_radius=8 \
     background.height=26 \
     background.drawing=on \
-    padding_left=8 \
-    padding_right=8 \
+    padding_left="$ITEM_PADDING" \
+    padding_right="$ITEM_PADDING" \
     update_freq=30 \
     script="$PLUGIN_DIR/tailscale.sh" \
     --subscribe tailscale system_woke

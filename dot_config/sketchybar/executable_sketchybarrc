@@ -7,7 +7,9 @@ ITEM_DIR="$CONFIG_DIR/items"
 export PLUGIN_DIR="$CONFIG_DIR/plugins"
 
 FONT="JetBrainsMono Nerd Font Mono"
-PADDINGS=8
+ITEM_PADDING=8
+BAR_EDGE_PADDING=4
+GROUP_GAP=10
 BORDER_RADIUS=8
 
 # ------------------------------------------
@@ -22,8 +24,8 @@ sketchybar --bar \
   position=top \
   topmost=window \
   sticky=on \
-  padding_right=4 \
-  padding_left=4 \
+  padding_right="$BAR_EDGE_PADDING" \
+  padding_left="$BAR_EDGE_PADDING" \
   corner_radius=8 \
   y_offset=6 \
   margin=8 \
@@ -37,14 +39,14 @@ sketchybar --bar \
 sketchybar --default \
   icon.font="$FONT:Bold:14.0" \
   icon.color="$ICON_COLOR" \
-  icon.padding_left=$PADDINGS \
-  icon.padding_right=$PADDINGS \
+  icon.padding_left="$ITEM_PADDING" \
+  icon.padding_right="$ITEM_PADDING" \
   label.font="$FONT:Regular:13.0" \
   label.color="$LABEL_COLOR" \
-  label.padding_left=$PADDINGS \
-  label.padding_right=$PADDINGS \
-  padding_left=$PADDINGS \
-  padding_right=$PADDINGS \
+  label.padding_left="$ITEM_PADDING" \
+  label.padding_right="$ITEM_PADDING" \
+  padding_left="$ITEM_PADDING" \
+  padding_right="$ITEM_PADDING" \
   background.height=26 \
   background.corner_radius="$BORDER_RADIUS" \
   background.color="$PILL_BG" \
@@ -58,6 +60,24 @@ sketchybar --default \
   popup.background.color="$POPUP_BACKGROUND_COLOR" \
   popup.blur_radius=20 \
   popup.background.shadow.drawing=on
+
+# ------------------------------------------
+# layout helpers
+# ------------------------------------------
+
+add_spacer() {
+  local name="$1"
+  local side="$2"
+  local gap="${3:-$GROUP_GAP}"
+
+  sketchybar --add item "spacer.$name" "$side" \
+    --set "spacer.$name" \
+    icon.drawing=off \
+    label.drawing=off \
+    background.drawing=off \
+    padding_left="$gap" \
+    padding_right="$gap"
+}
 
 # ------------------------------------------
 # events
@@ -83,16 +103,9 @@ source "$ITEM_DIR/front_app.sh"
 
 source "$ITEM_DIR/calendar.sh"
 
-# Spacer: gap between the calendar anchor and the status pills to its left
-# (battery/backup/sync). Without this, hidden items (AC power, no active
-# backup) let sync_status butt directly against the calendar bracket.
-sketchybar --add item spacer.calendar right \
-    --set spacer.calendar \
-    icon.drawing=off \
-    label.drawing=off \
-    background.drawing=off \
-    padding_left=6 \
-    padding_right=6
+# Reusable gap between the calendar anchor and status pills to its left.
+# This keeps hidden status items from collapsing sync_status into calendar.
+add_spacer calendar_status right
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/sync_status.sh"
