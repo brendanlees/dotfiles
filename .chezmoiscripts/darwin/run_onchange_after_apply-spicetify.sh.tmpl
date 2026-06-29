@@ -29,8 +29,11 @@ spicetify config \
   inject_css 1 \
   replace_colors 1 \
   overwrite_assets 0 \
-  inject_theme_js 1 \
-  custom_apps marketplace
+  inject_theme_js 1
+
+spicetify config custom_apps marketplace
+spicetify config custom_apps stats
+spicetify config custom_apps library
 
 # Create the initial backup when needed. If a backup already exists, Spicetify
 # exits non-zero and asks for restore/reinstall; that is not fatal for applying

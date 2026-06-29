@@ -147,6 +147,20 @@ refreshPeriod = "168h"
 type = "file"
 url = "https://raw.githubusercontent.com/spicetify/spicetify-themes/master/text/user.css"
 refreshPeriod = "168h"
+
+[".config/spicetify/CustomApps/stats"]
+type = "archive"
+url = "https://github.com/harbassan/spicetify-apps/releases/download/stats-v1.1.3/spicetify-stats.release.zip"
+exact = true
+stripComponents = 1
+refreshPeriod = "168h"
+
+[".config/spicetify/CustomApps/library"]
+type = "archive"
+url = "https://github.com/harbassan/spicetify-apps/releases/download/library-v1.1.1/spicetify-library.release.zip"
+exact = true
+stripComponents = 1
+refreshPeriod = "168h"
 {{- end }}
 
 {{- if .personal }}
