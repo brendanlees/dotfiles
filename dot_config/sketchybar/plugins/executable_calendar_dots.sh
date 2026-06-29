@@ -1,10 +1,44 @@
 #!/bin/bash
 
-set_dots() {
-    sketchybar --set cal_dot_fam drawing="$1" \
-        --set cal_dot_work drawing="$2" \
-        --set cal_dot_per drawing="$3" \
-        --set cal_dot_neutral drawing="$4"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_DIR="${CONFIG_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
+if [ -f "$CONFIG_DIR/colors.sh" ]; then
+    # shellcheck source=/dev/null
+    source "$CONFIG_DIR/colors.sh"
+fi
+
+DOT_PINK="0xffE36BA0"
+: "${ORANGE:=0xffffa500}"
+: "${GREEN:=0xff00ff00}"
+: "${GREY:=0xff808080}"
+: "${WHITE:=0xffffffff}"
+
+set_calendar_border() {
+    if [ "$#" -eq 0 ]; then
+        sketchybar --set calendar_group background.border_color="$GREY"
+        return
+    fi
+
+    if [ "$#" -gt 1 ]; then
+        local gradient_value
+        local IFS=,
+        gradient_value="$*"
+
+        if sketchybar --set calendar_group background.border_color="$gradient_value" 2>/dev/null; then
+            return
+        fi
+    fi
+
+    sketchybar --set calendar_group background.border_color="$1"
+}
+
+set_calendar_state() {
+    local clock_color="$1"
+    shift
+
+    sketchybar --set calendar_event_clock icon.color="$clock_color"
+    set_calendar_border "$@"
 }
 
 if ! calendar_names="$(CALENDAR_DOTS_TIMEOUT_SECONDS="${CALENDAR_DOTS_TIMEOUT_SECONDS:-12}" /usr/bin/python3 <<'PY' 2>/dev/null
@@ -79,7 +113,7 @@ if result.returncode != 0:
 sys.stdout.write(result.stdout)
 PY
 )"; then
-    set_dots off off off on
+    set_calendar_state "$GREY" "$GREY"
     exit 0
 fi
 
@@ -97,10 +131,13 @@ done <<EOF_NAMES
 $calendar_names
 EOF_NAMES
 
-if [ "$fam" = off ] && [ "$work" = off ] && [ "$per" = off ]; then
-    neutral=on
-else
-    neutral=off
-fi
+active_colors=()
+[ "$fam" = on ] && active_colors+=("$DOT_PINK")
+[ "$work" = on ] && active_colors+=("$ORANGE")
+[ "$per" = on ] && active_colors+=("$GREEN")
 
-set_dots "$fam" "$work" "$per" "$neutral"
+if [ "${#active_colors[@]}" -eq 0 ]; then
+    set_calendar_state "$GREY" "$GREY"
+else
+    set_calendar_state "$WHITE" "${active_colors[@]}"
+fi
