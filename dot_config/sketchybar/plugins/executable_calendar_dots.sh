@@ -113,7 +113,7 @@ if result.returncode != 0:
 sys.stdout.write(result.stdout)
 PY
 )"; then
-    set_calendar_state "$GREY" "$GREY"
+    set_calendar_state "$WHITE" "$GREY"
     exit 0
 fi
 
@@ -137,7 +137,7 @@ active_colors=()
 [ "$per" = on ] && active_colors+=("$GREEN")
 
 if [ "${#active_colors[@]}" -eq 0 ]; then
-    set_calendar_state "$GREY" "$GREY"
+    set_calendar_state "$WHITE" "$GREY"
 else
     set_calendar_state "$WHITE" "${active_colors[@]}"
 fi
