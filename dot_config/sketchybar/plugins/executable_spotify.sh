@@ -3,6 +3,7 @@
 CONFIG_DIR="${CONFIG_DIR:-${HOME}/.config/sketchybar}"
 # shellcheck source=dot_config/sketchybar/colors.sh
 source "$CONFIG_DIR/colors.sh"
+FONT="${FONT:-JetBrainsMono Nerd Font Mono}"
 
 hide_item() {
   sketchybar --set "$NAME" drawing=off label=""
@@ -15,10 +16,11 @@ if [ "$is_running" != "true" ]; then
 fi
 
 player_state="$(osascript -e 'tell application "Spotify" to player state as string' 2>/dev/null || true)"
-if [ "$player_state" != "playing" ]; then
-  hide_item
-  exit 0
-fi
+case "$player_state" in
+  playing) state_icon="⏸" ;;
+  paused) state_icon="▶" ;;
+  *) state_icon="▶" ;;
+esac
 
 artist="$(osascript -e 'tell application "Spotify" to artist of current track' 2>/dev/null || true)"
 title="$(osascript -e 'tell application "Spotify" to name of current track' 2>/dev/null || true)"
@@ -31,8 +33,7 @@ elif [ -n "$title" ]; then
 elif [ -n "$artist" ]; then
   track="$artist"
 else
-  hide_item
-  exit 0
+  track="Spotify"
 fi
 
 max_chars="${SPOTIFY_LABEL_MAX_CHARS:-40}"
@@ -65,8 +66,9 @@ fi
 
 sketchybar --set "$NAME" \
   drawing=on \
-  icon=":spotify:" \
-  icon.color="$SPOTIFY_COLOR" \
+  icon="$state_icon" \
+  icon.font="$FONT:Bold:13.0" \
+  icon.color="$accent_color" \
   label="$label" \
   label.color="$LABEL_COLOR" \
   background.border_color="$accent_color"
