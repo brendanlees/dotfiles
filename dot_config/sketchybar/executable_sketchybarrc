@@ -7,8 +7,8 @@ ITEM_DIR="$CONFIG_DIR/items"
 export PLUGIN_DIR="$CONFIG_DIR/plugins"
 
 FONT="JetBrainsMono Nerd Font Mono"
-BAR_HEIGHT=32
-PILL_HEIGHT=28
+BAR_HEIGHT=38
+PILL_HEIGHT=32
 ITEM_PADDING=8
 BAR_EDGE_PADDING=4
 GROUP_GAP=6
@@ -55,7 +55,7 @@ sketchybar --default \
   background.color="$PILL_BG" \
   background.border_width=1 \
   background.drawing=on \
-  popup.background.border_width=2 \
+  popup.background.border_width=1 \
   popup.background.corner_radius="$BORDER_RADIUS" \
   popup.background.border_color="$POPUP_BORDER_COLOR" \
   popup.background.color="$POPUP_BACKGROUND_COLOR" \
