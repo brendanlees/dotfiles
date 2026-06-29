@@ -175,4 +175,6 @@ casks:
     - nikitabobko/tap/aerospace
     - macos-fuse-t/cask/fuse-t-sshfs
     - keyclu
+    - codex
+    - codex-app
   work: []
