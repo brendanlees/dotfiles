@@ -2,6 +2,10 @@
 
 ITSYCAL_CLICK="osascript -e 'tell application \"System Events\" to keystroke \"c\" using {control down, option down}' || open -a Itsycal"
 
+# Remove old dot items from already-running SketchyBar sessions when this config
+# is re-sourced after the dot-to-border migration.
+sketchybar --remove '/cal_dot_.*/' 2>/dev/null || true
+
 # Right-side items render right-to-left as they are added. Add the time first so
 # the group reads left-to-right as: calendar/date, event clock, time.
 sketchybar --add item calendar_time right \

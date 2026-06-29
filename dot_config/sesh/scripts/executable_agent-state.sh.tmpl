@@ -155,7 +155,7 @@ write_done() {
 
   {
     write_assignment HARNESS "$harness"
-    write_assignment STATE done
+    write_assignment STATE "done"
     write_assignment PANE_ID "$pane_id"
     write_assignment SESSION_ID "$session_id"
     write_assignment SESSION_NAME "$session_name"
@@ -179,7 +179,7 @@ valid_records() {
   local file live
   while IFS= read -r file; do
     unset HARNESS STATE PANE_ID SESSION_ID SESSION_NAME WINDOW_ID WINDOW_INDEX WINDOW_NAME PANE_CURRENT_PATH PANE_CURRENT_COMMAND PANE_PID UPDATED_AT
-    if load_record "$file" && [[ "${STATE:-}" == done ]] && [[ -n "${PANE_ID:-}" ]] && live=$(live_pane_metadata "$PANE_ID"); then
+    if load_record "$file" && [[ "${STATE:-}" == "done" ]] && [[ -n "${PANE_ID:-}" ]] && live=$(live_pane_metadata "$PANE_ID"); then
       local live_pane live_session_id live_session_name live_window_id live_window_index live_window_name live_path live_command live_pid
       IFS=$'\t' read -r live_pane live_session_id live_session_name live_window_id live_window_index live_window_name live_path live_command live_pid <<< "$live"
       local display_harness
@@ -195,7 +195,7 @@ valid_records() {
 }
 list_records() {
   valid_records | sort -n | while IFS=$'\t' read -r _updated _pane harness _session_id session_name _window_id window_index window_name _path _command _pid; do
-    format_agent_row "$harness" done "$session_name" "$window_index" "$window_name"
+    format_agent_row "$harness" "done" "$session_name" "$window_index" "$window_name"
   done
 }
 

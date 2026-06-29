@@ -32,4 +32,4 @@ fi
 
 grep -F "%{window-id}|%{app-bundle-id}" "$HELPER" >/dev/null
 grep -F "com.spotify.client" "$HELPER" >/dev/null
-grep -F 'move-node-to-workspace --window-id "$wid" 9-music' "$HELPER" >/dev/null
+grep -F "move-node-to-workspace --window-id \"\$wid\" 9-music" "$HELPER" >/dev/null
