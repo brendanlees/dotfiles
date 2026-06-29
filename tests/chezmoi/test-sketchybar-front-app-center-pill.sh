@@ -32,7 +32,8 @@ assert '--add item front_app center' in log, log
 assert 'front_app_separator' not in log, log
 assert 'background.drawing=on' in log, log
 assert 'background.border_color=0xffff00ff' in log, log
-assert 'background.corner_radius=12' in log, log
+assert 'background.corner_radius=6' in log, log
+assert 'icon.font=sketchybar-app-font:Regular:16.0' in log, log
 assert 'icon.color=0xffffffff' in log, log
 assert 'label.color=0xffffffff' in log, log
 assert 'script=/tmp/plugins/front_app.sh' in log, log
