@@ -20,6 +20,7 @@ case "$1" in
   "Notion")                      icon_result=":notion:" ;;
   "Obsidian")                    icon_result=":obsidian:" ;;
   Hermes* | hermes*)             icon_result=":hermes_agent:" ;;
+  "Invoice Ninja" | "InvoiceNinja" | "Invoice Ninja"* | "invoiceninja"*) icon_result=":invoice_ninja:" ;;
   "Spotify")                     icon_result=":spotify:" ;;
   "System Preferences" | "System Settings") icon_result=":system_preferences:" ;;
   "Todoist")                     icon_result=":todoist:" ;;

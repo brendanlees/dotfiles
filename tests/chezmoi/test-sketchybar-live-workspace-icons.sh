@@ -131,6 +131,11 @@ assert_log_contains 'front_app icon=:hermes_agent:'
 assert_log_contains 'label=Hermes Agent Desktop'
 
 : > "$LOG"
+SENDER=front_app_switched INFO='Invoice Ninja' NAME=front_app run_plugin "$CONFIG/plugins/front_app.sh"
+assert_log_contains 'front_app icon=:invoice_ninja:'
+assert_log_contains 'label=Invoice Ninja'
+
+: > "$LOG"
 PMSET_SCENARIO=ac NAME=battery run_plugin "$CONFIG/plugins/battery.sh"
 assert_log_contains 'battery drawing=off'
 
