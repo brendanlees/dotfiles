@@ -15,16 +15,16 @@ BORDER_RADIUS=8
 # ------------------------------------------
 
 sketchybar --bar \
-  height=37 \
+  height=36 \
   color="$BAR_COLOR" \
   border_color="$BAR_BORDER_COLOR" \
   shadow=off \
   position=top \
   topmost=window \
   sticky=on \
-  padding_right=0 \
-  padding_left=2 \
-  corner_radius=2 \
+  padding_right=4 \
+  padding_left=4 \
+  corner_radius=8 \
   y_offset=6 \
   margin=8 \
   blur_radius=20 \

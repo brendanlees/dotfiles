@@ -10,8 +10,8 @@ APP_FONT="sketchybar-app-font"
 
 # Returns success (0) if the given workspace currently contains any windows.
 workspace_has_windows() {
-    aerospace list-windows --workspace "$1" --json 2>/dev/null \
-        | /usr/bin/python3 -c '
+    aerospace list-windows --workspace "$1" --json 2>/dev/null |
+        /usr/bin/python3 -c '
 import json, sys
 try:
     windows = json.load(sys.stdin)
@@ -47,20 +47,20 @@ while IFS= read -r workspace; do
         --set space."$workspace" \
         drawing="$SPACE_Drawing" \
         icon="$num" \
-        icon.font="$FONT:Bold:13.0" \
+        icon.font="$FONT:Regular:14.0" \
         icon.color="$IC_COLOR" \
         icon.padding_left=8 \
         icon.padding_right=8 \
         background.color="$SPACE_ACTIVE_BG" \
         background.border_width=0 \
-        background.corner_radius=8 \
-        background.height=20 \
+        background.corner_radius="$BORDER_RADIUS" \
+        background.height=26 \
         background.drawing="$SPACE_BG_Drawing" \
         label.drawing=off \
-        label.font="$APP_FONT:Regular:14.0" \
+        label.font="$APP_FONT:Regular:12.0" \
         label.color="$IC_COLOR" \
-        label.padding_left=4 \
-        label.padding_right=4 \
+        label.padding_left=2 \
+        label.padding_right=8 \
         update_freq=60 \
         script="$PLUGIN_DIR/aerospace.sh $workspace" \
         click_script="aerospace workspace $workspace" \
@@ -74,8 +74,8 @@ sketchybar --add bracket spaces '/space\..*/' \
     background.color="$PILL_BG" \
     background.border_color="$SPACES_COLOR" \
     background.border_width=1 \
-    background.corner_radius=9 \
+    background.corner_radius="$BORDER_RADIUS" \
     background.height=26 \
-    background.padding_left=4 \
+    background.padding_left=8 \
     background.padding_right=4 \
     blur_radius=0
