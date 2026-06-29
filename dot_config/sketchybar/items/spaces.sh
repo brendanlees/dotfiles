@@ -4,9 +4,33 @@ if ! command -v aerospace >/dev/null 2>&1; then
     exit 0
 fi
 
-WORKSPACES=$(aerospace list-workspaces --all)
+WORKSPACES=$(aerospace list-workspaces --all | sort -t- -k1,1n -k2,2)
 FOCUSED=$(aerospace list-workspaces --focused)
 APP_FONT="sketchybar-app-font"
+SPACE_ITEMS=()
+
+# Rebuild spaces from scratch on reload so SketchyBar cannot preserve a stale
+# runtime order from previous restarts/hotloads.
+if sketchybar --query spaces >/dev/null 2>&1; then
+    sketchybar --remove spaces
+fi
+
+existing_space_items=$(sketchybar --query bar 2>/dev/null | /usr/bin/python3 -c '
+import json
+import sys
+try:
+    items = json.load(sys.stdin).get("items", [])
+except Exception:
+    items = []
+for item in items:
+    if item.startswith("space."):
+        print(item)
+' || true)
+
+while IFS= read -r existing_space_item; do
+    [ -n "$existing_space_item" ] || continue
+    sketchybar --remove "$existing_space_item" >/dev/null 2>&1 || true
+done <<<"$existing_space_items"
 
 # Returns success (0) if the given workspace currently contains any windows.
 workspace_has_windows() {
@@ -42,6 +66,8 @@ while IFS= read -r workspace; do
     else
         SPACE_Drawing=off
     fi
+
+    SPACE_ITEMS+=("space.$workspace")
 
     sketchybar --add item space."$workspace" left \
         --set space."$workspace" \
@@ -79,3 +105,7 @@ sketchybar --add bracket spaces '/space\..*/' \
     background.padding_left=0 \
     background.padding_right=0 \
     blur_radius=0
+
+if [ "${#SPACE_ITEMS[@]}" -gt 0 ]; then
+    sketchybar --reorder "${SPACE_ITEMS[@]}"
+fi

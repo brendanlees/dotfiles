@@ -39,10 +39,11 @@ set_calendar_border() {
 }
 
 set_calendar_state() {
-    local clock_color="$1"
+    local icon_color="$1"
     shift
 
-    sketchybar --set calendar_event_clock icon.color="$clock_color"
+    sketchybar --set calendar icon.color="$icon_color" \
+        --set calendar_event_clock icon.color="$icon_color"
     set_calendar_border "$@"
 }
 
@@ -144,5 +145,5 @@ active_colors=()
 if [ "${#active_colors[@]}" -eq 0 ]; then
     set_calendar_state "$CALENDAR_COLOR" "$CALENDAR_COLOR"
 else
-    set_calendar_state "$CALENDAR_COLOR" "${active_colors[@]}"
+    set_calendar_state "${active_colors[0]}" "${active_colors[@]}"
 fi
