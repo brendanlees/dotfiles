@@ -98,7 +98,7 @@ for event in events {
 timeout = float(os.environ.get("CALENDAR_DOTS_TIMEOUT_SECONDS", "12"))
 try:
     result = subprocess.run(
-        ["swift", "-"],
+        ["/usr/bin/swift", "-"],
         input=swift_source,
         text=True,
         capture_output=True,
