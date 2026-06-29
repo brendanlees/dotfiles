@@ -8,6 +8,10 @@ if [ -f "$CONFIG_DIR/colors.sh" ]; then
     source "$CONFIG_DIR/colors.sh"
 fi
 
+if [ -z "${TMPDIR:-}" ] || [ ! -d "$TMPDIR" ]; then
+    export TMPDIR=/tmp
+fi
+
 DOT_PINK="0xffE36BA0"
 : "${ORANGE:=0xffffa500}"
 : "${GREEN:=0xff00ff00}"
