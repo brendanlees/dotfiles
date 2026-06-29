@@ -2,8 +2,9 @@
 
 sketchybar --add item battery right \
     --set battery \
-    icon.font="$FONT:Bold:16.0" \
+    icon.font="$FONT:Bold:14.0" \
     icon.color="$GREEN" \
+    icon.padding_right=0 \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
     background.color="$PILL_BG" \
