@@ -12,6 +12,12 @@ dot_DS_Store
 
 # docs / specs
 superpowers/
-private
-!private/
-!private/.gitkeep
+
+# local-only private docs
+/private/**
+!/private/
+!/private/.gitkeep
+
+/docs/private/**
+!/docs/private/
+!/docs/private/.gitkeep
