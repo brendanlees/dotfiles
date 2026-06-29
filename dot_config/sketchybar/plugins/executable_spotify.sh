@@ -17,9 +17,9 @@ fi
 
 player_state="$(osascript -e 'tell application "Spotify" to player state as string' 2>/dev/null || true)"
 case "$player_state" in
-  playing) state_icon="⏸" ;;
-  paused) state_icon="▶" ;;
-  *) state_icon="▶" ;;
+  playing) state_icon="▶" ;;
+  paused|stopped) state_icon="⏸" ;;
+  *) state_icon="⏸" ;;
 esac
 
 artist="$(osascript -e 'tell application "Spotify" to artist of current track' 2>/dev/null || true)"
@@ -67,7 +67,7 @@ fi
 sketchybar --set "$NAME" \
   drawing=on \
   icon="$state_icon" \
-  icon.font="$FONT:Bold:13.0" \
+  icon.font="$FONT:Bold:15.0" \
   icon.color="$accent_color" \
   label="$label" \
   label.color="$LABEL_COLOR" \
