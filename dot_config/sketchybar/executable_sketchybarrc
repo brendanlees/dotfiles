@@ -110,6 +110,9 @@ source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/sync_status.sh"
 source "$ITEM_DIR/tailscale.sh"
+
+# Reusable gap between the status cluster and media controls.
+add_spacer status_spotify right
 # source "$ITEM_DIR/app_soundsource.sh" # shelved for now
 source "$ITEM_DIR/spotify.sh"
 
