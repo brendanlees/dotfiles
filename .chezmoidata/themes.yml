@@ -207,7 +207,7 @@ themes:
       info_alt: "#88a2b7"
       orange: "#de935f"
     apps:
-      ghostty: "Moonfly"
+      ghostty: "moonfly"
       btop: "monokai"
       bat: "Monokai Extended"
       glow: "auto"
