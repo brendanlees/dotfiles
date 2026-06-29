@@ -12,12 +12,12 @@ sketchybar --add item backup_status right \
   icon="$BACKUP_ICON" \
   icon.font="sketchybar-app-font:Regular:12.0" \
   icon.color="$ICON_COLOR" \
-  icon.padding_left=8 \
-  icon.padding_right=5 \
+  icon.padding_left=0 \
+  icon.padding_right=0 \
   label.drawing=off \
   background.drawing=off \
-  padding_left=0 \
-  padding_right=0 \
+  padding_left=$PADDINGS \
+  padding_right=$PADDINGS \
   update_freq=30 \
   script="$PLUGIN_DIR/backup_status.sh" \
   --subscribe backup_status system_woke

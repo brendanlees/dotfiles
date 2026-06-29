@@ -11,12 +11,10 @@ sketchybar --add item sync_status right \
   icon="$SYNC_ICON" \
   icon.font="$FONT:Bold:20.0" \
   icon.color="$ICON_COLOR" \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
   label.drawing=off \
   background.drawing=off \
-  padding_left=0 \
-  padding_right=0 \
+  padding_left=2 \
+  padding_right=2 \
   update_freq=15 \
   script="$PLUGIN_DIR/sync_status.sh" \
   --subscribe sync_status system_woke

@@ -82,6 +82,17 @@ source "$ITEM_DIR/front_app.sh"
 # ------------------------------------------
 
 source "$ITEM_DIR/calendar.sh"
+
+# Spacer: gap between the calendar anchor and the status pills to its left
+# (battery/backup/sync). Without this, hidden items (AC power, no active
+# backup) let sync_status butt directly against the calendar bracket.
+sketchybar --add item spacer.calendar right \
+    --set spacer.calendar \
+    icon.drawing=off \
+    label.drawing=off \
+    background.drawing=off \
+    padding_left=6 \
+    padding_right=6
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/sync_status.sh"
