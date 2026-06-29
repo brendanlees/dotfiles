@@ -15,6 +15,7 @@ case "$1" in
   "Finder")                      icon_result=":finder:" ;;
   "Firefox")                     icon_result=":firefox:" ;;
   "Ghostty")                     icon_result=":ghostty:" ;;
+  "Home Assistant" | "HomeAssistant") icon_result=":home_assistant:" ;;
   "Google Chrome")               icon_result=":google_chrome:" ;;
   "Mimestream")                  icon_result=":mimestream:" ;;
   "Notion")                      icon_result=":notion:" ;;
