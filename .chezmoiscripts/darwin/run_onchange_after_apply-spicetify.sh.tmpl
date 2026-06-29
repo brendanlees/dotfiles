@@ -32,5 +32,10 @@ spicetify config \
   inject_theme_js 1 \
   custom_apps marketplace
 
+# Create the initial backup when needed. If a backup already exists, Spicetify
+# exits non-zero and asks for restore/reinstall; that is not fatal for applying
+# config changes, so continue to `apply`.
+spicetify backup || true
+
 # Per Spicetify CLI docs, `apply` restarts Spotify unless --no-restart is used.
-spicetify backup apply
+spicetify apply
