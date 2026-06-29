@@ -11,8 +11,8 @@ BAR_HEIGHT=32
 PILL_HEIGHT=28
 ITEM_PADDING=8
 BAR_EDGE_PADDING=4
-GROUP_GAP=4
-MEDIA_GAP=8
+GROUP_GAP=6
+MEDIA_GAP=0
 BORDER_RADIUS=8
 
 # ------------------------------------------
@@ -112,7 +112,7 @@ source "$ITEM_DIR/battery.sh"
 add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
 add_spacer status_sync right "$GROUP_GAP" off
-source "$ITEM_DIR/sync_status.sh"
+# source "$ITEM_DIR/sync_status.sh"
 source "$ITEM_DIR/tailscale.sh"
 add_spacer status_spotify right "$MEDIA_GAP"
 # source "$ITEM_DIR/app_soundsource.sh" # shelved for now
