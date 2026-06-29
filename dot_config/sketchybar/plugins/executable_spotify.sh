@@ -22,6 +22,7 @@ fi
 
 artist="$(osascript -e 'tell application "Spotify" to artist of current track' 2>/dev/null || true)"
 title="$(osascript -e 'tell application "Spotify" to name of current track' 2>/dev/null || true)"
+artwork_url="$(osascript -e 'tell application "Spotify" to artwork url of current track' 2>/dev/null || true)"
 
 if [ -n "$artist" ] && [ -n "$title" ]; then
   track="$artist — $title"
@@ -54,10 +55,18 @@ print(text)
 PY
 )"
 
+accent_color="$SPOTIFY_COLOR"
+if [ -n "$artwork_url" ] && [ -x "$CONFIG_DIR/plugins/spotify_art_accent.py" ]; then
+  artwork_accent="$("$CONFIG_DIR/plugins/spotify_art_accent.py" "$artwork_url" 2>/dev/null || true)"
+  if [ -n "$artwork_accent" ]; then
+    accent_color="$artwork_accent"
+  fi
+fi
+
 sketchybar --set "$NAME" \
   drawing=on \
   icon=":spotify:" \
   icon.color="$SPOTIFY_COLOR" \
   label="$label" \
   label.color="$LABEL_COLOR" \
-  background.border_color="$SPOTIFY_COLOR"
+  background.border_color="$accent_color"

@@ -39,14 +39,8 @@ case "$action" in
   activate|open|show)
     open -a Spotify >/dev/null 2>&1 || true
     ;;
-  popup|toggle-popup)
-    sketchybar --set spotify popup.drawing=toggle >/dev/null 2>&1 || true
-    ;;
-  hide-popup|close-popup)
-    sketchybar --set spotify popup.drawing=off >/dev/null 2>&1 || true
-    ;;
   *)
-    echo "usage: $0 {previous|toggle|next|activate|popup|hide-popup}" >&2
+    echo "usage: $0 {previous|toggle|next|activate}" >&2
     exit 2
     ;;
 esac
