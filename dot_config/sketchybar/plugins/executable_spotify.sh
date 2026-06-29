@@ -4,27 +4,71 @@ CONFIG_DIR="${CONFIG_DIR:-${HOME}/.config/sketchybar}"
 # shellcheck source=dot_config/sketchybar/colors.sh
 source "$CONFIG_DIR/colors.sh"
 FONT="${FONT:-JetBrainsMono Nerd Font Mono}"
+LOCK_DIR="${TMPDIR:-/tmp}/sketchybar-spotify-${UID:-$(id -u)}.lock"
+
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  exit 0
+fi
+trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT INT TERM
 
 hide_item() {
   sketchybar --set "$NAME" drawing=off label=""
 }
 
-is_running="$(osascript -e 'application "Spotify" is running' 2>/dev/null || true)"
-if [ "$is_running" != "true" ]; then
+spotify_pid="$(pgrep -x Spotify | head -n 1 || true)"
+
+spotify_info="$(osascript <<'APPLESCRIPT' 2>/dev/null || true
+if application "Spotify" is running then
+  tell application "Spotify"
+    set playerState to player state as string
+    set trackArtist to ""
+    set trackTitle to ""
+    set trackArtwork to ""
+
+    try
+      set currentTrack to current track
+      set trackArtist to artist of currentTrack
+      set trackTitle to name of currentTrack
+      set trackArtwork to artwork url of currentTrack
+    end try
+
+    return playerState & linefeed & trackArtist & linefeed & trackTitle & linefeed & trackArtwork
+  end tell
+else
+  return "not_running"
+end if
+APPLESCRIPT
+)"
+
+if [ -z "$spotify_info" ]; then
   hide_item
   exit 0
 fi
 
-player_state="$(osascript -e 'tell application "Spotify" to player state as string' 2>/dev/null || true)"
+player_state="$(printf '%s\n' "$spotify_info" | sed -n '1p')"
+if [ "$player_state" = "not_running" ]; then
+  hide_item
+  exit 0
+fi
+
+current_spotify_pid="$(pgrep -x Spotify | head -n 1 || true)"
+if [ -n "$spotify_pid" ] && [ "$current_spotify_pid" != "$spotify_pid" ]; then
+  if [ -n "$current_spotify_pid" ]; then
+    osascript -e 'tell application "Spotify" to quit' >/dev/null 2>&1 || true
+  fi
+  hide_item
+  exit 0
+fi
+
 case "$player_state" in
   playing) state_icon="▶" ;;
   paused|stopped) state_icon="⏸" ;;
   *) state_icon="⏸" ;;
 esac
 
-artist="$(osascript -e 'tell application "Spotify" to artist of current track' 2>/dev/null || true)"
-title="$(osascript -e 'tell application "Spotify" to name of current track' 2>/dev/null || true)"
-artwork_url="$(osascript -e 'tell application "Spotify" to artwork url of current track' 2>/dev/null || true)"
+artist="$(printf '%s\n' "$spotify_info" | sed -n '2p')"
+title="$(printf '%s\n' "$spotify_info" | sed -n '3p')"
+artwork_url="$(printf '%s\n' "$spotify_info" | sed -n '4p')"
 
 if [ -n "$artist" ] && [ -n "$title" ]; then
   track="$artist — $title"
