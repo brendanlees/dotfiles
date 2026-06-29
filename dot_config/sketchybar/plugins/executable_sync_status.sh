@@ -3,6 +3,13 @@
 # shellcheck disable=SC1091
 source "$CONFIG_DIR/colors.sh"
 
+tint_color() {
+  case "$1" in
+    0x????????) printf '0x88%s\n' "${1#0x??}" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
 STATE_DIR="${TMPDIR:-/tmp}/sketchybar-sync-status"
 mkdir -p "$STATE_DIR"
 
@@ -99,7 +106,7 @@ elif [ "$syncthing_color" = "$GREEN" ] || [ "$mutagen_color" = "$GREEN" ]; then
   border_color="$GREEN"
 fi
 
+background_color="$(tint_color "$border_color")"
+
 sketchybar \
-  --set sync_dot_syncthing icon.color="$syncthing_color" \
-  --set sync_dot_mutagen icon.color="$mutagen_color" \
-  --set sync_status_group background.border_color="$border_color"
+  --set sync_status_group background.color="$background_color" background.border_color="$border_color"

@@ -3,6 +3,13 @@
 # shellcheck disable=SC1091
 source "$CONFIG_DIR/colors.sh"
 
+tint_color() {
+  case "$1" in
+    0x????????) printf '0x88%s\n' "${1#0x??}" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
 arq_active=false
 timemachine_active=false
 
@@ -44,31 +51,25 @@ EOF
 fi
 
 if [ "$arq_active" = true ] || [ "$timemachine_active" = true ]; then
-  arq_color="$GREY"
-  timemachine_color="$GREY"
-  border_color="$GREY"
+  status_color="$GREY"
 
   if [ "$arq_active" = true ]; then
-    arq_color="$BLUE"
-    border_color="$BLUE"
+    status_color="$BLUE"
   fi
   if [ "$timemachine_active" = true ]; then
-    timemachine_color="$GREEN"
-    border_color="$GREEN"
+    status_color="$GREEN"
   fi
   if [ "$arq_active" = true ] && [ "$timemachine_active" = true ]; then
-    border_color="$CYAN"
+    status_color="$CYAN"
   fi
+
+  background_color="$(tint_color "$status_color")"
 
   sketchybar \
     --set backup_status drawing=on \
-    --set backup_dot_arq drawing=on icon.color="$arq_color" \
-    --set backup_dot_timemachine drawing=on icon.color="$timemachine_color" \
-    --set backup_status_group background.drawing=on background.border_color="$border_color"
+    --set backup_status_group background.drawing=on background.color="$background_color" background.border_color="$status_color"
 else
   sketchybar \
     --set backup_status drawing=off \
-    --set backup_dot_arq drawing=off \
-    --set backup_dot_timemachine drawing=off \
-    --set backup_status_group background.drawing=off
+    --set backup_status_group background.drawing=off background.color="$PILL_BG" background.border_color="$GREY"
 fi

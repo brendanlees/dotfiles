@@ -1,39 +1,10 @@
 #!/bin/bash
 
-# Compact backup status, hidden unless Arq or Time Machine is actively backing up:
-#   icon + two vertically offset dots
-#   top dot    = Arq (blue while active)
-#   bottom dot = Time Machine (green while active)
+# Compact backup status, hidden unless Arq or Time Machine is actively backing up.
+# The plugin updates the pill background: blue=Arq, green=Time Machine,
+# cyan=both.
 
 BACKUP_ICON=":time_machine:"
-
-sketchybar --add item backup_dot_timemachine right \
-  --set backup_dot_timemachine \
-  drawing=off \
-  icon="●" \
-  icon.font="$FONT:Regular:8.0" \
-  icon.color="$GREY" \
-  icon.y_offset=-4 \
-  icon.padding_left=0 \
-  icon.padding_right=0 \
-  label.drawing=off \
-  background.drawing=off \
-  padding_left=-7 \
-  padding_right=7
-
-sketchybar --add item backup_dot_arq right \
-  --set backup_dot_arq \
-  drawing=off \
-  icon="●" \
-  icon.font="$FONT:Regular:8.0" \
-  icon.color="$GREY" \
-  icon.y_offset=4 \
-  icon.padding_left=0 \
-  icon.padding_right=0 \
-  label.drawing=off \
-  background.drawing=off \
-  padding_left=0 \
-  padding_right=0
 
 sketchybar --add item backup_status right \
   --set backup_status \
@@ -53,8 +24,6 @@ sketchybar --add item backup_status right \
 
 sketchybar --add bracket backup_status_group \
   backup_status \
-  backup_dot_arq \
-  backup_dot_timemachine \
   --set backup_status_group \
   background.drawing=off \
   background.color="$PILL_BG" \
