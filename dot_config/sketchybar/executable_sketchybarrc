@@ -11,7 +11,7 @@ BAR_HEIGHT=38
 PILL_HEIGHT=32
 ITEM_PADDING=8
 BAR_EDGE_PADDING=4
-GROUP_GAP=6
+GROUP_GAP=8
 MEDIA_GAP=0
 BORDER_RADIUS=8
 
@@ -113,7 +113,7 @@ add_spacer calendar_status right
 source "$ITEM_DIR/battery.sh"
 add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
-add_spacer status_sync right "$GROUP_GAP" off
+# add_spacer status_sync right "$GROUP_GAP" off
 # source "$ITEM_DIR/sync_status.sh"
 source "$ITEM_DIR/tailscale.sh"
 add_spacer status_spotify right "$MEDIA_GAP"
