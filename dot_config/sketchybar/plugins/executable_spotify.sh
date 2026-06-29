@@ -4,6 +4,11 @@ CONFIG_DIR="${CONFIG_DIR:-${HOME}/.config/sketchybar}"
 # shellcheck source=dot_config/sketchybar/colors.sh
 source "$CONFIG_DIR/colors.sh"
 FONT="${FONT:-JetBrainsMono Nerd Font Mono}"
+
+if [ -z "${TMPDIR:-}" ] || [ ! -d "$TMPDIR" ]; then
+  export TMPDIR=/tmp
+fi
+
 LOCK_DIR="${TMPDIR:-/tmp}/sketchybar-spotify-${UID:-$(id -u)}.lock"
 
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
