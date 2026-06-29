@@ -237,7 +237,10 @@ run = 'move-node-to-workspace 8-notes'
 # --- 9. music ---
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
-run = 'move-node-to-workspace 9-music'
+run = [
+  'move-node-to-workspace 9-music',
+  'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
+]
 
 # --- excluded apps
 
