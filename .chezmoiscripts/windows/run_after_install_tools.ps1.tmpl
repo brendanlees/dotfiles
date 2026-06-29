@@ -4,8 +4,12 @@ $ErrorActionPreference = 'Stop'
 # ------------------------------------------
 # resolve github token (rate-limit bypass for mise/gh)
 # ------------------------------------------
-{{ if .github_token -}}
-$token = {{ .github_token | quote }}
+{{- $github_token := "" -}}
+{{- if hasKey . "github_token" -}}
+{{- $github_token = .github_token -}}
+{{- end -}}
+{{ if $github_token -}}
+$token = {{ $github_token | quote }}
 # current process
 if (-not $env:GITHUB_TOKEN) { $env:GITHUB_TOKEN = $token }
 # persist for future shells so mise/gh see it on subsequent runs

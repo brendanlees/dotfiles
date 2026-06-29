@@ -113,10 +113,6 @@
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
 
-[data.ssh]
-  bw_manifest_item = {{ $ssh_bw_manifest_item | quote }}
-  bw_agent_sock_env = {{ $ssh_bw_agent_sock_env | quote }}
-
 # --- git ---
 {{- if and (not $personal) $work }}
   git_name  = {{ $git_name | quote }}
@@ -178,6 +174,10 @@
   {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
 {{- end }}
+
+[data.ssh]
+  bw_manifest_item = {{ $ssh_bw_manifest_item | quote }}
+  bw_agent_sock_env = {{ $ssh_bw_agent_sock_env | quote }}
 
 {{ if and (or $personal $work) (lookPath "bw") }}
 [bitwarden]

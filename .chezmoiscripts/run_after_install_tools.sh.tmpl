@@ -18,8 +18,12 @@ fi
 # ------------------------------------------
 
 # priority: env var > chezmoi data
-{{ if .github_token -}}
-github_token={{ .github_token | quote }}
+{{- $github_token := "" -}}
+{{- if hasKey . "github_token" -}}
+{{- $github_token = .github_token -}}
+{{- end -}}
+{{ if $github_token -}}
+github_token={{ $github_token | quote }}
 if [ -z "${GITHUB_TOKEN:-}" ]; then
   export GITHUB_TOKEN="$github_token"
 fi
