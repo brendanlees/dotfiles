@@ -16,11 +16,11 @@ sketchybar --add item sync_dot_mutagen right \
   icon.color="$GREY" \
   icon.y_offset=-4 \
   icon.padding_left=0 \
-  icon.padding_right=0 \
+  icon.padding_right=2 \
   label.drawing=off \
   background.drawing=off \
-  padding_left=-7 \
-  padding_right=7
+  padding_left=-10 \
+  padding_right=10
 
 sketchybar --add item sync_dot_syncthing right \
   --set sync_dot_syncthing \
@@ -29,19 +29,19 @@ sketchybar --add item sync_dot_syncthing right \
   icon.color="$GREY" \
   icon.y_offset=4 \
   icon.padding_left=0 \
-  icon.padding_right=0 \
+  icon.padding_right=2 \
   label.drawing=off \
   background.drawing=off \
   padding_left=0 \
-  padding_right=0
+  padding_right=2
 
 sketchybar --add item sync_status right \
   --set sync_status \
   icon="$SYNC_ICON" \
-  icon.font="$FONT:Bold:15.0" \
+  icon.font="$FONT:Bold:18.0" \
   icon.color="$ICON_COLOR" \
   icon.padding_left=8 \
-  icon.padding_right=5 \
+  icon.padding_right=4 \
   label.drawing=off \
   background.drawing=off \
   padding_left=0 \
