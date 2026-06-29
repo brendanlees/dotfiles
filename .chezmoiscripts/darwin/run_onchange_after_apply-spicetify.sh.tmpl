@@ -1,0 +1,36 @@
+#!/bin/sh
+# managed by chezmoi - re-runs when Spicetify config/theme inputs change
+# active-theme: {{ .theme }}
+# config-sha: {{ includeTemplate "dot_config/spicetify/config-xpui.ini.tmpl" . | sha256sum }}
+# color-sha: {{ includeTemplate "dot_config/spicetify/Themes/text/color.ini.tmpl" . | sha256sum }}
+
+set -eu
+
+if ! command -v spicetify >/dev/null 2>&1; then
+  echo "spicetify: command not found; install packages first, then re-run chezmoi apply" >&2
+  exit 0
+fi
+
+if [ ! -d "/Applications/Spotify.app" ]; then
+  echo "spicetify: /Applications/Spotify.app not found; skipping theme apply" >&2
+  exit 0
+fi
+
+prefs_path="{{ .chezmoi.homeDir }}/Library/Application Support/Spotify/prefs"
+if [ ! -f "$prefs_path" ]; then
+  echo "spicetify: Spotify prefs not found at $prefs_path" >&2
+  echo "spicetify: open Spotify once, then run 'chezmoi apply --force' to apply the theme" >&2
+  exit 0
+fi
+
+spicetify config \
+  current_theme text \
+  color_scheme "{{ .theme }}" \
+  inject_css 1 \
+  replace_colors 1 \
+  overwrite_assets 0 \
+  inject_theme_js 1 \
+  custom_apps marketplace
+
+# Per Spicetify CLI docs, `apply` restarts Spotify unless --no-restart is used.
+spicetify backup apply

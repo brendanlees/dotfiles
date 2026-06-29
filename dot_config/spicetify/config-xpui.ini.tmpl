@@ -1,0 +1,41 @@
+{{- $configPath := print .chezmoi.homeDir "/.config/spicetify/config-xpui.ini" -}}
+{{- $backupVersion := output "sh" "-c" "awk -F'= *' '/^\\[Backup\\]/{inb=1;next} /^\\[/{inb=0} inb && $1 ~ /^version[[:space:]]*$/ {gsub(/^[ \\t]+|[ \\t]+$/, \"\", $2); print $2; exit}' \"$1\" 2>/dev/null || true" "sh" $configPath | trim -}}
+{{- $backupWith := output "sh" "-c" "awk -F'= *' '/^\\[Backup\\]/{inb=1;next} /^\\[/{inb=0} inb && $1 ~ /^with[[:space:]]*$/ {gsub(/^[ \\t]+|[ \\t]+$/, \"\", $2); print $2; exit}' \"$1\" 2>/dev/null || true" "sh" $configPath | trim -}}
+[Setting]
+replace_colors         = 1
+overwrite_assets       = 0
+spotify_path           = /Applications/Spotify.app/Contents/Resources
+prefs_path             = {{ .chezmoi.homeDir }}/Library/Application Support/Spotify/prefs
+current_theme          = text
+inject_theme_js        = 1
+inject_css             = 1
+spotify_launch_flags   = 
+check_spicetify_update = 1
+always_enable_devtools = 0
+color_scheme           = {{ .theme }}
+
+[Preprocesses]
+disable_sentry     = 1
+disable_ui_logging = 1
+remove_rtl_rule    = 1
+expose_apis        = 1
+
+[AdditionalOptions]
+extensions            = 
+custom_apps           = marketplace
+sidebar_config        = 0
+home_config           = 1
+experimental_features = 1
+
+[Patch]
+{{- if or $backupVersion $backupWith }}
+
+; DO NOT CHANGE! Backup metadata is preserved from the existing Spicetify config.
+[Backup]
+{{- if $backupVersion }}
+version = {{ $backupVersion }}
+{{- end }}
+{{- if $backupWith }}
+with    = {{ $backupWith }}
+{{- end }}
+{{- end }}

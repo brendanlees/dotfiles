@@ -15,6 +15,10 @@ Library
 .config/espanso
 {{- end }}
 
+{{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
+.config/spicetify
+{{- end }}
+
 {{- if not .personal }}
 .config/sesh/configs/personal.toml
 {{- end }}

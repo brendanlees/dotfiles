@@ -134,6 +134,21 @@ exclude = [
 ]
 {{- end }}
 
+
+{{/* Spicetify text theme essentials */}}
+
+{{- if and (eq .chezmoi.os "darwin") .personal (not .headless) }}
+[".config/spicetify/Themes/text/README.md"]
+type = "file"
+url = "https://raw.githubusercontent.com/spicetify/spicetify-themes/master/text/README.md"
+refreshPeriod = "168h"
+
+[".config/spicetify/Themes/text/user.css"]
+type = "file"
+url = "https://raw.githubusercontent.com/spicetify/spicetify-themes/master/text/user.css"
+refreshPeriod = "168h"
+{{- end }}
+
 {{- if .personal }}
 
 {{/* agent harness configs */}}

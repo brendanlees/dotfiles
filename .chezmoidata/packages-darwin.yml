@@ -63,6 +63,7 @@ brews:
     - macwhisper
     - micro-snitch
     - soundsource
+    - spicetify-cli
     - syncthing
     - tldr
     - worktrunk
