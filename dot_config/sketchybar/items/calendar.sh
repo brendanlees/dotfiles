@@ -4,7 +4,11 @@ ITSYCAL_CLICK="osascript -e 'tell application \"System Events\" to keystroke \"c
 
 # Remove old dot items from already-running SketchyBar sessions when this config
 # is re-sourced after the dot-to-border migration.
-sketchybar --remove '/cal_dot_.*/' 2>/dev/null || true
+for old_dot in cal_dot_neutral cal_dot_per cal_dot_work cal_dot_fam; do
+    if sketchybar --query "$old_dot" >/dev/null 2>&1; then
+        sketchybar --remove "$old_dot"
+    fi
+done
 
 # Right-side items render right-to-left as they are added. Add the time first so
 # the group reads left-to-right as: calendar/date, event clock, time.
