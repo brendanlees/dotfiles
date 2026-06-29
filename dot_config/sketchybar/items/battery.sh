@@ -10,7 +10,7 @@ sketchybar --add item battery right \
     background.border_color="$GREEN" \
     background.border_width=1 \
     background.corner_radius=8 \
-    background.height=26 \
+    background.height="$PILL_HEIGHT" \
     background.drawing=on \
     padding_left="$ITEM_PADDING" \
     padding_right="$ITEM_PADDING" \

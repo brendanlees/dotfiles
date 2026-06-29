@@ -24,8 +24,8 @@ sketchybar --add bracket sync_status_group \
   --set sync_status_group \
   background.drawing=on \
   background.color="$PILL_BG" \
-  background.border_color="$GREY" \
+  background.border_color="$PILL_BG" \
   background.border_width=1 \
   background.corner_radius="$BORDER_RADIUS" \
-  background.height=26 \
+  background.height="$PILL_HEIGHT" \
   blur_radius=0

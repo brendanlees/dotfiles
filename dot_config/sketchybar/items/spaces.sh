@@ -54,7 +54,7 @@ while IFS= read -r workspace; do
         background.color="$SPACE_ACTIVE_BG" \
         background.border_width=0 \
         background.corner_radius="$BORDER_RADIUS" \
-        background.height=26 \
+        background.height="$PILL_HEIGHT" \
         background.drawing="$SPACE_BG_Drawing" \
         label.drawing=off \
         label.font="$APP_FONT:Regular:12.0" \
@@ -75,7 +75,7 @@ sketchybar --add bracket spaces '/space\..*/' \
     background.border_color="$SPACES_COLOR" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \
-    background.height=26 \
+    background.height="$PILL_HEIGHT" \
     background.padding_left="$ITEM_PADDING" \
     background.padding_right=4 \
     blur_radius=0

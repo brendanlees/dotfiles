@@ -5,8 +5,8 @@ source "$CONFIG_DIR/colors.sh"
 
 tint_color() {
   case "$1" in
-    0x????????) printf '0x88%s\n' "${1#0x??}" ;;
-    *) printf '%s\n' "$1" ;;
+  0x????????) printf '0x88%s\n' "${1#0x??}" ;;
+  *) printf '%s\n' "$1" ;;
   esac
 }
 
@@ -44,7 +44,7 @@ if syncthing_running; then
     if [ -n "$previous" ] && [ "$bytes" != "$previous" ]; then
       syncthing_color="$YELLOW"
     fi
-    printf '%s\n' "$bytes" > "$previous_file"
+    printf '%s\n' "$bytes" >"$previous_file"
   fi
 else
   rm -f "$STATE_DIR/syncthing-bytes"
@@ -87,10 +87,10 @@ for s in active:
 print("GREEN")
 ')"
     case "$mutagen_color" in
-      RED) mutagen_color="$RED" ;;
-      YELLOW) mutagen_color="$YELLOW" ;;
-      GREEN) mutagen_color="$GREEN" ;;
-      *) mutagen_color="$GREY" ;;
+    RED) mutagen_color="$RED" ;;
+    YELLOW) mutagen_color="$YELLOW" ;;
+    GREEN) mutagen_color="$GREEN" ;;
+    *) mutagen_color="$GREY" ;;
     esac
   elif pgrep -x mutagen >/dev/null 2>&1; then
     mutagen_color="$RED"
@@ -106,7 +106,5 @@ elif [ "$syncthing_color" = "$GREEN" ] || [ "$mutagen_color" = "$GREEN" ]; then
   border_color="$GREEN"
 fi
 
-background_color="$(tint_color "$border_color")"
-
 sketchybar \
-  --set sync_status_group background.color="$background_color" background.border_color="$border_color"
+  --set sync_status_group background.color="$PILL_BG" background.border_color="$border_color"

@@ -64,5 +64,5 @@ sketchybar --add bracket calendar_group '/calendar$/' '/cal_dot_.*/' '/calendar_
     background.border_color="$CALENDAR_COLOR" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \
-    background.height=26 \
+    background.height="$PILL_HEIGHT" \
     blur_radius=0
