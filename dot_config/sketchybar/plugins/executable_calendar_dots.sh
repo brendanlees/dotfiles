@@ -13,6 +13,7 @@ DOT_PINK="0xffE36BA0"
 : "${GREEN:=0xff00ff00}"
 : "${GREY:=0xff808080}"
 : "${WHITE:=0xffffffff}"
+: "${CALENDAR_COLOR:=${CYAN:-$WHITE}}"
 
 set_calendar_border() {
     if [ "$#" -eq 0 ]; then
@@ -113,7 +114,7 @@ if result.returncode != 0:
 sys.stdout.write(result.stdout)
 PY
 )"; then
-    set_calendar_state "$WHITE" "$GREY"
+    set_calendar_state "$CALENDAR_COLOR" "$CALENDAR_COLOR"
     exit 0
 fi
 
@@ -137,7 +138,7 @@ active_colors=()
 [ "$per" = on ] && active_colors+=("$GREEN")
 
 if [ "${#active_colors[@]}" -eq 0 ]; then
-    set_calendar_state "$WHITE" "$GREY"
+    set_calendar_state "$CALENDAR_COLOR" "$CALENDAR_COLOR"
 else
-    set_calendar_state "$WHITE" "${active_colors[@]}"
+    set_calendar_state "$CALENDAR_COLOR" "${active_colors[@]}"
 fi

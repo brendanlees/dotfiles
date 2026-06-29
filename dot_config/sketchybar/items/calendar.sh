@@ -24,8 +24,8 @@ sketchybar --add item calendar_time right \
 sketchybar --add item calendar_event_clock right \
     --set calendar_event_clock \
     icon="$ICON_CLOCK" \
-    icon.font="$FONT:Regular:13.0" \
-    icon.color="$WHITE" \
+    icon.font="$FONT:Regular:16.0" \
+    icon.color="$CALENDAR_COLOR" \
     icon.padding_left=4 \
     icon.padding_right=2 \
     label.drawing=off \
@@ -65,3 +65,5 @@ sketchybar --add bracket calendar_group '/calendar$/' '/calendar_event_clock$/' 
     background.corner_radius="$BORDER_RADIUS" \
     background.height="$PILL_HEIGHT" \
     blur_radius=0
+
+"$PLUGIN_DIR/calendar_dots.sh" >/dev/null 2>&1 &
