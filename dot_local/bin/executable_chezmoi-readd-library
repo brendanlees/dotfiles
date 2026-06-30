@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: chezmoi-readd-library [--dry-run] [--verbose]
+
+Re-add all tracked files under Library/ back into the chezmoi source tree.
+USAGE
+}
+
+dry_run=false
+verbose=false
+
+library_target_path() {
+  local source_path="$1"
+  local dir base
+  dir="$(dirname "$source_path")"
+  base="$(basename "$source_path")"
+
+  case "$base" in
+    private_*) base="${base#private_}" ;;
+  esac
+  case "$base" in
+    symlink_*) base="${base#symlink_}" ;;
+  esac
+  case "$base" in
+    executable_*) base="${base#executable_}" ;;
+  esac
+  case "$base" in
+    *.tmpl) base="${base%.tmpl}" ;;
+  esac
+
+  if [[ "$dir" == "." ]]; then
+    printf '%s/%s\n' "$HOME" "$base"
+  else
+    printf '%s/%s/%s\n' "$HOME" "$dir" "$base"
+  fi
+}
+
+while (($#)); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -n|--dry-run)
+      dry_run=true
+      ;;
+    -v|--verbose)
+      verbose=true
+      ;;
+    *)
+      echo "error: unsupported argument: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+source_root="$(chezmoi source-path)"
+if [[ -z "$source_root" ]]; then
+  echo "error: could not determine chezmoi source directory" >&2
+  exit 1
+fi
+
+targets=()
+while IFS= read -r source_path; do
+  [[ "$source_path" == Library/* ]] || continue
+  target_path="$(library_target_path "$source_path")"
+  targets+=("$target_path")
+done < <(git -C "$source_root" ls-files -- 'Library/**')
+
+if ((${#targets[@]} == 0)); then
+  echo "No tracked Library files found."
+  exit 0
+fi
+
+cmd=(chezmoi re-add --force)
+$dry_run && cmd+=(--dry-run)
+$verbose && cmd+=(--verbose)
+cmd+=("${targets[@]}")
+
+exec "${cmd[@]}"
