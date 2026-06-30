@@ -2,7 +2,7 @@
 
 sketchybar --add item front_app center \
     --set front_app \
-    icon.font="sketchybar-app-font:Regular:14.0" \
+    icon.font="sketchybar-app-font:Regular:11.0" \
     icon.color="$WHITE" \
     icon.padding_left="$ITEM_PADDING" \
     icon.padding_right="$ITEM_PADDING" \
