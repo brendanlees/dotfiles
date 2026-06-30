@@ -46,9 +46,18 @@ _cz_lib_run() {
     local mode="$1"
     shift
 
-    local helper="$HOME/.local/bin/chezmoi-${mode}-library"
+    local helper
+    case "$mode" in
+        apply) helper="$HOME/.local/bin/chezmoi-apply-library" ;;
+        re-add) helper="$HOME/.local/bin/chezmoi-readd-library" ;;
+        *)
+            printf 'error: unsupported mode: %s\n' "$mode" >&2
+            return 1
+            ;;
+    esac
     if [ -x "$helper" ]; then
-        exec "$helper" "$@"
+        "$helper" "$@"
+        return $?
     fi
 
     local dry_run=false verbose=false
@@ -80,7 +89,7 @@ _cz_lib_run() {
     $verbose && cmd+=(--verbose)
     cmd+=("${targets[@]}")
 
-    exec "${cmd[@]}"
+    "${cmd[@]}"
 }
 
 cz-lib-apply() { _cz_lib_run apply "$@"; }
