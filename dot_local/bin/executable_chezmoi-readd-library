@@ -6,6 +6,7 @@ usage() {
 Usage: chezmoi-readd-library [--dry-run] [--verbose]
 
 Re-add all tracked files under Library/ back into the chezmoi source tree.
+Shows pending Library drift before re-adding, and reports source files changed after.
 USAGE
 }
 
@@ -36,6 +37,14 @@ library_target_path() {
   else
     printf '%s/%s/%s\n' "$HOME" "$dir" "$base"
   fi
+}
+
+library_status() {
+  chezmoi status "${targets[@]}" 2>/dev/null || true
+}
+
+library_diff() {
+  chezmoi diff "${targets[@]}" 2>/dev/null || true
 }
 
 while (($#)); do
@@ -77,9 +86,37 @@ if ((${#targets[@]} == 0)); then
   exit 0
 fi
 
+printf 'Tracked Library files: %d\n' "${#targets[@]}"
+
+pending="$(library_status)"
+if [[ -z "$pending" ]]; then
+  echo "No Library drift detected before re-add."
+  exit 0
+fi
+
+printf 'Pending Library changes before re-add:\n%s\n' "$pending"
+if $verbose; then
+  diff_output="$(library_diff)"
+  if [[ -n "$diff_output" ]]; then
+    printf '\nPending Library diff:\n%s\n' "$diff_output"
+  fi
+fi
+
 cmd=(chezmoi re-add --force)
 $dry_run && cmd+=(--dry-run)
 $verbose && cmd+=(--verbose)
 cmd+=("${targets[@]}")
 
-exec "${cmd[@]}"
+"${cmd[@]}"
+
+if $dry_run; then
+  echo "Dry run complete; source files unchanged."
+  exit 0
+fi
+
+source_changes="$(git -C "$source_root" status --short -- Library 2>/dev/null || true)"
+if [[ -z "$source_changes" ]]; then
+  echo "No source Library changes after re-add."
+else
+  printf 'Source Library files changed after re-add:\n%s\n' "$source_changes"
+fi
