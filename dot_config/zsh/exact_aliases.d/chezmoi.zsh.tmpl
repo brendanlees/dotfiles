@@ -6,8 +6,85 @@
 cza() { chezmoi apply --force --refresh-externals; }
 
 # library helpers
-cz-lib-apply() { "$HOME/.local/bin/chezmoi-apply-library" "$@"; }
-cz-lib-readd() { "$HOME/.local/bin/chezmoi-readd-library" "$@"; }
+_cz_lib_target_path() {
+    local source_path="$1"
+    local dir base
+    dir="$(dirname "$source_path")"
+    base="$(basename "$source_path")"
+
+    case "$base" in
+        private_*) base="${base#private_}" ;;
+    esac
+    case "$base" in
+        symlink_*) base="${base#symlink_}" ;;
+    esac
+    case "$base" in
+        executable_*) base="${base#executable_}" ;;
+    esac
+    case "$base" in
+        *.tmpl) base="${base%.tmpl}" ;;
+    esac
+
+    if [ "$dir" = "." ]; then
+        printf '%s/%s\n' "$HOME" "$base"
+    else
+        printf '%s/%s/%s\n' "$HOME" "$dir" "$base"
+    fi
+}
+
+_cz_lib_targets() {
+    local source_root source_path
+    source_root="$(chezmoi source-path)" || return 1
+
+    git -C "$source_root" ls-files -- 'Library/**' | while IFS= read -r source_path; do
+        [[ "$source_path" == Library/* ]] || continue
+        _cz_lib_target_path "$source_path"
+    done
+}
+
+_cz_lib_run() {
+    local mode="$1"
+    shift
+
+    local helper="$HOME/.local/bin/chezmoi-${mode}-library"
+    if [ -x "$helper" ]; then
+        exec "$helper" "$@"
+    fi
+
+    local dry_run=false verbose=false
+    while (($#)); do
+        case "$1" in
+            -n|--dry-run) dry_run=true ;;
+            -v|--verbose) verbose=true ;;
+            --) shift; break ;;
+            *)
+                printf 'error: unsupported argument: %s\n' "$1" >&2
+                return 1
+                ;;
+        esac
+        shift
+    done
+
+    local targets=()
+    while IFS= read -r target_path; do
+        targets+=("$target_path")
+    done < <(_cz_lib_targets)
+
+    if ((${#targets[@]} == 0)); then
+        printf 'No tracked Library files found.\n'
+        return 0
+    fi
+
+    local cmd=(chezmoi "$mode" --force)
+    $dry_run && cmd+=(--dry-run)
+    $verbose && cmd+=(--verbose)
+    cmd+=("${targets[@]}")
+
+    exec "${cmd[@]}"
+}
+
+cz-lib-apply() { _cz_lib_run apply "$@"; }
+cz-lib-readd() { _cz_lib_run re-add "$@"; }
 
 # init with a single bw prompt (unlocks vault once, passes session via env)
 cz-bw-init() {
