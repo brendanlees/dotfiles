@@ -3,7 +3,11 @@
 {{- $extensions := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .vscode .)) }}
 $ErrorActionPreference = 'Stop'
 
+$installed = @(code --list-extensions)
+
 {{ range $extensions -}}
-code --force --install-extension {{ . }}
+if ($installed -notcontains '{{ . }}') {
+  code --force --install-extension {{ . }}
+}
 {{ end -}}
 {{- end }}

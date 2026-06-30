@@ -6,8 +6,12 @@
 
 set -euo pipefail
 
+installed="$(code --list-extensions 2>/dev/null || true)"
+
 {{ range $extensions -}}
-code --force --install-extension {{ . }}
+if ! grep -Fxq '{{ . }}' <<<"$installed"; then
+  code --force --install-extension {{ . }}
+fi
 {{ end -}}
 
 {{ end -}}
