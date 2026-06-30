@@ -25,7 +25,7 @@ sketchybar --add bracket backup_status_group \
   --set backup_status_group \
   background.drawing=off \
   background.color="$PILL_BG" \
-  background.border_color="$GREY" \
+  background.border_color="$SURFACE" \
   background.border_width=1 \
   background.corner_radius="$BORDER_RADIUS" \
   background.height="$PILL_HEIGHT" \

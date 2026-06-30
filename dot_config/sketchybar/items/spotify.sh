@@ -10,7 +10,7 @@ sketchybar --add item spotify right \
     icon.color="$SPOTIFY_COLOR" \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
-    background.color="$BLACK" \
+    background.color="$SURFACE" \
     background.border_color="$TRANSPARENT" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \

@@ -22,7 +22,8 @@ hide_item() {
 
 spotify_pid="$(pgrep -x Spotify | head -n 1 || true)"
 
-spotify_info="$(osascript <<'APPLESCRIPT' 2>/dev/null || true
+spotify_info="$(
+  osascript <<'APPLESCRIPT' 2>/dev/null || true
 if application "Spotify" is running then
   tell application "Spotify"
     set playerState to player state as string
@@ -66,9 +67,9 @@ if [ -n "$spotify_pid" ] && [ "$current_spotify_pid" != "$spotify_pid" ]; then
 fi
 
 case "$player_state" in
-  playing) state_icon="▶" ;;
-  paused|stopped) state_icon="⏸" ;;
-  *) state_icon="⏸" ;;
+playing) state_icon="▶" ;;
+paused | stopped) state_icon="⏸" ;;
+*) state_icon="⏸" ;;
 esac
 
 artist="$(printf '%s\n' "$spotify_info" | sed -n '2p')"
@@ -86,7 +87,8 @@ else
 fi
 
 max_chars="${SPOTIFY_LABEL_MAX_CHARS:-40}"
-label="$(/usr/bin/python3 - "$track" "$max_chars" <<'PY'
+label="$(
+  /usr/bin/python3 - "$track" "$max_chars" <<'PY'
 import sys
 
 text = sys.argv[1]
@@ -119,4 +121,4 @@ sketchybar --set "$NAME" \
   icon.font="$FONT:Bold:15.0" \
   icon.color="$accent_color" \
   label="$label" \
-  label.color="$LABEL_COLOR" \
+  label.color="$LABEL_COLOR"
