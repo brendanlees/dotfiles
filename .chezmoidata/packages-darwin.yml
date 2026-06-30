@@ -1,3 +1,9 @@
+bunx:
+  base: []
+  personal:
+    - tokscale@latest
+  work: []
+
 uv:
   base: []
   personal:
