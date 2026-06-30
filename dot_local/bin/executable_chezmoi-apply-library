@@ -6,6 +6,7 @@ usage() {
 Usage: chezmoi-apply-library [--dry-run] [--verbose]
 
 Re-apply all tracked files under Library/ from the current chezmoi source state.
+Shows pending Library drift before applying, and reports whether drift remains after.
 USAGE
 }
 
@@ -36,6 +37,14 @@ library_target_path() {
   else
     printf '%s/%s/%s\n' "$HOME" "$dir" "$base"
   fi
+}
+
+library_status() {
+  chezmoi status "${targets[@]}" 2>/dev/null || true
+}
+
+library_diff() {
+  chezmoi diff "${targets[@]}" 2>/dev/null || true
 }
 
 while (($#)); do
@@ -77,9 +86,37 @@ if ((${#targets[@]} == 0)); then
   exit 0
 fi
 
+printf 'Tracked Library files: %d\n' "${#targets[@]}"
+
+pending="$(library_status)"
+if [[ -z "$pending" ]]; then
+  echo "No Library drift detected before apply."
+  exit 0
+fi
+
+printf 'Pending Library changes before apply:\n%s\n' "$pending"
+if $verbose; then
+  diff_output="$(library_diff)"
+  if [[ -n "$diff_output" ]]; then
+    printf '\nPending Library diff:\n%s\n' "$diff_output"
+  fi
+fi
+
 cmd=(chezmoi apply --force)
 $dry_run && cmd+=(--dry-run)
 $verbose && cmd+=(--verbose)
 cmd+=("${targets[@]}")
 
-exec "${cmd[@]}"
+"${cmd[@]}"
+
+if $dry_run; then
+  echo "Dry run complete; no files changed."
+  exit 0
+fi
+
+remaining="$(library_status)"
+if [[ -z "$remaining" ]]; then
+  echo "Library files clean after apply."
+else
+  printf 'Remaining Library drift after apply:\n%s\n' "$remaining"
+fi
