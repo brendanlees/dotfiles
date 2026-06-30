@@ -11,7 +11,7 @@ sketchybar --add item tailscale right \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
     background.color="$PILL_BG" \
-    background.border_color="$GREY" \
+    background.border_color="$SURFACE" \
     background.border_width=1 \
     background.corner_radius=8 \
     background.height="$PILL_HEIGHT" \
