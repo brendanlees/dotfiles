@@ -23,6 +23,7 @@ taps:
     - xykong/tap
     - oven-sh/bun
     - yt-dlp/taps
+    - mutagen-io/mutagen
   work:
     - ddev/ddev
     - discoteq/discoteq
@@ -177,4 +178,5 @@ casks:
     - keyclu
     - codex
     - codex-app
+    - hazeover
   work: []
