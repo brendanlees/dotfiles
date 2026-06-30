@@ -24,6 +24,7 @@ taps:
     - oven-sh/bun
     - yt-dlp/taps
     - mutagen-io/mutagen
+    - mole
   work:
     - ddev/ddev
     - discoteq/discoteq
