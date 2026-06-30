@@ -5,6 +5,10 @@
 # apply
 cza() { chezmoi apply --force --refresh-externals; }
 
+# library helpers
+cz-lib-apply() { chezmoi-apply-library "$@"; }
+cz-lib-readd() { chezmoi-readd-library "$@"; }
+
 # init with a single bw prompt (unlocks vault once, passes session via env)
 cz-bw-init() {
     command -v bw >/dev/null || {
