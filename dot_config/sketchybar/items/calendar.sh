@@ -28,7 +28,7 @@ sketchybar --add item calendar_time right \
 sketchybar --add item calendar_event_clock right \
     --set calendar_event_clock \
     icon="$ICON_CLOCK" \
-    icon.font="$FONT:Regular:16.0" \
+    icon.font="$FONT:Regular:18.0" \
     icon.color="$CALENDAR_COLOR" \
     icon.padding_left=4 \
     icon.padding_right=2 \

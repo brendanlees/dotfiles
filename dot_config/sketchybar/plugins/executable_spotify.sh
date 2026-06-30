@@ -118,7 +118,7 @@ fi
 sketchybar --set "$NAME" \
   drawing=on \
   icon="$state_icon" \
-  icon.font="$FONT:Bold:15.0" \
+  icon.font="$FONT:Bold:16.0" \
   icon.color="$accent_color" \
   label="$label" \
   label.color="$LABEL_COLOR"
