@@ -10,8 +10,8 @@ sketchybar --add item front_app center \
     label.color="$WHITE" \
     label.padding_left=2 \
     label.padding_right="$ITEM_PADDING" \
-    background.color="$PILL_BG" \
-    background.border_color="$FRONT_APP_COLOR" \
+    background.color="$BLACK" \
+    background.border_color="$TRANSPARENT" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \
     background.height="$PILL_HEIGHT" \

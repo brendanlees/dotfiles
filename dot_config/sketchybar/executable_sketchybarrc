@@ -7,10 +7,10 @@ ITEM_DIR="$CONFIG_DIR/items"
 export PLUGIN_DIR="$CONFIG_DIR/plugins"
 
 FONT="JetBrainsMono Nerd Font Mono"
-BAR_HEIGHT=38
-PILL_HEIGHT=32
+BAR_HEIGHT=40
+PILL_HEIGHT=36
 ITEM_PADDING=8
-BAR_EDGE_PADDING=4
+BAR_EDGE_PADDING=14
 GROUP_GAP=4
 MEDIA_GAP=0
 BORDER_RADIUS=8
@@ -21,18 +21,19 @@ BORDER_RADIUS=8
 
 sketchybar --bar \
   height="$BAR_HEIGHT" \
-  color="$BAR_COLOR" \
+  color="$SURFACE" \
   border_color="$BAR_BORDER_COLOR" \
+  background_color="$BAR_BORDER_COLOR" \
   shadow=off \
   position=top \
   topmost=window \
   sticky=on \
   padding_right="$BAR_EDGE_PADDING" \
   padding_left="$BAR_EDGE_PADDING" \
-  corner_radius="$BORDER_RADIUS" \
-  y_offset=6 \
-  margin=8 \
-  blur_radius=20 \
+  corner_radius=0 \
+  y_offset=0 \
+  margin=0 \
+  blur_radius=0 \
   notch_width=0
 
 # ------------------------------------------

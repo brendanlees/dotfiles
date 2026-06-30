@@ -98,7 +98,7 @@ sketchybar --add bracket spaces '/space\..*/' \
     --set spaces \
     background.drawing=on \
     background.color="$PILL_BG" \
-    background.border_color="$SPACES_COLOR" \
+    background.border_color="$TRANSPARENT" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \
     background.height="$PILL_HEIGHT" \
