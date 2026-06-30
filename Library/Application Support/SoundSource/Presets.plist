@@ -12419,7 +12419,7 @@
 					<key>type</key>
 					<string>SSHotkey</string>
 					<key>uuid</key>
-					<string>{"quickConfig":{"uuid":"9B1AEB7F-046E-454A-9251-514911D60A23","type":"loadQuickConfig"}}</string>
+					<string>{"quickConfig":{"type":"loadQuickConfig","uuid":"9B1AEB7F-046E-454A-9251-514911D60A23"}}</string>
 					<key>version</key>
 					<integer>1</integer>
 				</dict>
@@ -26192,7 +26192,7 @@
 					<key>type</key>
 					<string>SSHotkey</string>
 					<key>uuid</key>
-					<string>{"quickConfig":{"uuid":"852C4A1A-AD14-4283-92FA-05862B169637","type":"loadQuickConfig"}}</string>
+					<string>{"quickConfig":{"type":"loadQuickConfig","uuid":"852C4A1A-AD14-4283-92FA-05862B169637"}}</string>
 					<key>version</key>
 					<integer>1</integer>
 				</dict>
