@@ -50,6 +50,8 @@ Library
 !.local/bin/theme
 !.local/bin/headroom-codex-shim
 !.local/bin/headroom-tmux
+!.local/bin/chezmoi-apply-library
+!.local/bin/chezmoi-readd-library
 {{- if eq .chezmoi.os "windows" }}
 !.local/bin/cz-ssh-refresh.ps1
 {{- else }}
