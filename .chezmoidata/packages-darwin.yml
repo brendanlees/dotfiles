@@ -2,6 +2,7 @@ bunx:
   base: []
   personal:
     - tokscale@latest
+    - ccusage@latest
   work: []
 
 uv:
