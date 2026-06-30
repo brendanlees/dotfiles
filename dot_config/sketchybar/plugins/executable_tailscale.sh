@@ -5,7 +5,7 @@ source "$CONFIG_DIR/colors.sh"
 
 # State colors (VPN secured): green=connected, yellow=health warning or transient,
 # red=running-but-offline. The icon is the static `:tailscale:` token set by the
-# item; this plugin only toggles drawing and recolors icon + pill border.
+# item; this plugin only toggles drawing and recolors the icon.
 export TS_COLOR_GREY="$GREY" TS_COLOR_YELLOW="$YELLOW" TS_COLOR_RED="$RED" TS_COLOR_GREEN="$GREEN"
 
 hide_item() {
@@ -89,7 +89,6 @@ else
   sketchybar --set "$NAME" \
     drawing=on \
     icon.color="$color" \
-    background.border_color="$color" \
     label="$label" \
     label.color="$LABEL_COLOR"
 fi

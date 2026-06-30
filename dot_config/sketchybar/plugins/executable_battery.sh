@@ -28,5 +28,4 @@ sketchybar \
   icon="$ICON" \
   icon.color="$COLOR" \
   label="${PERCENTAGE}%" \
-  background.border_color="$COLOR" \
   --set spacer.backup_sync drawing=on

@@ -120,4 +120,3 @@ sketchybar --set "$NAME" \
   icon.color="$accent_color" \
   label="$label" \
   label.color="$LABEL_COLOR" \
-  background.border_color="$accent_color"

@@ -11,7 +11,7 @@ sketchybar --add item spotify right \
     label.font="$FONT:Regular:13.0" \
     label.color="$WHITE" \
     background.color="$BLACK" \
-    background.border_color="$SPOTIFY_COLOR" \
+    background.border_color="$TRANSPARENT" \
     background.border_width=1 \
     background.corner_radius="$BORDER_RADIUS" \
     background.height="$PILL_HEIGHT" \

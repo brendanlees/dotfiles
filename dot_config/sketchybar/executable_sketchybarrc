@@ -115,8 +115,6 @@ add_spacer status_battery right
 source "$ITEM_DIR/battery.sh"
 add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
-# add_spacer status_sync right "$GROUP_GAP" off
-# source "$ITEM_DIR/sync_status.sh"
 source "$ITEM_DIR/tailscale.sh"
 add_spacer status_spotify right "$MEDIA_GAP"
 source "$ITEM_DIR/spotify.sh"

@@ -64,12 +64,10 @@ if [ "$arq_active" = true ] || [ "$timemachine_active" = true ]; then
   fi
 
   sketchybar \
-    --set backup_status drawing=on \
-    --set backup_status_group background.drawing=on background.color="$PILL_BG" background.border_color="$status_color" \
-    --set spacer.status_sync drawing=on
+    --set backup_status drawing=on icon.color="$status_color" \
+    --set backup_status_group background.drawing=on background.color="$PILL_BG" background.border_color="$GREY"
 else
   sketchybar \
-    --set backup_status drawing=off \
-    --set backup_status_group background.drawing=off background.color="$ICON_COLOR" background.border_color="$GREY" \
-    --set spacer.status_sync drawing=off
+    --set backup_status drawing=off icon.color="$ICON_COLOR" \
+    --set backup_status_group background.drawing=off background.color="$ICON_COLOR" background.border_color="$GREY"
 fi

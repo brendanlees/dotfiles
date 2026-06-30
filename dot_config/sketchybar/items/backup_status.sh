@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Compact backup status, hidden unless Arq or Time Machine is actively backing up.
-# The plugin updates the pill background: blue=Arq, green=Time Machine,
+# The plugin updates the icon color: blue=Arq, green=Time Machine,
 # cyan=both.
 
 BACKUP_ICON=":time_machine:"

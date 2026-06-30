@@ -19,32 +19,11 @@ DOT_PINK="0xffE36BA0"
 : "${WHITE:=0xffffffff}"
 : "${CALENDAR_COLOR:=${CYAN:-$WHITE}}"
 
-set_calendar_border() {
-    if [ "$#" -eq 0 ]; then
-        sketchybar --set calendar_group background.border_color="$GREY"
-        return
-    fi
-
-    if [ "$#" -gt 1 ]; then
-        local gradient_value
-        local IFS=,
-        gradient_value="$*"
-
-        if sketchybar --set calendar_group background.border_color="$gradient_value" 2>/dev/null; then
-            return
-        fi
-    fi
-
-    sketchybar --set calendar_group background.border_color="$1"
-}
-
 set_calendar_state() {
     local icon_color="$1"
-    shift
 
     sketchybar --set calendar icon.color="$icon_color" \
         --set calendar_event_clock icon.color="$icon_color"
-    set_calendar_border "$@"
 }
 
 if ! calendar_names="$(CALENDAR_DOTS_TIMEOUT_SECONDS="${CALENDAR_DOTS_TIMEOUT_SECONDS:-12}" /usr/bin/python3 <<'PY' 2>/dev/null
@@ -119,7 +98,7 @@ if result.returncode != 0:
 sys.stdout.write(result.stdout)
 PY
 )"; then
-    set_calendar_state "$CALENDAR_COLOR" "$CALENDAR_COLOR"
+    set_calendar_state "$CALENDAR_COLOR"
     exit 0
 fi
 
@@ -143,7 +122,7 @@ active_colors=()
 [ "$per" = on ] && active_colors+=("$GREEN")
 
 if [ "${#active_colors[@]}" -eq 0 ]; then
-    set_calendar_state "$CALENDAR_COLOR" "$CALENDAR_COLOR"
+    set_calendar_state "$CALENDAR_COLOR"
 else
-    set_calendar_state "${active_colors[0]}" "${active_colors[@]}"
+    set_calendar_state "${active_colors[0]}"
 fi
