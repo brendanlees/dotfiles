@@ -11,7 +11,7 @@ BAR_HEIGHT=40
 PILL_HEIGHT=36
 ITEM_PADDING=8
 BAR_EDGE_PADDING=14
-GROUP_GAP=4
+GROUP_GAP=2
 MEDIA_GAP=0
 BORDER_RADIUS=8
 
@@ -110,8 +110,6 @@ source "$ITEM_DIR/front_app.sh"
 # ------------------------------------------
 
 source "$ITEM_DIR/calendar.sh"
-add_spacer calendar_status right
-add_spacer status_battery right
 source "$ITEM_DIR/battery.sh"
 add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
