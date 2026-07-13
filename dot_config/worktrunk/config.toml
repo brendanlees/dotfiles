@@ -1,5 +1,5 @@
 [commit.generation]
-command = "CLAUDECODE= MAX_THINKING_TOKENS=0 claude -p --no-session-persistence --model=haiku --tools='' --disable-slash-commands --setting-sources='' --system-prompt=''"
+command = "codex exec -m gpt-5.6-luna -c model_reasoning_effort='low' -c system_prompt='' --sandbox=read-only --json - | jq -sr '[.[] | select(.item.type? == \"agent_message\")] | last.item.text'"
 
 template = """
 <task>Write a conventional commit message for the staged changes below.</task>
@@ -80,5 +80,5 @@ tmux-rename = '[ -n "$TMUX" ] && tmux rename-window -t "$TMUX_PANE" {{ branch | 
 tmux-split = '''
 [ -n "$TMUX_PANE" ] && \
   PANE_COUNT=$(tmux list-panes -t "$TMUX_PANE" -F x | wc -l | tr -d ' ') && \
-  [ "$PANE_COUNT" -eq 2 ] 
+  [ "$PANE_COUNT" -eq 2 ] \
 '''
