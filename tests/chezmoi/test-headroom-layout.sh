@@ -29,6 +29,9 @@ if grep -Eq '^(headroom-pi-codex-shim|headroom-watch-stats|hproxy|hproxy-openrou
   exit 1
 fi
 
+grep -Fq '${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.6-sol}' "$FUNCTIONS_FILE"
+grep -Fq '${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.6-sol,headroom-codex-oauth/gpt-5.5,headroom-codex-oauth/gpt-5.4-mini}' "$FUNCTIONS_FILE"
+
 TMPDIR="${TMPDIR:-/tmp}/headroom-layout-test-$$"
 mkdir -p "$TMPDIR/home/.config" "$TMPDIR/bin"
 trap 'rm -rf "$TMPDIR"' EXIT
