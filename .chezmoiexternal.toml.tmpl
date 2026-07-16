@@ -20,6 +20,26 @@ exclude = [
   "**/*.zwc",
 ]
 
+{{- if and (eq .chezmoi.os "darwin") .zsh_patina_trial }}
+{{- if eq .chezmoi.arch "arm64" }}
+[".local/bin/zsh-patina"]
+type = "archive-file"
+url = "https://github.com/michel-kraemer/zsh-patina/releases/download/1.8.0/zsh-patina-v1.8.0-aarch64-apple-darwin.tar.gz"
+path = "zsh-patina-v1.8.0-aarch64-apple-darwin/zsh-patina"
+executable = true
+checksum.sha256 = "b1b7afb9e7c8840f269e9f342ffce3c2b90faa221f288484654a80f2a244b296"
+checksum.size = 1657607
+{{- else if eq .chezmoi.arch "amd64" }}
+[".local/bin/zsh-patina"]
+type = "archive-file"
+url = "https://github.com/michel-kraemer/zsh-patina/releases/download/1.8.0/zsh-patina-v1.8.0-x86_64-apple-darwin.tar.gz"
+path = "zsh-patina-v1.8.0-x86_64-apple-darwin/zsh-patina"
+executable = true
+checksum.sha256 = "5ff05eaaa9d4dcdb14d145d1d36f290917d087b0942fa707be6a9686e353f3b9"
+checksum.size = 1779231
+{{- end }}
+{{- end }}
+
 [".local/share/zsh/plugins/zsh-syntax-highlighting"]
 type = "archive"
 url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz"
