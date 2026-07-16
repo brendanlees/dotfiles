@@ -13,6 +13,18 @@ export BW_SESSION=$(bw unlock --raw)
 chezmoi init --apply brendanlees
 ```
 
+### mise authentication
+
+On hosts with a cached `github_token`, the managed mise configuration resolves it on demand through chezmoi's `credential_command`. The token is not exported globally or embedded in mise configuration.
+
+Verify the active source with:
+
+```sh
+mise token github
+```
+
+The token is masked by default; the output should identify `credential_command` as its source.
+
 ## bitwarden cache refresh
 
 after changing bitwarden-backed init data, re-run `chezmoi init --apply brendanlees`; `chezmoi apply` alone does not refresh cached init data.
