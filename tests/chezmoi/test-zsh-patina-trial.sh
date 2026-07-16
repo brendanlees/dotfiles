@@ -7,6 +7,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 defaults="$repo_root/.chezmoidata/defaults.yml"
 externals="$repo_root/.chezmoiexternal.toml.tmpl"
+ignore="$repo_root/.chezmoiignore"
 zshrc="$repo_root/dot_zshrc.tmpl"
 config="$repo_root/dot_config/zsh-patina/config.toml.tmpl"
 
@@ -67,12 +68,19 @@ if [[ $(uname -s) == Darwin ]]; then
   chezmoi execute-template \
     --source "$repo_root" \
     --override-data '{"zsh_patina_trial":true,"zsh_patina_theme":"patina"}' \
+    --file "$ignore" \
+    > "$tmpdir/ignore-enabled"
+  grep -Fqx '!.local/bin/zsh-patina' "$tmpdir/ignore-enabled"
+
+  chezmoi execute-template \
+    --source "$repo_root" \
+    --override-data '{"zsh_patina_trial":true,"zsh_patina_theme":"patina"}' \
     --file "$zshrc" \
     > "$tmpdir/zshrc-enabled"
 
   enabled_last=$(grep -Ev '^[[:space:]]*(#|$)' "$tmpdir/zshrc-enabled" | tail -1)
   # shellcheck disable=SC2016
-  expected_enabled='eval "$("$HOME/.local/bin/zsh-patina" activate)"'
+  expected_enabled='eval "$(zsh-patina activate)"'
   if [[ "$enabled_last" != "$expected_enabled" ]]; then
     echo "enabled zshrc must end with zsh-patina activation, got: $enabled_last" >&2
     exit 1
