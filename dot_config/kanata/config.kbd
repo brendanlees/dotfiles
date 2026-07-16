@@ -62,7 +62,7 @@
 ;; chords: simultaneous key presses that produce symbols
 ;; chords-v2 intercepts before layer processing - no layer changes needed
 (defchordsv2
-  (w e)   min   $chord-timeout first-release ()  ;; we    = -
+  (w e)   kp-   $chord-timeout first-release ()  ;; we    = keypad-minus
   (x c)   S-min $chord-timeout first-release ()  ;; xc    = _
   (q w)   grv   $chord-timeout first-release ()  ;; qw    = `
   (tab q) S-grv $chord-timeout first-release ()  ;; tab+q = ~
@@ -84,7 +84,7 @@
   j_ctl    (tap-hold-release-keys $tap-timeout $hold-timeout j rctl $right-hand-keys)  ;; j: tap for 'j', hold for Control
   k_sft    (tap-hold-release-keys $tap-timeout $hold-timeout k rsft $right-hand-keys)  ;; k: tap for 'k', hold for Shift
   l_alt    (tap-hold-release-keys $tap-timeout $hold-timeout l lalt $right-hand-keys)  ;; l: tap for 'l', hold for Alt
-  scln_cmd (tap-hold-release-keys $tap-timeout $hold-timeout ; rmet $right-hand-keys)  ;; ;: tap for ';', hold for Command (Meta)
+  scln_cmd (tap-hold-release-keys $tap-timeout $hold-timeout ; lmet $right-hand-keys)  ;; ;: tap for ';', hold for left Command (Meta)
 
   ;; one-shot Shift+Cmd (mirrors QMK OSM(MOD_LSFT|MOD_LGUI) on 'a' in arrows layer)
   osm_sg (multi (one-shot 2000 lsft) (one-shot 2000 lmet))

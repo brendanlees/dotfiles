@@ -15,9 +15,9 @@ used for re-mapping internal laptop keyboards.
 | `j`    | j   | ctrl  |
 | `k`    | k   | shift |
 | `l`    | l   | alt   |
-| `;`    | ;   | cmd   |
+| `;`    | ;   | `lmet` (left Command) |
 | `caps` | esc | hyper |
-| `lmet` | bspc | cmd  |
+| `lmet` | bspc | left Command |
 
 **positional disambiguation (timeless homerow mods).** the eight letter HRMs (a/s/d/f/j/k/l/`;`) use `tap-hold-release-keys` so:
 
@@ -27,7 +27,7 @@ used for re-mapping internal laptop keyboards.
 
 hand groupings live in `(defvar left-hand-keys ...)` / `right-hand-keys` and cover every alpha column in `defsrc` **except the eight HRM positions themselves** (`a`/`s`/`d`/`f`, `j`/`k`/`l`/`;`) — those are excluded so same-hand mod chords like `Alt+Shift+T` still work. see `docs/timeless-hrm.md` for the polarity gotcha and the chord-vs-roll trade-off.
 
-`caps` (esc/hyper) and `lmet` (bspc/cmd) remain plain timing-based tap-hold — not homerow letters, no roll concern.
+`caps` (esc/hyper) and `lmet` (bspc/left Command) remain plain timing-based tap-hold — not homerow letters, no roll concern.
 
 tap-timeout: 300ms, hold-timeout: 200ms.
 
@@ -62,7 +62,7 @@ timeout matches homerow mods (300ms tap, 200ms hold).
 
 | chord       | output  |
 | ----------- | ------- |
-| `w` + `e`   | `-`     |
+| `w` + `e`   | `kp-` (keypad-minus) |
 | `x` + `c`   | `_`     |
 | `q` + `w`   | `` ` `` |
 | `tab` + `q` | `~`     |
