@@ -1,0 +1,29 @@
+{{- if ne .chezmoi.os "windows" -}}
+#!/usr/bin/env python3
+"""Atomically write the chezmoi-rendered Pi theme after the .pi external sync."""
+
+import os
+from pathlib import Path
+
+THEME_JSON = {{ includeTemplate ".chezmoitemplates/pi-theme.json.tmpl" . | quote }}
+
+
+def agent_dir() -> Path:
+    override = os.environ.get("PI_AGENT_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".pi" / "agent"
+
+
+def main() -> None:
+    target = agent_dir() / "themes" / "chezmoi.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_suffix(".json.tmp")
+    temporary.write_text(THEME_JSON.rstrip() + "\n")
+    os.replace(temporary, target)
+    print(f"configured Pi theme in {target}")
+
+
+if __name__ == "__main__":
+    main()
+{{- end -}}

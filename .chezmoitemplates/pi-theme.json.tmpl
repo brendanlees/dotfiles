@@ -1,0 +1,96 @@
+{{- $themeName := .theme -}}
+{{- if not (hasKey .themes $themeName) -}}
+  {{- fail (printf "unknown active theme %q" $themeName) -}}
+{{- end -}}
+{{- $selected := index .themes $themeName -}}
+{{- $palette := $selected.palette -}}
+{{- $required := list "bg" "surface" "surface_alt" "border" "comment" "muted" "fg" "accent" "primary" "primary_alt" "secondary" "success" "warn" "error" "info" "info_alt" "orange" "tool_pending_bg" "tool_success_bg" "tool_error_bg" -}}
+{{- range $key := $required -}}
+  {{- if not (hasKey $palette $key) -}}
+    {{- fail (printf "theme %q missing palette key %q" $themeName $key) -}}
+  {{- end -}}
+{{- end -}}
+{
+  "$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
+  "name": "chezmoi",
+  "vars": {
+    "activeTheme": {{ $themeName | quote }},
+    "bg": {{ index $palette "bg" | quote }},
+    "fg": {{ index $palette "fg" | quote }},
+    "surface": {{ index $palette "surface" | quote }},
+    "surfaceAlt": {{ index $palette "surface_alt" | quote }},
+    "border": {{ index $palette "border" | quote }},
+    "comment": {{ index $palette "comment" | quote }},
+    "mutedTone": {{ index $palette "muted" | quote }},
+    "primary": {{ index $palette "primary" | quote }},
+    "primaryAlt": {{ index $palette "primary_alt" | quote }},
+    "accentTone": {{ index $palette "accent" | quote }},
+    "secondary": {{ index $palette "secondary" | quote }},
+    "successTone": {{ index $palette "success" | quote }},
+    "warningTone": {{ index $palette "warn" | quote }},
+    "errorTone": {{ index $palette "error" | quote }},
+    "infoTone": {{ index $palette "info" | quote }},
+    "infoAlt": {{ index $palette "info_alt" | quote }},
+    "toolPendingTone": {{ index $palette "tool_pending_bg" | quote }},
+    "toolSuccessTone": {{ index $palette "tool_success_bg" | quote }},
+    "toolErrorTone": {{ index $palette "tool_error_bg" | quote }}
+  },
+  "colors": {
+    "accent": "accentTone",
+    "border": "border",
+    "borderAccent": "primary",
+    "borderMuted": "surfaceAlt",
+    "success": "successTone",
+    "error": "errorTone",
+    "warning": "warningTone",
+    "muted": "mutedTone",
+    "dim": "comment",
+    "text": "",
+    "thinkingText": "comment",
+    "selectedBg": "surface",
+    "userMessageBg": "surface",
+    "userMessageText": "",
+    "customMessageBg": "surface",
+    "customMessageText": "",
+    "customMessageLabel": "primary",
+    "toolPendingBg": "toolPendingTone",
+    "toolSuccessBg": "toolSuccessTone",
+    "toolErrorBg": "toolErrorTone",
+    "toolTitle": "primaryAlt",
+    "toolOutput": "fg",
+    "mdHeading": "primaryAlt",
+    "mdLink": "accentTone",
+    "mdLinkUrl": "mutedTone",
+    "mdCode": "primaryAlt",
+    "mdCodeBlock": "fg",
+    "mdCodeBlockBorder": "border",
+    "mdQuote": "mutedTone",
+    "mdQuoteBorder": "border",
+    "mdHr": "border",
+    "mdListBullet": "primary",
+    "toolDiffAdded": "successTone",
+    "toolDiffRemoved": "errorTone",
+    "toolDiffContext": "comment",
+    "syntaxComment": "comment",
+    "syntaxKeyword": "primary",
+    "syntaxFunction": "infoTone",
+    "syntaxVariable": "primaryAlt",
+    "syntaxString": "successTone",
+    "syntaxNumber": "warningTone",
+    "syntaxType": "infoAlt",
+    "syntaxOperator": "fg",
+    "syntaxPunctuation": "comment",
+    "thinkingOff": "surfaceAlt",
+    "thinkingMinimal": "border",
+    "thinkingLow": "comment",
+    "thinkingMedium": "primaryAlt",
+    "thinkingHigh": "primary",
+    "thinkingXhigh": "secondary",
+    "bashMode": "successTone"
+  },
+  "export": {
+    "pageBg": {{ index $palette "bg" | quote }},
+    "cardBg": {{ index $palette "surface" | quote }},
+    "infoBg": {{ index $palette "surface_alt" | quote }}
+  }
+}

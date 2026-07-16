@@ -1,0 +1,21 @@
+{{- if eq .chezmoi.os "windows" -}}
+$ErrorActionPreference = "Stop"
+
+$themeJson = @'
+{{ includeTemplate ".chezmoitemplates/pi-theme.json.tmpl" . }}
+'@
+
+if ($env:PI_AGENT_DIR) {
+    $agentDir = [Environment]::ExpandEnvironmentVariables($env:PI_AGENT_DIR)
+} else {
+    $agentDir = Join-Path $HOME ".pi\agent"
+}
+
+$themeDir = Join-Path $agentDir "themes"
+$targetPath = Join-Path $themeDir "chezmoi.json"
+$tempPath = "$targetPath.tmp"
+[IO.Directory]::CreateDirectory($themeDir) | Out-Null
+[IO.File]::WriteAllText($tempPath, $themeJson.TrimEnd() + "`n", [Text.UTF8Encoding]::new($false))
+Move-Item -LiteralPath $tempPath -Destination $targetPath -Force
+Write-Output "configured Pi theme in $targetPath"
+{{- end -}}
