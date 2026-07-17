@@ -112,6 +112,7 @@ grep -q "ctrl-e:change-prompt" "$picker"
 grep -q "list-agent-sessions.sh" "$picker"
 grep -q "preview-with-agent-state.sh" "$picker"
 grep -q "agent-next.sh --target" "$picker"
+grep -Fq 'TMUX_FLAGS=(--tmux "80%,70%,border-native")' "$picker"
 grep -q "bind-key A run-shell '~/.config/sesh/scripts/agent-next.sh'" "$tmux_conf"
 
 

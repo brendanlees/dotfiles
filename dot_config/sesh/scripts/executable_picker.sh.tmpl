@@ -16,7 +16,7 @@ unset FZF_DEFAULT_OPTS
 
 TMUX_FLAGS=()
 if [ "${1:-}" = "--tmux" ]; then
-  TMUX_FLAGS=(--tmux "80%,70%")
+  TMUX_FLAGS=(--tmux "80%,70%,border-native")
   shift
 fi
 
