@@ -82,38 +82,27 @@ grep -q 'select-window -t @9' "$TMUX_LOG"
 grep -q 'select-pane -t %12' "$TMUX_LOG"
 
 
-for wrapper in \
-  "$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl" \
-  "$repo_root/dot_config/sesh/scripts/executable_list-agent-sessions.sh.tmpl" \
-  "$repo_root/dot_config/sesh/scripts/executable_agent-next.sh.tmpl"; do
-  bash -n "$wrapper"
-done
-
-cat > "$fake_bin/sesh" <<'SESH'
-#!/usr/bin/env bash
-set -euo pipefail
-if [[ "$1" == preview ]]; then
-  printf 'sesh preview: %s\n' "${2:-}"
-fi
-SESH
-chmod +x "$fake_bin/sesh"
-
-export AGENT_TMUX_STATE_SCRIPT="$script"
-preview_wrapper="$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl"
-combined_preview=$("$preview_wrapper" 'agent:%12 claude done dotfiles:3 agent-window /tmp/project')
-[[ "$combined_preview" == *'agent: pi'* ]]
-[[ "$combined_preview" == *'sesh preview: agent:%12 claude done dotfiles:3 agent-window /tmp/project'* ]]
-
+bash -n "$repo_root/dot_config/sesh/scripts/executable_agent-next.sh.tmpl"
+[[ ! -e "$repo_root/dot_config/sesh/scripts/executable_list-agent-sessions.sh.tmpl" ]]
+[[ ! -e "$repo_root/dot_config/sesh/scripts/executable_preview-with-agent-state.sh.tmpl" ]]
 
 picker="$repo_root/dot_config/sesh/scripts/executable_picker.sh.tmpl"
+windows_picker="$repo_root/dot_config/sesh/scripts/executable_picker.ps1.tmpl"
 tmux_conf="$repo_root/dot_config/tmux/tmux.conf.tmpl"
 
-grep -q "ctrl-e:change-prompt" "$picker"
-grep -q "list-agent-sessions.sh" "$picker"
-grep -q "preview-with-agent-state.sh" "$picker"
-grep -q "agent-next.sh --target" "$picker"
+for sesh_picker in "$picker" "$windows_picker"; do
+  if grep -Eq 'list-agent-sessions|preview-with-agent-state|agent-next|agent:%|ctrl-e:change-prompt|\^e agents' "$sesh_picker"; then
+    exit 1
+  fi
+done
+
 grep -Fq 'TMUX_FLAGS=(--tmux "80%,70%,border-native")' "$picker"
+grep -Fq -- '--preview "sesh preview {}"' "$picker"
 grep -q "bind-key A run-shell '~/.config/sesh/scripts/agent-next.sh'" "$tmux_conf"
+grep -q '^setw -g monitor-bell on$' "$tmux_conf"
+grep -q '^set -g bell-action any$' "$tmux_conf"
+grep -q '^set -g visual-bell on$' "$tmux_conf"
+grep -q '^set -g window-status-bell-style' "$tmux_conf"
 
 
 # Reader output should refresh live tmux metadata instead of showing stale record values.
