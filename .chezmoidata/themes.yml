@@ -26,8 +26,7 @@ themes:
       info: "#7dcfff"
       info_alt: "#2ac3de"
       orange: "#ff9e64"
-      tool_pending_bg: "#1f2230"
-      tool_success_bg: "#202329"
+      tool_neutral_bg: "#20232d"
       tool_error_bg: "#271d27"
     apps:
       ghostty: "TokyoNight Night"
@@ -59,8 +58,7 @@ themes:
       info: "#7FB4CA"
       info_alt: "#6A9589"
       orange: "#FFA066"
-      tool_pending_bg: "#23232d"
-      tool_success_bg: "#24272a"
+      tool_neutral_bg: "#24252c"
       tool_error_bg: "#292125"
     apps:
       ghostty: "Kanagawa Wave"
@@ -92,8 +90,7 @@ themes:
       info: "#949fb5"
       info_alt: "#8992a7"
       orange: "#b6927b"
-      tool_pending_bg: "#1a1817"
-      tool_success_bg: "#1b1b18"
+      tool_neutral_bg: "#1b1a18"
       tool_error_bg: "#211818"
     apps:
       ghostty: "Kanagawa Dragon"
@@ -125,8 +122,7 @@ themes:
       info: "#78DCE8"
       info_alt: "#AB9DF2"
       orange: "#FC9867"
-      tool_pending_bg: "#343135"
-      tool_success_bg: "#33342f"
+      tool_neutral_bg: "#343332"
       tool_error_bg: "#392b31"
     apps:
       ghostty: "Monokai Pro"
@@ -158,8 +154,7 @@ themes:
       info: "#9ccfd8"
       info_alt: "#ebbcba"
       orange: "#f6c177"
-      tool_pending_bg: "#1b1928"
-      tool_success_bg: "#1a1b26"
+      tool_neutral_bg: "#1b1a27"
       tool_error_bg: "#231923"
     apps:
       ghostty: "Rose Pine"
@@ -191,8 +186,7 @@ themes:
       info: "#7fdbca"
       info_alt: "#316394"
       orange: "#f78c6c"
-      tool_pending_bg: "#041a2c"
-      tool_success_bg: "#071d29"
+      tool_neutral_bg: "#061c2b"
       tool_error_bg: "#0f1829"
     apps:
       ghostty: "nightfly"
@@ -224,8 +218,7 @@ themes:
       info: "#79dac8"
       info_alt: "#88a2b7"
       orange: "#de935f"
-      tool_pending_bg: "#0f0f0f"
-      tool_success_bg: "#0e120d"
+      tool_neutral_bg: "#0f110e"
       tool_error_bg: "#160c0c"
     apps:
       ghostty: "moonfly"
@@ -257,8 +250,7 @@ themes:
       info: "#697a9a"
       info_alt: "#6d7580"
       orange: "#ac7f7b"
-      tool_pending_bg: "#121315"
-      tool_success_bg: "#141716"
+      tool_neutral_bg: "#131416"
       tool_error_bg: "#191314"
     apps:
       ghostty: "guts"

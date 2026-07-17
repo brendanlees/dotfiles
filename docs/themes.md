@@ -26,6 +26,8 @@ pi uses a chezmoi-generated theme named `chezmoi` at `~/.pi/agent/themes/chezmoi
 
 After switching themes, restart or reload pi if the running session does not hot-reload the generated theme files.
 
+Pending and successful Pi tool blocks share each palette's hand-tuned `tool_neutral_bg`; failed tool blocks use the restrained `tool_error_bg`. This keeps normal tool calls visually quiet while preserving error emphasis. Pi's global semantic status colors remain unchanged.
+
 ## where it's stored
 
 | file                            | role                                                                  |
@@ -33,8 +35,10 @@ After switching themes, restart or reload pi if the running session does not hot
 | `.chezmoidata/defaults.yml`     | tracked default — falls back here if no override                      |
 | `.chezmoidata/local.yml`        | gitignored, host-local override — `theme` writes here                 |
 | `.chezmoidata/themes.yml`       | registry: palette + per-app theme names                               |
-| `dot_pi/agent/themes/chezmoi.json.tmpl` | pi TUI theme generated from the active palette                         |
-| `dot_pi/agent/extensions/powerline-footer/theme.json.tmpl` | pi powerline/status chrome generated from the active palette            |
+| `.chezmoitemplates/pi-theme.json.tmpl` | shared source for the generated Pi TUI theme |
+| `.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl` | POSIX atomic writer for `~/.pi/agent/themes/chezmoi.json` after the `.pi` external sync |
+| `.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl` | Windows atomic writer for the same generated runtime theme |
+| `~/.pi/agent/themes/chezmoi.json` | ignored generated runtime output; never edit or track directly |
 
 chezmoi merges `.chezmoidata/*.yml` lexicographically, so `local.yml` beats `defaults.yml`.
 

@@ -47,8 +47,8 @@ palette = data["themes"][theme_name]["palette"]
 required_palette = {
     "bg", "surface", "surface_alt", "border", "comment", "muted", "fg",
     "accent", "primary", "primary_alt", "secondary", "success", "warn",
-    "error", "info", "info_alt", "orange", "tool_pending_bg",
-    "tool_success_bg", "tool_error_bg",
+    "error", "info", "info_alt", "orange", "tool_neutral_bg",
+    "tool_error_bg",
 }
 missing_palette = sorted(required_palette - set(palette))
 if missing_palette:
@@ -83,6 +83,18 @@ if doc.get("vars", {}).get("activeTheme") != theme_name:
     raise SystemExit(f"{theme_name}: vars.activeTheme mismatch")
 
 vars_ = doc["vars"]
+if vars_.get("toolNeutralTone") != palette["tool_neutral_bg"]:
+    raise SystemExit(f"{theme_name}: toolNeutralTone does not match palette")
+if vars_.get("toolErrorTone") != palette["tool_error_bg"]:
+    raise SystemExit(f"{theme_name}: toolErrorTone does not match palette")
+if doc["colors"].get("toolPendingBg") != "toolNeutralTone":
+    raise SystemExit(f"{theme_name}: pending tools must use toolNeutralTone")
+if doc["colors"].get("toolSuccessBg") != "toolNeutralTone":
+    raise SystemExit(f"{theme_name}: successful tools must use toolNeutralTone")
+if doc["colors"].get("toolErrorBg") != "toolErrorTone":
+    raise SystemExit(f"{theme_name}: failed tools must use toolErrorTone")
+if palette["tool_neutral_bg"].lower() == palette["tool_error_bg"].lower():
+    raise SystemExit(f"{theme_name}: error surface must differ from neutral surface")
 for key, value in doc["colors"].items():
     if value == "":
         continue
@@ -94,13 +106,12 @@ for key, value in doc["colors"].items():
 
 if theme_name == "guts":
     expected = {
-        "tool_pending_bg": "#121315",
-        "tool_success_bg": "#141716",
+        "tool_neutral_bg": "#131416",
         "tool_error_bg": "#191314",
     }
     actual = {key: palette[key] for key in expected}
     if actual != expected:
-        raise SystemExit(f"guts: status tints changed: {actual!r}")
+        raise SystemExit(f"guts: tool surfaces changed: {actual!r}")
 PY
 done < <(
   python3 - "$data_file" <<'PY'

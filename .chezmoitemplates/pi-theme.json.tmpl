@@ -4,7 +4,7 @@
 {{- end -}}
 {{- $selected := index .themes $themeName -}}
 {{- $palette := $selected.palette -}}
-{{- $required := list "bg" "surface" "surface_alt" "border" "comment" "muted" "fg" "accent" "primary" "primary_alt" "secondary" "success" "warn" "error" "info" "info_alt" "orange" "tool_pending_bg" "tool_success_bg" "tool_error_bg" -}}
+{{- $required := list "bg" "surface" "surface_alt" "border" "comment" "muted" "fg" "accent" "primary" "primary_alt" "secondary" "success" "warn" "error" "info" "info_alt" "orange" "tool_neutral_bg" "tool_error_bg" -}}
 {{- range $key := $required -}}
   {{- if not (hasKey $palette $key) -}}
     {{- fail (printf "theme %q missing palette key %q" $themeName $key) -}}
@@ -31,8 +31,7 @@
     "errorTone": {{ index $palette "error" | quote }},
     "infoTone": {{ index $palette "info" | quote }},
     "infoAlt": {{ index $palette "info_alt" | quote }},
-    "toolPendingTone": {{ index $palette "tool_pending_bg" | quote }},
-    "toolSuccessTone": {{ index $palette "tool_success_bg" | quote }},
+    "toolNeutralTone": {{ index $palette "tool_neutral_bg" | quote }},
     "toolErrorTone": {{ index $palette "tool_error_bg" | quote }}
   },
   "colors": {
@@ -53,8 +52,8 @@
     "customMessageBg": "surface",
     "customMessageText": "",
     "customMessageLabel": "primary",
-    "toolPendingBg": "toolPendingTone",
-    "toolSuccessBg": "toolSuccessTone",
+    "toolPendingBg": "toolNeutralTone",
+    "toolSuccessBg": "toolNeutralTone",
     "toolErrorBg": "toolErrorTone",
     "toolTitle": "primaryAlt",
     "toolOutput": "fg",
