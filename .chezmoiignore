@@ -80,6 +80,7 @@ AppData
 
 {{- if eq .chezmoi.os "windows" }}
 .config/tmux
+.config/herdr
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}

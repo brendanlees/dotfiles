@@ -1,0 +1,87 @@
+{{- $p := (index .themes .theme).palette -}}
+onboarding = false
+
+[terminal]
+default_shell = "zsh"
+shell_mode = "auto"
+new_cwd = "follow"
+
+[keys]
+prefix = "ctrl+b"
+detach = "prefix+d"
+reload_config = "prefix+r"
+new_tab = "prefix+c"
+rename_tab = "prefix+comma"
+previous_tab = ["prefix+p", "ctrl+shift+h"]
+next_tab = ["prefix+n", "ctrl+shift+l"]
+switch_tab = "prefix+1..9"
+close_tab = "prefix+ampersand"
+copy_mode = "prefix+["
+focus_pane_left = ""
+focus_pane_down = ""
+focus_pane_up = ""
+focus_pane_right = ""
+split_vertical = "prefix+percent"
+split_horizontal = "prefix+double_quote"
+close_pane = "prefix+x"
+zoom = ["prefix+z", "ctrl+f"]
+resize_mode = ""
+
+[[keys.command]]
+key = "prefix+h"
+type = "shell"
+command = 'exec "$HERDR_BIN_PATH" pane resize --direction left --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
+description = "resize pane left"
+
+[[keys.command]]
+key = "prefix+j"
+type = "shell"
+command = 'exec "$HERDR_BIN_PATH" pane resize --direction down --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
+description = "resize pane down"
+
+[[keys.command]]
+key = "prefix+k"
+type = "shell"
+command = 'exec "$HERDR_BIN_PATH" pane resize --direction up --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
+description = "resize pane up"
+
+[[keys.command]]
+key = "prefix+l"
+type = "shell"
+command = 'exec "$HERDR_BIN_PATH" pane resize --direction right --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
+description = "resize pane right"
+
+[ui]
+mouse_capture = true
+prompt_new_tab_name = false
+pane_borders = true
+pane_gaps = false
+accent = "{{ $p.accent }}"
+
+[ui.sound]
+enabled = false
+
+[advanced]
+scrollback_limit_bytes = 100_000_000
+
+[theme]
+name = "terminal"
+auto_switch = false
+
+[theme.custom]
+panel_bg = "{{ $p.bg }}"
+surface0 = "{{ $p.surface }}"
+surface1 = "{{ $p.surface_alt }}"
+surface_dim = "{{ $p.tool_neutral_bg }}"
+overlay0 = "{{ $p.border }}"
+overlay1 = "{{ $p.comment }}"
+text = "{{ $p.fg }}"
+subtext0 = "{{ $p.muted }}"
+accent = "{{ $p.accent }}"
+mauve = "{{ $p.secondary }}"
+green = "{{ $p.success }}"
+yellow = "{{ $p.warn }}"
+red = "{{ $p.error }}"
+blue = "{{ $p.primary }}"
+teal = "{{ $p.info }}"
+peach = "{{ $p.orange }}"
