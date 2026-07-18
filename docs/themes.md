@@ -11,7 +11,7 @@ theme --list             # list available themes (active marked)
 theme --current          # print active theme
 ```
 
-the script writes the choice to `.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, borders, Sketchybar, nvim (over its socket), and espanso.
+the script writes the choice to `.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, herdr, borders, Sketchybar, nvim (over its socket), and espanso.
 
 a few apps need a manual restart to pick up the new theme:
 
