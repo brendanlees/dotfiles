@@ -120,4 +120,10 @@ if grep -Fxq '.config/herdr' "$darwin_ignore"; then
   exit 1
 fi
 
+theme_switcher="$repo_root/dot_local/bin/executable_theme"
+grep -Fq 'command -v herdr >/dev/null 2>&1' "$theme_switcher"
+grep -Fq 'pgrep -xq herdr' "$theme_switcher"
+grep -Fq 'herdr server reload-config' "$theme_switcher"
+grep -Fq 'warn: herdr reload-config failed' "$theme_switcher"
+
 echo "HerdR config template ok"

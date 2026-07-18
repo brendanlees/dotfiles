@@ -166,6 +166,15 @@ if command -v tmux >/dev/null 2>&1 && pgrep -x tmux >/dev/null 2>&1; then
   done
 fi
 
+# herdr — reload the default running server after chezmoi renders config.toml.
+# Named sessions use separate sockets and are intentionally out of scope for
+# the initial HerdR evaluation config.
+if command -v herdr >/dev/null 2>&1 && pgrep -xq herdr 2>/dev/null; then
+  echo ":: herdr reload-config"
+  herdr server reload-config >/dev/null 2>&1 \
+    || echo "warn: herdr reload-config failed" >&2
+fi
+
 # ghostty — trigger its reload_config keybind (cmd+shift+,)
 if pgrep -xq ghostty 2>/dev/null; then
   echo ":: ghostty reload_config"
