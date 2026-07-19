@@ -63,7 +63,7 @@ json_created_workspace_id() {
     python3 -c '
 import json, sys
 value = json.load(sys.stdin)["result"]["workspace"].get("workspace_id")
-if not value:
+if not isinstance(value, str) or not value:
     raise SystemExit("missing created workspace ID")
 print(value)
 '
@@ -73,9 +73,10 @@ json_initial_pane_id() {
     python3 -c '
 import json, sys
 panes = json.load(sys.stdin)["result"]["panes"]
-if len(panes) != 1 or not panes[0].get("pane_id"):
+value = panes[0].get("pane_id") if len(panes) == 1 else None
+if not isinstance(value, str) or not value:
     raise SystemExit("expected one initial pane")
-print(panes[0]["pane_id"])
+print(value)
 '
 }
 
@@ -83,7 +84,7 @@ json_split_pane_id() {
     python3 -c '
 import json, sys
 value = json.load(sys.stdin)["result"]["pane"].get("pane_id")
-if not value:
+if not isinstance(value, str) or not value:
     raise SystemExit("missing split pane ID")
 print(value)
 '

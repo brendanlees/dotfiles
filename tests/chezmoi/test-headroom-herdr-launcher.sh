@@ -53,7 +53,7 @@ if args[:2] == ["workspace", "list"]:
             "tab_count": 1,
             "agent_status": "unknown",
         }]
-    elif scenario == "incomplete-create" and create_has_run:
+    elif scenario in {"incomplete-create", "non-string-create-id"} and create_has_run:
         workspaces = [{"workspace_id": "wCreatedZ", "label": "headroom"}]
     elif scenario == "ambiguous-incomplete-create" and create_has_run:
         workspaces = [
@@ -72,15 +72,21 @@ if args[:2] == ["workspace", "list"]:
 elif args[:2] == ["workspace", "create"]:
     if scenario in {"incomplete-create", "ambiguous-incomplete-create"}:
         result = {"type": "workspace_created", "workspace": {"label": "headroom"}}
+    elif scenario == "non-string-create-id":
+        result = {
+            "type": "workspace_created",
+            "workspace": {"workspace_id": 42, "label": "headroom"},
+        }
     else:
         result = {
             "type": "workspace_created",
             "workspace": {"workspace_id": "wCreatedZ", "label": "headroom"},
         }
 elif args[:2] == ["pane", "list"]:
+    pane_id = 42 if scenario == "non-string-initial-pane-id" else "wCreatedZ:pProxyA"
     result = {
         "type": "pane_list",
-        "panes": [{"pane_id": "wCreatedZ:pProxyA", "workspace_id": "wCreatedZ"}],
+        "panes": [{"pane_id": pane_id, "workspace_id": "wCreatedZ"}],
     }
 elif args[:2] == ["pane", "split"]:
     split_lines = [
@@ -92,7 +98,8 @@ elif args[:2] == ["pane", "split"]:
         print("injected split failure", file=sys.stderr)
         raise SystemExit(1)
     pane_ids = ["wCreatedZ:pStats7", "wCreatedZ:pCodex2", "wCreatedZ:pShimX"]
-    result = {"type": "pane_split", "pane": {"pane_id": pane_ids[split_index]}}
+    pane_id = 42 if scenario == "non-string-split-pane-id" else pane_ids[split_index]
+    result = {"type": "pane_split", "pane": {"pane_id": pane_id}}
 
 print(json.dumps({"id": "stub", "result": result}))
 PY
@@ -213,6 +220,20 @@ PY
 done
 
 : > "$LOG"
+set +e
+HERDR_SCENARIO=non-string-create-id HERDR_HEALTHY=0 run_launcher >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -ne 0 ]
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines[-2:] == ["workspace list", "workspace close wCreatedZ"], lines
+assert not any(line.startswith("pane ") for line in lines), lines
+PY
+
+: > "$LOG"
 CREATE_FAILURE_STDERR="$TMPDIR/create-failure.stderr"
 set +e
 HERDR_SCENARIO=incomplete-create HERDR_HEALTHY=0 run_launcher \
@@ -257,6 +278,36 @@ status=$?
 set -e
 [ "$status" -ne 0 ]
 grep -Fxq 'workspace close wCreatedZ' "$LOG"
+
+: > "$LOG"
+set +e
+HERDR_SCENARIO=non-string-initial-pane-id HERDR_HEALTHY=0 run_launcher >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -ne 0 ]
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines[-1] == "workspace close wCreatedZ", lines
+assert not any(line.startswith("pane rename ") for line in lines), lines
+assert not any(line.startswith("pane split ") for line in lines), lines
+PY
+
+: > "$LOG"
+set +e
+HERDR_SCENARIO=non-string-split-pane-id HERDR_HEALTHY=0 run_launcher >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -ne 0 ]
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines[-1] == "workspace close wCreatedZ", lines
+assert sum(line.startswith("pane split ") for line in lines) == 1, lines
+assert not any(line == "pane rename 42 stats" for line in lines), lines
+PY
 
 HELPER="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
 
