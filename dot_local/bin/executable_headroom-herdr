@@ -1,6 +1,17 @@
 #!/usr/bin/env zsh
 set -eu
 
+headroom_alias="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d/headroom.zsh"
+if (( $# == 1 )); then
+    case "$1" in
+        -h|--help|help)
+            source "$headroom_alias"
+            hr-proxy-claude "$1"
+            exit 0
+            ;;
+    esac
+fi
+
 if [[ "${HERDR_ENV:-}" != 1 ]]; then
     print -u2 'headroom-herdr must run inside a Herdr-managed pane.'
     exit 1
@@ -22,7 +33,6 @@ if ! command -v python3 >/dev/null 2>&1; then
     exit 1
 fi
 
-headroom_alias="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d/headroom.zsh"
 workspace_label='headroom'
 created_workspace_id=''
 

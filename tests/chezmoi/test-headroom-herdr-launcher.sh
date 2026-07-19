@@ -6,8 +6,16 @@ LAUNCHER="$ROOT/dot_local/bin/executable_headroom-herdr"
 TMPDIR="${TMPDIR:-/tmp}/headroom-herdr-launcher-test-$$"
 BIN="$TMPDIR/bin"
 LOG="$TMPDIR/herdr.log"
-mkdir -p "$BIN"
+CONFIG="$TMPDIR/config"
+PROXY_HELP_LOG="$TMPDIR/proxy-help.log"
+mkdir -p "$BIN" "$CONFIG/zsh/aliases.d"
 trap 'rm -rf "$TMPDIR"' EXIT
+
+cat > "$CONFIG/zsh/aliases.d/headroom.zsh" <<'ZSH'
+hr-proxy-claude() {
+  printf '%s\n' "$*" >> "$PROXY_HELP_LOG"
+}
+ZSH
 
 cat > "$BIN/herdr" <<'PY'
 #!/usr/bin/env python3
@@ -74,6 +82,8 @@ chmod +x "$BIN/curl"
 run_launcher() {
   PATH="$BIN:$PATH" \
   HERDR_STUB_LOG="$LOG" \
+  PROXY_HELP_LOG="$PROXY_HELP_LOG" \
+  XDG_CONFIG_HOME="$CONFIG" \
   HERDR_ENV=1 \
   HERDR_WORKSPACE_ID=wCaller \
   HERDR_TAB_ID=wCaller:tCaller \
@@ -86,6 +96,19 @@ run_launcher() {
   HEADROOM_SHIM_PANE_COLOR='#a292a3' \
   zsh "$LAUNCHER" "$@"
 }
+
+for help_arg in -h --help help; do
+  : > "$LOG"
+  : > "$PROXY_HELP_LOG"
+  PATH="$BIN:$PATH" \
+    HERDR_STUB_LOG="$LOG" \
+    PROXY_HELP_LOG="$PROXY_HELP_LOG" \
+    XDG_CONFIG_HOME="$CONFIG" \
+    env -u HERDR_ENV -u HERDR_WORKSPACE_ID -u HERDR_TAB_ID -u HERDR_PANE_ID \
+      zsh "$LAUNCHER" "$help_arg"
+  [ ! -s "$LOG" ]
+  grep -Fxq -- "$help_arg" "$PROXY_HELP_LOG"
+done
 
 : > "$LOG"
 HERDR_SCENARIO=new HERDR_HEALTHY=0 run_launcher --label "two words"
