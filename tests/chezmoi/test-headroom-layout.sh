@@ -6,14 +6,16 @@ FACADE="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
 ENV_FILE="$ROOT/dot_config/headroom/env.zsh.tmpl"
 FUNCTIONS_FILE="$ROOT/dot_config/headroom/functions.zsh.tmpl"
 CODEX_SHIM="$ROOT/dot_local/bin/executable_headroom-codex-shim"
+HERDR_LAUNCHER="$ROOT/dot_local/bin/executable_headroom-herdr"
 TMUX_LAUNCHER="$ROOT/dot_local/bin/executable_headroom-tmux"
 
-for path in "$ENV_FILE" "$FUNCTIONS_FILE" "$CODEX_SHIM" "$TMUX_LAUNCHER"; do
+for path in "$ENV_FILE" "$FUNCTIONS_FILE" "$CODEX_SHIM" "$HERDR_LAUNCHER" "$TMUX_LAUNCHER"; do
   [ -f "$path" ] || { echo "missing expected Headroom split file: $path" >&2; exit 1; }
 done
 
 managed="$(chezmoi --source "$ROOT" managed)"
 grep -qx '.local/bin/headroom-codex-shim' <<<"$managed"
+grep -qx '.local/bin/headroom-herdr' <<<"$managed"
 grep -qx '.local/bin/headroom-tmux' <<<"$managed"
 
 line_count="$(wc -l < "$FACADE" | tr -d ' ')"
@@ -53,5 +55,6 @@ PATH="$ROOT/dot_local/bin:$TMPDIR/bin:$PATH" HOME="$TMPDIR/home" XDG_CONFIG_HOME
     fi
   done
   command -v executable_headroom-codex-shim >/dev/null
+  command -v executable_headroom-herdr >/dev/null
   command -v executable_headroom-tmux >/dev/null
 "

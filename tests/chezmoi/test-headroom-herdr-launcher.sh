@@ -177,4 +177,50 @@ set -e
 [ "$status" -ne 0 ]
 grep -Fxq 'workspace close wCreatedZ' "$LOG"
 
+HELPER="$ROOT/dot_config/zsh/exact_aliases.d/headroom.zsh.tmpl"
+
+cat > "$BIN/tmux" <<'SH'
+#!/usr/bin/env sh
+printf 'unexpected tmux dispatch: %s\n' "$*" >&2
+exit 97
+SH
+chmod +x "$BIN/tmux"
+
+cat > "$BIN/headroom" <<'SH'
+#!/usr/bin/env sh
+printf 'headroom %s\n' "$*" >> "$HEADROOM_STUB_LOG"
+SH
+chmod +x "$BIN/headroom"
+
+: > "$LOG"
+PATH="$BIN:$ROOT/dot_local/bin:$PATH" \
+HERDR_STUB_LOG="$LOG" \
+HERDR_SCENARIO=new \
+HERDR_HEALTHY=0 \
+HERDR_ENV=1 \
+HERDR_WORKSPACE_ID=wCaller \
+HERDR_TAB_ID=wCaller:tCaller \
+HERDR_PANE_ID=wCaller:pCaller \
+TMUX=/tmp/tmux-stub \
+HEADROOM_PORT=18883 \
+HEADROOM_CODEX_PROXY_PORT=18884 \
+HEADROOM_CODEX_SHIM_PORT=18885 \
+zsh -fc "source '$HELPER'; hr-proxy-pi --dispatch-check"
+grep -Fq 'workspace create' "$LOG"
+grep -Fq -- '--dispatch-check' "$LOG"
+
+: > "$LOG"
+HEADROOM_LOG="$TMPDIR/headroom.log"
+: > "$HEADROOM_LOG"
+PATH="$BIN:$ROOT/dot_local/bin:$PATH" \
+HERDR_STUB_LOG="$LOG" \
+HEADROOM_STUB_LOG="$HEADROOM_LOG" \
+HERDR_ENV=1 \
+HERDR_WORKSPACE_ID=wCaller \
+HERDR_TAB_ID=wCaller:tCaller \
+HERDR_PANE_ID=wCaller:pCaller \
+zsh -fc "source '$HELPER'; hr-proxy-pi --help"
+[ ! -s "$LOG" ]
+grep -Fxq 'headroom proxy --help' "$HEADROOM_LOG"
+
 echo "Headroom Herdr launcher ok"

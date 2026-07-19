@@ -49,6 +49,7 @@ Library
 .local/bin/*
 !.local/bin/theme
 !.local/bin/headroom-codex-shim
+!.local/bin/headroom-herdr
 !.local/bin/headroom-tmux
 {{- if and (eq .chezmoi.os "darwin") .zsh_patina_trial }}
 !.local/bin/zsh-patina

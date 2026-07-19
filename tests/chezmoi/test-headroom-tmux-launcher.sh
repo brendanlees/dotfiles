@@ -79,7 +79,9 @@ assert lines == ['headroom proxy --help'], joined
 PY
 
 : > "$LOG"
-PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' zsh -fc "source '$HELPER'; HEADROOM_PORT=18883 HEADROOM_CODEX_PROXY_PORT=18884 HEADROOM_CODEX_SHIM_PORT=18885 hr-proxy-pi"
+PATH="$BIN:$PATH" TMUX_STUB_LOG="$LOG" TMUX=/tmp/tmux-stub TMUX_LIST_WINDOWS_OUTPUT='old:2:headroom' \
+  env -u HERDR_ENV -u HERDR_WORKSPACE_ID -u HERDR_TAB_ID -u HERDR_PANE_ID \
+    zsh -fc "source '$HELPER'; HEADROOM_PORT=18883 HEADROOM_CODEX_PROXY_PORT=18884 HEADROOM_CODEX_SHIM_PORT=18885 hr-proxy-pi"
 python3 - "$LOG" <<'PY'
 import sys
 lines=open(sys.argv[1]).read().splitlines()

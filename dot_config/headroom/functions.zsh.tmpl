@@ -171,6 +171,22 @@ hr-watch-stats() {
 }
 
 hr-proxy-pi() {
+    case "${1:-}" in
+        -h|--help|help)
+            hr-proxy-claude --help
+            return $?
+            ;;
+    esac
+
+    if [ "${HERDR_ENV:-}" = 1 ]; then
+        if ! command -v herdr >/dev/null 2>&1; then
+            printf 'hr-proxy-pi is inside Herdr but the herdr CLI is unavailable.\n' >&2
+            return 1
+        fi
+        hr-run-headroom-command headroom-herdr executable_headroom-herdr "$@"
+        return $?
+    fi
+
     hr-proxy-claude --openai-api-url https://openrouter.ai/api/v1 "$@"
 }
 
@@ -297,4 +313,3 @@ hr-stats() {
     hr-env
     headroom perf "$@"
 }
-
