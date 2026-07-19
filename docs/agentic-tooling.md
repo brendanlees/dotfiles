@@ -31,6 +31,17 @@ hr-pix -> 127.0.0.1:8788 -> local codex shim -> 127.0.0.1:8789 -> headroom codex
 
 `hr-pi` targets openrouter, while `hr-pix` uses the codex responses/oauth path.
 
+### multiplexer layout
+
+`hr-proxy-pi` detects its terminal environment:
+
+- inside HerdR, it creates or reuses a dedicated `headroom` workspace;
+- otherwise, inside tmux, it uses the existing `headroom` window launcher;
+- outside either multiplexer, it keeps the foreground fallback.
+
+The HerdR workspace contains four panes: the primary proxy on the left, with stats, the Codex proxy, and the Codex shim stacked on the right. HerdR takes precedence if both `HERDR_ENV` and `TMUX` are present.
+
+Re-running `hr-proxy-pi` focuses a healthy `headroom` workspace. If any service is unhealthy, it removes matching stale workspaces and creates one clean replacement. If all services are healthy but were started outside the managed workspace, the command leaves them running and does not create duplicate listeners.
 
 ### port reference
 
@@ -48,5 +59,5 @@ HEADROOM_CODEX_PROXY_OPTIMIZE=off
 ```
 
 - run `hr-status` first; it reports missing proxies, shim state, ports, and codex optimize mode.
-- if tmux panes are stale or ports are unhealthy, re-run `hr-proxy-pi` or `hr-proxy-claude` from tmux to recreate them.
+- if managed panes are stale or ports are unhealthy, re-run `hr-proxy-pi`; it rebuilds the dedicated HerdR workspace or tmux window for the detected environment.
 - if `hr-pix` reports `Codex SSE response headers timed out after 10000ms`, ensure `hr-status` shows `codex optimize: off`, then restart without `HEADROOM_CODEX_PROXY_OPTIMIZE=on`.
