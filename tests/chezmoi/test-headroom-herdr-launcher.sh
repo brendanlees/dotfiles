@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+LAUNCHER="$ROOT/dot_local/bin/executable_headroom-herdr"
+TMPDIR="${TMPDIR:-/tmp}/headroom-herdr-launcher-test-$$"
+BIN="$TMPDIR/bin"
+LOG="$TMPDIR/herdr.log"
+mkdir -p "$BIN"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+cat > "$BIN/herdr" <<'PY'
+#!/usr/bin/env python3
+import json
+import os
+import shlex
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+log_path = Path(os.environ["HERDR_STUB_LOG"])
+with log_path.open("a") as fh:
+    fh.write(shlex.join(args) + "\n")
+
+scenario = os.environ.get("HERDR_SCENARIO", "new")
+result = {"type": "ok"}
+
+if args[:2] == ["workspace", "list"]:
+    workspaces = []
+    if scenario in {"healthy-existing", "stale-existing"}:
+        workspaces = [{
+            "workspace_id": "wExistingQ",
+            "label": "headroom",
+            "focused": False,
+            "active_tab_id": "wExistingQ:tR",
+            "number": 8,
+            "pane_count": 4,
+            "tab_count": 1,
+            "agent_status": "unknown",
+        }]
+    result = {"type": "workspace_list", "workspaces": workspaces}
+elif args[:2] == ["workspace", "create"]:
+    result = {
+        "type": "workspace_created",
+        "workspace": {"workspace_id": "wCreatedZ", "label": "headroom"},
+    }
+elif args[:2] == ["pane", "list"]:
+    result = {
+        "type": "pane_list",
+        "panes": [{"pane_id": "wCreatedZ:pProxyA", "workspace_id": "wCreatedZ"}],
+    }
+elif args[:2] == ["pane", "split"]:
+    split_lines = [
+        line for line in log_path.read_text().splitlines()
+        if line.startswith("pane split ")
+    ]
+    split_index = len(split_lines) - 1
+    if os.environ.get("HERDR_FAIL_SPLIT") == str(split_index + 1):
+        print("injected split failure", file=sys.stderr)
+        raise SystemExit(1)
+    pane_ids = ["wCreatedZ:pStats7", "wCreatedZ:pCodex2", "wCreatedZ:pShimX"]
+    result = {"type": "pane_split", "pane": {"pane_id": pane_ids[split_index]}}
+
+print(json.dumps({"id": "stub", "result": result}))
+PY
+chmod +x "$BIN/herdr"
+
+cat > "$BIN/curl" <<'SH'
+#!/usr/bin/env sh
+[ "${HERDR_HEALTHY:-0}" = 1 ]
+SH
+chmod +x "$BIN/curl"
+
+run_launcher() {
+  PATH="$BIN:$PATH" \
+  HERDR_STUB_LOG="$LOG" \
+  HERDR_ENV=1 \
+  HERDR_WORKSPACE_ID=wCaller \
+  HERDR_TAB_ID=wCaller:tCaller \
+  HERDR_PANE_ID=wCaller:pCaller \
+  HEADROOM_PORT=18883 \
+  HEADROOM_CODEX_PROXY_PORT=18884 \
+  HEADROOM_CODEX_SHIM_PORT=18885 \
+  HEADROOM_PROXY_PANE_COLOR='#658594' \
+  HEADROOM_STATS_PANE_COLOR='#8a9a7b' \
+  HEADROOM_SHIM_PANE_COLOR='#a292a3' \
+  zsh "$LAUNCHER" "$@"
+}
+
+: > "$LOG"
+HERDR_SCENARIO=new HERDR_HEALTHY=0 run_launcher --label "two words"
+python3 - "$LOG" "$PWD" <<'PY'
+import shlex
+import sys
+from pathlib import Path
+
+lines = Path(sys.argv[1]).read_text().splitlines()
+cwd = sys.argv[2]
+assert lines[0].startswith("workspace list"), lines
+create = shlex.split(next(line for line in lines if line.startswith("workspace create ")))
+assert create == ["workspace", "create", "--cwd", cwd, "--label", "headroom", "--focus"], lines
+assert "pane list --workspace wCreatedZ" in lines, lines
+assert "pane rename wCreatedZ:pProxyA proxy" in lines, lines
+assert "pane split wCreatedZ:pProxyA --direction right --no-focus" in lines, lines
+assert "pane rename wCreatedZ:pStats7 stats" in lines, lines
+assert "pane split wCreatedZ:pStats7 --direction down --no-focus" in lines, lines
+assert "pane rename wCreatedZ:pCodex2 codex-proxy" in lines, lines
+assert "pane split wCreatedZ:pCodex2 --direction down --no-focus" in lines, lines
+assert "pane rename wCreatedZ:pShimX codex-shim" in lines, lines
+run_lines = [line for line in lines if line.startswith("pane run ")]
+normalized_run_lines = [line.replace("\\", "") for line in run_lines]
+assert len(run_lines) == 4, lines
+assert any(line.startswith("pane run wCreatedZ:pProxyA ") and "hr-proxy-claude --foreground" in line and "https://openrouter.ai/api/v1" in line and "--label" in line and "two words" in line for line in normalized_run_lines), lines
+assert any(line.startswith("pane run wCreatedZ:pStats7 ") and "hr-watch-stats" in line for line in normalized_run_lines), lines
+assert any(line.startswith("pane run wCreatedZ:pCodex2 ") and "hr-proxy-codex" in line for line in normalized_run_lines), lines
+assert any(line.startswith("pane run wCreatedZ:pShimX ") and "hr-codex-shim" in line for line in normalized_run_lines), lines
+assert not any(line.startswith("workspace close wCreatedZ") for line in lines), lines
+PY
+
+: > "$LOG"
+HERDR_SCENARIO=healthy-existing HERDR_HEALTHY=1 run_launcher
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines == ["workspace list", "workspace focus wExistingQ"], lines
+PY
+
+: > "$LOG"
+HERDR_SCENARIO=stale-existing HERDR_HEALTHY=0 run_launcher
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+close_idx = lines.index("workspace close wExistingQ")
+create_idx = next(i for i, line in enumerate(lines) if line.startswith("workspace create "))
+assert close_idx < create_idx, lines
+PY
+
+: > "$LOG"
+HERDR_SCENARIO=new HERDR_HEALTHY=1 run_launcher
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines == ["workspace list"], lines
+PY
+
+: > "$LOG"
+set +e
+HERDR_SCENARIO=new HERDR_HEALTHY=0 HERDR_FAIL_SPLIT=2 run_launcher >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -ne 0 ]
+grep -Fxq 'workspace close wCreatedZ' "$LOG"
+
+echo "Headroom Herdr launcher ok"
