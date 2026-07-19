@@ -32,7 +32,7 @@ if grep -Eq '^(headroom-pi-codex-shim|headroom-watch-stats|hproxy|hproxy-openrou
 fi
 
 grep -Fq "\${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.6-sol}" "$FUNCTIONS_FILE"
-grep -Fq "\${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.6-sol,headroom-codex-oauth/gpt-5.5,headroom-codex-oauth/gpt-5.4-mini}" "$FUNCTIONS_FILE"
+grep -Fq "\${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.6-sol,headroom-codex-oauth/gpt-5.6-terra,headroom-codex-oauth/gpt-5.6-luna,headroom-codex-oauth/gpt-5.5,headroom-codex-oauth/gpt-5.4-mini}" "$FUNCTIONS_FILE"
 
 TMPDIR="${TMPDIR:-/tmp}/headroom-layout-test-$$"
 mkdir -p "$TMPDIR/home/.config" "$TMPDIR/bin"

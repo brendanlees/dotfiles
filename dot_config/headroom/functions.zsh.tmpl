@@ -306,7 +306,7 @@ hr-pix() {
         printf 'Start it with: hr-codex-shim\n' >&2
         return 1
     fi
-    pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.6-sol}" --models "${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.6-sol,headroom-codex-oauth/gpt-5.5,headroom-codex-oauth/gpt-5.4-mini}" "$@"
+    pi --model "${HEADROOM_PIX_MODEL:-headroom-codex-oauth/gpt-5.6-sol}" --models "${HEADROOM_PIX_MODELS:-headroom-codex-oauth/gpt-5.6-sol,headroom-codex-oauth/gpt-5.6-terra,headroom-codex-oauth/gpt-5.6-luna,headroom-codex-oauth/gpt-5.5,headroom-codex-oauth/gpt-5.4-mini}" "$@"
 }
 
 hr-stats() {
