@@ -60,9 +60,10 @@ for field in (
     assert keys[field] == ""
 
 commands = keys["command"]
-assert len(commands) == 4
+assert len(commands) == 8
+resize_commands = commands[:4]
 for command, direction, key in zip(
-    commands,
+    resize_commands,
     ("left", "down", "up", "right"),
     ("prefix+h", "prefix+j", "prefix+k", "prefix+l"),
     strict=True,
@@ -73,6 +74,20 @@ for command, direction, key in zip(
     assert "--amount 0.05" in command["command"]
     assert '"$HERDR_BIN_PATH"' in command["command"]
     assert '"$HERDR_ACTIVE_PANE_ID"' in command["command"]
+
+navigation_commands = commands[4:]
+for command, direction, key in zip(
+    navigation_commands,
+    ("left", "down", "up", "right"),
+    ("ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l"),
+    strict=True,
+):
+    assert command == {
+        "key": key,
+        "type": "plugin_action",
+        "command": f"vim-herdr-navigation.{direction}",
+        "description": f"navigate {direction} (vim/herdr)",
+    }
 
 assert doc["ui"]["mouse_capture"] is True
 assert doc["ui"]["prompt_new_tab_name"] is False

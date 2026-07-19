@@ -1,0 +1,37 @@
+#!/bin/sh
+set -eu
+
+if ! command -v herdr >/dev/null 2>&1; then
+  echo "herdr not found; skipping plugin reconciliation" >&2
+  exit 0
+fi
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi"
+state_file="$state_dir/herdr-plugins.txt"
+desired_file=$(mktemp)
+trap 'rm -f "$desired_file"' EXIT
+
+cat >"$desired_file" <<'PLUGINS'
+{{- range .herdr.plugins }}
+{{ .id }}|{{ .source }}|{{ .ref }}
+{{- end }}
+PLUGINS
+
+while IFS='|' read -r id source ref; do
+  [ -n "$id" ] || continue
+  echo "installing Herdr plugin: $id"
+  herdr plugin install "$source" --ref "$ref" --yes
+done <"$desired_file"
+
+if [ -f "$state_file" ]; then
+  while IFS='|' read -r id _source _ref; do
+    [ -n "$id" ] || continue
+    if ! awk -F'|' -v id="$id" '$1 == id { found = 1 } END { exit !found }' "$desired_file"; then
+      echo "uninstalling removed Herdr plugin: $id"
+      herdr plugin uninstall "$id"
+    fi
+  done <"$state_file"
+fi
+
+mkdir -p "$state_dir"
+cp "$desired_file" "$state_file"
