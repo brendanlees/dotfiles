@@ -8,7 +8,8 @@ BIN="$TMPDIR/bin"
 LOG="$TMPDIR/herdr.log"
 CONFIG="$TMPDIR/config"
 PROXY_HELP_LOG="$TMPDIR/proxy-help.log"
-mkdir -p "$BIN" "$CONFIG/zsh/aliases.d"
+NO_HERDR_BIN="$TMPDIR/no-herdr-bin"
+mkdir -p "$BIN" "$NO_HERDR_BIN" "$CONFIG/zsh/aliases.d"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 cat > "$CONFIG/zsh/aliases.d/headroom.zsh" <<'ZSH'
@@ -35,7 +36,13 @@ result = {"type": "ok"}
 
 if args[:2] == ["workspace", "list"]:
     workspaces = []
-    if scenario in {"healthy-existing", "stale-existing"}:
+    create_has_run = any(
+        line.startswith("workspace create ")
+        for line in log_path.read_text().splitlines()
+    )
+    if scenario in {"healthy-existing", "stale-existing"} or (
+        scenario in {"incomplete-create", "ambiguous-incomplete-create"} and not create_has_run
+    ):
         workspaces = [{
             "workspace_id": "wExistingQ",
             "label": "headroom",
@@ -46,12 +53,30 @@ if args[:2] == ["workspace", "list"]:
             "tab_count": 1,
             "agent_status": "unknown",
         }]
+    elif scenario == "incomplete-create" and create_has_run:
+        workspaces = [{"workspace_id": "wCreatedZ", "label": "headroom"}]
+    elif scenario == "ambiguous-incomplete-create" and create_has_run:
+        workspaces = [
+            {"workspace_id": "wCreatedZ", "label": "headroom"},
+            {"workspace_id": "wConcurrent", "label": "headroom"},
+        ]
+    elif scenario == "invalid-existing-id":
+        workspace = {"label": "headroom"}
+        invalid_id_kind = os.environ["HERDR_INVALID_ID_KIND"]
+        if invalid_id_kind == "empty":
+            workspace["workspace_id"] = ""
+        elif invalid_id_kind == "non-string":
+            workspace["workspace_id"] = 42
+        workspaces = [workspace]
     result = {"type": "workspace_list", "workspaces": workspaces}
 elif args[:2] == ["workspace", "create"]:
-    result = {
-        "type": "workspace_created",
-        "workspace": {"workspace_id": "wCreatedZ", "label": "headroom"},
-    }
+    if scenario in {"incomplete-create", "ambiguous-incomplete-create"}:
+        result = {"type": "workspace_created", "workspace": {"label": "headroom"}}
+    else:
+        result = {
+            "type": "workspace_created",
+            "workspace": {"workspace_id": "wCreatedZ", "label": "headroom"},
+        }
 elif args[:2] == ["pane", "list"]:
     result = {
         "type": "pane_list",
@@ -169,6 +194,62 @@ lines = Path(sys.argv[1]).read_text().splitlines()
 assert lines == ["workspace list"], lines
 PY
 
+for invalid_id_kind in missing empty non-string; do
+  : > "$LOG"
+  set +e
+  HERDR_SCENARIO=invalid-existing-id \
+  HERDR_INVALID_ID_KIND="$invalid_id_kind" \
+  HERDR_HEALTHY=0 \
+    run_launcher >/dev/null 2>&1
+  status=$?
+  set -e
+  [ "$status" -ne 0 ]
+  python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines == ["workspace list"], lines
+PY
+done
+
+: > "$LOG"
+CREATE_FAILURE_STDERR="$TMPDIR/create-failure.stderr"
+set +e
+HERDR_SCENARIO=incomplete-create HERDR_HEALTHY=0 run_launcher \
+  >/dev/null 2>"$CREATE_FAILURE_STDERR"
+status=$?
+set -e
+[ "$status" -eq 1 ]
+grep -Fxq 'missing created workspace ID' "$CREATE_FAILURE_STDERR"
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines.count("workspace close wExistingQ") == 1, lines
+assert lines.count("workspace close wCreatedZ") == 1, lines
+assert lines.index("workspace close wExistingQ") < next(
+    i for i, line in enumerate(lines) if line.startswith("workspace create ")
+), lines
+assert lines[-2:] == ["workspace list", "workspace close wCreatedZ"], lines
+assert not any(line.startswith("pane ") for line in lines), lines
+PY
+
+: > "$LOG"
+set +e
+HERDR_SCENARIO=ambiguous-incomplete-create HERDR_HEALTHY=0 run_launcher >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -ne 0 ]
+python3 - "$LOG" <<'PY'
+import sys
+from pathlib import Path
+lines = Path(sys.argv[1]).read_text().splitlines()
+assert lines.count("workspace close wExistingQ") == 1, lines
+assert "workspace close wCreatedZ" not in lines, lines
+assert "workspace close wConcurrent" not in lines, lines
+assert lines[-1] == "workspace list", lines
+PY
+
 : > "$LOG"
 set +e
 HERDR_SCENARIO=new HERDR_HEALTHY=0 HERDR_FAIL_SPLIT=2 run_launcher >/dev/null 2>&1
@@ -222,5 +303,39 @@ HERDR_PANE_ID=wCaller:pCaller \
 zsh -fc "source '$HELPER'; hr-proxy-pi --help"
 [ ! -s "$LOG" ]
 grep -Fxq 'headroom proxy --help' "$HEADROOM_LOG"
+
+cat > "$NO_HERDR_BIN/tmux" <<'SH'
+#!/usr/bin/env sh
+printf '%s\n' "$*" >> "$TMUX_STUB_LOG"
+exit 98
+SH
+chmod +x "$NO_HERDR_BIN/tmux"
+
+cat > "$NO_HERDR_BIN/headroom" <<'SH'
+#!/usr/bin/env sh
+printf '%s\n' "$*" >> "$HEADROOM_STUB_LOG"
+exit 99
+SH
+chmod +x "$NO_HERDR_BIN/headroom"
+
+MISSING_CLI_STDERR="$TMPDIR/missing-cli.stderr"
+TMUX_LOG="$TMPDIR/tmux.log"
+: > "$HEADROOM_LOG"
+: > "$TMUX_LOG"
+set +e
+PATH="$NO_HERDR_BIN:$ROOT/dot_local/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
+HEADROOM_STUB_LOG="$HEADROOM_LOG" \
+TMUX_STUB_LOG="$TMUX_LOG" \
+HERDR_ENV=1 \
+TMUX=/tmp/tmux-stub \
+zsh -fc "source '$HELPER'; hr-proxy-pi --dispatch-check" \
+  >/dev/null 2>"$MISSING_CLI_STDERR"
+status=$?
+set -e
+[ "$status" -eq 1 ]
+grep -Fxq 'hr-proxy-pi is inside Herdr but the herdr CLI is unavailable.' "$MISSING_CLI_STDERR"
+[ "$(wc -l < "$MISSING_CLI_STDERR" | tr -d ' ')" -eq 1 ]
+[ ! -s "$TMUX_LOG" ]
+[ ! -s "$HEADROOM_LOG" ]
 
 echo "Headroom Herdr launcher ok"

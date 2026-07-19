@@ -53,8 +53,9 @@ import json, sys
 for workspace in json.load(sys.stdin)["result"]["workspaces"]:
     if workspace.get("label") == "headroom":
         value = workspace.get("workspace_id")
-        if value:
-            print(value)
+        if not isinstance(value, str) or not value:
+            raise SystemExit("headroom workspace has invalid workspace ID")
+        print(value)
 '
 }
 
@@ -97,6 +98,18 @@ cleanup_created_workspace() {
 }
 trap cleanup_created_workspace EXIT INT TERM
 
+recover_created_workspace() {
+    local recovery_json recovery_ids_text
+    local -a recovery_ids
+
+    recovery_json="$(herdr workspace list 2>/dev/null)" || return 0
+    recovery_ids_text="$(printf '%s' "$recovery_json" | json_workspace_ids 2>/dev/null)" || return 0
+    recovery_ids=("${(@f)recovery_ids_text}")
+    if [[ ${#recovery_ids[@]} -eq 1 && -n "$recovery_ids[1]" ]]; then
+        herdr workspace close "$recovery_ids[1]" >/dev/null 2>&1 || true
+    fi
+}
+
 proxy_url="http://127.0.0.1:${HEADROOM_PORT:-8787}"
 codex_proxy_url="http://127.0.0.1:${HEADROOM_CODEX_PROXY_PORT:-8789}"
 codex_shim_url="http://127.0.0.1:${HEADROOM_CODEX_SHIM_PORT:-8788}"
@@ -131,7 +144,13 @@ for workspace_id in $workspace_ids; do
 done
 
 create_json="$(herdr workspace create --cwd "$PWD" --label "$workspace_label" --focus)"
-created_workspace_id="$(printf '%s' "$create_json" | json_created_workspace_id)"
+if created_workspace_id="$(printf '%s' "$create_json" | json_created_workspace_id)"; then
+    :
+else
+    create_parse_status=$?
+    recover_created_workspace
+    exit "$create_parse_status"
+fi
 panes_json="$(herdr pane list --workspace "$created_workspace_id")"
 proxy_pane_id="$(printf '%s' "$panes_json" | json_initial_pane_id)"
 
