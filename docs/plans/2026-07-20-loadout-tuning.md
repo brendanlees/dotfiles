@@ -141,11 +141,10 @@ Set `loadout.json.profileName` to `lean`. Add the same exact snapshot as `profil
 ```bash
 python3 -m json.tool loadout.json >/dev/null
 python3 -m json.tool loadout-profiles.json >/dev/null
-/tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
-/tmp/pi-loadout-smoke --no-session -p '/loadout status'
+/tmp/pi-loadout-smoke --no-session
 ```
 
-Compare every active name reported by the isolated wrapper launches to the approved list.
+In that wrapper-owned interactive Pi process, run `/loadout use lean` and then `/loadout status`. Capture and compare every active name with the approved list before exiting the same process; do not inspect the applied profile through a second wrapper invocation.
 
 ### Task 3: Review and establish the coding profile
 
@@ -304,17 +303,82 @@ python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
 ```
 
-Run every profile through an explicit isolated wrapper launch and compare sorted active names from `/loadout status` against its JSON snapshot:
+Validate each profile in its own wrapper-owned interactive Pi process. Apply the profile and inspect its status before exiting that same process; never use a second wrapper launch to inspect a selection made by an earlier launch.
 
-```bash
-/tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
-/tmp/pi-loadout-smoke --no-session -p '/loadout use coding'
-/tmp/pi-loadout-smoke --no-session -p '/loadout use research'
-/tmp/pi-loadout-smoke --no-session -p '/loadout use browser'
-/tmp/pi-loadout-smoke --no-session -p '/loadout use ops'
-```
+1. Launch the lean validation process:
 
-For browser-profile verification, continue to follow `browser-session-discipline`: keep one browser owner, run browser-capable checks serially, and perform scoped cleanup.
+   ```bash
+   /tmp/pi-loadout-smoke --no-session
+   ```
+
+   At its Pi prompt, run:
+
+   ```text
+   /loadout use lean
+   /loadout status
+   ```
+
+   Capture the `/loadout status` output, compare its sorted active names with the `lean` JSON snapshot, and only then exit this same interactive process.
+
+2. Launch the coding validation process:
+
+   ```bash
+   /tmp/pi-loadout-smoke --no-session
+   ```
+
+   At its Pi prompt, run:
+
+   ```text
+   /loadout use coding
+   /loadout status
+   ```
+
+   Capture the `/loadout status` output, compare its sorted active names with the `coding` JSON snapshot, and only then exit this same interactive process.
+
+3. Launch the research validation process:
+
+   ```bash
+   /tmp/pi-loadout-smoke --no-session
+   ```
+
+   At its Pi prompt, run:
+
+   ```text
+   /loadout use research
+   /loadout status
+   ```
+
+   Capture the `/loadout status` output, compare its sorted active names with the `research` JSON snapshot, and only then exit this same interactive process.
+
+4. Launch the browser validation process under `browser-session-discipline`, keeping one browser owner and running browser-capable checks serially:
+
+   ```bash
+   /tmp/pi-loadout-smoke --no-session
+   ```
+
+   At its Pi prompt, run:
+
+   ```text
+   /loadout use browser
+   /loadout status
+   ```
+
+   Capture the `/loadout status` output, compare its sorted active names with the `browser` JSON snapshot, perform scoped browser cleanup, and only then exit this same interactive process.
+
+5. Launch the ops validation process:
+
+   ```bash
+   /tmp/pi-loadout-smoke --no-session
+   ```
+
+   At its Pi prompt, run:
+
+   ```text
+   /loadout use ops
+   /loadout status
+   ```
+
+   Capture the `/loadout status` output, compare its sorted active names with the `ops` JSON snapshot, and only then exit this same interactive process.
 
 - [ ] **Step 4: Present final matrix for approval**
 
@@ -372,16 +436,95 @@ Any failed precondition is a hard stop. Never stage, commit, restore, stash, or 
 
 - [ ] **Step 6: Final live verification**
 
-After the fast-forward merge, point every self-contained wrapper launch at the merged live agent source explicitly:
+After the fast-forward merge, point every self-contained wrapper launch at the merged live agent source explicitly. First launch the default check:
 
 ```bash
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout status'
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use coding'
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use research'
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use browser'
-PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use ops'
 PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
 ```
 
-Verify the default reports `lean`, apply each specialized profile once, and use the final isolated interactive launch to confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation. These commands copy from `~/.pi/agent` but run Pi only against a fresh wrapper-owned overlay; they never set `PI_CODING_AGENT_DIR` to the live agent directory. Continue to honor browser-session-discipline for the browser check, including one browser owner, serial browser-capable checks, and scoped cleanup.
+Run `/loadout status` at its Pi prompt, verify that it reports `lean`, capture the result, and then exit that interactive process.
+
+Next, validate every merged profile with the same one-session apply-and-status rule:
+
+1. Launch the lean check:
+
+   ```bash
+   PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+   ```
+
+   Before exiting that Pi process, run:
+
+   ```text
+   /loadout use lean
+   /loadout status
+   ```
+
+   Capture the status, compare its sorted active names with the merged `lean` JSON snapshot, and only then exit this same interactive process.
+
+2. Launch the coding check:
+
+   ```bash
+   PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+   ```
+
+   Before exiting that Pi process, run:
+
+   ```text
+   /loadout use coding
+   /loadout status
+   ```
+
+   Capture the status, compare its sorted active names with the merged `coding` JSON snapshot, and only then exit this same interactive process.
+
+3. Launch the research check:
+
+   ```bash
+   PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+   ```
+
+   Before exiting that Pi process, run:
+
+   ```text
+   /loadout use research
+   /loadout status
+   ```
+
+   Capture the status, compare its sorted active names with the merged `research` JSON snapshot, and only then exit this same interactive process.
+
+4. Launch the browser check under `browser-session-discipline`, with one browser owner and serial browser-capable checks:
+
+   ```bash
+   PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+   ```
+
+   Before exiting that Pi process, run:
+
+   ```text
+   /loadout use browser
+   /loadout status
+   ```
+
+   Capture the status, compare its sorted active names with the merged `browser` JSON snapshot, complete scoped browser cleanup, and only then exit this same interactive process.
+
+5. Launch the ops check:
+
+   ```bash
+   PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+   ```
+
+   Before exiting that Pi process, run:
+
+   ```text
+   /loadout use ops
+   /loadout status
+   ```
+
+   Capture the status, compare its sorted active names with the merged `ops` JSON snapshot, and only then exit this same interactive process.
+
+Finally, launch one more isolated default process:
+
+```bash
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+```
+
+Use that process only to confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation, then exit. Every command above copies from `~/.pi/agent` but runs Pi only against a fresh wrapper-owned overlay; none sets `PI_CODING_AGENT_DIR` to the live agent directory. Continue to honor `browser-session-discipline` for every browser-capable check, including one browser owner, serial execution, and scoped cleanup.
