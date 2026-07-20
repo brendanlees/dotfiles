@@ -23,6 +23,7 @@ This work spans two repositories:
 10. Do not add another context optimizer or custom MCP-lifecycle layer.
 11. Preserve historical changelog entries; add retirement entries rather than rewriting history.
 12. Do not use subagents for this sequential shared-config work. If delegation becomes warranted, use Herdr panes with task-appropriate models.
+13. Treat `agent/models-store.json` as a dynamic catalog cache: never stage or commit it; preserve the approved provider key set and byte/JSON-equal `models` arrays, while allowing Pi to refresh only each provider's `checkedAt` value.
 
 ## Architecture and Phases
 
@@ -52,6 +53,8 @@ Remove:
 - active documentation references that describe Headroom as available
 
 Keep native `openai-codex` model definitions and the direct `openai-codex/gpt-5.6-sol` default.
+
+`agent/models-store.json` is runtime-owned cache state, not an integration artifact. Future Pi work must compare it with `/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json` semantically: the provider keys must match, every provider object must contain only `models` and `checkedAt`, and each `models` array must be equal. Runtime-only `checkedAt` drift is allowed.
 
 ### Phase 3: Remove the Headroom runtime
 
@@ -133,7 +136,7 @@ Implementation must:
 
 1. Save bounded patches/backups before integration.
 2. Carry the existing `mcp.json` changes into the Pi feature worktree before applying ICM/Serena changes.
-3. Leave `models-store.json` untouched.
+3. Never stage, commit, restore, stash, or reset `models-store.json`; before and after integration, require the approved provider key set and equal `models` arrays while allowing only runtime `checkedAt` drift.
 4. Verify the original `mcp.json` changes are represented in the committed result before cleaning or merging the original checkout.
 5. Never overwrite unrelated live settings while synchronizing tracked templates.
 
@@ -142,7 +145,9 @@ Implementation must:
 - Use separate Worktrunk worktrees for chezmoi and Pi.
 - Keep phases in separate Conventional Commits.
 - Stop at each checkpoint if direct Pi model access, RTK rewriting, MCP registration, or loadout restoration fails.
-- Keep bounded pre-change copies of mutable runtime JSON during integration.
+- Keep bounded pre-change copies of mutable runtime JSON during integration; use the approved `models-store.json` backup for semantic assertions, not byte hashes.
+- Require `agent/models-store.json` to remain the sole dirty Pi-main path and absent from every feature-branch diff; use explicit staging allowlists that cannot stage it.
+- Run Pi smoke processes with a disposable `PI_CODING_AGENT_DIR` overlay so verification cannot refresh live runtime state.
 - Treat missing/stale loadout names as cleanup findings; do not silently substitute unrelated tools.
 - If applying chezmoi would remove a non-Headroom user file, stop and review the target diff.
 - If a Headroom process remains after package removal, identify its owner before terminating it; do not kill unrelated Python or terminal processes.
@@ -197,7 +202,7 @@ python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
 ```
 
-Also run focused JSON, provider, RTK, MCP, and loadout checks.
+Also run focused JSON, provider, RTK, MCP, and loadout checks. Any check that launches Pi must point `PI_CODING_AGENT_DIR` at a disposable copy of the agent directory, never the live runtime directory.
 
 For chezmoi:
 
@@ -219,3 +224,4 @@ Before implementation, `tests/chezmoi/test-headroom-tmux-launcher.sh` failed ide
 - Consolidating ICM memory topics during this change.
 - Removing Serena or ICM data stores.
 - Optimizing unrelated Pi packages before post-cleanup profile review.
+- Normalizing or rolling back runtime-only `models-store.json` `checkedAt` refreshes.

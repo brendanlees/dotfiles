@@ -4,7 +4,7 @@
 
 **Goal:** Replace the stale full/worker snapshots with a lean global default and reviewed `lean`, `coding`, `research`, `browser`, and `ops` presets.
 
-**Architecture:** Tune one profile at a time in a dedicated Pi Worktrunk worktree. Each candidate is derived from the live post-slimming inventory, shown to Brendan with intentional overlaps called out, approved before mutation, written as an exact snapshot, and smoke-tested before moving to the next profile.
+**Architecture:** Tune one profile at a time in a dedicated Pi Worktrunk worktree. Each candidate is derived from the live post-slimming inventory, shown to Brendan with intentional overlaps called out, approved before mutation, written as an exact snapshot, and smoke-tested through a disposable `PI_CODING_AGENT_DIR` overlay before moving to the next profile. Treat `agent/models-store.json` as a dynamic runtime cache throughout: never stage or commit it, preserve the approved provider keys and `models` arrays, and allow only `checkedAt` drift.
 
 **Tech Stack:** `pi-loadout`, Pi active-tool/skill APIs, JSON, Python validation, Worktrunk.
 
@@ -19,7 +19,10 @@
 - Serena appears only in the coding profile.
 - ICM direct recall/store may appear broadly; no other direct ICM tools may appear.
 - Reliability and exact output take priority over the smallest possible list.
-- No subagents. If delegation becomes necessary, use Herdr panes with task-appropriate models.
+- Never stage, commit, restore, stash, or reset `agent/models-store.json`; it must be absent from the feature-branch diff and remain exactly the sole dirty path on Pi `main`.
+- Compare live `agent/models-store.json` with `/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json`: require identical provider keys, only `models`/`checkedAt` in each provider object, and equal `models` arrays; allow only runtime `checkedAt` drift.
+- Every inventory and smoke Pi process must use a disposable `PI_CODING_AGENT_DIR` overlay so it cannot write live or feature-worktree runtime state.
+- No subagents. If delegation becomes necessary, use Herdr panes with task-appropriate models and give each worker this cache invariant explicitly.
 
 ---
 
@@ -28,16 +31,16 @@
 **Files:**
 - Modify later: `agent/loadout.json`
 - Modify later: `agent/loadout-profiles.json`
-- Preserve: `agent/models-store.json`
+- Preserve semantically and never stage: `agent/models-store.json`
 - Create temporary helper: `/tmp/pi-loadout-inventory.ts`
 
 - [ ] **Step 1: Create the isolated worktree**
 
 ```bash
-wt -C ~/.pi switch --create chore/tune-loadouts --yes
+wt -C ~/.pi switch --create chore/tune-loadouts --no-hooks --no-cd --yes
 ```
 
-Expected: a new worktree, normally `~/.pi.chore-tune-loadouts`.
+Expected: a new worktree, normally `~/.pi.chore-tune-loadouts`. `--no-hooks` prevents Worktrunk from stashing or otherwise reconciling the dirty runtime cache.
 
 - [ ] **Step 2: Capture the live post-slimming inventory**
 
@@ -55,17 +58,21 @@ export default function (pi: any) {
 }
 ```
 
-Prepare an ignored, disposable runtime overlay and run against the worktree agent directory:
+Prepare a disposable runtime overlay outside both Pi checkouts, then run against that copy:
 
 ```bash
 cd ~/.pi.chore-tune-loadouts/agent
-cp ~/.pi/agent/settings.json settings.json
-cp ~/.pi/agent/mcp-cache.json mcp-cache.json
-test -e npm/node_modules || ln -s ~/.pi/agent/npm/node_modules npm/node_modules
-PI_CODING_AGENT_DIR="$PWD" pi --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
+smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-loadout-smoke.XXXXXX")
+trap 'rm -rf "$smoke_agent"' EXIT
+rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
+cp ~/.pi/agent/settings.json "$smoke_agent/settings.json"
+cp ~/.pi/agent/mcp-cache.json "$smoke_agent/mcp-cache.json"
+mkdir -p "$smoke_agent/npm"
+ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
+PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
 ```
 
-Use `PI_CODING_AGENT_DIR="$PWD" pi --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names. Do not save that temporary full selection. The copied runtime files and symlink remain ignored and disposable.
+Use `PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names. Do not save that temporary full selection. Rebuild the overlay after tracked configuration changes; all runtime writes, including `models-store.json` refreshes, remain disposable.
 
 - [ ] **Step 3: Prove current snapshots are stale**
 
@@ -115,7 +122,7 @@ Set `loadout.json.profileName` to `lean`. Add the same exact snapshot as `profil
 ```bash
 python3 -m json.tool loadout.json >/dev/null
 python3 -m json.tool loadout-profiles.json >/dev/null
-PI_CODING_AGENT_DIR="$PWD" pi --no-session -p '/loadout use lean'
+PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -p '/loadout use lean'
 ```
 
 Then run `/loadout status` in a fresh temporary session and compare every active name to the approved list.
@@ -257,15 +264,54 @@ Report per-profile tool count, skill count, direct MCP groups, major omitted cap
 
 - [ ] **Step 5: Commit and integrate**
 
+Do not invoke Worktrunk from dirty Pi `main`. Use explicit staging paths, prove the branch excludes `models-store.json`, and fast-forward manually after the bounded semantic assertion:
+
 ```bash
+cd ~/.pi.chore-tune-loadouts
+models_backup=/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json
+assert_models_store() {
+  python3 - "$1" "$models_backup" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+live_path, approved_path = map(Path, sys.argv[1:])
+live = json.loads(live_path.read_text())
+approved = json.loads(approved_path.read_text())
+assert live.keys() == approved.keys()
+for provider in approved:
+    for label, catalog in (("live", live), ("approved", approved)):
+        entry = catalog[provider]
+        assert isinstance(entry, dict), (label, provider, type(entry).__name__)
+        assert set(entry) == {"models", "checkedAt"}, (label, provider, sorted(entry))
+        assert isinstance(entry["models"], list), (label, provider, "models")
+        assert type(entry["checkedAt"]) is int, (label, provider, "checkedAt")
+    assert live[provider]["models"] == approved[provider]["models"], provider
+print(f"validated {len(approved)} providers; checkedAt drift allowed")
+PY
+}
+
+git diff --quiet HEAD -- agent/models-store.json
 git diff --check
-git add agent
+git add -- \
+  agent/loadout.json \
+  agent/loadout-profiles.json \
+  agent/docs/features/pi-packages.md \
+  agent/docs/index.json \
+  agent/docs/changelog.md
+git diff --cached --quiet -- agent/models-store.json
 git commit -m "chore: establish lean pi loadouts"
-wt merge --yes
+git diff --quiet main...HEAD -- agent/models-store.json
+test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
+assert_models_store ~/.pi/agent/models-store.json
+git merge-base --is-ancestor main HEAD
+git -C ~/.pi merge --ff-only chore/tune-loadouts
+test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
+assert_models_store ~/.pi/agent/models-store.json
 ```
 
-If the original Pi checkout is dirty, preserve `agent/mcp.json` and `agent/models-store.json`; never reset them.
+Any failed precondition is a hard stop. Never stage, commit, restore, stash, or reset `agent/models-store.json`; only `checkedAt` may differ from the approved backup.
 
 - [ ] **Step 6: Final live verification**
 
-In a new Pi session, verify the default reports `lean`, then apply each specialized profile once. Confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation.
+Rebuild a fresh disposable overlay as in Task 1, then start the new Pi session with `PI_CODING_AGENT_DIR="$smoke_agent"`. Verify the default reports `lean`, apply each specialized profile once, and confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation. Do not run these final smoke processes against `~/.pi/agent`.

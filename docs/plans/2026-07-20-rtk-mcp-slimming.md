@@ -4,7 +4,7 @@
 
 **Goal:** Keep RTK command rewriting, remove Pi's second output-compaction pass, reduce ICM to two direct tools, and reduce Serena to five direct setup/navigation tools.
 
-**Architecture:** First review and commit the approved existing `mcp.json` change directly on Pi `main`, while preserving the dirty `models-store.json` byte-for-byte. Create the dedicated Pi Worktrunk worktree from that commit without importing a patch, then use the adapter's exact `directTools` whitelists and `excludeTools` filters. Update durable docs, measure the resulting direct tool surface, and integrate with a preconditioned fast-forward merge that never invokes Worktrunk on dirty Pi `main`.
+**Architecture:** First review and commit the approved existing `mcp.json` change directly on Pi `main`, while treating dirty `models-store.json` as a dynamic catalog cache that must never be staged or committed. Create the dedicated Pi Worktrunk worktree from that commit without importing a patch, then use the adapter's exact `directTools` whitelists and `excludeTools` filters. Update durable docs, measure the resulting direct tool surface, and integrate with a preconditioned fast-forward merge that requires the approved provider key set and equal `models` arrays, allows only `checkedAt` drift, and never invokes Worktrunk on dirty Pi `main`.
 
 **Tech Stack:** Pi `pi-rtk-optimizer`, `pi-mcp-adapter`, JSON, Python validation, MCP metadata cache, Worktrunk.
 
@@ -15,12 +15,16 @@
 - Serena direct tools: `initial_instructions`, `check_onboarding_performed`, `get_symbols_overview`, `find_symbol`, `find_referencing_symbols` only.
 - Serena edit/memory tools are hidden from both direct exposure and proxy discovery.
 - Keep Serena lifecycle hooks; remove dead direct-edit hook matchers.
-- Preserve the committed direct-tool tuning in `agent/mcp.json`; never modify, stage, stash, reset, or restore `agent/models-store.json`.
-- After the safety preflight commit, the only dirty path allowed on Pi `main` is the byte-unchanged `agent/models-store.json`.
+- Preserve the committed direct-tool tuning in `agent/mcp.json`; never stage, commit, restore, stash, or reset `agent/models-store.json`.
+- After the safety preflight commit, `agent/models-store.json` must remain exactly the sole dirty path on Pi `main`, and feature-branch diffs must exclude it.
+- Compare live `agent/models-store.json` with `/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json` semantically: identical provider keys, provider objects containing only `models` and `checkedAt`, and byte/JSON-equal `models` arrays. Only runtime `checkedAt` drift is allowed.
+- Launch every verification Pi process with a disposable `PI_CODING_AGENT_DIR` overlay so it cannot write live runtime state.
 - Never invoke Worktrunk on dirty Pi `main` during integration; use the preconditioned fast-forward merge in Task 4.
 - No subagents. If delegation becomes necessary, use Herdr panes with task-appropriate models.
 
 ---
+
+The completed byte comparisons and hashes in Task 1 are retained as historical evidence of what passed at that checkpoint. They are not the policy for future integration; Task 4's bounded semantic assertion is authoritative.
 
 ### Task 1: Commit the approved MCP preflight and create the Pi worktree
 
@@ -321,29 +325,33 @@ export default function (pi: any) {
 }
 ```
 
-Prepare an ignored, disposable runtime overlay so Pi reads the worktree configuration without reinstalling packages or mutating the live agent directory:
+Prepare a disposable runtime overlay outside both Pi checkouts so Pi reads the worktree configuration without reinstalling packages or mutating live or feature-worktree runtime state:
 
 ```bash
 cd ~/.pi.chore-slim-rtk-mcp/agent
-cp ~/.pi/agent/settings.json settings.json
-cp ~/.pi/agent/mcp-cache.json mcp-cache.json
-test -e npm/node_modules || ln -s ~/.pi/agent/npm/node_modules npm/node_modules
+smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-mcp-smoke.XXXXXX")
+trap 'rm -rf "$smoke_agent"' EXIT
+rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
+cp ~/.pi/agent/settings.json "$smoke_agent/settings.json"
+cp ~/.pi/agent/mcp-cache.json "$smoke_agent/mcp-cache.json"
+mkdir -p "$smoke_agent/npm"
+ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
 ```
 
 Apply the same five hook-matcher removals to the copied `settings.json`, then run:
 
 ```bash
-PI_CODING_AGENT_DIR="$PWD" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
+PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
 ```
 
-Expected: output contains only the two direct ICM tools and five direct Serena tools. Excluded Serena editing/memory tools are absent. The copied settings/cache and symlink remain ignored and disposable.
+Expected: output contains only the two direct ICM tools and five direct Serena tools. Excluded Serena editing/memory tools are absent. Runtime writes, including `models-store.json` refreshes, remain disposable.
 
 - [ ] **Step 3: Verify proxy behavior**
 
 Start a fresh session with:
 
 ```bash
-PI_CODING_AGENT_DIR=~/.pi.chore-slim-rtk-mcp/agent pi --no-session
+PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session
 ```
 
 Then verify:
@@ -357,35 +365,75 @@ Report before/after direct-tool counts and rough schema bytes. Do not integrate 
 
 - [ ] **Step 5: Commit and integrate with explicit safety preconditions**
 
-Do not call Worktrunk from dirty Pi `main`. Before staging, prove the feature worktree has not modified the protected file. After committing, prove the branch-level diff still excludes it, Pi `main` contains only the original byte-unchanged protected dirt, and the branch is a fast-forward descendant. Then integrate with `git merge --ff-only`:
+Do not call Worktrunk from dirty Pi `main`. Never restore, stash, reset, or stage `agent/models-store.json`. Before staging, prove the feature worktree has not modified it. After committing, prove the branch-level diff still excludes it, Pi `main` contains exactly that sole dirty path, the live cache matches the approved provider/model catalog, and the branch is a fast-forward descendant. Then integrate with `git merge --ff-only`:
 
 ```bash
 cd ~/.pi.chore-slim-rtk-mcp
+models_backup=/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json
+assert_models_store() {
+  python3 - "$1" "$models_backup" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+live_path, approved_path = map(Path, sys.argv[1:])
+live = json.loads(live_path.read_text())
+approved = json.loads(approved_path.read_text())
+
+assert live.keys() == approved.keys()
+for provider in approved:
+    for label, catalog in (("live", live), ("approved", approved)):
+        entry = catalog[provider]
+        assert isinstance(entry, dict), (label, provider, type(entry).__name__)
+        assert set(entry) == {"models", "checkedAt"}, (label, provider, sorted(entry))
+        assert isinstance(entry["models"], list), (label, provider, "models")
+        assert type(entry["checkedAt"]) is int, (label, provider, "checkedAt")
+    assert live[provider]["models"] == approved[provider]["models"], provider
+print(f"validated {len(approved)} providers; checkedAt drift allowed")
+PY
+}
+
 git diff --quiet HEAD -- agent/models-store.json
 git diff --check
-git add agent
-test -z "$(git diff --cached --name-only -- agent/models-store.json)"
+git add -- \
+  agent/extensions/pi-rtk-optimizer/config.json \
+  agent/docs/features/pi-rtk-optimizer.md \
+  agent/RTK.md \
+  agent/docs/claude-feature-migration.md \
+  agent/docs/index.json \
+  agent/docs/changelog.md \
+  agent/mcp.json \
+  agent/settings.template.json \
+  agent/docs/features/mcp-agent-tools.md \
+  agent/docs/features/pi-runtime-settings.md
+git diff --cached --quiet -- agent/models-store.json
 git commit -m "chore: slim rtk and mcp tooling"
 git diff --quiet main...HEAD -- agent/models-store.json
-models_hash=6749f2a6c7db1e473e4e118306ce8c9cf2ae2a5abc56b33b300b4b04abba62d7
 test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
-test "$(sha256sum ~/.pi/agent/models-store.json | awk '{print $1}')" = "$models_hash"
+assert_models_store ~/.pi/agent/models-store.json
 git merge-base --is-ancestor main HEAD
 git -C ~/.pi merge --ff-only chore/slim-rtk-mcp
 test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
-test "$(sha256sum ~/.pi/agent/models-store.json | awk '{print $1}')" = "$models_hash"
+assert_models_store ~/.pi/agent/models-store.json
 ```
 
-Expected: the feature commit excludes `agent/models-store.json`, Pi `main` advances by fast-forward only, and the sole dirty path and protected hash are unchanged. Any failed precondition is a hard stop; do not stash, reset, restore, reconcile, or invoke Worktrunk on dirty Pi `main`.
+Expected: the feature commit excludes `agent/models-store.json`, Pi `main` advances by fast-forward only, and `agent/models-store.json` remains the sole dirty path with identical provider keys and `models` arrays; only `checkedAt` may drift. Any failed precondition is a hard stop; do not stage, stash, reset, restore, reconcile, or invoke Worktrunk on dirty Pi `main`.
 
 - [ ] **Step 6: Final live verification**
 
-Run from `~/.pi/agent`:
+Run repository checks from `~/.pi/agent`, but launch Pi only against a disposable copy so the smoke process cannot refresh live runtime state:
 
 ```bash
+cd ~/.pi/agent
 python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
-pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
+
+smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-final-smoke.XXXXXX")
+trap 'rm -rf "$smoke_agent"' EXIT
+rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
+mkdir -p "$smoke_agent/npm"
+ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
+PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
 ```
 
-Expected: all validation passes and the live direct-tool surface matches policy.
+Expected: all validation passes and the direct-tool surface from the disposable overlay matches policy; the live agent directory is not written by the Pi smoke process.
