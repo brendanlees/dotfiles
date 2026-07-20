@@ -4,7 +4,7 @@
 
 **Goal:** Keep RTK command rewriting, remove Pi's second output-compaction pass, reduce ICM to two direct tools, and reduce Serena to five direct setup/navigation tools.
 
-**Architecture:** Apply changes in a dedicated Pi Worktrunk worktree after Headroom retirement. Import the original checkout's existing `mcp.json` changes first, then use the adapter's exact `directTools` whitelists and `excludeTools` filters. Update durable docs and measure the resulting direct tool surface.
+**Architecture:** First review and commit the approved existing `mcp.json` change directly on Pi `main`, while preserving the dirty `models-store.json` byte-for-byte. Create the dedicated Pi Worktrunk worktree from that commit without importing a patch, then use the adapter's exact `directTools` whitelists and `excludeTools` filters. Update durable docs, measure the resulting direct tool surface, and integrate with a preconditioned fast-forward merge that never invokes Worktrunk on dirty Pi `main`.
 
 **Tech Stack:** Pi `pi-rtk-optimizer`, `pi-mcp-adapter`, JSON, Python validation, MCP metadata cache, Worktrunk.
 
@@ -15,48 +15,92 @@
 - Serena direct tools: `initial_instructions`, `check_onboarding_performed`, `get_symbols_overview`, `find_symbol`, `find_referencing_symbols` only.
 - Serena edit/memory tools are hidden from both direct exposure and proxy discovery.
 - Keep Serena lifecycle hooks; remove dead direct-edit hook matchers.
-- Preserve user changes in `agent/mcp.json`; never modify `agent/models-store.json`.
+- Preserve the committed direct-tool tuning in `agent/mcp.json`; never modify, stage, stash, reset, or restore `agent/models-store.json`.
+- After the safety preflight commit, the only dirty path allowed on Pi `main` is the byte-unchanged `agent/models-store.json`.
+- Never invoke Worktrunk on dirty Pi `main` during integration; use the preconditioned fast-forward merge in Task 4.
 - No subagents. If delegation becomes necessary, use Herdr panes with task-appropriate models.
 
 ---
 
-### Task 1: Create the Pi worktree and import existing MCP changes
+### Task 1: Commit the approved MCP preflight and create the Pi worktree
 
 **Files:**
-- Modify later: `agent/mcp.json`
-- Preserve: `agent/models-store.json`
-- Create: `/tmp/pi-mcp-before-slimming.patch`
-- Create: `/tmp/pi-models-store-before-slimming.patch`
+- Commit on Pi `main`: `agent/mcp.json`
+- Preserve without staging or mutation: `agent/models-store.json`
+- Compare against: `/tmp/pi-pre-headroom-retirement-20260720-121432/`
 
-- [ ] **Step 1: Capture bounded patches from the original checkout**
+- [x] **Step 1: Verify the original checkout and review the bounded semantic diff**
 
 ```bash
 cd ~/.pi
-git diff -- agent/mcp.json > /tmp/pi-mcp-before-slimming.patch
-git diff -- agent/models-store.json > /tmp/pi-models-store-before-slimming.patch
-test -s /tmp/pi-mcp-before-slimming.patch
-test -s /tmp/pi-models-store-before-slimming.patch
+test "$(git rev-parse HEAD)" = bd786caa80937569d9449d8596120a3fefaae6f3
+test "$(git branch --show-current)" = main
+test "$(git status --short --untracked-files=all)" = $' M agent/mcp.json\n M agent/models-store.json'
+cmp -s agent/mcp.json /tmp/pi-pre-headroom-retirement-20260720-121432/mcp.json
+cmp -s agent/models-store.json /tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json
+python3 -m json.tool agent/mcp.json >/dev/null
+python3 -m json.tool agent/models-store.json >/dev/null
+python3 - <<'PY'
+import json, subprocess
+from pathlib import Path
+before=json.loads(subprocess.check_output(['git','show','HEAD:agent/mcp.json'], text=True))
+after=json.loads(Path('agent/mcp.json').read_text())
+changes=[]
+def walk(a,b,path=()):
+    if isinstance(a,dict) and isinstance(b,dict):
+        for key in sorted(a.keys() | b.keys()):
+            if key not in a: changes.append(('added','.'.join(path+(key,)),None,b[key]))
+            elif key not in b: changes.append(('removed','.'.join(path+(key,)),a[key],None))
+            else: walk(a[key],b[key],path+(key,))
+    elif a != b: changes.append(('changed','.'.join(path),a,b))
+walk(before,after)
+assert changes == [
+ ('changed','mcpServers.astro-docs.directTools',True,False),
+ ('changed','mcpServers.starwind-ui.directTools',True,False),
+ ('added','mcpServers.unifi-network.directTools',None,True),
+]
+print(changes)
+PY
 ```
 
-Expected: both patches are non-empty; the checkout is unchanged.
+Expected: both files match the safety backup byte-for-byte, both parse as JSON, and the script prints only the three approved `directTools` changes without exposing unrelated server configuration.
 
-- [ ] **Step 2: Create the isolated worktree**
+- [x] **Step 2: Commit only the existing MCP change on Pi `main`**
 
 ```bash
-wt -C ~/.pi switch --create chore/slim-rtk-mcp --yes
+cd ~/.pi
+models_hash=6749f2a6c7db1e473e4e118306ce8c9cf2ae2a5abc56b33b300b4b04abba62d7
+test "$(sha256sum agent/models-store.json | awk '{print $1}')" = "$models_hash"
+git add -- agent/mcp.json
+test "$(git diff --cached --name-only)" = agent/mcp.json
+test "$(git diff --name-only)" = agent/models-store.json
+git diff --cached --check -- agent/mcp.json
+git commit -m "chore: tune mcp direct tools"
+test "$(sha256sum agent/models-store.json | awk '{print $1}')" = "$models_hash"
+test "$(git status --short --untracked-files=all)" = " M agent/models-store.json"
 ```
 
-Expected: Worktrunk reports a new worktree, normally `~/.pi.chore-slim-rtk-mcp`.
+Expected: Pi `main` advances from `bd786caa80937569d9449d8596120a3fefaae6f3` to the MCP-only commit; the protected hash is unchanged and `agent/models-store.json` is the only dirty path.
 
-- [ ] **Step 3: Apply only the MCP patch**
+- [x] **Step 3: Create the isolated worktree from the committed MCP state**
 
 ```bash
+cd ~/.pi
+base=$(git rev-parse HEAD)
+wt -C ~/.pi switch --create chore/slim-rtk-mcp --base="$base" --no-hooks --no-cd --yes
 cd ~/.pi.chore-slim-rtk-mcp
-git apply /tmp/pi-mcp-before-slimming.patch
-git diff -- agent/mcp.json
+test "$(git rev-parse HEAD)" = "$base"
+test -z "$(git status --short --untracked-files=all)"
+python3 - <<'PY'
+import json
+m=json.load(open('agent/mcp.json'))['mcpServers']
+assert m['astro-docs']['directTools'] is False
+assert m['starwind-ui']['directTools'] is False
+assert m['unifi-network']['directTools'] is True
+PY
 ```
 
-Expected: the user's Astro Docs, Playwriter, and UniFi changes are present. Do not apply the models-store patch.
+Expected: Worktrunk creates clean branch `chore/slim-rtk-mcp`, normally at `~/.pi.chore-slim-rtk-mcp`, directly from the MCP commit. `--no-hooks` prevents dirty-main stash behavior; no patch is created or applied.
 
 - [ ] **Step 4: Record baseline MCP metadata**
 
@@ -311,16 +355,28 @@ Then verify:
 
 Report before/after direct-tool counts and rough schema bytes. Do not integrate until Brendan approves.
 
-- [ ] **Step 5: Commit and integrate**
+- [ ] **Step 5: Commit and integrate with explicit safety preconditions**
+
+Do not call Worktrunk from dirty Pi `main`. Before staging, prove the feature worktree has not modified the protected file. After committing, prove the branch-level diff still excludes it, Pi `main` contains only the original byte-unchanged protected dirt, and the branch is a fast-forward descendant. Then integrate with `git merge --ff-only`:
 
 ```bash
+cd ~/.pi.chore-slim-rtk-mcp
+git diff --quiet HEAD -- agent/models-store.json
 git diff --check
 git add agent
+test -z "$(git diff --cached --name-only -- agent/models-store.json)"
 git commit -m "chore: slim rtk and mcp tooling"
-wt merge --yes
+git diff --quiet main...HEAD -- agent/models-store.json
+models_hash=6749f2a6c7db1e473e4e118306ce8c9cf2ae2a5abc56b33b300b4b04abba62d7
+test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
+test "$(sha256sum ~/.pi/agent/models-store.json | awk '{print $1}')" = "$models_hash"
+git merge-base --is-ancestor main HEAD
+git -C ~/.pi merge --ff-only chore/slim-rtk-mcp
+test "$(git -C ~/.pi status --short --untracked-files=all)" = " M agent/models-store.json"
+test "$(sha256sum ~/.pi/agent/models-store.json | awk '{print $1}')" = "$models_hash"
 ```
 
-If Worktrunk refuses because `~/.pi` is dirty, stop and reconcile only `agent/mcp.json`; never reset `agent/models-store.json`.
+Expected: the feature commit excludes `agent/models-store.json`, Pi `main` advances by fast-forward only, and the sole dirty path and protected hash are unchanged. Any failed precondition is a hard stop; do not stash, reset, restore, reconcile, or invoke Worktrunk on dirty Pi `main`.
 
 - [ ] **Step 6: Final live verification**
 
