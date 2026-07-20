@@ -45,6 +45,14 @@ Library
 .config/private_env_tokens.sh
 {{- end }}
 
+{{- if not .personal }}
+.config/mcp
+{{- else if not (hasKey . "bw_ha_mcp") }}
+.config/mcp
+{{- else if not (hasKey .bw_ha_mcp "secret_path") }}
+.config/mcp
+{{- end }}
+
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
 !.local/bin/theme

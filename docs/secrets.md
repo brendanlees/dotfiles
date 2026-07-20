@@ -25,6 +25,14 @@ mise token github
 
 The token is masked by default; the output should identify `credential_command` as its source.
 
+## home assistant mcp endpoint
+
+On personal hosts, `chezmoi init` reads the `secret_path` custom field from the dedicated Bitwarden item and caches it as chezmoi data. Rendering is one-way: `chezmoi apply` reads that cache to manage `~/.config/mcp/mcp.json`; it neither writes to Bitwarden nor refreshes the cached field.
+
+The managed directory is mode `0700`, and `mcp.json` is mode `0600`. Non-personal hosts and personal hosts without the cached field do not manage `.config/mcp`.
+
+To rotate the endpoint, update the Bitwarden field, unlock Bitwarden, and re-run `chezmoi init --apply brendanlees`. Running `chezmoi apply` alone continues using the previously cached value.
+
 ## bitwarden cache refresh
 
 after changing bitwarden-backed init data, re-run `chezmoi init --apply brendanlees`; `chezmoi apply` alone does not refresh cached init data.

@@ -134,6 +134,7 @@
 {{- $bw_huggingface  := bitwardenFields "item" "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" }}
   hf_token = {{ $bw_huggingface.read_only_token.value | quote }}
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
+{{- $bw_ha_mcp := bitwardenFields "item" "afa4395b-8044-46b1-86c9-b48d007e82ac" }}
   github_token = {{ $bw_github.read_only_token.value | quote }}
 
 [data.bw_info]
@@ -155,6 +156,9 @@
 {{- range $k, $v := $bw_gitea }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
   {{ $k }} = {{ $val | quote }}
 {{- end }}{{ end }}
+
+[data.bw_ha_mcp]
+  secret_path = {{ $bw_ha_mcp.secret_path.value | quote }}
 {{- end }}
 
 {{- if and $work (lookPath "bw") }}
