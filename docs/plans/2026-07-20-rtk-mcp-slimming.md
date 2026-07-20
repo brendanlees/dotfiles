@@ -325,39 +325,43 @@ export default function (pi: any) {
 }
 ```
 
-Prepare a disposable runtime overlay outside both Pi checkouts so Pi reads the worktree configuration without reinstalling packages or mutating live or feature-worktree runtime state:
+Prepare a disposable runtime overlay at the fixed path `/tmp/pi-mcp-smoke-agent` outside both Pi checkouts so it survives the shell boundary between Steps 2 and 3. Do not install an `EXIT` trap in this setup shell; Step 3 owns explicit cleanup after its Pi process exits:
 
 ```bash
 cd ~/.pi.chore-slim-rtk-mcp/agent
-smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-mcp-smoke.XXXXXX")
-trap 'rm -rf "$smoke_agent"' EXIT
-rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
-cp ~/.pi/agent/settings.json "$smoke_agent/settings.json"
-cp ~/.pi/agent/mcp-cache.json "$smoke_agent/mcp-cache.json"
-mkdir -p "$smoke_agent/npm"
-ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
+rm -rf /tmp/pi-mcp-smoke-agent
+install -d -m 700 /tmp/pi-mcp-smoke-agent
+rsync -a --exclude='npm/node_modules' ./ /tmp/pi-mcp-smoke-agent/
+cp ~/.pi/agent/settings.json /tmp/pi-mcp-smoke-agent/settings.json
+cp ~/.pi/agent/mcp-cache.json /tmp/pi-mcp-smoke-agent/mcp-cache.json
+mkdir -p /tmp/pi-mcp-smoke-agent/npm
+ln -s ~/.pi/agent/npm/node_modules /tmp/pi-mcp-smoke-agent/npm/node_modules
+chmod 700 /tmp/pi-mcp-smoke-agent
 ```
 
-Apply the same five hook-matcher removals to the copied `settings.json`, then run:
+Apply the same five hook-matcher removals to `/tmp/pi-mcp-smoke-agent/settings.json`, then run:
 
 ```bash
-PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
+PI_CODING_AGENT_DIR=/tmp/pi-mcp-smoke-agent pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
 ```
 
-Expected: output contains only the two direct ICM tools and five direct Serena tools. Excluded Serena editing/memory tools are absent. Runtime writes, including `models-store.json` refreshes, remain disposable.
+Expected: output contains only the two direct ICM tools and five direct Serena tools. Excluded Serena editing/memory tools are absent. Runtime writes, including `models-store.json` refreshes, remain disposable. Leave `/tmp/pi-mcp-smoke-agent` in place for Step 3.
 
 - [ ] **Step 3: Verify proxy behavior**
 
-Start a fresh session with:
+Start a fresh session against the fixed overlay with:
 
 ```bash
-PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session
+PI_CODING_AGENT_DIR=/tmp/pi-mcp-smoke-agent pi --no-session
+rm -rf /tmp/pi-mcp-smoke-agent
 ```
 
-Then verify:
+Keep the shell at the foreground `pi` command while verifying:
 
 - `mcp({ server: "icm" })` lists non-direct ICM operations.
 - `mcp({ server: "serena" })` includes `onboarding` but excludes every configured Serena editing/memory operation.
+
+Exit Pi only after both checks. The next command then explicitly deletes `/tmp/pi-mcp-smoke-agent`; confirm it no longer exists before continuing.
 
 - [ ] **Step 4: Present the diff and measurements for review**
 
@@ -428,12 +432,19 @@ cd ~/.pi/agent
 python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
 
-smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-final-smoke.XXXXXX")
-trap 'rm -rf "$smoke_agent"' EXIT
-rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
-mkdir -p "$smoke_agent/npm"
-ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
-PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
+(
+  set -euo pipefail
+  final_smoke=$(mktemp -d "${TMPDIR:-/tmp}/pi-final-smoke.XXXXXX")
+  trap 'rm -rf "$final_smoke"' EXIT
+  chmod 700 "$final_smoke"
+  rsync -a --exclude='npm/node_modules' ./ "$final_smoke/"
+  mkdir -p "$final_smoke/npm"
+  ln -s ~/.pi/agent/npm/node_modules "$final_smoke/npm/node_modules"
+  chmod 700 "$final_smoke"
+  PI_CODING_AGENT_DIR="$final_smoke" pi --no-session -e /tmp/pi-tool-inventory.ts -p inventory
+  rm -rf "$final_smoke"
+  trap - EXIT
+)
 ```
 
 Expected: all validation passes and the direct-tool surface from the disposable overlay matches policy; the live agent directory is not written by the Pi smoke process.

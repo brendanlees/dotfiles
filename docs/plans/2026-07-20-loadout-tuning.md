@@ -58,21 +58,40 @@ export default function (pi: any) {
 }
 ```
 
-Prepare a disposable runtime overlay outside both Pi checkouts, then run against that copy:
+Create a persistent executable wrapper whose single process owns the entire disposable-overlay lifecycle for every inventory or smoke launch:
 
 ```bash
-cd ~/.pi.chore-tune-loadouts/agent
-smoke_agent=$(mktemp -d "${TMPDIR:-/tmp}/pi-loadout-smoke.XXXXXX")
-trap 'rm -rf "$smoke_agent"' EXIT
-rsync -a --exclude='npm/node_modules' ./ "$smoke_agent/"
-cp ~/.pi/agent/settings.json "$smoke_agent/settings.json"
-cp ~/.pi/agent/mcp-cache.json "$smoke_agent/mcp-cache.json"
-mkdir -p "$smoke_agent/npm"
-ln -s ~/.pi/agent/npm/node_modules "$smoke_agent/npm/node_modules"
-PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
+cat > /tmp/pi-loadout-smoke <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_dir=${PI_LOADOUT_SOURCE:-$HOME/.pi.chore-tune-loadouts/agent}
+live_agent=$HOME/.pi/agent
+test -d "$source_dir"
+test -d "$live_agent/npm/node_modules"
+
+overlay=$(mktemp -d "${TMPDIR:-/tmp}/pi-loadout-smoke.XXXXXX")
+trap 'rm -rf -- "$overlay"' EXIT
+chmod 700 "$overlay"
+rsync -a --exclude='npm/node_modules' -- "$source_dir/" "$overlay/"
+for runtime_file in settings.json mcp-cache.json auth.json; do
+  if [[ -f "$live_agent/$runtime_file" ]]; then
+    cp -p -- "$live_agent/$runtime_file" "$overlay/$runtime_file"
+  fi
+done
+mkdir -p "$overlay/npm"
+ln -s "$live_agent/npm/node_modules" "$overlay/npm/node_modules"
+chmod 700 "$overlay"
+
+PI_CODING_AGENT_DIR="$overlay" pi "$@"
+SH
+chmod 700 /tmp/pi-loadout-smoke
+/tmp/pi-loadout-smoke --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
 ```
 
-Use `PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names. Do not save that temporary full selection. Rebuild the overlay after tracked configuration changes; all runtime writes, including `models-store.json` refreshes, remain disposable.
+The wrapper does not print copied runtime files. Each invocation creates a fresh mode-700 overlay from `PI_LOADOUT_SOURCE` (defaulting to the feature-worktree agent directory), overlays needed live runtime files without displaying them, reuses live `node_modules` through a symlink, waits for its foreground Pi process, and removes the overlay only through its `EXIT` trap after Pi exits.
+
+Run `/tmp/pi-loadout-smoke --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names. Do not save that temporary full selection. Invoke the wrapper again after tracked configuration changes; every launch receives a new overlay, and all runtime writes, including `models-store.json` refreshes, remain disposable.
 
 - [ ] **Step 3: Prove current snapshots are stale**
 
@@ -122,10 +141,11 @@ Set `loadout.json.profileName` to `lean`. Add the same exact snapshot as `profil
 ```bash
 python3 -m json.tool loadout.json >/dev/null
 python3 -m json.tool loadout-profiles.json >/dev/null
-PI_CODING_AGENT_DIR="$smoke_agent" pi --no-session -p '/loadout use lean'
+/tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
+/tmp/pi-loadout-smoke --no-session -p '/loadout status'
 ```
 
-Then run `/loadout status` in a fresh temporary session and compare every active name to the approved list.
+Compare every active name reported by the isolated wrapper launches to the approved list.
 
 ### Task 3: Review and establish the coding profile
 
@@ -149,7 +169,13 @@ Add/replace `profiles.coding` with the exact approved snapshot and fresh `update
 
 - [ ] **Step 3: Smoke-test coding**
 
-Apply `/loadout use coding`, inspect `/loadout status`, and verify all five allowed Serena tools are active while Serena edit/memory tools remain absent.
+Launch the isolated coding smoke explicitly:
+
+```bash
+/tmp/pi-loadout-smoke --no-session
+```
+
+Apply `/loadout use coding`, inspect `/loadout status`, and verify all five allowed Serena tools are active while Serena edit/memory tools remain absent. Exit Pi to let the wrapper remove its overlay.
 
 ### Task 4: Review and establish the research profile
 
@@ -177,7 +203,13 @@ Add/replace `profiles.research` with exact names and fresh `updatedAt`.
 
 - [ ] **Step 3: Smoke-test research**
 
-Apply the profile, inspect status, run one bounded SearXNG query and one Exa tool-list call, and verify browser automation tools are absent.
+Launch the isolated research smoke explicitly:
+
+```bash
+/tmp/pi-loadout-smoke --no-session
+```
+
+Apply `/loadout use research`, inspect `/loadout status`, run one bounded SearXNG query and one Exa tool-list call, and verify browser automation tools are absent. Exit Pi to let the wrapper remove its overlay.
 
 ### Task 5: Review and establish the browser profile
 
@@ -202,7 +234,13 @@ Add/replace `profiles.browser` with exact names and fresh `updatedAt`.
 
 - [ ] **Step 3: Smoke-test browser**
 
-Follow the browser-session-discipline skill. Apply the profile, verify status, list pages with one browser owner only, and clean up the scoped browser session.
+Follow the browser-session-discipline skill, including its one-browser-owner and scoped-cleanup requirements. Launch the isolated browser smoke explicitly:
+
+```bash
+/tmp/pi-loadout-smoke --no-session
+```
+
+Apply `/loadout use browser`, verify `/loadout status`, list pages with one browser owner only, clean up the scoped browser session, and then exit Pi so the wrapper removes its overlay.
 
 ### Task 6: Review and establish the ops profile
 
@@ -228,7 +266,13 @@ Add/replace `profiles.ops` with exact names and fresh `updatedAt`.
 
 - [ ] **Step 3: Smoke-test ops without mutation**
 
-Apply the profile, inspect status, run read-only UniFi discovery/index and generic MCP server listing. Do not change devices, networks, messages, or Home Assistant state.
+Launch the isolated ops smoke explicitly:
+
+```bash
+/tmp/pi-loadout-smoke --no-session
+```
+
+Apply `/loadout use ops`, inspect `/loadout status`, and run read-only UniFi discovery/index and generic MCP server listing. Do not change devices, networks, messages, or Home Assistant state. Exit Pi to let the wrapper remove its overlay.
 
 ### Task 7: Remove obsolete presets, document, validate, and integrate
 
@@ -241,7 +285,11 @@ Apply the profile, inspect status, run read-only UniFi discovery/index and gener
 
 - [ ] **Step 1: Remove obsolete worker and stale names**
 
-Delete `profiles.worker`. Assert every saved tool and skill name exists in the live post-slimming inventory.
+Delete `profiles.worker`. Refresh the isolated live post-slimming inventory explicitly, then assert every saved tool and skill name exists in it:
+
+```bash
+/tmp/pi-loadout-smoke --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
+```
 
 - [ ] **Step 2: Update durable docs**
 
@@ -256,7 +304,17 @@ python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
 ```
 
-Run each profile through `/loadout use <name>` and `/loadout status`; compare sorted active names against its JSON snapshot.
+Run every profile through an explicit isolated wrapper launch and compare sorted active names from `/loadout status` against its JSON snapshot:
+
+```bash
+/tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
+/tmp/pi-loadout-smoke --no-session -p '/loadout use coding'
+/tmp/pi-loadout-smoke --no-session -p '/loadout use research'
+/tmp/pi-loadout-smoke --no-session -p '/loadout use browser'
+/tmp/pi-loadout-smoke --no-session -p '/loadout use ops'
+```
+
+For browser-profile verification, continue to follow `browser-session-discipline`: keep one browser owner, run browser-capable checks serially, and perform scoped cleanup.
 
 - [ ] **Step 4: Present final matrix for approval**
 
@@ -314,4 +372,16 @@ Any failed precondition is a hard stop. Never stage, commit, restore, stash, or 
 
 - [ ] **Step 6: Final live verification**
 
-Rebuild a fresh disposable overlay as in Task 1, then start the new Pi session with `PI_CODING_AGENT_DIR="$smoke_agent"`. Verify the default reports `lean`, apply each specialized profile once, and confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation. Do not run these final smoke processes against `~/.pi/agent`.
+After the fast-forward merge, point every self-contained wrapper launch at the merged live agent source explicitly:
+
+```bash
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout status'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use lean'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use coding'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use research'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use browser'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session -p '/loadout use ops'
+PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
+```
+
+Verify the default reports `lean`, apply each specialized profile once, and use the final isolated interactive launch to confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation. These commands copy from `~/.pi/agent` but run Pi only against a fresh wrapper-owned overlay; they never set `PI_CODING_AGENT_DIR` to the live agent directory. Continue to honor browser-session-discipline for the browser check, including one browser owner, serial browser-capable checks, and scoped cleanup.
