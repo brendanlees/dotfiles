@@ -19,13 +19,10 @@ if ! grep -Fq "bitwardenFields \"item\" \"$item_id\"" "$config_template" ||
   echo "missing cached bw_ha_mcp data wiring" >&2
   missing=1
 fi
-if [[ -f "$template" ]] && ! grep -Fq '.bw_ha_mcp.secret_path | toJson' "$template"; then
-  echo "Home Assistant MCP URL must use JSON-safe encoding" >&2
-  missing=1
-fi
 ((missing == 0)) || exit 1
 
-sentinel_url=$(printf 'https://%s/%s?%s=%s' 'sentinel.invalid' 'mcp' 'token' 'test-only')
+sentinel_url=$(printf 'https://%s/%s?%s=%s&%s=%s' \
+  'sentinel.invalid' 'mcp' 'quote' '"' 'backslash' $'\\')
 minimal_source="$tmpdir/source"
 home_dir="$tmpdir/home"
 config_file="$tmpdir/chezmoi.toml"
@@ -33,16 +30,22 @@ mkdir -p "$minimal_source/dot_config/private_mcp" "$home_dir"
 cp "$template" "$minimal_source/dot_config/private_mcp/private_mcp.json.tmpl"
 cp "$ignore_template" "$minimal_source/.chezmoiignore"
 
-cat >"$config_file" <<TOML
-[data]
+SENTINEL_URL="$sentinel_url" CONFIG_FILE="$config_file" python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+config = """[data]
   personal = true
   work = false
   headless = false
   zsh_patina_trial = false
 
 [data.bw_ha_mcp]
-  secret_path = "$sentinel_url"
-TOML
+  secret_path = {}
+""".format(json.dumps(os.environ["SENTINEL_URL"]))
+Path(os.environ["CONFIG_FILE"]).write_text(config)
+PY
 
 chezmoi apply \
   --source "$minimal_source" \
@@ -89,36 +92,72 @@ mode_of() {
   exit 1
 }
 
-render_ignore() {
-  local data=$1
-  chezmoi execute-template \
+apply_ignored_case() {
+  local name=$1
+  local config=$2
+  local case_home="$tmpdir/home-$name"
+  local case_config="$tmpdir/chezmoi-$name.toml"
+  local case_output="$tmpdir/chezmoi-$name.out"
+
+  mkdir -p "$case_home"
+  printf '%s\n' "$config" >"$case_config"
+  if ! chezmoi apply \
     --source "$minimal_source" \
-    --override-data "$data" \
-    <"$ignore_template"
+    --config "$case_config" \
+    --destination "$case_home" \
+    --force \
+    --no-tty \
+    >"$case_output" 2>&1; then
+    echo "$name gating case failed to apply" >&2
+    return 1
+  fi
+  if [[ -e "$case_home/.config/mcp" ]]; then
+    echo "$name gating case must not manage .config/mcp" >&2
+    return 1
+  fi
 }
 
-base_data='"work":false,"headless":false,"zsh_patina_trial":false,"chezmoi":{"os":"darwin"}'
-nonpersonal=$(render_ignore "{\"personal\":false,\"bw_ha_mcp\":{\"secret_path\":\"present\"},$base_data}")
-missing_data=$(render_ignore "{\"personal\":true,$base_data}")
-missing_field=$(render_ignore "{\"personal\":true,\"bw_ha_mcp\":{},$base_data}")
-present_data=$(render_ignore "{\"personal\":true,\"bw_ha_mcp\":{\"secret_path\":\"present\"},$base_data}")
+common_data=$(cat <<'TOML'
+  work = false
+  headless = false
+  zsh_patina_trial = false
+TOML
+)
 
-grep -Fxq '.config/mcp' <<<"$nonpersonal" || {
-  echo "non-personal rendering must ignore .config/mcp" >&2
-  exit 1
-}
-grep -Fxq '.config/mcp' <<<"$missing_data" || {
-  echo "personal rendering without bw_ha_mcp must ignore .config/mcp" >&2
-  exit 1
-}
-grep -Fxq '.config/mcp' <<<"$missing_field" || {
-  echo "personal rendering without secret_path must ignore .config/mcp" >&2
-  exit 1
-}
-if grep -Fxq '.config/mcp' <<<"$present_data"; then
-  echo "personal rendering with bw_ha_mcp must manage .config/mcp" >&2
-  exit 1
-fi
+gating_failures=0
+apply_ignored_case "nonpersonal" "[data]
+  personal = false
+$common_data
+
+[data.bw_ha_mcp]
+  secret_path = \"https://sentinel.invalid/mcp\"" || gating_failures=1
+apply_ignored_case "missing-map" "[data]
+  personal = true
+$common_data" || gating_failures=1
+apply_ignored_case "missing-key" "[data]
+  personal = true
+$common_data
+
+[data.bw_ha_mcp]" || gating_failures=1
+apply_ignored_case "empty" "[data]
+  personal = true
+$common_data
+
+[data.bw_ha_mcp]
+  secret_path = \"\"" || gating_failures=1
+apply_ignored_case "malformed-url" "[data]
+  personal = true
+$common_data
+
+[data.bw_ha_mcp]
+  secret_path = \"https:/sentinel.invalid/mcp\"" || gating_failures=1
+apply_ignored_case "non-http-url" "[data]
+  personal = true
+$common_data
+
+[data.bw_ha_mcp]
+  secret_path = \"ftp://sentinel.invalid/mcp\"" || gating_failures=1
+((gating_failures == 0)) || exit 1
 
 if grep -R -Fq --exclude-dir=.git -- "$sentinel_url" "$repo_root"; then
   echo "a literal private MCP URL is present in the source tree" >&2
