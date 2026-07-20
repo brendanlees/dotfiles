@@ -159,6 +159,19 @@ $common_data
   secret_path = \"ftp://sentinel.invalid/mcp\"" || gating_failures=1
 ((gating_failures == 0)) || exit 1
 
+missing_data_config="$tmpdir/chezmoi-missing-data.toml"
+printf '%s\n' "[data]
+  personal = false
+$common_data" >"$missing_data_config"
+if ! missing_data_output=$(chezmoi execute-template --config "$missing_data_config" <"$template"); then
+  echo "template must render safely when bw_ha_mcp data is absent" >&2
+  exit 1
+fi
+[[ -z "$missing_data_output" ]] || {
+  echo "template must render empty when bw_ha_mcp data is absent" >&2
+  exit 1
+}
+
 if grep -R -Fq --exclude-dir=.git -- "$sentinel_url" "$repo_root"; then
   echo "a literal private MCP URL is present in the source tree" >&2
   exit 1

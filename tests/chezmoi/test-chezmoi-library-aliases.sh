@@ -3,7 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HELPER="$ROOT/dot_config/zsh/exact_aliases.d/chezmoi.zsh.tmpl"
-TMPDIR="${TMPDIR:-/tmp}/chezmoi-library-aliases-test-$$"
+TMPDIR="${TMPDIR:-/tmp}"
+TMPDIR="${TMPDIR%/}/chezmoi-library-aliases-test-$$"
 mkdir -p "$TMPDIR"
 trap 'rm -rf "$TMPDIR"' EXIT
 

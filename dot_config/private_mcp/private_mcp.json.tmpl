@@ -1,3 +1,4 @@
+{{- if and (hasKey . "bw_ha_mcp") (hasKey .bw_ha_mcp "secret_path") .bw_ha_mcp.secret_path }}
 {
   "mcpServers": {
     "home-assistant": {
@@ -6,3 +7,4 @@
     }
   }
 }
+{{- end }}
