@@ -60,7 +60,6 @@ dot_local/bin/                  # user scripts
 - [usage](docs/usage.md) — updating and installing
 - [secrets](docs/secrets.md) — token and secrets (backed by bitwarden)
 - [ssh](docs/ssh.md) — reproducable ssh config and keys (from bitwarden manifest file)
-- [agentic tooling](docs/agentic-tooling.md) — aliases and custom additions for harness environment
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible usage
 - [themes](docs/themes.md) — switching theme, adding new themes
 - [file tracking](docs/file-tracking.md) — adding dotfiles to track

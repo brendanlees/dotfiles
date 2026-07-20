@@ -1,9 +1,5 @@
 # testing
 
-## headroom
-
-headroom-specific wrapper tests live under `tests/chezmoi/test-headroom*.sh` and `tests/chezmoi/test-hr-pix*.sh`. runtime test steps are documented in [agentic tooling](agentic-tooling.md#headroom).
-
 ## automated ci
 
 every push and pull request runs `.github/workflows/ci.yml`:
