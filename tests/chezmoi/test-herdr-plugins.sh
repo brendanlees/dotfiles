@@ -13,10 +13,13 @@ chezmoi execute-template --source "$repo_root" <"$template" >"$rendered"
 chmod +x "$rendered"
 
 fakebin="$tmpdir/bin"
-mkdir -p "$fakebin" "$tmpdir/home" "$tmpdir/state/chezmoi"
+mkdir -p "$fakebin" "$tmpdir/home" "$tmpdir/state/chezmoi" "$tmpdir/plugin-config"
 cat >"$fakebin/herdr" <<'SH'
 #!/bin/sh
 printf '%s\n' "$*" >>"$HERDR_TEST_LOG"
+if [ "$*" = "plugin config-dir worktrunk" ]; then
+  printf '%s\n' "$HERDR_TEST_CONFIG_DIR"
+fi
 SH
 chmod +x "$fakebin/herdr"
 
@@ -25,6 +28,7 @@ old-plugin|example/old-plugin|old-ref
 STATE
 
 HERDR_TEST_LOG="$tmpdir/herdr.log" \
+HERDR_TEST_CONFIG_DIR="$tmpdir/plugin-config" \
 HOME="$tmpdir/home" \
 XDG_STATE_HOME="$tmpdir/state" \
 PATH="$fakebin:/usr/bin:/bin" \
@@ -33,9 +37,11 @@ PATH="$fakebin:/usr/bin:/bin" \
 nav_ref='53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244'
 plus_ref='f32b0825f12543c1d03e54fb10d1741c40d66cdc'
 last_workspace_ref='8b55ebf15deaa52b49ff1c2500aab0c19c729420'
+worktrunk_ref='e9131c0b576fd68635194c758c9691dbfb778b61'
 grep -Fxq "plugin install paulbkim-dev/vim-herdr-navigation --ref $nav_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install cloudmanic/herdr-plus --ref $plus_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install third774/herdr-last-workspace --ref $last_workspace_ref --yes" "$tmpdir/herdr.log"
+grep -Fxq "plugin install devashish2203/herdr-worktrunk --ref $worktrunk_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq 'plugin uninstall old-plugin' "$tmpdir/herdr.log"
 grep -Fxq "vim-herdr-navigation|paulbkim-dev/vim-herdr-navigation|$nav_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
@@ -43,6 +49,9 @@ grep -Fxq "cloudmanic.herdr-plus|cloudmanic/herdr-plus|$plus_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "third774.last-workspace|third774/herdr-last-workspace|$last_workspace_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
+grep -Fxq "worktrunk|devashish2203/herdr-worktrunk|$worktrunk_ref" \
+  "$tmpdir/state/chezmoi/herdr-plugins.txt"
+grep -Fxq 'open_mode = "workspace"' "$tmpdir/plugin-config/config.toml"
 if grep -Fq 'old-plugin' "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
   echo "stale managed plugin remained in state ledger" >&2
   exit 1

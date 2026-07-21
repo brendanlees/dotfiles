@@ -74,11 +74,12 @@ squash-template = """
 exclude = [".mise/"]
 
 [post-switch]
-tmux-rename = '[ -n "$TMUX" ] && tmux rename-window -t "$TMUX_PANE" {{ branch | sanitize }}'
+tmux-rename = 'if [ -n "$TMUX" ]; then tmux rename-window -t "$TMUX_PANE" {{ branch | sanitize }}; fi'
 
 [post-start]
 tmux-split = '''
-[ -n "$TMUX_PANE" ] && \
-  PANE_COUNT=$(tmux list-panes -t "$TMUX_PANE" -F x | wc -l | tr -d ' ') && \
-  [ "$PANE_COUNT" -eq 2 ] \
+if [ -n "$TMUX_PANE" ]; then
+  PANE_COUNT=$(tmux list-panes -t "$TMUX_PANE" -F x | wc -l | tr -d ' ')
+  [ "$PANE_COUNT" -eq 2 ]
+fi
 '''

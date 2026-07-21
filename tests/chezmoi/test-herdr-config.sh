@@ -61,7 +61,7 @@ for field in (
 assert "previous_workspace" not in keys
 
 commands = keys["command"]
-assert len(commands) == 10
+assert len(commands) == 13
 resize_commands = commands[:4]
 for command, direction, key in zip(
     resize_commands,
@@ -102,6 +102,26 @@ assert commands[9] == {
     "command": "third774.last-workspace.toggle",
     "description": "toggle last workspace",
 }
+assert commands[10:] == [
+    {
+        "key": "prefix+shift+g",
+        "type": "plugin_action",
+        "command": "worktrunk.open",
+        "description": "worktree switch/create from default branch",
+    },
+    {
+        "key": "prefix+shift+c",
+        "type": "plugin_action",
+        "command": "worktrunk.open-current",
+        "description": "worktree switch/create from current branch",
+    },
+    {
+        "key": "prefix+shift+d",
+        "type": "plugin_action",
+        "command": "worktrunk.remove",
+        "description": "worktree remove",
+    },
+]
 
 assert doc["ui"]["mouse_capture"] is True
 assert doc["ui"]["prompt_new_tab_name"] is False
