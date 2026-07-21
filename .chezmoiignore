@@ -26,6 +26,16 @@ Library
 .config/sesh/configs/work.toml
 {{- end }}
 
+{{- if not .personal }}
+.config/herdr/plugins/config/cloudmanic.herdr-plus/projects/personal-*.toml
+{{- end }}
+{{- if not .work }}
+.config/herdr/plugins/config/cloudmanic.herdr-plus/projects/work-*.toml
+{{- end }}
+{{- if not .homelab }}
+.config/herdr/plugins/config/cloudmanic.herdr-plus/projects/homelab-*.toml
+{{- end }}
+
 {{- if .headless }}
 .config/kanata
 {{- else if ne .chezmoi.os "darwin" }}

@@ -1,0 +1,6 @@
+name = "steady-servers"
+working_dir = "~/{{ .code_dir }}/_work/ansible-playbooks/steady-servers"
+
+[[tabs]]
+name = "ansible"
+command = "tailscale switch steadydigital.co && tailscale up && ansible-playbook update-servers.yml && tailscale down"

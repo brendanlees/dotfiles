@@ -1,0 +1,9 @@
+name = "docker"
+{{ if stat "/opt/docker/compose" -}}
+working_dir = "/opt/docker"
+{{ else -}}
+working_dir = "~/docker/compose"
+{{ end }}
+
+[[tabs]]
+name = "shell"
