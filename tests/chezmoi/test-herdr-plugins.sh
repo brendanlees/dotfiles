@@ -32,12 +32,16 @@ PATH="$fakebin:/usr/bin:/bin" \
 
 nav_ref='53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244'
 plus_ref='f32b0825f12543c1d03e54fb10d1741c40d66cdc'
+last_workspace_ref='8b55ebf15deaa52b49ff1c2500aab0c19c729420'
 grep -Fxq "plugin install paulbkim-dev/vim-herdr-navigation --ref $nav_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install cloudmanic/herdr-plus --ref $plus_ref --yes" "$tmpdir/herdr.log"
+grep -Fxq "plugin install third774/herdr-last-workspace --ref $last_workspace_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq 'plugin uninstall old-plugin' "$tmpdir/herdr.log"
 grep -Fxq "vim-herdr-navigation|paulbkim-dev/vim-herdr-navigation|$nav_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "cloudmanic.herdr-plus|cloudmanic/herdr-plus|$plus_ref" \
+  "$tmpdir/state/chezmoi/herdr-plugins.txt"
+grep -Fxq "third774.last-workspace|third774/herdr-last-workspace|$last_workspace_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 if grep -Fq 'old-plugin' "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
   echo "stale managed plugin remained in state ledger" >&2

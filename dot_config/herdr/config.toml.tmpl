@@ -26,7 +26,6 @@ split_horizontal = "prefix+double_quote"
 close_pane = "prefix+x"
 zoom = ["prefix+z", "ctrl+f"]
 resize_mode = ""
-previous_workspace = "prefix+L"
 navigate_workspace_up = "ctrl+k"
 navigate_workspace_down = "ctrl+j"
 
@@ -83,6 +82,12 @@ key = "prefix+K"
 type = "plugin_action"
 command = "cloudmanic.herdr-plus.projects"
 description = "herdr-plus: projects"
+
+[[keys.command]]
+key = "prefix+L"
+type = "plugin_action"
+command = "third774.last-workspace.toggle"
+description = "toggle last workspace"
 
 [ui]
 mouse_capture = true

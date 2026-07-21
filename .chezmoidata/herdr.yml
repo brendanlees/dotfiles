@@ -6,3 +6,6 @@ herdr:
     - id: cloudmanic.herdr-plus
       source: cloudmanic/herdr-plus
       ref: f32b0825f12543c1d03e54fb10d1741c40d66cdc
+    - id: third774.last-workspace
+      source: third774/herdr-last-workspace
+      ref: 8b55ebf15deaa52b49ff1c2500aab0c19c729420

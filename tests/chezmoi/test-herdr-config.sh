@@ -58,9 +58,10 @@ for field in (
     "focus_pane_right",
 ):
     assert keys[field] == ""
+assert "previous_workspace" not in keys
 
 commands = keys["command"]
-assert len(commands) == 9
+assert len(commands) == 10
 resize_commands = commands[:4]
 for command, direction, key in zip(
     resize_commands,
@@ -94,6 +95,12 @@ assert commands[8] == {
     "type": "plugin_action",
     "command": "cloudmanic.herdr-plus.projects",
     "description": "herdr-plus: projects",
+}
+assert commands[9] == {
+    "key": "prefix+L",
+    "type": "plugin_action",
+    "command": "third774.last-workspace.toggle",
+    "description": "toggle last workspace",
 }
 
 assert doc["ui"]["mouse_capture"] is True
