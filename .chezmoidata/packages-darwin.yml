@@ -32,6 +32,7 @@ taps:
     - yt-dlp/taps
     - mutagen-io/mutagen
     - mole
+    - pandoc
   work:
     - ddev/ddev
     - discoteq/discoteq
