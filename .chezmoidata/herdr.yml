@@ -3,3 +3,6 @@ herdr:
     - id: vim-herdr-navigation
       source: paulbkim-dev/vim-herdr-navigation
       ref: 53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244
+    - id: cloudmanic.herdr-plus
+      source: cloudmanic/herdr-plus
+      ref: f32b0825f12543c1d03e54fb10d1741c40d66cdc
