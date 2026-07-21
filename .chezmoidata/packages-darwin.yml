@@ -31,8 +31,6 @@ taps:
     - oven-sh/bun
     - yt-dlp/taps
     - mutagen-io/mutagen
-    - mole
-    - pandoc
   work:
     - ddev/ddev
     - discoteq/discoteq
@@ -61,6 +59,8 @@ brews:
     - dockutil
     - mas
     - mosh
+    - mole
+    - pandoc
     - ente-cli
     - ffmpeg
     - antigravity-cli
