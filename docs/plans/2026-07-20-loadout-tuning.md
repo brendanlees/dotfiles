@@ -4,7 +4,7 @@
 
 **Goal:** Replace the stale full/worker snapshots with a lean global default and reviewed `lean`, `coding`, `research`, `browser`, and `ops` presets.
 
-**Architecture:** Tune one profile at a time in a dedicated Pi Worktrunk worktree. Each candidate is derived from the live post-slimming inventory, shown to Brendan with intentional overlaps called out, approved before mutation, written as an exact snapshot, and smoke-tested through a disposable `PI_CODING_AGENT_DIR` overlay before moving to the next profile. Treat `agent/models-store.json` as a dynamic runtime cache throughout: never stage or commit it, preserve the approved provider keys and `models` arrays, and allow only `checkedAt` drift.
+**Architecture:** Tune one profile at a time in a dedicated Pi Worktrunk worktree. Each candidate is derived from the live post-slimming inventory, shown to Brendan with intentional overlaps called out, approved before mutation, written as an exact snapshot, and smoke-tested through a disposable temporary `HOME` whose overlay is at `$HOME/.pi/agent` and is also selected with `PI_CODING_AGENT_DIR` before moving to the next profile. Treat `agent/models-store.json` as a dynamic runtime cache throughout: never stage or commit it, preserve the approved provider keys and `models` arrays, and allow only `checkedAt` drift.
 
 **Tech Stack:** `pi-loadout`, Pi active-tool/skill APIs, JSON, Python validation, Worktrunk.
 
@@ -21,7 +21,7 @@
 - Reliability and exact output take priority over the smallest possible list.
 - Never stage, commit, restore, stash, or reset `agent/models-store.json`; it must be absent from the feature-branch diff and remain exactly the sole dirty path on Pi `main`.
 - Compare live `agent/models-store.json` with `/tmp/pi-pre-headroom-retirement-20260720-121432/models-store.json`: require identical provider keys, only `models`/`checkedAt` in each provider object, and equal `models` arrays; allow only runtime `checkedAt` drift.
-- Every inventory and smoke Pi process must use a disposable `PI_CODING_AGENT_DIR` overlay so it cannot write live or feature-worktree runtime state.
+- Every inventory and smoke Pi process must use a fresh disposable temporary `HOME`, place its overlay at `$HOME/.pi/agent`, and set `PI_CODING_AGENT_DIR` to that same overlay so `pi-loadout` and Pi cannot read or write live or feature-worktree runtime state.
 - No subagents. If delegation becomes necessary, use Herdr panes with task-appropriate models and give each worker this cache invariant explicitly.
 
 ---
@@ -65,33 +65,44 @@ cat > /tmp/pi-loadout-smoke <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
 
-source_dir=${PI_LOADOUT_SOURCE:-$HOME/.pi.chore-tune-loadouts/agent}
-live_agent=$HOME/.pi/agent
+real_home=$HOME
+source_dir=${PI_LOADOUT_SOURCE:-$real_home/.pi.chore-tune-loadouts/agent}
+live_agent=$real_home/.pi/agent
 test -d "$source_dir"
 test -d "$live_agent/npm/node_modules"
+test -d "$real_home/.agents/skills"
 
-overlay=$(mktemp -d "${TMPDIR:-/tmp}/pi-loadout-smoke.XXXXXX")
-trap 'rm -rf -- "$overlay"' EXIT
-chmod 700 "$overlay"
+sandbox=$(mktemp -d "${TMPDIR:-/tmp}/pi-loadout-smoke.XXXXXX")
+trap 'rm -rf -- "$sandbox"' EXIT
+chmod 700 "$sandbox"
+temp_home=$sandbox/home
+overlay=$temp_home/.pi/agent
+mkdir -p "$overlay"
+chmod 700 "$temp_home" "$temp_home/.pi" "$overlay"
 rsync -a --exclude='npm/node_modules' -- "$source_dir/" "$overlay/"
 for runtime_file in settings.json mcp-cache.json auth.json; do
   if [[ -f "$live_agent/$runtime_file" ]]; then
     cp -p -- "$live_agent/$runtime_file" "$overlay/$runtime_file"
   fi
 done
-mkdir -p "$overlay/npm"
+if [[ ! -f "$overlay/themes/chezmoi.json" && -f "$live_agent/themes/chezmoi.json" ]]; then
+  mkdir -p "$overlay/themes"
+  cp -p -- "$live_agent/themes/chezmoi.json" "$overlay/themes/chezmoi.json"
+fi
+mkdir -p "$overlay/npm" "$temp_home/.agents"
 ln -s "$live_agent/npm/node_modules" "$overlay/npm/node_modules"
-chmod 700 "$overlay"
+ln -s "$real_home/.agents/skills" "$temp_home/.agents/skills"
+chmod 700 "$overlay" "$temp_home/.agents"
 
-PI_CODING_AGENT_DIR="$overlay" pi "$@"
+HOME="$temp_home" PI_CODING_AGENT_DIR="$overlay" pi "$@"
 SH
 chmod 700 /tmp/pi-loadout-smoke
 /tmp/pi-loadout-smoke --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
 ```
 
-The wrapper does not print copied runtime files. Each invocation creates a fresh mode-700 overlay from `PI_LOADOUT_SOURCE` (defaulting to the feature-worktree agent directory), overlays needed live runtime files without displaying them, reuses live `node_modules` through a symlink, waits for its foreground Pi process, and removes the overlay only through its `EXIT` trap after Pi exits.
+The wrapper captures the caller's real home before creating a fresh mode-700 sandbox and temporary `HOME`, then places the mode-700 overlay at `$HOME/.pi/agent` and passes that same path as `PI_CODING_AGENT_DIR`. It copies the `PI_LOADOUT_SOURCE` snapshot (defaulting to the feature-worktree agent directory) plus needed live runtime files without displaying them, copies the active `themes/chezmoi.json` only when the source snapshot lacks it, and exposes only live `node_modules` and `$real_home/.agents/skills` through symlinks. The foreground Pi process therefore resolves global and preset paths inside the temporary home, and the wrapper removes the whole sandbox only through its `EXIT` trap after Pi exits.
 
-Run `/tmp/pi-loadout-smoke --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names. Do not save that temporary full selection. Invoke the wrapper again after tracked configuration changes; every launch receives a new overlay, and all runtime writes, including `models-store.json` refreshes, remain disposable.
+Run `/tmp/pi-loadout-smoke --no-session`, then `/loadout full` and `/loadout status`, to capture all available skill names inside that wrapper-owned temporary home. Do not save that temporary full selection. Invoke the wrapper again after tracked configuration changes; every launch receives a new temporary `HOME` with its overlay at `$HOME/.pi/agent`, and all runtime writes, including `models-store.json` refreshes, remain disposable.
 
 - [ ] **Step 3: Prove current snapshots are stale**
 
@@ -144,7 +155,7 @@ python3 -m json.tool loadout-profiles.json >/dev/null
 /tmp/pi-loadout-smoke --no-session
 ```
 
-In that wrapper-owned interactive Pi process, run `/loadout use lean` and then `/loadout status`. Capture and compare every active name with the approved list before exiting the same process; do not inspect the applied profile through a second wrapper invocation.
+In that wrapper-owned temporary-HOME interactive Pi process, run `/loadout use lean` and then `/loadout status`. Capture and compare every active name with the approved list before exiting the same process; do not inspect the applied profile through a second wrapper invocation.
 
 ### Task 3: Review and establish the coding profile
 
@@ -174,7 +185,7 @@ Launch the isolated coding smoke explicitly:
 /tmp/pi-loadout-smoke --no-session
 ```
 
-Apply `/loadout use coding`, inspect `/loadout status`, and verify all five allowed Serena tools are active while Serena edit/memory tools remain absent. Exit Pi to let the wrapper remove its overlay.
+Apply `/loadout use coding`, inspect `/loadout status`, and verify all five allowed Serena tools are active while Serena edit/memory tools remain absent. Exit Pi to let the wrapper remove its temporary-HOME sandbox.
 
 ### Task 4: Review and establish the research profile
 
@@ -208,7 +219,7 @@ Launch the isolated research smoke explicitly:
 /tmp/pi-loadout-smoke --no-session
 ```
 
-Apply `/loadout use research`, inspect `/loadout status`, run one bounded SearXNG query and one Exa tool-list call, and verify browser automation tools are absent. Exit Pi to let the wrapper remove its overlay.
+Apply `/loadout use research`, inspect `/loadout status`, run one bounded SearXNG query and one Exa tool-list call, and verify browser automation tools are absent. Exit Pi to let the wrapper remove its temporary-HOME sandbox.
 
 ### Task 5: Review and establish the browser profile
 
@@ -239,7 +250,7 @@ Follow the browser-session-discipline skill, including its one-browser-owner and
 /tmp/pi-loadout-smoke --no-session
 ```
 
-Apply `/loadout use browser`, verify `/loadout status`, list pages with one browser owner only, clean up the scoped browser session, and then exit Pi so the wrapper removes its overlay.
+Apply `/loadout use browser`, verify `/loadout status`, list pages with one browser owner only, clean up the scoped browser session, and then exit Pi so the wrapper removes its temporary-HOME sandbox.
 
 ### Task 6: Review and establish the ops profile
 
@@ -271,7 +282,7 @@ Launch the isolated ops smoke explicitly:
 /tmp/pi-loadout-smoke --no-session
 ```
 
-Apply `/loadout use ops`, inspect `/loadout status`, and run read-only UniFi discovery/index and generic MCP server listing. Do not change devices, networks, messages, or Home Assistant state. Exit Pi to let the wrapper remove its overlay.
+Apply `/loadout use ops`, inspect `/loadout status`, and run read-only UniFi discovery/index and generic MCP server listing. Do not change devices, networks, messages, or Home Assistant state. Exit Pi to let the wrapper remove its temporary-HOME sandbox.
 
 ### Task 7: Remove obsolete presets, document, validate, and integrate
 
@@ -284,7 +295,7 @@ Apply `/loadout use ops`, inspect `/loadout status`, and run read-only UniFi dis
 
 - [ ] **Step 1: Remove obsolete worker and stale names**
 
-Delete `profiles.worker`. Refresh the isolated live post-slimming inventory explicitly, then assert every saved tool and skill name exists in it:
+Delete `profiles.worker`. Refresh the isolated live post-slimming inventory explicitly in a fresh wrapper-owned temporary `HOME`, then assert every saved tool and skill name exists in it:
 
 ```bash
 /tmp/pi-loadout-smoke --no-session -e /tmp/pi-loadout-inventory.ts -p inventory
@@ -303,9 +314,9 @@ python3 scripts/validate-config-docs.py
 fallow audit --changed-since main
 ```
 
-Validate each profile in its own wrapper-owned interactive Pi process. Apply the profile and inspect its status before exiting that same process; never use a second wrapper launch to inspect a selection made by an earlier launch.
+Validate each profile in its own wrapper-owned temporary-HOME interactive Pi process, where the overlay is `$HOME/.pi/agent`. Apply the profile and inspect its status before exiting that same process; never use a second wrapper launch to inspect a selection made by an earlier launch.
 
-1. Launch the lean validation process:
+1. Launch the lean validation process in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    /tmp/pi-loadout-smoke --no-session
@@ -320,7 +331,7 @@ Validate each profile in its own wrapper-owned interactive Pi process. Apply the
 
    Capture the `/loadout status` output, compare its sorted active names with the `lean` JSON snapshot, and only then exit this same interactive process.
 
-2. Launch the coding validation process:
+2. Launch the coding validation process in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    /tmp/pi-loadout-smoke --no-session
@@ -335,7 +346,7 @@ Validate each profile in its own wrapper-owned interactive Pi process. Apply the
 
    Capture the `/loadout status` output, compare its sorted active names with the `coding` JSON snapshot, and only then exit this same interactive process.
 
-3. Launch the research validation process:
+3. Launch the research validation process in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    /tmp/pi-loadout-smoke --no-session
@@ -350,7 +361,7 @@ Validate each profile in its own wrapper-owned interactive Pi process. Apply the
 
    Capture the `/loadout status` output, compare its sorted active names with the `research` JSON snapshot, and only then exit this same interactive process.
 
-4. Launch the browser validation process under `browser-session-discipline`, keeping one browser owner and running browser-capable checks serially:
+4. Launch the browser validation process in a fresh wrapper-owned temporary `HOME` under `browser-session-discipline`, keeping one browser owner and running browser-capable checks serially:
 
    ```bash
    /tmp/pi-loadout-smoke --no-session
@@ -365,7 +376,7 @@ Validate each profile in its own wrapper-owned interactive Pi process. Apply the
 
    Capture the `/loadout status` output, compare its sorted active names with the `browser` JSON snapshot, perform scoped browser cleanup, and only then exit this same interactive process.
 
-5. Launch the ops validation process:
+5. Launch the ops validation process in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    /tmp/pi-loadout-smoke --no-session
@@ -436,7 +447,7 @@ Any failed precondition is a hard stop. Never stage, commit, restore, stash, or 
 
 - [ ] **Step 6: Final live verification**
 
-After the fast-forward merge, point every self-contained wrapper launch at the merged live agent source explicitly. First launch the default check:
+After the fast-forward merge, point every self-contained temporary-HOME wrapper launch at the merged live agent source explicitly. First launch the default check in a fresh wrapper-owned temporary `HOME`:
 
 ```bash
 PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -446,7 +457,7 @@ Run `/loadout status` at its Pi prompt, verify that it reports `lean`, capture t
 
 Next, validate every merged profile with the same one-session apply-and-status rule:
 
-1. Launch the lean check:
+1. Launch the lean check in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -461,7 +472,7 @@ Next, validate every merged profile with the same one-session apply-and-status r
 
    Capture the status, compare its sorted active names with the merged `lean` JSON snapshot, and only then exit this same interactive process.
 
-2. Launch the coding check:
+2. Launch the coding check in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -476,7 +487,7 @@ Next, validate every merged profile with the same one-session apply-and-status r
 
    Capture the status, compare its sorted active names with the merged `coding` JSON snapshot, and only then exit this same interactive process.
 
-3. Launch the research check:
+3. Launch the research check in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -491,7 +502,7 @@ Next, validate every merged profile with the same one-session apply-and-status r
 
    Capture the status, compare its sorted active names with the merged `research` JSON snapshot, and only then exit this same interactive process.
 
-4. Launch the browser check under `browser-session-discipline`, with one browser owner and serial browser-capable checks:
+4. Launch the browser check in a fresh wrapper-owned temporary `HOME` under `browser-session-discipline`, with one browser owner and serial browser-capable checks:
 
    ```bash
    PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -506,7 +517,7 @@ Next, validate every merged profile with the same one-session apply-and-status r
 
    Capture the status, compare its sorted active names with the merged `browser` JSON snapshot, complete scoped browser cleanup, and only then exit this same interactive process.
 
-5. Launch the ops check:
+5. Launch the ops check in a fresh wrapper-owned temporary `HOME`:
 
    ```bash
    PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
@@ -521,10 +532,10 @@ Next, validate every merged profile with the same one-session apply-and-status r
 
    Capture the status, compare its sorted active names with the merged `ops` JSON snapshot, and only then exit this same interactive process.
 
-Finally, launch one more isolated default process:
+Finally, launch one more isolated default process in a fresh wrapper-owned temporary `HOME`:
 
 ```bash
 PI_LOADOUT_SOURCE=~/.pi/agent /tmp/pi-loadout-smoke --no-session
 ```
 
-Use that process only to confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation, then exit. Every command above copies from `~/.pi/agent` but runs Pi only against a fresh wrapper-owned overlay; none sets `PI_CODING_AGENT_DIR` to the live agent directory. Continue to honor `browser-session-discipline` for every browser-capable check, including one browser owner, serial execution, and scoped cleanup.
+Use that process only to confirm the default can still use `mcp`, Context7, ICM recall/store, and deterministic repo navigation, then exit. Every command above copies from `~/.pi/agent` but runs Pi only inside a fresh wrapper-owned temporary `HOME`, with the overlay at `$HOME/.pi/agent` and `PI_CODING_AGENT_DIR` set to that same disposable path; none points either variable at the live home or live agent directory. Continue to honor `browser-session-discipline` for every browser-capable check, including one browser owner, serial execution, and scoped cleanup.
