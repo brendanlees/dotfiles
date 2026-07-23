@@ -3,5 +3,5 @@ chezmoi_dir: ".local/share/chezmoi"
 nerd_font: "JetBrainsMono"
 font_family: "JetBrainsMono Nerd Font Mono"
 theme: "guts"
-zsh_patina_trial: false
+zsh_patina_trial: true
 zsh_patina_theme: "patina"
