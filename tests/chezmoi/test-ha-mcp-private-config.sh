@@ -39,7 +39,6 @@ config = """[data]
   personal = true
   work = false
   headless = false
-  zsh_patina_trial = false
 
 [data.bw_ha_mcp]
   secret_path = {}
@@ -120,7 +119,6 @@ apply_ignored_case() {
 common_data=$(cat <<'TOML'
   work = false
   headless = false
-  zsh_patina_trial = false
 TOML
 )
 

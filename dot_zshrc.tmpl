@@ -360,8 +360,4 @@ fi
 # ------------------------------------------
 # !NOTE must be last: both highlighters hook widgets after all other plugins.
 
-{{- if and (eq .chezmoi.os "darwin") .zsh_patina_trial }}
-eval "$(zsh-patina activate)"
-{{- else }}
 source "$XDG_DATA_HOME/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-{{- end }}

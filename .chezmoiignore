@@ -70,9 +70,6 @@ Library
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
 !.local/bin/theme
-{{- if and (eq .chezmoi.os "darwin") .zsh_patina_trial }}
-!.local/bin/zsh-patina
-{{- end }}
 !.local/bin/chezmoi-apply-library
 !.local/bin/chezmoi-readd-library
 {{- if eq .chezmoi.os "windows" }}
