@@ -305,6 +305,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.dont_write_bytecode = True
+
 SCRIPT = Path(__file__).with_name("validate-config-docs.py")
 spec = importlib.util.spec_from_file_location("validate_config_docs", SCRIPT)
 assert spec and spec.loader
