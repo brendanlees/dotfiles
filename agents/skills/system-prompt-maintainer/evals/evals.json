@@ -1,0 +1,97 @@
+{
+  "skill_name": "system-prompt-maintainer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit this Claude/Pi project instruction configuration for stale claims. Produce an evidence-backed report and proposed patch plan, but do not modify any files. Treat claims you cannot verify as unverified rather than stale.",
+      "expected_output": "A read-only report that checks each version-sensitive claim against current official Pi documentation or direct runtime evidence and separates confirmed staleness from uncertainty.",
+      "files": [
+        "evals/fixtures/stale-claims/AGENTS.md",
+        "evals/fixtures/stale-claims/CLAUDE.md"
+      ],
+      "expectations": [
+        "The response explicitly says no files were changed and requires approval before mutation.",
+        "The response identifies `.pi/system.md` as stale and cites the official uppercase `.pi/SYSTEM.md` path.",
+        "The response does not claim that an unverified tool or CLI assertion is confirmed stale without official documentation or runtime evidence.",
+        "The response classifies findings using Confirmed stale, Likely stale, or Optimization."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review these shared agent instructions for prompt weight and opportunities to offload procedural guidance. Return keep, shorten, move-to-skill, or remove recommendations and a proposed plan only. Do not edit the fixture.",
+      "expected_output": "A conservative disposition analysis that keeps repository facts and safety boundaries while moving the conditional release investigation workflow into a reusable skill.",
+      "files": [
+        "evals/fixtures/prompt-offloading/AGENTS.md",
+        "evals/fixtures/prompt-offloading/CLAUDE.md"
+      ],
+      "expectations": [
+        "The response keeps the Bun/test repository facts in always-loaded instructions.",
+        "The response keeps the credential safety boundary rather than offloading it solely to a skill.",
+        "The response recommends moving the reusable multi-step release investigation workflow to a skill with a clear trigger.",
+        "The response requires explicit approval before applying the proposed restructuring."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Perform a maintenance audit of the supplied AGENTS.md and CLAUDE.md. Check whether CLAUDE.md satisfies the required symlink arrangement and explain a safe repair sequence. Do not modify files.",
+      "expected_output": "A report that identifies CLAUDE.md as a regular file, notices its unique approval-group content, and refuses to replace it before reconciliation and approval.",
+      "files": [
+        "evals/fixtures/claude-link-drift/AGENTS.md",
+        "evals/fixtures/claude-link-drift/CLAUDE.md"
+      ],
+      "expectations": [
+        "The response identifies that CLAUDE.md is a regular file rather than `CLAUDE.md -> AGENTS.md`.",
+        "The response preserves or reconciles the unique `release-manager` instruction before proposing a symlink.",
+        "The proposed end state is `CLAUDE.md -> AGENTS.md`.",
+        "The response does not repair the link without explicit approval."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Audit this shared configuration with special attention to Pi-specific instructions. Recommend the correct file placement and explain trust implications. Return findings and a patch plan without writing anything.",
+      "expected_output": "A report that retains shared Bun guidance in AGENTS.md and proposes project `.pi/APPEND_SYSTEM.md` for the genuine Pi-only system addition.",
+      "files": [
+        "evals/fixtures/pi-shared-contamination/AGENTS.md",
+        "evals/fixtures/pi-shared-contamination/CLAUDE.md"
+      ],
+      "expectations": [
+        "The response keeps shared Bun/test guidance in AGENTS.md.",
+        "The response recommends `.pi/APPEND_SYSTEM.md` for the project-specific Pi addition.",
+        "The response explains that project `.pi/APPEND_SYSTEM.md` is subject to Pi project trust.",
+        "The response does not recommend duplicating the Pi-only direction into every harness prompt."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review this Pi prompt configuration. The author says they only wanted to add one maintenance reminder while retaining normal Pi behavior. Explain whether the current file has replacement semantics and propose the safer layout. Do not edit files.",
+      "expected_output": "A sourced warning that `.pi/SYSTEM.md` replaces Pi's default prompt and a proposal to move the reminder to `.pi/APPEND_SYSTEM.md`, approval-gated.",
+      "files": [
+        "evals/fixtures/pi-system-replacement/AGENTS.md",
+        "evals/fixtures/pi-system-replacement/CLAUDE.md",
+        "evals/fixtures/pi-system-replacement/.pi/SYSTEM.md"
+      ],
+      "expectations": [
+        "The response states that `.pi/SYSTEM.md` replaces the default Pi system prompt.",
+        "The response recommends `.pi/APPEND_SYSTEM.md` because the stated intent is additive.",
+        "The response distinguishes project `.pi/APPEND_SYSTEM.md` from global `~/.pi/agent/APPEND_SYSTEM.md`.",
+        "The response requires explicit approval before moving or deleting the replacement file."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Audit this already-maintained Claude/Pi configuration for staleness, prompt bloat, link maintenance, and Pi system-prompt placement. Avoid churn: recommend no changes when evidence does not justify them. Do not modify files.",
+      "expected_output": "A concise no-churn report recognizing the correct Claude symlink and additive Pi file, with no invented stale findings or unnecessary rewrite.",
+      "files": [
+        "evals/fixtures/clean-no-churn/AGENTS.md",
+        "evals/fixtures/clean-no-churn/CLAUDE.md",
+        "evals/fixtures/clean-no-churn/.pi/APPEND_SYSTEM.md"
+      ],
+      "expectations": [
+        "The response recognizes `CLAUDE.md -> AGENTS.md` as correct.",
+        "The response recognizes `.pi/APPEND_SYSTEM.md` as additive rather than replacement.",
+        "The response recommends no prompt-layout or symlink mutation without evidence of a problem.",
+        "The response does not invent confirmed stale claims."
+      ]
+    }
+  ]
+}

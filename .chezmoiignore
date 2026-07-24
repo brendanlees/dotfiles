@@ -109,6 +109,9 @@ AppData
 .chezmoiscripts/windows/**
 {{- end }}
 
+# agents/ is source-owned and reached through ~/.agents
+agents
+
 README.md
 key.txt.age
 LICENSE
