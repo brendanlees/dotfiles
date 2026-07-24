@@ -12,6 +12,8 @@ dot_DS_Store
 
 # docs / specs
 superpowers/
+specs/
+plans/
 
 # local-only private docs
 /private/**
