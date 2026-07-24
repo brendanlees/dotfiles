@@ -1,9 +1,4 @@
 [[session]]
-name = "hass-config"
-path = "~/Code/_homelab/home-assistant-config/"
-startup_command = "claude --agent homelab:hass-config --dangerously-allow-permissions"
-
-[[session]]
 name = "homelab"
 path = "~/{{ .code_dir }}/_homelab/ansible-playbooks/homelab"
 startup_command = "ansible-playbook update-servers.yml"
