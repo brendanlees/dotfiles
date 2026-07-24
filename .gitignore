@@ -11,9 +11,9 @@ dot_DS_Store
 /jiti
 
 # docs / specs
-superpowers/
-specs/
-plans/
+/docs/superpowers/
+/docs/specs/
+/docs/plans/
 
 # local-only private docs
 /private/**
