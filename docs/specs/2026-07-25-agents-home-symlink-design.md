@@ -8,7 +8,7 @@ Make the portable `~/.agents` configuration part of the dotfiles repository with
 
 This first iteration manages the complete `~/.agents` working directory through one symlink. It does not add synchronization commands, lifecycle scripts, Bitwarden-backed private skills, SOPS/age encryption, or automatic conflict handling.
 
-The Pi and Claude configuration repositories continue to own their harness-specific configuration. They track only relative instruction-file symlinks; the dotfiles repository owns the shared instruction content.
+The Pi and Claude configuration repositories continue to own their harness-specific configuration. They track only relative instruction-file symlinks; the dotfiles repository owns the shared instruction content. The current Pi `agent/AGENTS.md` is the authoritative seed for the shared file; the distinct current Claude `CLAUDE.md` content is backed up and replaced rather than merged.
 
 ## Layout
 
@@ -88,7 +88,7 @@ The dotfiles, Pi, and Claude repository changes cannot become visible atomically
 Implementation will occur in isolated worktrees for each affected repository.
 
 1. Back up the current `~/.agents`, `~/.pi/agent/AGENTS.md`, and `~/.claude/CLAUDE.md` without deleting their originals.
-2. Add the canonical `agents/` directory to the dotfiles source, preserving current `AGENTS.md`, lock data, skills, state, and backups.
+2. Add the canonical `agents/` directory to the dotfiles source, seeding `AGENTS.md` from the current Pi file and preserving current lock data, skills, state, and backups. Do not merge the current Claude instruction content.
 3. Ignore only `agents/state/` and `agents/backups/` in Git.
 4. Exclude the source `agents/` path from ordinary chezmoi target rendering.
 5. Add the templated chezmoi declaration for the top-level `~/.agents` link.
