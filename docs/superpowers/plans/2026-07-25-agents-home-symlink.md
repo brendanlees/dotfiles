@@ -84,10 +84,19 @@ chezmoi execute-template \
   --override-data '{"personal":true,"work":false,"homelab":false,"headless":false}' \
   <"$repo_root/.chezmoiignore" >"$rendered_ignore"
 grep -Fxq 'agents' "$rendered_ignore"
-if grep -Fq '"*/*.md"' "$repo_root/.chezmoiexternal.toml.tmpl"; then
-  echo 'broad Markdown external exclusion would omit harness links' >&2
-  exit 1
-fi
+python3 - "$repo_root/.chezmoiexternal.toml.tmpl" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+for name in ('.claude', '.pi'):
+    match = re.search(rf'^\["{re.escape(name)}"\]\n(.*?)(?=^\[|\Z)', text, re.M | re.S)
+    if match is None:
+        raise SystemExit(f'missing external block: {name}')
+    if '"*/*.md"' in match.group(1):
+        raise SystemExit(f'broad Markdown external exclusion would omit {name} harness link')
+PY
 
 minimal_source="$tmpdir/source"
 home_dir="$tmpdir/home"

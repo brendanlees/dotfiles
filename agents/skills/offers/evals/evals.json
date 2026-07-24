@@ -1,0 +1,50 @@
+{
+  "skill_name": "offers",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Help me productize our RevOps consulting into a compelling $5,000/month agency offer. We currently sell a vague mix of CRM cleanup, reporting, and sales-process advice, and prospects struggle to understand what they get.",
+      "expected_output": "Should check for product-marketing.md first. Should identify this as an agency/service offer-design task. Should state the current offer in plain language, apply the value equation, and build the six components of a complete offer: core deliverable, bonus stack, guarantee, real scarcity or urgency, name, and price/payment structure. Should avoid fake scarcity and over-promising. Should make the service more concrete and productized without drifting into page copy.",
+      "assertions": [
+        "Checks for product-marketing.md",
+        "Identifies an agency/service offer-design task",
+        "States the current offer in plain language",
+        "Applies the value equation",
+        "Covers all six offer components",
+        "Uses truthful guarantee and scarcity guidance",
+        "Makes the service concrete and productized",
+        "Does not substitute sales-page copy for offer design"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My $497 course gets plenty of landing-page traffic but barely converts. It includes eight modules, weekly office hours, templates, and lifetime access. Diagnose the offer and tell me what to change first.",
+      "expected_output": "Should identify this as a course offer diagnostic. Should write down the current offer, score the four value-equation levers, identify the lowest-scoring binding constraint, audit the six-part offer anatomy, and recommend changing one high-leverage component first rather than rebuilding everything. Should distinguish offer weakness from copy or traffic problems and project likely lift honestly without exaggerated promises.",
+      "assertions": [
+        "Identifies a course offer diagnostic",
+        "Restates the current offer",
+        "Scores or evaluates all four value-equation levers",
+        "Identifies a binding constraint",
+        "Audits the six-part offer anatomy",
+        "Recommends one high-leverage first change",
+        "Distinguishes offer design from copy and traffic",
+        "Avoids exaggerated conversion promises"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We run a self-serve SaaS product and need to decide how to structure three subscription tiers, choose a value metric, and set monthly versus annual prices. Can you design the offer?",
+      "expected_output": "Should recognize that tier structure, value metrics, and subscription price levels are primarily a pricing task for self-serve SaaS. Should route or cross-reference pricing rather than applying a service/course bonus-stack playbook. May retain limited offer framing where useful, but should not force guarantees, artificial scarcity, or high-ticket offer tactics onto the SaaS packaging decision.",
+      "assertions": [
+        "Recognizes self-serve SaaS pricing as the primary task",
+        "Routes or cross-references the pricing skill",
+        "Does not force a service or course offer playbook",
+        "Avoids artificial scarcity and inappropriate bonus stacking",
+        "Keeps only relevant offer framing"
+      ],
+      "files": []
+    }
+  ]
+}

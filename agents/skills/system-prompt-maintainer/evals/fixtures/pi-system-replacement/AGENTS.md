@@ -1,0 +1,3 @@
+# Repository rules
+
+Use Bun.

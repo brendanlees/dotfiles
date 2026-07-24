@@ -10,6 +10,10 @@ dot_DS_Store
 /.claude
 /jiti
 
+# agents CLI runtime state lives under the source-owned agents home
+/agents/state/
+/agents/backups/
+
 # docs / specs
 /docs/superpowers/
 /docs/specs/
