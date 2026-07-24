@@ -70,3 +70,5 @@ wrap in a launchd plist to run as a background service.
 `~/.agents` is a symlink to `agents/` in the chezmoi source repository. Changes made by agents or the skills CLI to `AGENTS.md`, `.skill-lock.json`, or `skills/` therefore appear directly in the dotfiles Git working tree and do not need `chezmoi re-add`.
 
 `agents/state/` and `agents/backups/` are local runtime directories ignored by Git. Because they physically live in the source checkout, destructive commands such as `git clean -fdx` can remove them. Do not treat either directory as an independent backup.
+
+`agents/AGENTS.md` contains harness-neutral defaults. Pi-specific system policy lives in `agents/pi/APPEND_SYSTEM.md` and is exposed through the Pi repository's `~/.pi/agent/APPEND_SYSTEM.md` symlink; Claude does not load that file.
