@@ -42,6 +42,16 @@ printf '%s' "${OSA_OUTPUT:-}"
 SWIFT
 chmod +x "$BIN/swift"
 
+python3 - "$CONFIG/plugins/calendar_dots.sh" "$BIN/swift" <<'PY'
+import sys
+from pathlib import Path
+
+plugin = Path(sys.argv[1])
+swift = sys.argv[2]
+text = plugin.read_text()
+plugin.write_text(text.replace('["/usr/bin/swift", "-"]', f'[{swift!r}, "-"]'))
+PY
+
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
 run_clock() {
@@ -64,45 +74,37 @@ run_dots_case() {
   cat "$log"
 }
 
-assert_dot() {
-  local scenario="$1" dot="$2" want="$3"
+assert_color() {
+  local scenario="$1" want="$2"
   local log="$TMP/$scenario.log"
-  grep -q -- "--set $dot drawing=$want" "$log" \
-    || fail "$scenario: expected $dot drawing=$want in $(cat "$log")"
-}
-
-assert_case() {
-  local scenario="$1" fam="$2" work="$3" per="$4" neutral="$5"
-  assert_dot "$scenario" cal_dot_fam "$fam"
-  assert_dot "$scenario" cal_dot_work "$work"
-  assert_dot "$scenario" cal_dot_per "$per"
-  assert_dot "$scenario" cal_dot_neutral "$neutral"
+  grep -q -- "--set calendar icon.color=$want --set calendar_event_clock icon.color=$want" "$log" \
+    || fail "$scenario: expected calendar icon color $want in $(cat "$log")"
 }
 
 echo '# calendar date/time split'
 run_clock
 
-echo '# calendar today-dot bucket matrix'
+echo '# calendar event-color matrix'
 run_dots_case none ''
-assert_case none off off off on
+assert_color none 0xffffffff
 
 run_dots_case family $'The Couple Calendar\n'
-assert_case family on off off off
+assert_color family 0xffE36BA0
 
 run_dots_case work $'Operations\nbrendan@steadydigital.co\n'
-assert_case work off on off off
+assert_color work 0xffffa500
 
 run_dots_case personal $'mail@brendans.cloud\nCalendar\nKalacoma\n'
-assert_case personal off off on off
+assert_color personal 0xff00ff00
 
 run_dots_case mixed $'The Couple Calendar\nOperations\nCalendar\nHolidays in Australia\n'
-assert_case mixed on on on off
+assert_color mixed 0xffE36BA0
 
 run_dots_case unmapped $'Holidays in Australia\nAustralian Holidays\nTodoist\nTodoist - #work\nScheduled Reminders\nSiri Suggestions\n'
-assert_case unmapped off off off on
+assert_color unmapped 0xffffffff
 
 OSA_EXIT=5 run_dots_case error ''
-assert_case error off off off on
+assert_color error 0xffffffff
 
 start=$(python3 - <<'PY'
 import time
@@ -122,6 +124,6 @@ end=float(sys.argv[2])
 if end - start >= 2.5:
     raise SystemExit(f'timeout case took too long: {end - start:.2f}s')
 PY
-assert_case timeout off off off on
+assert_color timeout 0xffffffff
 
 echo 'ALL CASES PASSED'
