@@ -42,10 +42,15 @@ print(json.dumps({"theme": "guts", "themes": {"guts": {"palette": palette}}}))
 PY
 
 mkdir "$tmpdir/empty-source"
-chezmoi execute-template \
-  --source "$tmpdir/empty-source" \
-  --override-data "$(<"$data_file")" \
-  <"$template" >"$rendered"
+: >"$tmpdir/empty-config.toml"
+(
+  cd "$tmpdir"
+  chezmoi execute-template \
+    --source "$tmpdir/empty-source" \
+    --config "$tmpdir/empty-config.toml" \
+    --override-data "$(<"$data_file")" \
+    <"$template" >"$rendered"
+)
 
 python3 - "$data_file" "$rendered" <<'PY'
 import json
