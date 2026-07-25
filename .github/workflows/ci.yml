@@ -8,343 +8,178 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ACTIONLINT_VERSION: 1.7.12
+  CHEZMOI_VERSION: 2.71.1
+  SHELLCHECK_VERSION: 0.11.0
+  TAPLO_VERSION: 0.10.0
+  YAMLLINT_VERSION: 1.38.0
+
 jobs:
-  shellcheck:
-    name: shellcheck
-    runs-on: ubuntu-latest
+  policy-lint:
+    name: policy and lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
-      - name: run shellcheck
-        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # v2.0.0
-        env:
-          SHELLCHECK_OPTS: -e SC1091
-        with:
-          scandir: .
-          additional_files: "*.sh"
-          ignore_paths: >-
-            .git
 
-  render-templates:
-    name: render templates
-    runs-on: ubuntu-latest
+      - name: install pinned lint tools
+        run: bash tests/ci/install-linux-tools.sh lint
+
+      - name: run static policy and lint
+        run: bash tests/ci/check-static.sh
+
+  repository-tests:
+    name: repository tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+
+      - name: install pinned chezmoi
+        run: bash tests/ci/install-linux-tools.sh chezmoi
+
+      - name: verify test runtimes
+        run: |
+          bash -c '(( BASH_VERSINFO[0] >= 4 ))'
+          python3 -c 'import sys, tomllib; assert sys.version_info >= (3, 11)'
+          jq --version
+          chezmoi --version
+
+      - name: run repository tests
+        run: bash tests/ci/run-chezmoi-tests.sh
+
+  template-smoke:
+    name: template smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
-      - name: install chezmoi
-        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+      - name: install pinned tools
+        run: bash tests/ci/install-linux-tools.sh all
 
-      - name: install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: init chezmoi config with ephemeral role
+      - name: initialize ephemeral config
         run: |
-          mkdir -p "$HOME/.config/chezmoi-ci"
-          "$HOME/.local/bin/chezmoi" init \
+          config="${RUNNER_TEMP}/chezmoi-config.toml"
+          chezmoi init \
             --source="$GITHUB_WORKSPACE" \
-            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --config="$config" \
             --apply=false
 
-      - name: render all templates
-        run: |
-          set -euo pipefail
-          chezmoi_bin="$HOME/.local/bin/chezmoi"
-          cfg="$HOME/.config/chezmoi-ci/config.toml"
+      - name: render and lint templates
+        env:
+          CHEZMOI_CONFIG_FILE: ${{ runner.temp }}/chezmoi-config.toml
+        run: bash tests/ci/render-and-lint.sh
 
-          # init-only templates that use functions like stdinIsATTY /
-          # promptStringOnce which are not available to execute-template.
-          skip=(
-            "./.chezmoi.toml.tmpl"
-            "./.chezmoiexternal.toml.tmpl"
-          )
-
-          is_skipped() {
-            local target=$1
-            for s in "${skip[@]}"; do
-              [[ "$target" == "$s" ]] && return 0
-            done
-            return 1
-          }
-
-          fails=0
-          rendered_sh_dir=$(mktemp -d)
-
-          while IFS= read -r f; do
-            if is_skipped "$f"; then
-              echo "skip  $f"
-              continue
-            fi
-
-            if ! out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f" 2>&1); then
-              echo "FAIL  $f"
-              echo "$out" | sed 's/^/      /'
-              fails=$((fails+1))
-              continue
-            fi
-
-            # shell templates must start with a shebang on line 1 when non-empty
-            if [[ "$f" == *.sh.tmpl ]] && [[ -n "$out" ]]; then
-              first_line=$(printf '%s\n' "$out" | head -n1)
-              if [[ "$first_line" != "#!"* ]]; then
-                echo "FAIL  $f (first line is not a shebang: '$first_line')"
-                fails=$((fails+1))
-                continue
-              fi
-              safe=$(printf '%s' "$f" | tr '/' '_')
-              printf '%s\n' "$out" > "$rendered_sh_dir/${safe}.sh"
-            fi
-
-            echo "ok    $f"
-          done < <(find . -name '*.tmpl' -not -path './.git/*' -not -path './.chezmoitemplates/*' -type f | sort)
-
-          if [[ $fails -gt 0 ]]; then
-            echo "::error::$fails template(s) failed to render"
-            exit 1
-          fi
-
-          echo "---"
-          echo "shellcheck rendered shell templates:"
-          shopt -s nullglob
-          rendered=("$rendered_sh_dir"/*.sh)
-          if (( ${#rendered[@]} > 0 )); then
-            shellcheck -e SC1091 "${rendered[@]}"
-          else
-            echo "(none)"
-          fi
-
-  dry-run:
-    name: dry-run (${{ matrix.os }})
+  apply-dry-run:
+    name: apply dry-run (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-15]
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
-      - name: install chezmoi
-        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+      - name: install pinned chezmoi on Linux
+        if: runner.os == 'Linux'
+        run: bash tests/ci/install-linux-tools.sh chezmoi
 
-      - name: init chezmoi config with ephemeral role
+      - name: install pinned chezmoi on macOS
+        if: runner.os == 'macOS'
         run: |
-          mkdir -p "$HOME/.config/chezmoi-ci"
-          "$HOME/.local/bin/chezmoi" init \
+          case "$(uname -m)" in
+            arm64)
+              arch=arm64
+              sha=9fad1201c328428634b8a086f767df0dfe6dd3ea1128a2a7c45bc0b16641e294
+              ;;
+            x86_64)
+              arch=amd64
+              sha=1551f07cab00441540a12e663ffbf4645664319c0f91d30a5f9a255470b561cc
+              ;;
+            *)
+              echo "unsupported macOS architecture: $(uname -m)" >&2
+              exit 1
+              ;;
+          esac
+          mkdir -p "$HOME/.local/bin"
+          asset="chezmoi_${CHEZMOI_VERSION}_darwin_${arch}.tar.gz"
+          curl -fsSLo "$RUNNER_TEMP/$asset" \
+            "https://github.com/twpayne/chezmoi/releases/download/v${CHEZMOI_VERSION}/$asset"
+          printf '%s  %s\n' "$sha" "$RUNNER_TEMP/$asset" | shasum -a 256 -c -
+          tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP" chezmoi
+          install -m 0755 "$RUNNER_TEMP/chezmoi" "$HOME/.local/bin/chezmoi"
+          printf '%s\n' "$HOME/.local/bin" >>"$GITHUB_PATH"
+
+      - name: initialize and dry-run
+        run: |
+          config="${RUNNER_TEMP}/chezmoi-config.toml"
+          chezmoi init \
             --source="$GITHUB_WORKSPACE" \
-            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --config="$config" \
             --apply=false
-
-      - name: chezmoi apply --dry-run
-        run: |
-          set -euo pipefail
-          "$HOME/.local/bin/chezmoi" apply \
+          chezmoi apply \
             --source="$GITHUB_WORKSPACE" \
-            --config="$HOME/.config/chezmoi-ci/config.toml" \
+            --config="$config" \
             --dry-run \
             --verbose \
             --exclude=externals
 
-  lint-configs:
-    name: lint yaml and toml
-    runs-on: ubuntu-latest
+      - name: lint property lists
+        if: runner.os == 'macOS'
+        run: |
+          failures=0
+          while IFS= read -r plist; do
+            plutil -lint "$plist" || failures=$((failures + 1))
+          done < <(git ls-files '*.plist')
+          ((failures == 0))
+
+  powershell-windows:
+    name: PowerShell on Windows
+    runs-on: windows-2025
+    timeout-minutes: 15
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
-      - name: install chezmoi
-        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-
-      - name: install yamllint and taplo
+      - name: install pinned chezmoi
+        shell: pwsh
         run: |
-          pipx install yamllint
-          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz \
-            | gunzip > /tmp/taplo
-          sudo install -m 755 /tmp/taplo /usr/local/bin/taplo
+          $asset = "chezmoi_$env:CHEZMOI_VERSION`_windows_amd64.zip"
+          $zip = Join-Path $env:RUNNER_TEMP $asset
+          $url = "https://github.com/twpayne/chezmoi/releases/download/v$env:CHEZMOI_VERSION/$asset"
+          Invoke-WebRequest -Uri $url -OutFile $zip
+          $actual = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLowerInvariant()
+          $expected = 'efdb5ae7e8e455e8f7c1b3d7d97beb7e946d9234f58d73945b78aaf6a5e92de6'
+          if ($actual -ne $expected) {
+            throw "chezmoi checksum mismatch: $actual"
+          }
+          $destination = Join-Path $env:RUNNER_TEMP 'chezmoi'
+          Expand-Archive $zip -DestinationPath $destination
+          Add-Content -Path $env:GITHUB_PATH -Value $destination
 
-      - name: init chezmoi config with ephemeral role
+      - name: initialize Windows ephemeral config
+        shell: pwsh
         run: |
-          mkdir -p "$HOME/.config/chezmoi-ci"
-          "$HOME/.local/bin/chezmoi" init \
-            --source="$GITHUB_WORKSPACE" \
-            --config="$HOME/.config/chezmoi-ci/config.toml" \
+          $config = Join-Path $env:RUNNER_TEMP 'chezmoi-config.toml'
+          chezmoi init `
+            --source=$env:GITHUB_WORKSPACE `
+            --config=$config `
             --apply=false
 
-      - name: render tmpl configs to staging dir
-        run: |
-          set -euo pipefail
-          chezmoi_bin="$HOME/.local/bin/chezmoi"
-          cfg="$HOME/.config/chezmoi-ci/config.toml"
-          mkdir -p rendered
-
-          # init-only templates use stdinIsATTY / promptStringOnce
-          skip=(
-            "./.chezmoi.toml.tmpl"
-            "./.chezmoiexternal.toml.tmpl"
-          )
-          is_skipped() {
-            local t=$1
-            for s in "${skip[@]}"; do
-              [[ "$t" == "$s" ]] && return 0
-            done
-            return 1
-          }
-
-          while IFS= read -r f; do
-            if is_skipped "$f"; then
-              echo "skip $f"
-              continue
-            fi
-            out=$("$chezmoi_bin" execute-template --source="$GITHUB_WORKSPACE" --config="$cfg" < "$f")
-            [[ -z "$out" ]] && continue
-            safe=$(printf '%s' "${f#./}" | tr '/ ' '__')
-            printf '%s\n' "$out" > "rendered/${safe%.tmpl}"
-          done < <(find . \( -name '*.yml.tmpl' -o -name '*.yaml.tmpl' -o -name '*.toml.tmpl' \) -not -path './.git/*' -type f)
-
-          echo "rendered:"; ls rendered
-
-      - name: yamllint static + rendered yaml
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          config='{extends: relaxed, rules: {line-length: disable, trailing-spaces: disable, empty-lines: disable, document-start: disable, comments: disable, truthy: disable}}'
-          yaml_files=(
-            .github/workflows/*.yml
-            .chezmoidata/*.yml
-            dot_config/carapace/carapace.yaml
-            rendered/*.yml
-            rendered/*.yaml
-          )
-          yamllint -d "$config" "${yaml_files[@]}"
-
-      - name: taplo lint static + rendered toml
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          toml_files=(
-            dot_config/starship/private_starship.toml
-            dot_config/aerospace/aerospace.toml
-            rendered/*.toml
-          )
-          taplo lint --no-schema "${toml_files[@]}"
-
-  guard-banned-patterns:
-    name: guard banned patterns
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
-      - name: scan
-        run: |
-          set -euo pipefail
-          fails=0
-
-          # 1) world-writable octal mode (mode 7-7-7)
-          if grep -nrE 'chmod[[:space:]]+(-[Rr][[:space:]]+)?777\b' \
-              --include='*.sh' --include='*.zsh' --include='*.tmpl' \
-              --include='*.yml' --include='*.yaml' --include='*.toml' \
-              --exclude-dir=.git \
-              --exclude='ci.yml' . ; then
-            echo "::error::world-writable mode found"
-            fails=$((fails+1))
-          fi
-
-          # 2) floating action refs (@master / @main / @latest) in workflows
-          if grep -nrE 'uses:[[:space:]]+[A-Za-z0-9./_-]+@(master|main|latest)([[:space:]#]|$)' \
-              .github/ ; then
-            echo "::error::floating action ref — pin to a SHA"
-            fails=$((fails+1))
-          fi
-
-          # 3) curl|sh / curl|bash outside the bootstrap allowlist
-          is_approved_chezmoi_installer() {
-            local line="$1"
-
-            grep -qxE '[[:space:]]*curl[[:space:]]+(-[A-Za-z0-9]+[[:space:]]+)*(https?://)?get\.chezmoi\.io[[:space:]]*\|[[:space:]]*sh[[:space:]]*' <<<"$line"
-          }
-
-          is_approved_mise_installer() {
-            local file="$1"
-            local line_no="$2"
-            local line="$3"
-            local current=""
-            local current_no=0
-            local url_line=0
-            local confirm_line=0
-
-            # shellcheck disable=SC2016 # Match the literal installer variable name.
-            if ! grep -qxE '[[:space:]]*curl[[:space:]]+"\$mise_install_url"[[:space:]]*\|[[:space:]]*sh[[:space:]]*' <<<"$line"; then
-              return 1
-            fi
-
-            while IFS= read -r current; do
-              current_no=$((current_no + 1))
-              if (( current_no >= line_no )); then
-                break
-              fi
-
-              if grep -qE '^[[:space:]]*mise_install_url=' <<<"$current"; then
-                if (( confirm_line > 0 )); then
-                  return 1
-                fi
-                if grep -qxE '^[[:space:]]*mise_install_url="https://mise\.run"[[:space:]]*$' <<<"$current"; then
-                  url_line=$current_no
-                else
-                  url_line=0
-                fi
-              fi
-
-              # shellcheck disable=SC2016 # Match the literal installer variable name.
-              if grep -qxE '^[[:space:]]*confirm_remote_script[[:space:]]+"mise"[[:space:]]+"\$mise_install_url"[[:space:]]*$' <<<"$current"; then
-                if (( url_line == 0 )); then
-                  return 1
-                fi
-                confirm_line=$current_no
-              fi
-            done <"$file"
-
-            [[ "$url_line" -gt 0 && "$confirm_line" -gt "$url_line" ]]
-          }
-
-          unsafe=""
-          while IFS=: read -r file line_no line; do
-            if is_approved_chezmoi_installer "$line"; then
-              continue
-            fi
-            if is_approved_mise_installer "$file" "$line_no" "$line"; then
-              continue
-            fi
-            printf -v unsafe '%s%s:%s:%s\n' "$unsafe" "$file" "$line_no" "$line"
-          done < <(grep -nrE 'curl[^|]+\|[[:space:]]*(sh|bash)\b' \
-            --include='*.sh' --include='*.tmpl' --include='*.yml' --include='*.yaml' \
-            --exclude-dir=.git . || true)
-          if [[ -n "$unsafe" ]]; then
-            echo "::error::new curl|sh outside approved allowlist (get.chezmoi.io, checked mise.run installer)"
-            printf '%s' "$unsafe"
-            fails=$((fails+1))
-          fi
-
-          if (( fails > 0 )); then
-            exit 1
-          fi
-          echo "ok: no banned patterns"
-
-  plist-lint:
-    name: plutil lint plists
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
-      - name: plutil -lint all plists
-        run: |
-          set -euo pipefail
-          fails=0
-          while IFS= read -r f; do
-            if ! plutil -lint "$f"; then
-              fails=$((fails+1))
-            fi
-          done < <(find . -name '*.plist' -not -path './.git/*' -type f)
-          if [[ $fails -gt 0 ]]; then
-            echo "::error::$fails plist(s) failed lint"
-            exit 1
-          fi
+      - name: parse static and rendered PowerShell
+        shell: pwsh
+        env:
+          CHEZMOI_CONFIG_FILE: ${{ runner.temp }}/chezmoi-config.toml
+        run: pwsh -NoProfile -File tests/ci/check-powershell.ps1

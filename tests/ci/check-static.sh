@@ -74,6 +74,7 @@ is_approved_chezmoi_installer() {
 
 is_approved_mise_installer() {
   local file=$1 line_no=$2 line=$3 current='' current_no=0 url_line=0 confirm_line=0
+  # shellcheck disable=SC2016 # Match the literal installer variable name.
   if ! grep -qxE '[[:space:]]*curl[[:space:]]+"\$mise_install_url"[[:space:]]*\|[[:space:]]*sh[[:space:]]*' \
       <<<"$line"; then
     return 1
@@ -90,6 +91,7 @@ is_approved_mise_installer() {
         url_line=0
       fi
     fi
+    # shellcheck disable=SC2016 # Match the literal installer variable name.
     if grep -qxE '^[[:space:]]*confirm_remote_script[[:space:]]+"mise"[[:space:]]+"\$mise_install_url"[[:space:]]*$' \
         <<<"$current"; then
       ((url_line > 0)) || return 1
