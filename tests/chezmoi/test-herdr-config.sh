@@ -13,24 +13,10 @@ if [[ ! -f "$template" ]]; then
 fi
 
 rendered="$tmpdir/config.toml"
-config="$tmpdir/chezmoi.toml"
-cat >"$config" <<'TOML'
-[data]
-personal = false
-work = false
-homelab = false
-ephemeral = true
-headless = true
-theme = "guts"
-TOML
-chezmoi execute-template \
-  --source "$repo_root" \
-  --config "$config" \
-  <"$template" >"$rendered"
-
-python3 - "$themes_file" "$rendered" <<'PY'
+data_file="$tmpdir/render-data.json"
+python3 - "$themes_file" >"$data_file" <<'PY'
+import json
 import sys
-import tomllib
 from pathlib import Path
 
 lines = Path(sys.argv[1]).read_text().splitlines()
@@ -52,6 +38,20 @@ for line in lines:
         key, value = line.strip().split(": ", 1)
         palette[key] = value.strip('"')
 
+print(json.dumps({"theme": "guts", "themes": {"guts": {"palette": palette}}}))
+PY
+
+chezmoi execute-template \
+  --override-data "$(<"$data_file")" \
+  <"$template" >"$rendered"
+
+python3 - "$data_file" "$rendered" <<'PY'
+import json
+import sys
+import tomllib
+from pathlib import Path
+
+palette = json.loads(Path(sys.argv[1]).read_text())["themes"]["guts"]["palette"]
 doc = tomllib.loads(Path(sys.argv[2]).read_text())
 
 assert doc["terminal"] == {
