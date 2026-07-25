@@ -12,26 +12,25 @@ if [[ ! -f "$template" ]]; then
 fi
 
 rendered="$tmpdir/config.toml"
-data_file="$tmpdir/data.json"
+palette_file="$tmpdir/palette.json"
 role_data='{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}'
-chezmoi data \
+chezmoi execute-template \
   --source "$repo_root" \
   --override-data "$role_data" \
-  --format json >"$data_file"
+  <<<'{{ (index .themes "guts").palette | toJson }}' >"$palette_file"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"theme":"guts"}' \
   <"$template" >"$rendered"
 
-python3 - "$data_file" "$rendered" <<'PY'
+python3 - "$palette_file" "$rendered" <<'PY'
 import json
 import sys
 import tomllib
 from pathlib import Path
 
-data = json.loads(Path(sys.argv[1]).read_text())
+palette = json.loads(Path(sys.argv[1]).read_text())
 doc = tomllib.loads(Path(sys.argv[2]).read_text())
-palette = data["themes"]["guts"]["palette"]
 
 assert doc["terminal"] == {
     "default_shell": "zsh",
