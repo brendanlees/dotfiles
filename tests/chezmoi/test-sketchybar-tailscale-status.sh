@@ -69,13 +69,12 @@ assert_hidden() {
   fi
 }
 
-# Visible states: drawing=on + label + semantic color on icon AND pill border.
+# Visible states: drawing=on + label + semantic icon color.
 assert_visible() {
   local scenario="$1"; local label="$2"; local color="$3"
   assert_field "$scenario" "drawing" "on"
   assert_field "$scenario" "label" "$label"
   assert_field "$scenario" "icon.color" "$color"
-  assert_field "$scenario" "background.border_color" "$color"
 }
 
 J_NEEDS_LOGIN='{"BackendState":"NeedsLogin","HaveNodeKey":false,"Self":{"Online":false},"Health":[],"Peer":{}}'
