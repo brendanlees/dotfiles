@@ -38,7 +38,15 @@ for line in lines:
         key, value = line.strip().split(": ", 1)
         palette[key] = value.strip('"')
 
-print(json.dumps({"theme": "guts", "themes": {"guts": {"palette": palette}}}))
+print(json.dumps({
+    "personal": False,
+    "work": False,
+    "homelab": False,
+    "ephemeral": True,
+    "headless": True,
+    "theme": "guts",
+    "themes": {"guts": {"palette": palette}},
+}))
 PY
 
 mkdir "$tmpdir/empty-source"
