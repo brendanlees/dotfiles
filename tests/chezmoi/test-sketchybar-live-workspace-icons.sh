@@ -143,7 +143,7 @@ assert_log_contains 'battery drawing=off'
 PMSET_SCENARIO=battery NAME=battery run_plugin "$CONFIG/plugins/battery.sh"
 assert_log_contains 'battery drawing=on'
 assert_log_contains 'label=42%'
-assert_log_contains 'background.border_color=0xffffff00'
+assert_log_contains 'icon.color=0xffffff00'
 
 : > "$LOG"
 SENDER=front_app_switched INFO=Arc NAME=space.4-files FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
