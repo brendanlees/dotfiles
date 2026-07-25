@@ -13,7 +13,7 @@ jobs:
     name: shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
       - name: run shellcheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # v2.0.0
         env:
@@ -30,7 +30,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
       - name: install chezmoi
         run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
@@ -123,7 +123,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
       - name: install chezmoi
         run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
@@ -152,7 +152,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
       - name: install chezmoi
         run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
@@ -234,7 +234,7 @@ jobs:
     name: guard banned patterns
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
       - name: scan
         run: |
           set -euo pipefail
@@ -334,7 +334,7 @@ jobs:
     name: plutil lint plists
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
       - name: plutil -lint all plists
         run: |
           set -euo pipefail
