@@ -3,7 +3,6 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 template="$repo_root/dot_config/herdr/config.toml.tmpl"
-themes_file="$repo_root/.chezmoidata/themes.yml"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -13,52 +12,12 @@ if [[ ! -f "$template" ]]; then
 fi
 
 rendered="$tmpdir/config.toml"
-data_file="$tmpdir/render-data.json"
-python3 - "$themes_file" >"$data_file" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-lines = Path(sys.argv[1]).read_text().splitlines()
-palette = {}
-in_theme = False
-in_palette = False
-for line in lines:
-    if line == "  guts:":
-        in_theme = True
-        continue
-    if in_theme and line.startswith("  ") and not line.startswith("    "):
-        break
-    if in_theme and line == "    palette:":
-        in_palette = True
-        continue
-    if in_palette:
-        if not line.startswith("      "):
-            break
-        key, value = line.strip().split(": ", 1)
-        palette[key] = value.strip('"')
-
-print(json.dumps({
-    "personal": False,
-    "work": False,
-    "homelab": False,
-    "ephemeral": True,
-    "headless": True,
-    "theme": "guts",
-    "themes": {"guts": {"palette": palette}},
-}))
-PY
-
-mkdir "$tmpdir/empty-source"
-: >"$tmpdir/empty-config.toml"
-(
-  cd "$tmpdir"
-  chezmoi execute-template \
-    --source "$tmpdir/empty-source" \
-    --config "$tmpdir/empty-config.toml" \
-    --override-data "$(<"$data_file")" \
-    <"$template" >"$rendered"
-)
+data_file="$tmpdir/data.json"
+chezmoi data --source "$repo_root" --format json >"$data_file"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data '{"theme":"guts"}' \
+  <"$template" >"$rendered"
 
 python3 - "$data_file" "$rendered" <<'PY'
 import json
@@ -66,8 +25,9 @@ import sys
 import tomllib
 from pathlib import Path
 
-palette = json.loads(Path(sys.argv[1]).read_text())["themes"]["guts"]["palette"]
+data = json.loads(Path(sys.argv[1]).read_text())
 doc = tomllib.loads(Path(sys.argv[2]).read_text())
+palette = data["themes"]["guts"]["palette"]
 
 assert doc["terminal"] == {
     "default_shell": "zsh",
@@ -197,11 +157,11 @@ windows_ignore="$tmpdir/windows-ignore"
 darwin_ignore="$tmpdir/darwin-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"chezmoi":{"os":"windows"}}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"windows"}}' \
   <"$repo_root/.chezmoiignore" >"$windows_ignore"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"chezmoi":{"os":"darwin"}}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"darwin"}}' \
   <"$repo_root/.chezmoiignore" >"$darwin_ignore"
 grep -Fxq '.config/herdr' "$windows_ignore"
 if grep -Fxq '.config/herdr' "$darwin_ignore"; then
