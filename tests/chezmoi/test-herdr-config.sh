@@ -41,7 +41,9 @@ for line in lines:
 print(json.dumps({"theme": "guts", "themes": {"guts": {"palette": palette}}}))
 PY
 
+mkdir "$tmpdir/empty-source"
 chezmoi execute-template \
+  --source "$tmpdir/empty-source" \
   --override-data "$(<"$data_file")" \
   <"$template" >"$rendered"
 
