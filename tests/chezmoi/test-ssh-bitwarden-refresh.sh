@@ -339,7 +339,11 @@ assert_not_exists() {
 }
 
 file_mode() {
-  stat -f '%Lp' "$1" 2>/dev/null || stat -c '%a' "$1"
+  if [[ $(uname -s) == Darwin ]]; then
+    stat -f '%Lp' "$1"
+  else
+    stat -c '%a' "$1"
+  fi
 }
 
 # Missing config skips by default and is strict with --fail.

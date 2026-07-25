@@ -119,7 +119,7 @@ assert commands[10:] == [
         "key": "prefix+shift+d",
         "type": "plugin_action",
         "command": "worktrunk.remove",
-        "description": "worktree remove",
+        "description": "Worktree: remove",
     },
 ]
 
@@ -157,11 +157,11 @@ windows_ignore="$tmpdir/windows-ignore"
 darwin_ignore="$tmpdir/darwin-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"chezmoi":{"os":"windows"}}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"windows"}}' \
   <"$repo_root/.chezmoiignore" >"$windows_ignore"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"chezmoi":{"os":"darwin"}}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"darwin"}}' \
   <"$repo_root/.chezmoiignore" >"$darwin_ignore"
 grep -Fxq '.config/herdr' "$windows_ignore"
 if grep -Fxq '.config/herdr' "$darwin_ignore"; then

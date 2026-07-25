@@ -18,7 +18,7 @@ order="$(awk '
   }
 ' "$RC")"
 
-expect=$'calendar\nbattery\ntailscale\nspotify'
+expect=$'calendar\nbattery\nbackup_status\ntailscale\nspotify'
 [ "$order" = "$expect" ] || fail "right source order wrong: got <$order> want <$expect>"
 
 grep -q 'sketchybar --add item tailscale right' "$ITEM" || fail "item not added on right"

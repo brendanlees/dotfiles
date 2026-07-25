@@ -20,7 +20,7 @@ order="$(awk '
     sub(/.*source "\$ITEM_DIR\//, ""); sub(/\.sh".*/, ""); print
   }
 ' "$RC")"
-expect=$'calendar\nbattery\ntailscale\nspotify'
+expect=$'calendar\nbattery\nbackup_status\ntailscale\nspotify'
 [ "$order" = "$expect" ] || fail "right source order wrong: got <$order> want <$expect>"
 
 cat > "$BIN/sketchybar" <<'SB'
@@ -33,12 +33,14 @@ PATH="$BIN:$PATH" \
   SKETCHYBAR_STUB_LOG="$LOG" \
   FONT="JetBrainsMono Nerd Font Mono" \
   ICON_CALENDAR=CAL \
+  ICON_CLOCK=CLOCK \
   CALENDAR_COLOR=0xff00ffff \
   WHITE=0xffffffff \
-  GREY=0xff808080 \
-  GREEN=0xff22c55e \
-  ORANGE=0xfff97316 \
+  SURFACE=0xff262626 \
   PILL_BG=0x88262626 \
+  PILL_HEIGHT=36 \
+  BORDER_RADIUS=8 \
+  ITEM_PADDING=8 \
   PLUGIN_DIR=/tmp/plugins \
   bash "$ITEM"
 
@@ -46,25 +48,24 @@ python3 - "$LOG" <<'PY'
 from pathlib import Path
 import sys
 log = Path(sys.argv[1]).read_text()
-for name in ['calendar', 'cal_dot_fam', 'cal_dot_work', 'cal_dot_per', 'cal_dot_neutral', 'calendar_time']:
+for name in ['calendar', 'calendar_event_clock', 'calendar_time']:
     assert f'--add item {name} right' in log, (name, log)
+for old_dot in ['cal_dot_fam', 'cal_dot_work', 'cal_dot_per', 'cal_dot_neutral']:
+    assert f'--remove {old_dot}' in log, (old_dot, log)
 assert '--add bracket calendar_group' in log, log
 assert 'background.color=0x88262626' in log, log
-assert 'background.border_color=0xff00ffff' in log, log
+assert 'background.border_color=0xff262626' in log, log
 assert 'icon=CAL' in log, log
+assert 'icon=CLOCK' in log, log
 assert 'label.color=0xffffffff' in log, log
 assert 'script=/tmp/plugins/calendar.sh' in log, log
 assert 'script=/tmp/plugins/calendar_dots.sh' in log, log
 assert 'update_freq=15' in log, log
 assert 'update_freq=300' in log, log
-assert 'icon=●' in log, log
-assert 'icon.color=0xff808080' in log, log
-assert 'icon.color=0xff22c55e' in log, log
-assert 'icon.color=0xfff97316' in log, log
-assert '0xffE36BA0' in log, log
 assert 'osascript -e' in log and 'control down' in log and 'option down' in log, log
 assert 'open -a Itsycal' in log, log
 assert 'background.drawing=off' in log, log
+assert 'background.drawing=on' in log, log
 PY
 
 echo 'SOURCING OK'

@@ -18,8 +18,10 @@ PATH="$BIN:$PATH" \
   SKETCHYBAR_STUB_LOG="$LOG" \
   FONT="JetBrainsMono Nerd Font Mono" \
   WHITE=0xffffffff \
-  FRONT_APP_COLOR=0xffff00ff \
-  PILL_BG=0x88262626 \
+  SURFACE=0xff262626 \
+  ITEM_PADDING=8 \
+  BORDER_RADIUS=8 \
+  PILL_HEIGHT=36 \
   PLUGIN_DIR=/tmp/plugins \
   bash "$ROOT/dot_config/sketchybar/items/front_app.sh"
 
@@ -31,9 +33,11 @@ log = Path(sys.argv[1]).read_text()
 assert '--add item front_app center' in log, log
 assert 'front_app_separator' not in log, log
 assert 'background.drawing=on' in log, log
-assert 'background.border_color=0xffff00ff' in log, log
-assert 'background.corner_radius=6' in log, log
-assert 'icon.font=sketchybar-app-font:Regular:16.0' in log, log
+assert 'background.color=0xff262626' in log, log
+assert 'background.border_color=0xff262626' in log, log
+assert 'background.corner_radius=8' in log, log
+assert 'background.height=36' in log, log
+assert 'icon.font=sketchybar-app-font:Regular:11.0' in log, log
 assert 'icon.color=0xffffffff' in log, log
 assert 'label.color=0xffffffff' in log, log
 assert 'script=/tmp/plugins/front_app.sh' in log, log

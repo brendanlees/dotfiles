@@ -149,7 +149,6 @@ SPOTIFY_SCENARIO=playing run_plugin
 assert_log_contains 'spotify drawing=on'
 assert_log_contains 'icon=▶'
 assert_log_contains 'icon.color=0xff00ff80'
-assert_log_contains 'background.border_color=0xff00ff80'
 assert_log_contains 'label=Emma Ruth Rundle — Haunted Houses'
 
 : > "$LOG"
@@ -203,12 +202,12 @@ if ! grep -q '^quit$' "$OSASCRIPT_LOG"; then
 fi
 
 : > "$LOG"
-CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SPOTIFY_COLOR=0xff00ff80 WHITE=0xffffffff PILL_BG=0x88262626 SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$ROOT/dot_config/sketchybar/items/spotify.sh"
+CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SPOTIFY_COLOR=0xff00ff80 WHITE=0xffffffff SURFACE=0xff262626 TRANSPARENT=0x00000000 BORDER_RADIUS=8 PILL_HEIGHT=36 ITEM_PADDING=8 SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$ROOT/dot_config/sketchybar/items/spotify.sh"
 assert_log_contains '--add item spotify right'
 assert_log_contains 'icon=:spotify:'
 assert_log_contains 'icon.font=sketchybar-app-font:Regular:14.0'
 assert_log_contains 'icon.color=0xff00ff80'
-assert_log_contains 'background.border_color=0xff00ff80'
+assert_log_contains 'background.border_color=0x00000000'
 assert_log_contains 'drawing=off'
 assert_log_contains 'update_freq=15'
 assert_log_contains 'script='

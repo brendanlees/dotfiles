@@ -38,6 +38,7 @@ from pathlib import Path
 config = """[data]
   personal = true
   work = false
+  homelab = false
   headless = false
 
 [data.bw_ha_mcp]
@@ -118,6 +119,7 @@ apply_ignored_case() {
 
 common_data=$(cat <<'TOML'
   work = false
+  homelab = false
   headless = false
 TOML
 )
