@@ -119,7 +119,7 @@ assert commands[10:] == [
         "key": "prefix+shift+d",
         "type": "plugin_action",
         "command": "worktrunk.remove",
-        "description": "worktree remove",
+        "description": "Worktree: remove",
     },
 ]
 
