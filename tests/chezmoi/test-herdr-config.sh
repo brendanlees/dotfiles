@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 template="$repo_root/dot_config/herdr/config.toml.tmpl"
+themes_file="$repo_root/.chezmoidata/themes.yml"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -12,24 +13,35 @@ if [[ ! -f "$template" ]]; then
 fi
 
 rendered="$tmpdir/config.toml"
-palette_file="$tmpdir/palette.json"
-role_data='{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}'
-chezmoi execute-template \
-  --source "$repo_root" \
-  --override-data "$role_data" \
-  <<<'{{ (index .themes "guts").palette | toJson }}' >"$palette_file"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"theme":"guts"}' \
   <"$template" >"$rendered"
 
-python3 - "$palette_file" "$rendered" <<'PY'
-import json
+python3 - "$themes_file" "$rendered" <<'PY'
 import sys
 import tomllib
 from pathlib import Path
 
-palette = json.loads(Path(sys.argv[1]).read_text())
+lines = Path(sys.argv[1]).read_text().splitlines()
+palette = {}
+in_theme = False
+in_palette = False
+for line in lines:
+    if line == "  guts:":
+        in_theme = True
+        continue
+    if in_theme and line.startswith("  ") and not line.startswith("    "):
+        break
+    if in_theme and line == "    palette:":
+        in_palette = True
+        continue
+    if in_palette:
+        if not line.startswith("      "):
+            break
+        key, value = line.strip().split(": ", 1)
+        palette[key] = value.strip('"')
+
 doc = tomllib.loads(Path(sys.argv[2]).read_text())
 
 assert doc["terminal"] == {
