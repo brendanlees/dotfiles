@@ -13,9 +13,19 @@ if [[ ! -f "$template" ]]; then
 fi
 
 rendered="$tmpdir/config.toml"
+config="$tmpdir/chezmoi.toml"
+cat >"$config" <<'TOML'
+[data]
+personal = false
+work = false
+homelab = false
+ephemeral = true
+headless = true
+theme = "guts"
+TOML
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"theme":"guts"}' \
+  --config "$config" \
   <"$template" >"$rendered"
 
 python3 - "$themes_file" "$rendered" <<'PY'
