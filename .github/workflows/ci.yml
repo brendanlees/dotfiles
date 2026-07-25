@@ -37,8 +37,6 @@ jobs:
     name: repository tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    env:
-      CHEZMOI_ROLE: ephemeral,headless
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
 
@@ -50,15 +48,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes zsh
 
-      - name: initialize ephemeral test config
-        env:
-          CHEZMOI_CONFIG_FILE: ${{ runner.temp }}/chezmoi-config.toml
-        run: |
-          chezmoi init \
-            --source="$GITHUB_WORKSPACE" \
-            --config="$CHEZMOI_CONFIG_FILE" \
-            --apply=false
-
       - name: verify test runtimes
         run: |
           bash -c '(( BASH_VERSINFO[0] >= 4 ))'
@@ -67,8 +56,6 @@ jobs:
           chezmoi --version
 
       - name: run repository tests
-        env:
-          CHEZMOI_CONFIG_FILE: ${{ runner.temp }}/chezmoi-config.toml
         run: bash tests/ci/run-chezmoi-tests.sh
 
   template-smoke:

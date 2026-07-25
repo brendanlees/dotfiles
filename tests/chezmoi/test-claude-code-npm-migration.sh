@@ -43,7 +43,11 @@ if [[ ! -f "$npm_script" ]]; then
   exit 1
 fi
 
-rendered=$(CHEZMOI_ROLE=personal chezmoi execute-template --source="$repo_root" < "$npm_script")
+role_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false}'
+rendered=$(chezmoi execute-template \
+  --source="$repo_root" \
+  --override-data "$role_data" \
+  <"$npm_script")
 printf '%s\n' "$rendered" | grep -Fq 'npm install -g @anthropic-ai/claude-code'
 printf '%s\n' "$rendered" | grep -Fq 'exec node -- npm install -g @anthropic-ai/claude-code'
 printf '%s\n' "$rendered" | grep -Fq 'exec node -- claude install --force latest'

@@ -13,10 +13,14 @@ fi
 
 rendered="$tmpdir/config.toml"
 data_file="$tmpdir/data.json"
-chezmoi data --source "$repo_root" --format json >"$data_file"
+role_data='{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}'
+chezmoi data \
+  --source "$repo_root" \
+  --override-data "$role_data" \
+  --format json >"$data_file"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts"}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"theme":"guts"}' \
   <"$template" >"$rendered"
 
 python3 - "$data_file" "$rendered" <<'PY'

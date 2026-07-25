@@ -7,7 +7,7 @@ tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 render_project() {
-  local source=$1 output=$2 override=${3:-'{"chezmoi_dir":".local/share/chezmoi","code_dir":"Code"}'}
+  local source=$1 output=$2 override=${3:-'{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi_dir":".local/share/chezmoi","code_dir":"Code"}'}
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
     <"$projects/$source" >"$output"
 }
@@ -101,10 +101,10 @@ PY
 no_roles_ignore="$tmpdir/no-roles-ignore"
 all_roles_ignore="$tmpdir/all-roles-ignore"
 chezmoi execute-template --source "$repo_root" \
-  --override-data '{"personal":false,"work":false,"homelab":false}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}' \
   <"$repo_root/.chezmoiignore" >"$no_roles_ignore"
 chezmoi execute-template --source "$repo_root" \
-  --override-data '{"personal":true,"work":true,"homelab":true}' \
+  --override-data '{"personal":true,"work":true,"homelab":true,"ephemeral":false,"headless":false}' \
   <"$repo_root/.chezmoiignore" >"$all_roles_ignore"
 for pattern in personal work homelab; do
   target=".config/herdr/plugins/config/cloudmanic.herdr-plus/projects/$pattern-*.toml"
