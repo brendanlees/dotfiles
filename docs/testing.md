@@ -12,7 +12,7 @@ The workflow has read-only repository permissions and an explicit timeout on eve
 - **`apply-dry-run` on Ubuntu 24.04 and macOS 15** - initializes an isolated `ephemeral,headless` config and runs `chezmoi apply --dry-run --exclude=externals`. The macOS leg also lints every tracked plist with `plutil`.
 - **`powershell-windows` on Windows 2025** - parses tracked PowerShell and PowerShell templates rendered with native Windows data.
 
-The repository test runtime contract is Bash 4 or newer, Python 3.11 or newer, chezmoi 2.71.1, and jq. CI tools are pinned to actionlint 1.7.12, ShellCheck 0.11.0, Taplo 0.10.0, and yamllint 1.38.0.
+The repository test runtime contract is Bash 4 or newer, Python 3.11 or newer, chezmoi 2.71.1, jq, and zsh. CI tools are pinned to actionlint 1.7.12, ShellCheck 0.11.0, Taplo 0.10.0, and yamllint 1.38.0.
 
 ## local checks
 

@@ -56,7 +56,9 @@ install_lint() {
   gzip -dc "$work/taplo.gz" >"$bin_dir/taplo"
   chmod 0755 "$bin_dir/taplo"
 
-  pipx install --force "yamllint==${yamllint_version}"
+  PIPX_HOME="$HOME/.local/pipx" \
+    PIPX_BIN_DIR="$bin_dir" \
+    pipx install --force "yamllint==${yamllint_version}"
 }
 
 install_chezmoi() {
