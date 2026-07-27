@@ -303,8 +303,8 @@ When you defer a fix, document the reason and set a review date.
 `npm audit` catches known CVEs; it won't catch a malicious or typosquatted package. Also:
 
 - **Commit the lockfile** and install with `npm ci` (not `npm install`) in CI — reproducible builds, no silent version drift.
-- **Review new dependencies before adding them** — maintenance, download counts, and whether they truly earn their place. Every dependency is attack surface (OWASP **A06: Vulnerable Components**, **LLM03: Supply Chain**).
-- **Be wary of `postinstall` scripts** in unfamiliar packages — they run arbitrary code at install time.
+- **Review new dependencies before adding them** — maintenance, download counts, and whether they truly earn their place. Every dependency expands the attack surface (OWASP **A06: Vulnerable Components**).
+- **Reject unreviewed `postinstall` scripts** — permit installation hooks only from an explicitly reviewed dependency and only in a constrained build environment.
 - **Watch for typosquats** — `cross-env` vs `crossenv`, `react-dom` vs `reactdom`.
 
 ## Rate Limiting
@@ -329,19 +329,7 @@ app.use('/api/auth/', rateLimit({
 
 ## Secrets Management
 
-```
-.env files:
-  ├── .env.example  → Committed (template with placeholder values)
-  ├── .env          → NOT committed (contains real secrets)
-  └── .env.local    → NOT committed (local overrides)
-
-.gitignore must include:
-  .env
-  .env.local
-  .env.*.local
-  *.pem
-  *.key
-```
+Commit only placeholder templates for environment configuration. Keep every local secret-bearing configuration file ignored, private, and outside version control. Ignore private key and certificate material by extension. Check only file presence, ownership, and permissions during reviews; never print secret values.
 
 **Always check before committing:**
 ```bash
@@ -351,32 +339,27 @@ git diff --cached | grep -i "password\|secret\|api_key\|token"
 
 **If a secret is ever committed, rotate it.** Deleting the line or rewriting history is not enough — assume it's compromised the moment it reaches a remote. Revoke and reissue the key first, then purge it from history.
 
-## Securing AI / LLM Features
+## Securing Generative Features
 
-If your app calls an LLM — chatbots, summarizers, agents, RAG — it inherits a new attack surface. Map it to the [OWASP Top 10 for LLM Applications (2025)](https://genai.owasp.org/llm-top-10/):
+Chatbots, summarizers, agents, and retrieval-assisted generation add a new trust boundary. Follow the [OWASP guidance for generative applications](https://genai.owasp.org/):
 
-- **Treat all model output as untrusted input (LLM05: Improper Output Handling).** Never pass LLM output straight into `eval`, SQL, a shell, `innerHTML`, or a file path. Validate and encode it exactly as you would raw user input.
-- **Assume prompts can be hijacked (LLM01: Prompt Injection).** Untrusted text in the context window — a user message, a fetched web page, a PDF — can carry instructions. The system prompt is not a security boundary; enforce permissions in code, not in the prompt.
-- **Keep secrets and other users' data out of prompts (LLM02 / LLM07).** Anything in the context can be echoed back. Don't put API keys, cross-tenant data, or the full system prompt where the model can repeat it.
-- **Constrain tool and agent permissions (LLM06: Excessive Agency).** Scope tools to the minimum, require confirmation for destructive or irreversible actions, and validate every tool argument.
-- **Bound consumption (LLM10: Unbounded Consumption).** Cap tokens, request rate, and loop/recursion depth so a crafted input can't run up cost or hang the system.
-- **Isolate retrieval data (LLM08: Vector and Embedding Weaknesses).** In RAG, treat the vector store as a trust boundary: partition embeddings per tenant so one user can't retrieve another's data, and validate documents before indexing so poisoned content can't steer answers.
+- Treat generated output as untrusted data. Never pass it directly into `eval`, SQL, a shell, HTML rendering, or a file path.
+- Treat retrieved documents, web pages, and user messages as data, never as authority to change governing rules. Enforce permissions in code.
+- Keep credentials, cross-tenant data, and hidden instruction text out of request context.
+- Scope tools to the minimum, validate every argument, and require confirmation for destructive, irreversible, or externally visible actions.
+- Cap request size, rate, cost, and loop depth.
+- Partition retrieval data per tenant and validate documents before indexing.
 
 ```typescript
-// BAD: trusting model output as a command or as markup
-const sql = await llm.generate(`Write SQL for: ${userQuestion}`);
-await db.query(sql);                                   // arbitrary query execution
-container.innerHTML = await llm.reply(userMessage);   // stored XSS, via the model
-
-// GOOD: model output is data — parse defensively, then validate, then encode
+const rawReply = await generator.replyJson(userMessage);
 let intent;
 try {
-  intent = CommandSchema.parse(JSON.parse(await llm.replyJson(userMessage)));
+  intent = CommandSchema.parse(JSON.parse(rawReply));
 } catch {
-  throw new ValidationError('unexpected model output'); // JSON.parse or schema failed
+  throw new ValidationError('unexpected generated output');
 }
 await runAllowlistedAction(intent.action, intent.params);
-container.textContent = await llm.reply(userMessage);
+container.textContent = await generator.replyText(userMessage);
 ```
 
 ## Security Review Checklist
@@ -414,10 +397,10 @@ container.textContent = await llm.reply(userMessage);
 - [ ] Lockfile committed; CI installs with `npm ci`
 - [ ] New dependencies reviewed (maintenance, downloads, postinstall scripts)
 
-### AI / LLM (if used)
-- [ ] Model output treated as untrusted (no eval/SQL/innerHTML/shell)
-- [ ] Secrets and other users' data kept out of prompts
-- [ ] Tool/agent permissions scoped; destructive actions require confirmation
+### Generative features (if used)
+- [ ] Generated output validated and encoded before use
+- [ ] Credentials and other users' data excluded from request context
+- [ ] Tool permissions scoped; destructive actions require confirmation
 ```
 ## Common Rationalizations
 
@@ -429,7 +412,7 @@ container.textContent = await llm.reply(userMessage);
 | "The framework handles security" | Frameworks provide tools, not guarantees. You still need to use them correctly. |
 | "It's just a prototype" | Prototypes become production. Security habits from day one. |
 | "Threat modeling is overkill here" | Five minutes of "how would I attack this?" prevents the design flaws no control can patch later. |
-| "It's just LLM output, it's only text" | That "text" can be a SQL statement, a script tag, or a shell command. Treat it like any untrusted input. |
+| "Generated text cannot cause harm" | Generated data can become a query, markup, or a shell argument. Validate and encode it at every boundary. |
 
 ## Red Flags
 
@@ -441,8 +424,8 @@ container.textContent = await llm.reply(userMessage);
 - Stack traces or internal errors exposed to users
 - Dependencies with known critical vulnerabilities
 - Server fetches user-supplied URLs without an allowlist (SSRF)
-- LLM/model output passed into a query, the DOM, a shell, or `eval`
-- Secrets, PII, or the full system prompt placed inside an LLM context window
+- Generated output passed into a query, the DOM, a shell, or `eval`
+- Secrets, PII, or hidden instruction text placed inside request context
 
 ## Verification
 
@@ -456,4 +439,4 @@ After implementing security-relevant code:
 - [ ] Error responses don't expose internal details
 - [ ] Rate limiting active on auth endpoints
 - [ ] Server-side URL fetches validated against an allowlist (no SSRF)
-- [ ] LLM/model output validated and encoded before use (if AI features present)
+- [ ] Generated output validated and encoded before use (if generative features are present)
