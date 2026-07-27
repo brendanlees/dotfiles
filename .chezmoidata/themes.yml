@@ -292,7 +292,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "bathory"
       nvim_background: "dark"
 
   black-metal-bathory:
@@ -324,7 +324,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "bathory"
       nvim_background: "dark"
 
   black-metal-burzum:
@@ -356,7 +356,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "burzum"
       nvim_background: "dark"
 
   black-metal-dark-funeral:
@@ -388,7 +388,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "dark-funeral"
       nvim_background: "dark"
 
   black-metal-gorgoroth:
@@ -420,7 +420,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "gorgoroth"
       nvim_background: "dark"
 
   black-metal-immortal:
@@ -452,7 +452,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "immortal"
       nvim_background: "dark"
 
   black-metal-khold:
@@ -484,7 +484,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "khold"
       nvim_background: "dark"
 
   black-metal-marduk:
@@ -516,7 +516,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "marduk"
       nvim_background: "dark"
 
   black-metal-mayhem:
@@ -548,7 +548,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "mayhem"
       nvim_background: "dark"
 
   black-metal-nile:
@@ -580,7 +580,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "nile"
       nvim_background: "dark"
 
   black-metal-venom:
@@ -612,7 +612,7 @@ themes:
       starship: "monokai"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "venom"
       nvim_background: "dark"
 
   batman:
