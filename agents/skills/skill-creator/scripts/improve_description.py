@@ -27,7 +27,7 @@ def _claude_runtime() -> tuple[str, dict[str, str]]:
     executable_path = Path(executable).resolve()
     return str(executable_path), {
         "HOME": str(Path.home()),
-        "PATH": os.pathsep.join((str(executable_path.parent), os.defpath)),
+        "PATH": os.pathsep.join(dict.fromkeys((str(executable_path.parent), *os.get_exec_path()))),
         "TMPDIR": tempfile.gettempdir(),
     }
 
