@@ -332,10 +332,10 @@ app.use('/api/auth/', rateLimit({
 Commit only placeholder templates for environment configuration. Keep every local secret-bearing configuration file ignored, private, and outside version control. Ignore private key and certificate material by extension. Check only file presence, ownership, and permissions during reviews; never print secret values.
 
 **Always check before committing:**
-```bash
-# Check for accidentally staged secrets
-git diff --cached | grep -i "password\|secret\|api_key\|token"
-```
+
+- Run the repository-approved secret scanner against staged changes.
+- Configure its output to redact values and report only bounded file and line identifiers.
+- If no scanner is configured, stop and ask the user which approved scanner to use rather than printing staged content.
 
 **If a secret is ever committed, rotate it.** Deleting the line or rewriting history is not enough — assume it's compromised the moment it reaches a remote. Revoke and reissue the key first, then purge it from history.
 

@@ -20,7 +20,7 @@ from scripts.utils import parse_skill_md
 
 
 def _claude_runtime() -> tuple[str, dict[str, str]]:
-    """Resolve Claude and return a minimal environment for local session auth."""
+    """Resolve Claude and return an allowlisted environment for local session auth."""
     executable = shutil.which("claude")
     if not executable:
         raise RuntimeError("claude executable was not found")

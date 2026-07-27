@@ -243,7 +243,9 @@ Put each with_skill version before its baseline counterpart.
    python <skill-creator-path>/eval-viewer/generate_review.py \
      <workspace>/iteration-N \
      --skill-name "my-skill" \
-     --benchmark <workspace>/iteration-N/benchmark.json
+     --benchmark <workspace>/iteration-N/benchmark.json \
+     </dev/null >/tmp/skill-creator-viewer.log 2>&1 &
+   VIEWER_PID=$!
    ```
    For iteration 2+, also pass `--previous-workspace <workspace>/iteration-<N-1>`.
 
