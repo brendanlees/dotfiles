@@ -2,7 +2,12 @@
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
 {{- $casks := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .casks .)) }}
+{{- $pinnedCasks := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .pinnedCasks .)) }}
 
 {{- if $casks }}
 brew install --cask --adopt {{ $casks | join " " }}
+{{- end }}
+
+{{- range $pinnedCasks }}
+brew pin {{ . }}
 {{- end }}

@@ -113,6 +113,12 @@ mas:
     - { id: 1221250572, name: Xnip }
   work: []
 
+pinnedCasks:
+  base: []
+  personal:
+    - karabiner-elements
+  work: []
+
 casks:
   base: []
   personal:
