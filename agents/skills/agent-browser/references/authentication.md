@@ -19,9 +19,9 @@ Login flows, session persistence, OAuth, 2FA, and authenticated browsing.
 - [Token Refresh Handling](#token-refresh-handling)
 - [Security Best Practices](#security-best-practices)
 
-## Import Auth from Your Browser
+## Import Auth from a Dedicated Browser Profile
 
-The fastest way to authenticate is to reuse cookies from a Chrome session you are already logged into.
+Use browser authentication state only when the user explicitly approves importing it for a named origin. Start a dedicated temporary Chrome profile for the task rather than attaching to the user's everyday browser profile.
 
 **Step 1: Start Chrome with remote debugging**
 
@@ -36,14 +36,15 @@ google-chrome --remote-debugging-port=9222
 "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
 ```
 
-Log in to your target site(s) in this Chrome window as you normally would.
+Log in only to the user-approved target origin in this dedicated Chrome window.
 
-> **Security note:** `--remote-debugging-port` exposes full browser control on localhost. Any local process can connect and read cookies, execute JS, etc. Only use on trusted machines and close Chrome when done.
+> **Security note:** `--remote-debugging-port` grants powerful browser access to local processes. Bind access to loopback, use it only on a trusted machine, do not inspect authentication data or run page code beyond the approved task, and close the dedicated profile immediately afterward.
 
 **Step 2: Grab the auth state**
 
 ```bash
-# Auto-discover the running Chrome and save its cookies + localStorage
+# After approval, save state from the dedicated profile to a private temporary file
+umask 077
 agent-browser --auto-connect state save ./my-auth.json
 ```
 
@@ -58,7 +59,7 @@ agent-browser state load ./my-auth.json
 agent-browser open https://app.example.com/dashboard
 ```
 
-This works for any site, including those with complex OAuth flows, SSO, or 2FA -- as long as Chrome already has valid session cookies.
+This supports complex OAuth, SSO, or 2FA flows only for the origin and temporary profile the user approved.
 
 > **Security note:** State files contain session tokens in plaintext. Add them to `.gitignore`, delete when no longer needed, and set `AGENT_BROWSER_ENCRYPTION_KEY` for encryption at rest. See [Security Best Practices](#security-best-practices).
 

@@ -24,7 +24,7 @@ Ship with confidence. The goal is not just to deploy — it's to deploy safely, 
 ### Code Quality
 
 - [ ] All tests pass (unit, integration, e2e)
-- [ ] Build succeeds with no warnings
+- [ ] Build succeeds; every warning is investigated and either resolved or explicitly accepted by the user
 - [ ] Lint and type checking pass
 - [ ] Code reviewed and approved
 - [ ] No TODO comments that should be resolved before launch
@@ -57,7 +57,7 @@ Ship with confidence. The goal is not just to deploy — it's to deploy safely, 
 - [ ] Color contrast meets WCAG 2.1 AA (4.5:1 for text)
 - [ ] Focus management correct for modals and dynamic content
 - [ ] Error messages are descriptive and associated with form fields
-- [ ] No accessibility warnings in axe-core or Lighthouse
+- [ ] Every accessibility warning from axe-core or Lighthouse is investigated and resolved or explicitly accepted
 
 ### Infrastructure
 
@@ -257,7 +257,7 @@ Every deployment needs a rollback plan before it happens:
 3. Communicate: notify team of rollback
 
 ### Database Considerations
-- Migration [X] has a rollback: `npx prisma migrate rollback`
+- Migration [X] has a rollback through the repository-declared tool: `npm exec -- prisma migrate rollback`
 - Data inserted by new feature: [preserved / cleaned up]
 
 ### Time to Rollback
