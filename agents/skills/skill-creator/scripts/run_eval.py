@@ -9,8 +9,10 @@ import argparse
 import json
 import os
 import select
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -19,17 +21,17 @@ from pathlib import Path
 from scripts.utils import parse_skill_md
 
 
-def find_project_root() -> Path:
-    """Find the project root by walking up from cwd looking for .claude/.
-
-    Mimics how Claude Code discovers its project root, so the command file
-    we create ends up where claude -p will look for it.
-    """
-    current = Path.cwd()
-    for parent in [current, *current.parents]:
-        if (parent / ".claude").is_dir():
-            return parent
-    return current
+def _claude_runtime() -> tuple[str, dict[str, str]]:
+    """Resolve Claude and return a minimal environment for local session auth."""
+    executable = shutil.which("claude")
+    if not executable:
+        raise RuntimeError("claude executable was not found")
+    executable_path = Path(executable).resolve()
+    return str(executable_path), {
+        "HOME": str(Path.home()),
+        "PATH": os.pathsep.join((str(executable_path.parent), os.defpath)),
+        "TMPDIR": tempfile.gettempdir(),
+    }
 
 
 def run_single_query(
@@ -48,9 +50,13 @@ def run_single_query(
     stream events (content_block_start) rather than waiting for the
     full assistant message, which only arrives after tool execution.
     """
+    if not 1 <= timeout <= 900:
+        raise ValueError("timeout must be between 1 and 900 seconds")
     unique_id = uuid.uuid4().hex[:8]
-    clean_name = f"{skill_name}-skill-{unique_id}"
-    project_commands_dir = Path(project_root) / ".claude" / "commands"
+    safe_name = "".join(char if char.isalnum() or char == "-" else "-" for char in skill_name)[:64]
+    clean_name = f"{safe_name}-skill-{unique_id}"
+    bounded_root = Path(project_root).resolve()
+    project_commands_dir = bounded_root / ".claude" / "commands"
     command_file = project_commands_dir / f"{clean_name}.md"
 
     try:
@@ -67,8 +73,9 @@ def run_single_query(
         )
         command_file.write_text(command_content)
 
+        executable, env = _claude_runtime()
         cmd = [
-            "claude",
+            executable,
             "-p", query,
             "--output-format", "stream-json",
             "--verbose",
@@ -77,17 +84,13 @@ def run_single_query(
         if model:
             cmd.extend(["--model", model])
 
-        # Remove CLAUDECODE env var to allow nesting claude -p inside a
-        # Claude Code session. The guard is for interactive terminal conflicts;
-        # programmatic subprocess usage is safe.
-        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
-
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            cwd=project_root,
+            cwd=bounded_root,
             env=env,
+            shell=False,
         )
 
         triggered = False
@@ -278,22 +281,21 @@ def main():
 
     name, original_description, content = parse_skill_md(skill_path)
     description = args.description or original_description
-    project_root = find_project_root()
-
     if args.verbose:
         print(f"Evaluating: {description}", file=sys.stderr)
 
-    output = run_eval(
-        eval_set=eval_set,
-        skill_name=name,
-        description=description,
-        num_workers=args.num_workers,
-        timeout=args.timeout,
-        project_root=project_root,
-        runs_per_query=args.runs_per_query,
-        trigger_threshold=args.trigger_threshold,
-        model=args.model,
-    )
+    with tempfile.TemporaryDirectory(prefix="skill-creator-eval-") as project_root:
+        output = run_eval(
+            eval_set=eval_set,
+            skill_name=name,
+            description=description,
+            num_workers=args.num_workers,
+            timeout=args.timeout,
+            project_root=Path(project_root),
+            runs_per_query=args.runs_per_query,
+            trigger_threshold=args.trigger_threshold,
+            model=args.model,
+        )
 
     if args.verbose:
         summary = output["summary"]

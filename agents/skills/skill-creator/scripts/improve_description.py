@@ -10,11 +10,26 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from scripts.utils import parse_skill_md
+
+
+def _claude_runtime() -> tuple[str, dict[str, str]]:
+    """Resolve Claude and return a minimal environment for local session auth."""
+    executable = shutil.which("claude")
+    if not executable:
+        raise RuntimeError("claude executable was not found")
+    executable_path = Path(executable).resolve()
+    return str(executable_path), {
+        "HOME": str(Path.home()),
+        "PATH": os.pathsep.join((str(executable_path.parent), os.defpath)),
+        "TMPDIR": tempfile.gettempdir(),
+    }
 
 
 def _call_claude(prompt: str, model: str | None, timeout: int = 300) -> str:
@@ -23,14 +38,12 @@ def _call_claude(prompt: str, model: str | None, timeout: int = 300) -> str:
     Prompt goes over stdin (not argv) because it embeds the full SKILL.md
     body and can easily exceed comfortable argv length.
     """
-    cmd = ["claude", "-p", "--output-format", "text"]
+    if not 1 <= timeout <= 900:
+        raise ValueError("timeout must be between 1 and 900 seconds")
+    executable, env = _claude_runtime()
+    cmd = [executable, "-p", "--output-format", "text"]
     if model:
         cmd.extend(["--model", model])
-
-    # Remove CLAUDECODE env var to allow nesting claude -p inside a
-    # Claude Code session. The guard is for interactive terminal conflicts;
-    # programmatic subprocess usage is safe. Same pattern as run_eval.py.
-    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
 
     result = subprocess.run(
         cmd,
@@ -38,7 +51,9 @@ def _call_claude(prompt: str, model: str | None, timeout: int = 300) -> str:
         capture_output=True,
         text=True,
         env=env,
+        cwd=Path.cwd(),
         timeout=timeout,
+        check=False,
     )
     if result.returncode != 0:
         raise RuntimeError(

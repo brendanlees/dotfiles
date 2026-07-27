@@ -5,6 +5,7 @@ description: Create new skills, modify and improve existing skills, and measure
   or optimize an existing skill, run evals to test a skill, benchmark skill
   performance with variance analysis, or optimize a skill's description for
   better triggering accuracy.
+allowed-tools: Read, Write, Edit, Bash
 ---
 
 # Skill Creator
@@ -239,12 +240,10 @@ Put each with_skill version before its baseline counterpart.
 
 4. **Launch the viewer** with both qualitative outputs and quantitative data:
    ```bash
-   nohup python <skill-creator-path>/eval-viewer/generate_review.py \
+   python <skill-creator-path>/eval-viewer/generate_review.py \
      <workspace>/iteration-N \
      --skill-name "my-skill" \
-     --benchmark <workspace>/iteration-N/benchmark.json \
-     > /dev/null 2>&1 &
-   VIEWER_PID=$!
+     --benchmark <workspace>/iteration-N/benchmark.json
    ```
    For iteration 2+, also pass `--previous-workspace <workspace>/iteration-<N-1>`.
 
