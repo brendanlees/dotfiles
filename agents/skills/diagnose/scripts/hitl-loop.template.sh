@@ -7,7 +7,7 @@
 #   bash hitl-loop.template.sh
 #
 # Two helpers:
-#   step "<instruction>"          → show instruction, wait for Enter
+#   step "<approved action>"      → show a user-approved diagnostic action, wait for Enter
 #   capture VAR "<question>"      → show question, read response into VAR
 #
 # At the end, captured values are printed as KEY=VALUE for the agent to parse.
@@ -15,7 +15,8 @@
 set -euo pipefail
 
 step() {
-  printf '\n>>> %s\n' "$1"
+  local approved_action="$1"
+  printf '\n>>> %s\n' "$approved_action"
   read -r -p "    [Enter when done] " _
 }
 

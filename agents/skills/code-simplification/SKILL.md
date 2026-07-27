@@ -102,7 +102,7 @@ Simplification has a failure mode: over-simplification. Watch for these traps:
 
 ### 5. Scope to What Changed
 
-Default to simplifying recently modified code. Avoid drive-by refactors of unrelated code unless explicitly asked to broaden scope. Unscoped simplification creates noise in diffs and risks unintended regressions.
+Simplify only recently modified code within the user-requested scope. Touch unrelated code only after the user explicitly expands that scope. Unscoped simplification creates noisy diffs and risks unintended regressions.
 
 ## The Simplification Process
 
@@ -154,7 +154,7 @@ Scan for these patterns — each one is a concrete signal, not a vague smell:
 | Dead code | Unreachable branches, unused variables, commented-out blocks | Remove (after confirming it's truly dead) |
 | Unnecessary abstractions | Wrapper that adds no value | Inline the wrapper, call the underlying function directly |
 | Over-engineered patterns | Factory-for-a-factory, strategy-with-one-strategy | Replace with the simple direct approach |
-| Redundant type assertions | Casting to a type that's already inferred | Remove the assertion |
+| Redundant type assertions | Casting to a type that's already inferred | Retain unless tests and type analysis prove it redundant within the approved scope |
 
 ### Step 3: Apply Changes Incrementally
 
