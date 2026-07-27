@@ -89,6 +89,8 @@ type = "plugin_action"
 command = "third774.last-workspace.toggle"
 description = "toggle last workspace"
 
+# --- worktrunk ---
+
 [[keys.command]]
 key = "prefix+shift+g"
 type = "plugin_action"
@@ -107,6 +109,29 @@ type = "plugin_action"
 command = "worktrunk.remove"
 description = "Worktree: remove"
 
+# --- file viewer ---
+
+[[keys.command]]              # open in a split beside your work
+key = "prefix+f"
+type = "shell"
+command = "herdr plugin action invoke open-file-viewer --plugin herdr-file-viewer"
+
+[[keys.command]]              # …or in its own tab
+key = "prefix+shift+f"
+type = "shell"
+command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
+
+[[keys.command]]
+key = "prefix+shift+r"
+type = "plugin_action"
+command = "persiyanov.reviewr.toggle"
+
+[[keys.command]]
+key = "prefix+t"
+type = "plugin_action"
+command = "herdr-navigator.open"
+description = "jump to anything"
+
 [ui]
 mouse_capture = true
 prompt_new_tab_name = false
@@ -116,6 +141,28 @@ accent = "{{ $p.accent }}"
 
 [ui.sound]
 enabled = false
+
+[ui.toast]
+delivery = "herdr"
+delay_seconds = 1
+
+[ui.toast.herdr]
+position = "top-right"
+
+[ui.toast.clipboard]
+enabled = true
+position = "bottom-center"
+
+[session]
+resume_agents_on_restore = true
+
+[remote]
+manage_ssh_config = true
+
+[experimental]
+pane_history = true
+allow_nested = false
+kitty_graphics = true
 
 [advanced]
 scrollback_limit_bytes = 100_000_000
