@@ -14,3 +14,12 @@ herdr:
       ref: e9131c0b576fd68635194c758c9691dbfb778b61
       config:
         open_mode: workspace
+    - id: herdr-file-viewer
+      source: smarzban/herdr-file-viewer
+      ref: 96fcc0a2bdd2727ec88c38f8c8806f97b7ca0ea0
+    - id: persiyanov.reviewr
+      source: persiyanov/herdr-reviewr
+      ref: f1dd491e47ef55410eca7c73daebe3726f06bda0
+    - id: herdr-navigator
+      source: thanhdat77/herdr-navigator
+      ref: 03b803a00341d58382b6cda70a7cd618af5b8806
