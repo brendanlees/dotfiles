@@ -61,7 +61,7 @@ for field in (
 assert "previous_workspace" not in keys
 
 commands = keys["command"]
-assert len(commands) == 13
+assert len(commands) == 17
 resize_commands = commands[:4]
 for command, direction, key in zip(
     resize_commands,
@@ -120,6 +120,27 @@ assert commands[10:] == [
         "type": "plugin_action",
         "command": "worktrunk.remove",
         "description": "Worktree: remove",
+    },
+    {
+        "key": "prefix+f",
+        "type": "shell",
+        "command": "herdr plugin action invoke open-file-viewer --plugin herdr-file-viewer",
+    },
+    {
+        "key": "prefix+shift+f",
+        "type": "shell",
+        "command": "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer",
+    },
+    {
+        "key": "prefix+shift+r",
+        "type": "plugin_action",
+        "command": "persiyanov.reviewr.toggle",
+    },
+    {
+        "key": "prefix+t",
+        "type": "plugin_action",
+        "command": "herdr-navigator.open",
+        "description": "jump to anything",
     },
 ]
 
