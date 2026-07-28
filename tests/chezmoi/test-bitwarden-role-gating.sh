@@ -38,6 +38,10 @@ case "$item_id" in
     field_name="homelab_admin_field"
     field_value="homelab-admin-value"
     ;;
+  0c4c3b88-6ed3-49a0-9f59-b487007acf3e)
+    field_name="api-key"
+    field_value="executor-token"
+    ;;
   afa4395b-8044-46b1-86c9-b48d007e82ac)
     field_name="secret_path"
     field_value="ha-mcp-value"
@@ -142,7 +146,8 @@ assert_bw_item_ids "personal" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
   "040ae08a-b331-4d3b-abc6-b303002d2a94" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
-  "afa4395b-8044-46b1-86c9-b48d007e82ac"
+  "afa4395b-8044-46b1-86c9-b48d007e82ac" \
+  "0c4c3b88-6ed3-49a0-9f59-b487007acf3e"
 
 assert_bw_item_ids "work" \
   "0b9286df-9ffc-4ab8-996e-b42d014e44d4"

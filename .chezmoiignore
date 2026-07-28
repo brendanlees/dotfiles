@@ -55,15 +55,18 @@ Library
 .config/private_env_tokens.sh
 {{- end }}
 
-{{- if not .personal }}
-.config/mcp
-{{- else if not (hasKey . "bw_ha_mcp") }}
-.config/mcp
-{{- else if not (hasKey .bw_ha_mcp "secret_path") }}
-.config/mcp
-{{- else if not .bw_ha_mcp.secret_path }}
-.config/mcp
-{{- else if not (regexMatch "^https?://" .bw_ha_mcp.secret_path) }}
+{{- $validHAMcp := and
+  (hasKey . "bw_ha_mcp")
+  (hasKey .bw_ha_mcp "secret_path")
+  .bw_ha_mcp.secret_path
+  (regexMatch "^https?://" .bw_ha_mcp.secret_path)
+}}
+{{- $validExecutorWork := and
+  (hasKey . "bw_executor_work")
+  (hasKey .bw_executor_work "bearer_token")
+  .bw_executor_work.bearer_token
+}}
+{{- if or (not .personal) (not (or $validHAMcp $validExecutorWork)) }}
 .config/mcp
 {{- end }}
 

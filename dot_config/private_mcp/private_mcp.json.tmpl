@@ -1,10 +1,32 @@
-{{- if and (hasKey . "bw_ha_mcp") (hasKey .bw_ha_mcp "secret_path") .bw_ha_mcp.secret_path }}
+{{- $validHAMcp := and
+  (hasKey . "bw_ha_mcp")
+  (hasKey .bw_ha_mcp "secret_path")
+  .bw_ha_mcp.secret_path
+  (regexMatch "^https?://" .bw_ha_mcp.secret_path)
+}}
+{{- $validExecutorWork := and
+  (hasKey . "bw_executor_work")
+  (hasKey .bw_executor_work "bearer_token")
+  .bw_executor_work.bearer_token
+}}
+{{- if or $validHAMcp $validExecutorWork }}
 {
   "mcpServers": {
+{{- if $validHAMcp }}
     "home-assistant": {
       "type": "http",
       "url": {{ .bw_ha_mcp.secret_path | toJson }}
+    }{{ if $validExecutorWork }},{{ end }}
+{{- end }}
+{{- if $validExecutorWork }}
+    "executor-work": {
+      "type": "http",
+      "url": "https://executor.lab.brendans.cloud/mcp/toolkits/hermes-work",
+      "headers": {
+        "Authorization": {{ printf "Bearer %s" .bw_executor_work.bearer_token | toJson }}
+      }
     }
+{{- end }}
   }
 }
 {{- end }}

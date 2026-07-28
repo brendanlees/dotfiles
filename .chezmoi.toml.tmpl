@@ -135,6 +135,7 @@
   hf_token = {{ $bw_huggingface.read_only_token.value | quote }}
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
 {{- $bw_ha_mcp := bitwardenFields "item" "afa4395b-8044-46b1-86c9-b48d007e82ac" }}
+{{- $bw_executor_work := bitwardenFields "item" "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" }}
   github_token = {{ $bw_github.read_only_token.value | quote }}
 
 [data.bw_info]
@@ -159,6 +160,9 @@
 
 [data.bw_ha_mcp]
   secret_path = {{ $bw_ha_mcp.secret_path.value | quote }}
+
+[data.bw_executor_work]
+  bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}
 {{- end }}
 
 {{- if and $work (lookPath "bw") }}
