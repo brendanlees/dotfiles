@@ -7,6 +7,10 @@ config_template="$repo_root/.chezmoi.toml.tmpl"
 ignore_template="$repo_root/.chezmoiignore"
 ha_item_id="afa4395b-8044-46b1-86c9-b48d007e82ac"
 executor_url="https://executor.lab.brendans.cloud/mcp/toolkits/hermes-work"
+# shellcheck disable=SC2016 # Match the literal Go-template variable name.
+executor_assignment_pattern='\$bw_executor_work := bitwardenFields "item" "[0-9a-f-]{36}"'
+# shellcheck disable=SC2016 # Match the literal Go-template variable name.
+executor_bearer_template='bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}'
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -20,9 +24,9 @@ if ! grep -Fq "bitwardenFields \"item\" \"$ha_item_id\"" "$config_template" ||
   echo "missing cached bw_ha_mcp data wiring" >&2
   missing=1
 fi
-if ! grep -Eq '\$bw_executor_work := bitwardenFields "item" "[0-9a-f-]{36}"' "$config_template" ||
+if ! grep -Eq "$executor_assignment_pattern" "$config_template" ||
   ! grep -Fq '[data.bw_executor_work]' "$config_template" ||
-  ! grep -Fq 'bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}' "$config_template"; then
+  ! grep -Fq "$executor_bearer_template" "$config_template"; then
   echo "missing cached bw_executor_work data wiring" >&2
   missing=1
 fi
