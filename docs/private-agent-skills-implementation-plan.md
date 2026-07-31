@@ -7,9 +7,9 @@ The canonical architecture remains [issue 27](https://github.com/brendanlees/dot
 ## Current progress
 
 - Steps 1 through 7 are implemented on `feat/private-agent-skills` with synthetic POSIX and Windows contracts.
-- Step 8 passes locally for the focused POSIX suite, routing and agent-home regressions, static checks, template rendering, and the full repository suite. Native Windows parsing and lifecycle execution remain pending in Windows CI.
+- Step 8 passes locally and in pull request CI, including the focused POSIX suite, routing and agent-home regressions, static checks, template rendering, full repository suite, macOS dry-run, native Windows parsing, and the Windows junction lifecycle contract.
 - Steps 9 and 10 remain pending and require sanitized live macOS and Windows canaries on authorized machines.
-- The merge and rollout gate remains closed until Windows CI and both live canaries pass.
+- The merge and rollout gate remains closed until both live canaries pass.
 
 ## Safety boundaries
 
