@@ -2,6 +2,12 @@
 
 This runbook is for operators of authorized personal macOS and Windows machines. The public repository contains only the integration mechanism. Keep the real remote, checkout path, skill names, inventory, content, credentials, and audit findings in machine-local or private records.
 
+## Validated rollout scope
+
+Initial live acceptance covers authorized personal macOS integration with Pi and Codex. Automated CI additionally covers the synthetic POSIX lifecycle, native Windows parsing, and the Windows junction lifecycle.
+
+Claude Code live discovery and live Windows SSH bootstrap are deferred follow-up scope. The implementation remains available on Windows, but operators must complete the platform checklist below before treating it as live-validated. These deferred checks do not block the initial macOS rollout.
+
 ## Eligibility and layout
 
 Integration is active only when all of these are true:
@@ -169,16 +175,16 @@ pwsh -NoProfile -File tests/chezmoi/test-private-agent-skills-windows.ps1
 
 See [testing](testing.md) for template render and dry-run commands.
 
-## Sanitized live canary checklist
+## Sanitized live validation checklist
 
 Record only OS and tool versions, commands, and pass/fail outcomes. Do not record real identities, paths, skill names, content, credentials, or findings.
 
-For one authorized macOS machine and one authorized Windows machine:
+For each newly authorized platform or agent harness:
 
 1. Capture clean public Git, current direct skill entries, and local-exclude baselines.
-2. Apply the feature branch and verify SSH bootstrap.
+2. Apply the current source and verify SSH bootstrap.
 3. Apply a second time and verify idempotence.
-4. Invoke a benign private probe through Pi, Codex, and Claude Code.
+4. Invoke a benign private probe through every in-scope agent harness.
 5. Edit through the unified path and verify only private Git becomes dirty.
 6. Scan the private checkout directly with SkillSpector and review results privately.
 7. Disable remote authentication and verify local discovery still works while explicit remote Git fails with no fallback.
@@ -186,4 +192,4 @@ For one authorized macOS machine and one authorized Windows machine:
 9. On Windows, explicitly verify junction creation and removal preserves private files.
 10. Confirm public Git and tracked inventory remain clean.
 
-Do not merge or begin multi-machine rollout until synthetic contracts and both live canaries pass. Authoring the first real private skill and deploying private skills to homelab devices are separate work.
+Automated contracts and an authorized macOS canary with Pi and Codex form the initial acceptance scope. Do not claim Claude Code or live Windows validation until the applicable checklist passes. Deploying private skills to homelab devices remains separate work.
