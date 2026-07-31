@@ -100,9 +100,15 @@ checkout = "$(ConvertTo-TomlString $checkout)"
 echo %1>>"%FIXTURE_GIT_LOG%"
 if not "%1"=="clone" goto passthrough
 if "%FIXTURE_FAIL_CLONE%"=="true" exit /b 1
-"%REAL_GIT%" clone --quiet "%FIXTURE_PRIVATE_SEED%" "%~5"
+set "REQUESTED_REMOTE=%~4"
+set "DESTINATION=%~5"
+if not "%~5"=="" goto clonefixture
+set "REQUESTED_REMOTE=%~3"
+set "DESTINATION=%~4"
+:clonefixture
+"%REAL_GIT%" clone --quiet "%FIXTURE_PRIVATE_SEED%" "%DESTINATION%"
 if errorlevel 1 exit /b %ERRORLEVEL%
-"%REAL_GIT%" -C "%~5" remote set-url origin "%~4"
+"%REAL_GIT%" -C "%DESTINATION%" remote set-url origin "%REQUESTED_REMOTE%"
 exit /b %ERRORLEVEL%
 :passthrough
 "%REAL_GIT%" %*
