@@ -20,9 +20,15 @@ private_content="content-${runtime_id}"
 # The init config template accepts the generic values from noninteractive data
 # and emits them only into the machine-local configuration.
 init_input=$(jq -nc --arg remote "$remote" --arg checkout "$tmpdir/config-checkout" \
-  '{private_agent_skills:{remote:$remote,checkout:$checkout}}')
+  '{private_agent_skills:{remote:$remote,checkout:$checkout},chezmoi:{os:"darwin"}}')
 printf '[data]\n' >"$tmpdir/init-input.toml"
-CHEZMOI_ROLE=personal PATH='/usr/bin:/bin:/usr/sbin:/sbin' \
+mkdir -p "$tmpdir/init-bin"
+cat >"$tmpdir/init-bin/scutil" <<'EOF'
+#!/usr/bin/env bash
+printf 'synthetic-host\n'
+EOF
+chmod +x "$tmpdir/init-bin/scutil"
+CHEZMOI_ROLE=personal PATH="$tmpdir/init-bin:/usr/bin:/bin:/usr/sbin:/sbin" \
   "$chezmoi_bin" execute-template --init --source "$repo_root" \
   --config "$tmpdir/init-input.toml" --override-data "$init_input" \
   <"$repo_root/.chezmoi.toml.tmpl" >"$tmpdir/rendered-init.toml"
@@ -66,13 +72,9 @@ printf '[data]\npersonal = true\n\n[data.private_agent_skills]\nremote = "%s"\nc
 
 render_helper() {
   local source=$1 config=$2 output=$3 override=${4:-}
-  if [[ -n $override ]]; then
-    chezmoi execute-template --source "$source" --config "$config" --override-data "$override" \
-      <"$repo_root/dot_local/bin/executable_cz-private-agent-skills.tmpl" >"$output"
-  else
-    chezmoi execute-template --source "$source" --config "$config" \
-      <"$repo_root/dot_local/bin/executable_cz-private-agent-skills.tmpl" >"$output"
-  fi
+  [[ -n $override ]] || override='{"chezmoi":{"os":"darwin"}}'
+  chezmoi execute-template --source "$source" --config "$config" --override-data "$override" \
+    <"$repo_root/dot_local/bin/executable_cz-private-agent-skills.tmpl" >"$output"
   chmod +x "$output"
 }
 

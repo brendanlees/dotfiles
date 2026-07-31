@@ -5,8 +5,8 @@ if (Test-Path Variable:PSNativeCommandUseErrorActionPreference) {
 Set-StrictMode -Version Latest
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-$RealGit = (Get-Command git -CommandType Application -ErrorAction Stop).Source
-$Chezmoi = (Get-Command chezmoi -ErrorAction Stop).Source
+$RealGit = (Get-Command git -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+$Chezmoi = (Get-Command chezmoi -ErrorAction Stop | Select-Object -First 1).Source
 $Stage = Join-Path ([IO.Path]::GetTempPath()) "private-agent-skills-$([guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 
