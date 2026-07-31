@@ -66,17 +66,6 @@ try {
     & $RealGit -C $privateSeed add .
     & $RealGit -C $privateSeed commit -qm 'test: initialize synthetic private fixture'
 
-    $fixtureSsh = Join-Path $Stage 'fixture-ssh.cmd'
-    @'
-@echo off
-"%REAL_GIT%" upload-pack "%FIXTURE_PRIVATE_SEED%"
-exit /b %ERRORLEVEL%
-'@ | Set-Content -Encoding ascii -Path $fixtureSsh
-    $env:REAL_GIT = $RealGit
-    $env:FIXTURE_PRIVATE_SEED = $privateSeed
-    $env:GIT_SSH = $fixtureSsh
-    $env:GIT_SSH_VARIANT = 'ssh'
-
     $publicRoot = Join-Path $Stage 'public'
     Initialize-GitRepo $publicRoot
     $publicSkill = Join-Path $publicRoot 'agents/skills/public-fixture'
@@ -128,12 +117,14 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     "@echo off`r`nexit /b 1`r`n" | Set-Content -Encoding ascii -Path $failSsh
     $env:GIT_SSH = $failSsh
     try { Invoke-Helper $cloneFailHelper @('reconcile') }
-    finally { $env:GIT_SSH = $fixtureSsh }
+    finally { Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue }
     Assert-True (-not (Test-Path -LiteralPath $negativeCheckout)) 'failed clone left checkout content'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path $negativeRoot 'agents/state/private-agent-skills.json'))) 'failed clone left state'
     Assert-True (@(Get-ChildItem -LiteralPath $Stage -Filter '.negative-checkout.cz-private-agent-skills.*.tmp' -Force).Count -eq 0) 'failed clone left a temporary sibling'
 
-    # Bootstrap and direct junction composition.
+    # Existing-checkout validation and direct junction composition.
+    & $RealGit clone --quiet $privateSeed $checkout
+    & $RealGit -C $checkout remote set-url origin $remote
     Invoke-Helper $helper @('--fail', 'reconcile')
     $firstDestination = Join-Path $publicRoot "agents/skills/$firstSkill"
     Assert-True (Test-Path -LiteralPath (Join-Path $checkout '.git')) 'checkout was not cloned'
@@ -236,9 +227,6 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     Write-Host 'private agent skills Windows lifecycle ok'
 }
 finally {
-    Remove-Item Env:REAL_GIT -ErrorAction SilentlyContinue
-    Remove-Item Env:FIXTURE_PRIVATE_SEED -ErrorAction SilentlyContinue
     Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue
-    Remove-Item Env:GIT_SSH_VARIANT -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $Stage -Recurse -Force -ErrorAction SilentlyContinue
 }
