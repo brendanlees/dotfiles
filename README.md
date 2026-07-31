@@ -63,5 +63,6 @@ dot_local/bin/                  # user scripts
 - [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible usage
 - [themes](docs/themes.md) — switching theme, adding new themes
 - [file tracking](docs/file-tracking.md) — adding dotfiles to track
-- [testing](docs/testing.md) — ci pipeline and branch testing
-- [inspiration](docs/inspiration.md) — reference repos and tools
+- [testing](docs/testing.md) - ci pipeline and branch testing
+- [private agent skills](docs/private-agent-skills.md) - authorized-machine setup, authoring, recovery, and rollback
+- [inspiration](docs/inspiration.md) - reference repos and tools

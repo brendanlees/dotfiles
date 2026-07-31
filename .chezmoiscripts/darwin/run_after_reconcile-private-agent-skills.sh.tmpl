@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+helper="$HOME/.local/bin/cz-private-agent-skills"
+if [[ ! -x $helper ]]; then
+  printf 'warn: private agent skills: helper is unavailable; unrelated Chezmoi work can continue\n' >&2
+  exit 0
+fi
+
+"$helper" reconcile || {
+  printf 'warn: private agent skills: reconcile invocation failed; unrelated Chezmoi work can continue\n' >&2
+  exit 0
+}

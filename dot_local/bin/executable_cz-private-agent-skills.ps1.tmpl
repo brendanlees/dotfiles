@@ -1,0 +1,497 @@
+#!/usr/bin/env pwsh
+$ErrorActionPreference = 'Stop'
+if (Test-Path Variable:PSNativeCommandUseErrorActionPreference) {
+    $PSNativeCommandUseErrorActionPreference = $false
+}
+Set-StrictMode -Version Latest
+
+$FailHard = $false
+$Operation = 'reconcile'
+$Confirmation = ''
+$positionals = [System.Collections.Generic.List[string]]::new()
+foreach ($argument in $args) {
+    if ($argument -eq '--fail') { $FailHard = $true }
+    else { $positionals.Add([string]$argument) }
+}
+if ($positionals.Count -gt 0) { $Operation = $positionals[0] }
+if ($positionals.Count -gt 1) { $Confirmation = $positionals[1] }
+if ($positionals.Count -gt 2) { $Operation = '__invalid__' }
+
+# {{ $pasRemote := "" }}
+# {{ $pasCheckout := "" }}
+# {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") }}{{ $pasRemote = (.private_agent_skills.remote | replace "'" "''") }}{{ end }}
+# {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") }}{{ $pasCheckout = (.private_agent_skills.checkout | replace "'" "''") }}{{ end }}
+# {{ $pasSource := (.chezmoi.sourceDir | replace "'" "''") }}
+# {{ $pasConfig := (.chezmoi.configFile | replace "'" "''") }}
+$TemplatePersonal = {{ if .personal }}$true{{ else }}$false{{ end }}
+$TemplateOs = '{{ .chezmoi.os }}'
+$ConfiguredRemote = '{{ $pasRemote }}'
+$ConfiguredCheckout = '{{ $pasCheckout }}'
+$PublicSource = '{{ $pasSource }}'
+$ChezmoiConfig = '{{ $pasConfig }}'
+
+$PublicRoot = ''
+$AgentSkills = ''
+$StateFile = ''
+$ExcludeFile = ''
+$Checkout = ''
+$LedgerEntries = @()
+$LedgerPending = $false
+$LedgerRecordedCheckout = ''
+$LedgerCheckoutDeleted = $false
+$InventoryEntries = @()
+
+function Show-Usage {
+    @'
+Usage: cz-private-agent-skills [--fail] [reconcile|deactivate|finalize [--confirm-delete]]
+
+reconcile         Validate the private checkout and reconcile direct skill entries.
+deactivate        Remove only ledger-proven integration entries and preserve the checkout.
+finalize          Delete a deactivated checkout and clear configuration. Requires
+                  the exact --confirm-delete argument.
+--fail            Return a failure status instead of isolating integration errors.
+'@ | Write-Host
+}
+
+function Test-Eligible {
+    return ($TemplatePersonal -and $TemplateOs -eq 'windows')
+}
+
+function Require-Command([string]$Name) {
+    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
+        throw "$Name is required"
+    }
+}
+
+function Test-ValidSkillName([string]$Name) {
+    return ($Name -match '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
+}
+
+function Get-NormalizedPath([string]$Path) {
+    if (-not $Path -or $Path.Contains("`n") -or $Path.Contains("`r")) { return $null }
+    if (-not [IO.Path]::IsPathFullyQualified($Path)) { return $null }
+    try {
+        $full = [IO.Path]::GetFullPath($Path).TrimEnd('\', '/')
+        $parent = Split-Path -Parent $full
+        if (-not $parent -or -not (Test-Path -LiteralPath $parent -PathType Container)) { return $null }
+        return $full
+    }
+    catch { return $null }
+}
+
+function Test-PathWithin([string]$Candidate, [string]$Root) {
+    $rootPath = $Root.TrimEnd('\', '/')
+    return $Candidate.Equals($rootPath, [StringComparison]::OrdinalIgnoreCase) -or
+        $Candidate.StartsWith($rootPath + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+        $Candidate.StartsWith($rootPath + [IO.Path]::AltDirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-SshRemote([string]$Remote) {
+    if (-not $Remote -or $Remote.StartsWith('-') -or $Remote -match '[\r\n]') { return $false }
+    return ($Remote -match '^ssh://\S+$' -or $Remote -match '^[^/@:]+@[^/:\s]+:.+$')
+}
+
+function Invoke-GitText([string[]]$Arguments, [string]$Failure) {
+    $output = & git @Arguments 2>$null
+    if ($LASTEXITCODE -ne 0) { throw $Failure }
+    return (($output | ForEach-Object { [string]$_ }) -join "`n").Trim()
+}
+
+function Initialize-Paths {
+    Require-Command git
+    if (-not (Test-Path -LiteralPath $PublicSource -PathType Container)) {
+        throw 'the public Chezmoi source directory is unavailable'
+    }
+    $script:PublicRoot = (Resolve-Path -LiteralPath $PublicSource).Path.TrimEnd('\', '/')
+    $top = Invoke-GitText @('-C', $PublicRoot, 'rev-parse', '--show-toplevel') 'the public Chezmoi source is not a Git checkout'
+    $top = (Resolve-Path -LiteralPath $top).Path.TrimEnd('\', '/')
+    if (-not $top.Equals($PublicRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'the configured public source is not the public Git checkout root'
+    }
+    $script:AgentSkills = Join-Path $PublicRoot 'agents/skills'
+    $script:StateFile = Join-Path $PublicRoot 'agents/state/private-agent-skills.json'
+    $gitExclude = Invoke-GitText @('-C', $PublicRoot, 'rev-parse', '--git-path', 'info/exclude') 'cannot locate public Git excludes'
+    if (-not [IO.Path]::IsPathFullyQualified($gitExclude)) { $gitExclude = Join-Path $PublicRoot $gitExclude }
+    $script:ExcludeFile = [IO.Path]::GetFullPath($gitExclude)
+}
+
+function Test-Configuration {
+    if (-not $ConfiguredRemote -and -not $ConfiguredCheckout) { return $false }
+    if (-not $ConfiguredRemote -or -not $ConfiguredCheckout) { throw 'both the SSH remote and absolute checkout path are required' }
+    if (-not (Test-SshRemote $ConfiguredRemote)) { throw 'the configured repository must use SSH addressing' }
+    $normalized = Get-NormalizedPath $ConfiguredCheckout
+    if (-not $normalized) { throw 'the configured checkout must be a normalized absolute path with an existing parent' }
+    if ((Test-PathWithin $normalized $PublicRoot) -or (Test-PathWithin $normalized (Split-Path -Parent $AgentSkills))) {
+        throw 'the private checkout must be outside the public Chezmoi source tree and unified agent home'
+    }
+    $script:Checkout = $normalized
+    return $true
+}
+
+function Test-CheckoutIdentity {
+    $item = Get-Item -LiteralPath $Checkout -Force -ErrorAction SilentlyContinue
+    if ($null -eq $item -or -not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw 'the configured private checkout is not a regular directory'
+    }
+    $top = Invoke-GitText @('-C', $Checkout, 'rev-parse', '--show-toplevel') 'the configured private checkout is not a Git worktree'
+    $top = (Resolve-Path -LiteralPath $top).Path.TrimEnd('\', '/')
+    if (-not $top.Equals($Checkout, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'the configured path is not the private Git worktree root'
+    }
+    $remote = Invoke-GitText @('-C', $Checkout, 'remote', 'get-url', 'origin') 'the private checkout has no origin remote'
+    if ($remote -cne $ConfiguredRemote) { throw 'the private checkout origin does not match machine-local configuration' }
+}
+
+function Test-CheckoutInterrupted {
+    $gitDir = Invoke-GitText @('-C', $Checkout, 'rev-parse', '--absolute-git-dir') 'cannot inspect private Git operation state'
+    foreach ($marker in @('MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'BISECT_START', 'rebase-apply', 'rebase-merge', 'sequencer')) {
+        if (Test-Path -LiteralPath (Join-Path $gitDir $marker)) { return $true }
+    }
+    return $false
+}
+
+function Initialize-Checkout {
+    $existing = Get-Item -LiteralPath $Checkout -Force -ErrorAction SilentlyContinue
+    if ($null -ne $existing) { return }
+    $parent = Split-Path -Parent $Checkout
+    $leaf = Split-Path -Leaf $Checkout
+    $temporary = Join-Path $parent ".$leaf.cz-private-agent-skills.$([guid]::NewGuid().ToString('N')).tmp"
+    try {
+        & git clone --quiet -- $ConfiguredRemote $temporary *> $null
+        if ($LASTEXITCODE -ne 0) {
+            throw 'SSH clone failed; unlock Bitwarden, verify its SSH agent and configured alias, refresh SSH keys, then apply again'
+        }
+        Move-Item -LiteralPath $temporary -Destination $Checkout
+    }
+    catch {
+        if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Recurse -Force -ErrorAction SilentlyContinue }
+        throw
+    }
+}
+
+function Get-RequiredProperty($Object, [string]$Name) {
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) { throw "the ownership ledger is missing $Name" }
+    return $property.Value
+}
+
+function Import-Ledger {
+    $script:LedgerEntries = @()
+    $script:LedgerPending = $false
+    $script:LedgerRecordedCheckout = ''
+    $script:LedgerCheckoutDeleted = $false
+    $item = Get-Item -LiteralPath $StateFile -Force -ErrorAction SilentlyContinue
+    if ($null -eq $item) { return }
+    if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'the ownership ledger is not a regular file' }
+    try { $ledger = Get-Content -Raw -LiteralPath $StateFile | ConvertFrom-Json -ErrorAction Stop }
+    catch { throw 'the ownership ledger is malformed or uses an unknown schema' }
+    if ((Get-RequiredProperty $ledger 'schema_version') -ne 1) { throw 'the ownership ledger is malformed or uses an unknown schema' }
+    $entries = @(Get-RequiredProperty $ledger 'entries')
+    $pending = Get-RequiredProperty $ledger 'decommission_pending'
+    $recorded = Get-RequiredProperty $ledger 'recorded_checkout'
+    $deleted = Get-RequiredProperty $ledger 'checkout_deleted'
+    if ($pending -isnot [bool] -or $deleted -isnot [bool]) { throw 'the ownership ledger is malformed or uses an unknown schema' }
+    $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $validated = [System.Collections.Generic.List[object]]::new()
+    foreach ($entry in $entries) {
+        $destination = [string](Get-RequiredProperty $entry 'destination')
+        $source = [string](Get-RequiredProperty $entry 'source')
+        $exclude = [string](Get-RequiredProperty $entry 'exclude')
+        if (@($destination, $source, $exclude) | Where-Object { -not $_ -or $_ -match '[\x00-\x1f]' }) {
+            throw 'the ownership ledger contains invalid entry text'
+        }
+        $name = Split-Path -Leaf $destination
+        if (-not (Test-ValidSkillName $name)) { throw 'the ownership ledger contains an invalid skill name' }
+        if (-not $destination.Equals((Join-Path $AgentSkills $name), [StringComparison]::OrdinalIgnoreCase)) { throw 'the ownership ledger contains an unsafe destination' }
+        $skillSuffix = "$([IO.Path]::DirectorySeparatorChar)skills$([IO.Path]::DirectorySeparatorChar)$name"
+        if (-not $source.EndsWith($skillSuffix, [StringComparison]::OrdinalIgnoreCase)) { throw 'the ownership ledger contains an unsafe source' }
+        if ($exclude -cne "agents/skills/$name") { throw 'the ownership ledger contains an unsafe local exclude' }
+        if (-not $seen.Add($destination)) { throw 'the ownership ledger contains duplicate destinations' }
+        $validated.Add([pscustomobject]@{ destination = $destination; source = $source; exclude = $exclude; name = $name })
+    }
+    if ($pending) {
+        if (-not $recorded -or -not [IO.Path]::IsPathFullyQualified([string]$recorded)) { throw 'the pending ledger has no safe recorded checkout' }
+    }
+    elseif ($recorded -or $deleted) { throw 'the active ownership ledger has invalid decommission state' }
+    $script:LedgerEntries = @($validated)
+    $script:LedgerPending = $pending
+    $script:LedgerRecordedCheckout = [string]$recorded
+    $script:LedgerCheckoutDeleted = $deleted
+}
+
+function Get-Inventory {
+    $entries = [System.Collections.Generic.List[object]]::new()
+    $skillsRoot = Join-Path $Checkout 'skills'
+    if (-not (Test-Path -LiteralPath $skillsRoot -PathType Container)) { $script:InventoryEntries = @(); return }
+    foreach ($directory in @(Get-ChildItem -LiteralPath $skillsRoot -Directory -Force | Sort-Object Name)) {
+        if ($directory.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
+        if (-not (Test-Path -LiteralPath (Join-Path $directory.FullName 'SKILL.md') -PathType Leaf)) { continue }
+        if (-not (Test-ValidSkillName $directory.Name)) { throw 'the private checkout contains an invalid direct skill name' }
+        $entries.Add([pscustomobject]@{
+            name = $directory.Name
+            destination = Join-Path $AgentSkills $directory.Name
+            source = $directory.FullName.TrimEnd('\', '/')
+            exclude = "agents/skills/$($directory.Name)"
+        })
+    }
+    $script:InventoryEntries = @($entries)
+}
+
+function Get-Entry([object[]]$Entries, [string]$Destination) {
+    foreach ($entry in $Entries) {
+        if ($entry.destination.Equals($Destination, [StringComparison]::OrdinalIgnoreCase)) { return $entry }
+    }
+    return $null
+}
+
+function Get-PathEntry([string]$Path) {
+    return (Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue)
+}
+
+function Get-JunctionTarget([string]$Path) {
+    $item = Get-PathEntry $Path
+    if ($null -eq $item -or -not $item.PSIsContainer -or -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $item.LinkType -ne 'Junction') {
+        return $null
+    }
+    $target = [string]$item.Target
+    if (-not $target) { return $null }
+    return [IO.Path]::GetFullPath($target).TrimEnd('\', '/')
+}
+
+function Test-ExcludeLine([string]$Line) {
+    if (-not (Test-Path -LiteralPath $ExcludeFile -PathType Leaf)) { return $false }
+    return [bool](Get-Content -LiteralPath $ExcludeFile | Where-Object { $_ -ceq $Line } | Select-Object -First 1)
+}
+
+function Test-ReconcileSafety {
+    foreach ($entry in $InventoryEntries) {
+        $owned = Get-Entry $LedgerEntries $entry.destination
+        $existing = Get-PathEntry $entry.destination
+        if ($null -ne $owned) {
+            if (-not $owned.source.Equals($entry.source, [StringComparison]::OrdinalIgnoreCase) -or $owned.exclude -cne $entry.exclude) {
+                throw 'checkout-path changes require deactivation before reconciliation'
+            }
+            if ($null -ne $existing) {
+                $target = Get-JunctionTarget $entry.destination
+                if (-not $target -or -not $target.Equals($entry.source, [StringComparison]::OrdinalIgnoreCase)) {
+                    throw "uncertain ownership for private skill '$($entry.name)'"
+                }
+            }
+        }
+        else {
+            if ($null -ne $existing) { throw "destination collision for private skill '$($entry.name)'" }
+            if (Test-ExcludeLine $entry.exclude) { throw "uncertain local-exclude ownership for private skill '$($entry.name)'" }
+        }
+    }
+    foreach ($owned in $LedgerEntries) {
+        if ($null -ne (Get-Entry $InventoryEntries $owned.destination)) { continue }
+        $existing = Get-PathEntry $owned.destination
+        if ($null -ne $existing) {
+            $target = Get-JunctionTarget $owned.destination
+            if (-not $target -or -not $target.Equals($owned.source, [StringComparison]::OrdinalIgnoreCase)) {
+                throw 'a stale destination no longer has provable ownership'
+            }
+        }
+    }
+}
+
+function Set-ExcludeEntries([object[]]$DesiredEntries) {
+    $parent = Split-Path -Parent $ExcludeFile
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    if (-not (Test-Path -LiteralPath $ExcludeFile)) { [IO.File]::WriteAllText($ExcludeFile, '', [Text.UTF8Encoding]::new($false)) }
+    $managed = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in @($LedgerEntries) + @($DesiredEntries)) { [void]$managed.Add([string]$entry.exclude) }
+    $lines = [System.Collections.Generic.List[string]]::new()
+    foreach ($line in @(Get-Content -LiteralPath $ExcludeFile)) {
+        if (-not $managed.Contains([string]$line)) { $lines.Add([string]$line) }
+    }
+    foreach ($entry in $DesiredEntries) { $lines.Add([string]$entry.exclude) }
+    $content = if ($lines.Count) { ($lines -join "`n") + "`n" } else { '' }
+    $current = [IO.File]::ReadAllText($ExcludeFile)
+    if ($current -ceq $content) { return }
+    $temporary = Join-Path $parent ".private-agent-skills-exclude.$([guid]::NewGuid().ToString('N')).tmp"
+    [IO.File]::WriteAllText($temporary, $content, [Text.UTF8Encoding]::new($false))
+    Move-Item -LiteralPath $temporary -Destination $ExcludeFile -Force
+}
+
+function Export-Ledger([object[]]$Entries, [bool]$Pending, [string]$RecordedCheckout, [bool]$CheckoutDeleted) {
+    $parent = Split-Path -Parent $StateFile
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    $serializedEntries = @($Entries | ForEach-Object {
+        [ordered]@{ destination = [string]$_.destination; source = [string]$_.source; exclude = [string]$_.exclude }
+    })
+    $recordedValue = if ($RecordedCheckout) { $RecordedCheckout } else { $null }
+    $ledger = [ordered]@{
+        schema_version = 1
+        entries = $serializedEntries
+        decommission_pending = $Pending
+        recorded_checkout = $recordedValue
+        checkout_deleted = $CheckoutDeleted
+    }
+    $content = ($ledger | ConvertTo-Json -Depth 5) + "`n"
+    if ((Test-Path -LiteralPath $StateFile -PathType Leaf) -and ([IO.File]::ReadAllText($StateFile) -ceq $content)) { return }
+    $temporary = Join-Path $parent ".private-agent-skills-state.$([guid]::NewGuid().ToString('N')).tmp"
+    [IO.File]::WriteAllText($temporary, $content, [Text.UTF8Encoding]::new($false))
+    Move-Item -LiteralPath $temporary -Destination $StateFile -Force
+}
+
+function Remove-Junction([string]$Path) {
+    [IO.Directory]::Delete($Path, $false)
+}
+
+function Invoke-Reconcile {
+    if (-not (Test-Eligible)) { return }
+    Initialize-Paths
+    if (-not (Test-Configuration)) { return }
+    Import-Ledger
+    Initialize-Checkout
+    Test-CheckoutIdentity
+    if (Test-CheckoutInterrupted) { throw 'an interrupted Git operation is present; recover it with Git before applying again' }
+    Get-Inventory
+    Test-ReconcileSafety
+    $ownershipUnion = [System.Collections.Generic.List[object]]::new()
+    foreach ($owned in $LedgerEntries) { $ownershipUnion.Add($owned) }
+    foreach ($entry in $InventoryEntries) {
+        if ($null -eq (Get-Entry $LedgerEntries $entry.destination)) { $ownershipUnion.Add($entry) }
+    }
+    Export-Ledger @($ownershipUnion) $false '' $false
+    New-Item -ItemType Directory -Force -Path $AgentSkills | Out-Null
+    foreach ($owned in $LedgerEntries) {
+        if ($null -eq (Get-Entry $InventoryEntries $owned.destination) -and $null -ne (Get-PathEntry $owned.destination)) {
+            Remove-Junction $owned.destination
+        }
+    }
+    foreach ($entry in $InventoryEntries) {
+        $existing = Get-PathEntry $entry.destination
+        if ($null -ne $existing) {
+            $target = Get-JunctionTarget $entry.destination
+            if ($target -and $target.Equals($entry.source, [StringComparison]::OrdinalIgnoreCase)) { continue }
+            Remove-Junction $entry.destination
+        }
+        New-Item -ItemType Junction -Path $entry.destination -Target $entry.source | Out-Null
+    }
+    Set-ExcludeEntries $InventoryEntries
+    Export-Ledger $InventoryEntries $false '' $false
+}
+
+function Test-DeactivateSafety {
+    foreach ($owned in $LedgerEntries) {
+        $existing = Get-PathEntry $owned.destination
+        if ($null -eq $existing) { continue }
+        $target = Get-JunctionTarget $owned.destination
+        if (-not $target -or -not $target.Equals($owned.source, [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'deactivation cannot prove destination ownership'
+        }
+    }
+}
+
+function Get-RecordedCheckout {
+    if ($ConfiguredCheckout) {
+        $normalized = Get-NormalizedPath $ConfiguredCheckout
+        if (-not $normalized) { throw 'cannot normalize the configured checkout for deactivation' }
+        return $normalized
+    }
+    if ($LedgerEntries.Count -gt 0) {
+        return (Split-Path -Parent (Split-Path -Parent ([string]$LedgerEntries[0].source)))
+    }
+    throw 'cannot prove which checkout deactivation must preserve'
+}
+
+function Invoke-Deactivate {
+    if (-not (Test-Eligible)) { return }
+    Initialize-Paths
+    Import-Ledger
+    if (-not (Test-Path -LiteralPath $StateFile -PathType Leaf)) { return }
+    if ($LedgerCheckoutDeleted) { throw 'the recorded checkout was already deleted; retry finalization instead' }
+    Test-DeactivateSafety
+    $recorded = if ($LedgerRecordedCheckout) { $LedgerRecordedCheckout } else { Get-RecordedCheckout }
+    foreach ($owned in $LedgerEntries) {
+        if ($null -ne (Get-PathEntry $owned.destination)) { Remove-Junction $owned.destination }
+    }
+    Set-ExcludeEntries @()
+    Export-Ledger $LedgerEntries $true $recorded $false
+}
+
+function Clear-MachineConfiguration {
+    if (-not $ChezmoiConfig -or -not (Test-Path -LiteralPath $ChezmoiConfig)) { return }
+    $item = Get-Item -LiteralPath $ChezmoiConfig -Force
+    if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'machine-local configuration is not a regular file' }
+    $header = '[data.private_agent_skills]'
+    $sourceLines = @([IO.File]::ReadAllLines($ChezmoiConfig))
+    $count = @($sourceLines | Where-Object { $_ -ceq $header }).Count
+    if ($count -gt 1) { throw 'machine-local private configuration is ambiguous' }
+    if ($count -eq 0) { return }
+    $output = [System.Collections.Generic.List[string]]::new()
+    $skipping = $false
+    foreach ($line in $sourceLines) {
+        if ($line -ceq $header) { $skipping = $true; continue }
+        if ($skipping -and $line.StartsWith('[')) { $skipping = $false }
+        if (-not $skipping) { $output.Add($line) }
+    }
+    $parent = Split-Path -Parent $ChezmoiConfig
+    $temporary = Join-Path $parent ".private-agent-skills-config.$([guid]::NewGuid().ToString('N')).tmp"
+    [IO.File]::WriteAllLines($temporary, $output, [Text.UTF8Encoding]::new($false))
+    Move-Item -LiteralPath $temporary -Destination $ChezmoiConfig -Force
+}
+
+function Invoke-Finalize {
+    if (-not (Test-Eligible)) { return }
+    if ($Confirmation -cne '--confirm-delete') { throw 'finalization requires the exact --confirm-delete argument' }
+    Initialize-Paths
+    Import-Ledger
+    if (-not (Test-Path -LiteralPath $StateFile -PathType Leaf) -or -not $LedgerPending) { throw 'deactivation must complete before finalization' }
+    foreach ($owned in $LedgerEntries) {
+        if ($null -ne (Get-PathEntry $owned.destination)) { throw 'an integration destination still exists; finalization refused' }
+        if (Test-ExcludeLine $owned.exclude) { throw 'an owned local exclude still exists; finalization refused' }
+    }
+    if (-not $LedgerCheckoutDeleted) {
+        if (-not $ConfiguredRemote -or -not $ConfiguredCheckout -or -not (Test-SshRemote $ConfiguredRemote)) {
+            throw 'machine-local SSH configuration is required to prove checkout identity'
+        }
+        $normalized = Get-NormalizedPath $ConfiguredCheckout
+        if (-not $normalized -or -not $normalized.Equals($LedgerRecordedCheckout, [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'the configured checkout no longer matches deactivation state'
+        }
+        if ((Test-PathWithin $normalized $PublicRoot) -or (Test-PathWithin $normalized (Split-Path -Parent $AgentSkills))) {
+            throw 'the recorded checkout overlaps protected public paths'
+        }
+        $script:Checkout = $normalized
+        if ($null -ne (Get-PathEntry $Checkout)) {
+            Test-CheckoutIdentity
+            Remove-Item -LiteralPath $Checkout -Recurse -Force
+        }
+        Export-Ledger $LedgerEntries $true $LedgerRecordedCheckout $true
+    }
+    Clear-MachineConfiguration
+    Remove-Item -LiteralPath $StateFile -Force
+}
+
+try {
+    switch ($Operation) {
+        'reconcile' {
+            if ($positionals.Count -gt 1) { throw 'invalid reconcile arguments' }
+            Invoke-Reconcile
+        }
+        'deactivate' {
+            if ($positionals.Count -gt 1) { throw 'invalid deactivate arguments' }
+            Invoke-Deactivate
+        }
+        'finalize' {
+            if ($positionals.Count -ne 2) { throw 'finalize requires --confirm-delete' }
+            Invoke-Finalize
+        }
+        '-h' { Show-Usage }
+        '--help' { Show-Usage }
+        'help' { Show-Usage }
+        default { Show-Usage; throw 'invalid private-agent-skills operation' }
+    }
+}
+catch {
+    if ($FailHard) {
+        [Console]::Error.WriteLine("error: private agent skills: $($_.Exception.Message)")
+        exit 1
+    }
+    Write-Warning "private agent skills: $($_.Exception.Message)"
+    Write-Warning 'private agent skills: integration was skipped; unrelated Chezmoi work can continue'
+    exit 0
+}

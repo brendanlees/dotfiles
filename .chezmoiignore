@@ -77,8 +77,12 @@ Library
 !.local/bin/chezmoi-readd-library
 {{- if eq .chezmoi.os "windows" }}
 !.local/bin/cz-ssh-refresh.ps1
+!.local/bin/cz-private-agent-skills.ps1
 {{- else }}
 !.local/bin/cz-ssh-refresh
+{{- if eq .chezmoi.os "darwin" }}
+!.local/bin/cz-private-agent-skills
+{{- end }}
 {{- end }}
 .local/share/fonts
 {{- end }}
@@ -89,6 +93,11 @@ AppData
 .glzr
 .config/tacky-borders
 .local/bin/cz-ssh-refresh.ps1
+.local/bin/cz-private-agent-skills.ps1
+{{- end }}
+
+{{- if ne .chezmoi.os "darwin" }}
+.local/bin/cz-private-agent-skills
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}

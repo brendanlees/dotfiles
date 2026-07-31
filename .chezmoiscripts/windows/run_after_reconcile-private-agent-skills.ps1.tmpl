@@ -1,0 +1,19 @@
+#!/usr/bin/env pwsh
+$ErrorActionPreference = 'Continue'
+
+$helper = Join-Path $HOME '.local/bin/cz-private-agent-skills.ps1'
+if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+    Write-Warning 'private agent skills: helper is unavailable; unrelated Chezmoi work can continue'
+    exit 0
+}
+
+try {
+    & $helper reconcile
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning 'private agent skills: reconcile invocation failed; unrelated Chezmoi work can continue'
+    }
+}
+catch {
+    Write-Warning "private agent skills: reconcile invocation failed; unrelated Chezmoi work can continue: $($_.Exception.Message)"
+}
+exit 0
