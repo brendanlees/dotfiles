@@ -138,7 +138,7 @@ function Test-CheckoutIdentity {
     if (-not $top.Equals($Checkout, [StringComparison]::OrdinalIgnoreCase)) {
         throw 'the configured path is not the private Git worktree root'
     }
-    $remote = Invoke-GitText @('-C', $Checkout, 'remote', 'get-url', 'origin') 'the private checkout has no origin remote'
+    $remote = Invoke-GitText @('-C', $Checkout, 'config', '--get', 'remote.origin.url') 'the private checkout has no origin remote'
     if ($remote -cne $ConfiguredRemote) { throw 'the private checkout origin does not match machine-local configuration' }
 }
 

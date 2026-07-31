@@ -66,6 +66,12 @@ try {
     & $RealGit -C $privateSeed add .
     & $RealGit -C $privateSeed commit -qm 'test: initialize synthetic private fixture'
 
+    $gitConfig = Join-Path $Stage 'git-fixture.config'
+    $seedUri = ([Uri]::new((Resolve-Path -LiteralPath $privateSeed).Path)).AbsoluteUri
+    & $RealGit config --file $gitConfig "url.$seedUri.insteadOf" $remote
+    $env:GIT_CONFIG_GLOBAL = $gitConfig
+    $env:GIT_CONFIG_NOSYSTEM = '1'
+
     $publicRoot = Join-Path $Stage 'public'
     Initialize-GitRepo $publicRoot
     $publicSkill = Join-Path $publicRoot 'agents/skills/public-fixture'
@@ -92,34 +98,6 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     Assert-True ((Get-Content -Raw $helper).Contains("`$TemplatePersonal = `$true")) 'personal data did not render'
     Assert-True ((Get-Content -Raw $helper).Contains("`$TemplateOs = 'windows'")) 'Windows data did not render'
 
-    $fakeBin = Join-Path $Stage 'bin'
-    New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
-    $fakeCmd = Join-Path $fakeBin 'git.cmd'
-    @'
-@echo off
-echo %1>>"%FIXTURE_GIT_LOG%"
-if not "%1"=="clone" goto passthrough
-if "%FIXTURE_FAIL_CLONE%"=="true" exit /b 1
-set "REQUESTED_REMOTE=%~4"
-set "DESTINATION=%~5"
-if not "%~5"=="" goto clonefixture
-set "REQUESTED_REMOTE=%~3"
-set "DESTINATION=%~4"
-:clonefixture
-"%REAL_GIT%" clone --quiet "%FIXTURE_PRIVATE_SEED%" "%DESTINATION%"
-if errorlevel 1 exit /b %ERRORLEVEL%
-"%REAL_GIT%" -C "%DESTINATION%" remote set-url origin "%REQUESTED_REMOTE%"
-exit /b %ERRORLEVEL%
-:passthrough
-"%REAL_GIT%" %*
-exit /b %ERRORLEVEL%
-'@ | Set-Content -Encoding ascii -Path $fakeCmd
-    $env:REAL_GIT = $RealGit
-    $env:FIXTURE_PRIVATE_SEED = $privateSeed
-    $env:FIXTURE_GIT_LOG = Join-Path $Stage 'git-operations.log'
-    $originalPath = $env:PATH
-    $env:PATH = "$fakeBin$([IO.Path]::PathSeparator)$originalPath"
-
     # Negative eligibility with otherwise valid machine-local configuration is a no-op.
     $negativeRoot = Join-Path $Stage 'negative-public'
     Initialize-GitRepo $negativeRoot
@@ -141,9 +119,17 @@ exit /b %ERRORLEVEL%
     [IO.File]::WriteAllText($cloneFailConfig, $configContent.Replace((ConvertTo-TomlString $checkout), (ConvertTo-TomlString $negativeCheckout)), [Text.UTF8Encoding]::new($false))
     $cloneFailHelper = Join-Path $Stage 'clone-fail-helper.ps1'
     Render-Helper $negativeRoot $cloneFailConfig $cloneFailHelper
-    $env:FIXTURE_FAIL_CLONE = 'true'
-    Invoke-Helper $cloneFailHelper @('reconcile')
-    Remove-Item Env:FIXTURE_FAIL_CLONE
+    $emptyGitConfig = Join-Path $Stage 'git-no-rewrite.config'
+    [IO.File]::WriteAllText($emptyGitConfig, '', [Text.UTF8Encoding]::new($false))
+    $failSsh = Join-Path $Stage 'fail-ssh.cmd'
+    "@echo off`r`nexit /b 1`r`n" | Set-Content -Encoding ascii -Path $failSsh
+    $env:GIT_CONFIG_GLOBAL = $emptyGitConfig
+    $env:GIT_SSH = $failSsh
+    try { Invoke-Helper $cloneFailHelper @('reconcile') }
+    finally {
+        $env:GIT_CONFIG_GLOBAL = $gitConfig
+        Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue
+    }
     Assert-True (-not (Test-Path -LiteralPath $negativeCheckout)) 'failed clone left checkout content'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path $negativeRoot 'agents/state/private-agent-skills.json'))) 'failed clone left state'
     Assert-True (@(Get-ChildItem -LiteralPath $Stage -Filter '.negative-checkout.cz-private-agent-skills.*.tmp' -Force).Count -eq 0) 'failed clone left a temporary sibling'
@@ -167,7 +153,6 @@ exit /b %ERRORLEVEL%
     Invoke-Helper $helper @('--fail', 'reconcile')
     Assert-True ((Get-FileHash -Algorithm SHA256 $stateFile).Hash -eq $stateHash) 'second reconcile changed state'
     Assert-True ((Get-FileHash -Algorithm SHA256 $excludeFile).Hash -eq $excludeHash) 'second reconcile changed excludes'
-    Assert-True (@(Get-Content $env:FIXTURE_GIT_LOG | Where-Object { $_ -eq 'clone' }).Count -eq 1) 'checkout cloned more than once'
 
     # Dirty inventory reconciles, interrupted operations pause, and collisions remain untouched.
     Add-Content -LiteralPath (Join-Path $firstDestination 'SKILL.md') -Value $privateContent
@@ -252,6 +237,8 @@ exit /b %ERRORLEVEL%
     Write-Host 'private agent skills Windows lifecycle ok'
 }
 finally {
-    if ($null -ne (Get-Variable originalPath -ErrorAction SilentlyContinue)) { $env:PATH = $originalPath }
+    Remove-Item Env:GIT_CONFIG_GLOBAL -ErrorAction SilentlyContinue
+    Remove-Item Env:GIT_CONFIG_NOSYSTEM -ErrorAction SilentlyContinue
+    Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $Stage -Recurse -Force -ErrorAction SilentlyContinue
 }

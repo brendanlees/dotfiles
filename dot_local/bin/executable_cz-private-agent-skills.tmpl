@@ -128,7 +128,7 @@ validate_checkout() {
   top=$(git -C "$CHECKOUT" rev-parse --show-toplevel 2>/dev/null) || fatal 'the configured private checkout is not a Git worktree'
   top=$(cd "$top" 2>/dev/null && pwd -P) || fatal 'cannot resolve the private Git worktree'
   [[ $top == "$CHECKOUT" ]] || fatal 'the configured path is not the private Git worktree root'
-  remote=$(git -C "$CHECKOUT" remote get-url origin 2>/dev/null) || fatal 'the private checkout has no origin remote'
+  remote=$(git -C "$CHECKOUT" config --get remote.origin.url 2>/dev/null) || fatal 'the private checkout has no origin remote'
   [[ $remote == "$CONFIGURED_REMOTE" ]] || fatal 'the private checkout origin does not match machine-local configuration'
 }
 
