@@ -94,26 +94,20 @@ checkout = "$(ConvertTo-TomlString $checkout)"
 
     $fakeBin = Join-Path $Stage 'bin'
     New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
-    $fakeScript = Join-Path $fakeBin 'fake-git.ps1'
-    @'
-param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
-$ErrorActionPreference = 'Stop'
-if ($GitArgs.Count -gt 0) { Add-Content -LiteralPath $env:FIXTURE_GIT_LOG -Value $GitArgs[0] }
-if ($GitArgs.Count -gt 0 -and $GitArgs[0] -eq 'clone') {
-    if ($env:FIXTURE_FAIL_CLONE -eq 'true') { exit 1 }
-    $destination = $GitArgs[-1]
-    $requestedRemote = $GitArgs[-2]
-    & $env:REAL_GIT clone --quiet $env:FIXTURE_PRIVATE_SEED $destination
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    & $env:REAL_GIT -C $destination remote set-url origin $requestedRemote
-    exit $LASTEXITCODE
-}
-& $env:REAL_GIT @GitArgs
-exit $LASTEXITCODE
-'@ | Set-Content -Encoding utf8NoBOM -Path $fakeScript
     $fakeCmd = Join-Path $fakeBin 'git.cmd'
-    "@echo off`r`npwsh -NoProfile -File `"$fakeScript`" %*`r`nexit /b %ERRORLEVEL%`r`n" |
-        Set-Content -Encoding ascii -Path $fakeCmd
+    @'
+@echo off
+echo %1>>"%FIXTURE_GIT_LOG%"
+if not "%1"=="clone" goto passthrough
+if "%FIXTURE_FAIL_CLONE%"=="true" exit /b 1
+"%REAL_GIT%" clone --quiet "%FIXTURE_PRIVATE_SEED%" "%~5"
+if errorlevel 1 exit /b %ERRORLEVEL%
+"%REAL_GIT%" -C "%~5" remote set-url origin "%~4"
+exit /b %ERRORLEVEL%
+:passthrough
+"%REAL_GIT%" %*
+exit /b %ERRORLEVEL%
+'@ | Set-Content -Encoding ascii -Path $fakeCmd
     $env:REAL_GIT = $RealGit
     $env:FIXTURE_PRIVATE_SEED = $privateSeed
     $env:FIXTURE_GIT_LOG = Join-Path $Stage 'git-operations.log'
