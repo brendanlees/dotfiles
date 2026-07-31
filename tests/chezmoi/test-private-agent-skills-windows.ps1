@@ -66,11 +66,16 @@ try {
     & $RealGit -C $privateSeed add .
     & $RealGit -C $privateSeed commit -qm 'test: initialize synthetic private fixture'
 
-    $gitConfig = Join-Path $Stage 'git-fixture.config'
-    $seedUri = ([Uri]::new((Resolve-Path -LiteralPath $privateSeed).Path)).AbsoluteUri
-    & $RealGit config --file $gitConfig "url.$seedUri.insteadOf" $remote
-    $env:GIT_CONFIG_GLOBAL = $gitConfig
-    $env:GIT_CONFIG_NOSYSTEM = '1'
+    $fixtureSsh = Join-Path $Stage 'fixture-ssh.cmd'
+    @'
+@echo off
+"%REAL_GIT%" upload-pack "%FIXTURE_PRIVATE_SEED%"
+exit /b %ERRORLEVEL%
+'@ | Set-Content -Encoding ascii -Path $fixtureSsh
+    $env:REAL_GIT = $RealGit
+    $env:FIXTURE_PRIVATE_SEED = $privateSeed
+    $env:GIT_SSH = $fixtureSsh
+    $env:GIT_SSH_VARIANT = 'ssh'
 
     $publicRoot = Join-Path $Stage 'public'
     Initialize-GitRepo $publicRoot
@@ -119,17 +124,11 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     [IO.File]::WriteAllText($cloneFailConfig, $configContent.Replace((ConvertTo-TomlString $checkout), (ConvertTo-TomlString $negativeCheckout)), [Text.UTF8Encoding]::new($false))
     $cloneFailHelper = Join-Path $Stage 'clone-fail-helper.ps1'
     Render-Helper $negativeRoot $cloneFailConfig $cloneFailHelper
-    $emptyGitConfig = Join-Path $Stage 'git-no-rewrite.config'
-    [IO.File]::WriteAllText($emptyGitConfig, '', [Text.UTF8Encoding]::new($false))
     $failSsh = Join-Path $Stage 'fail-ssh.cmd'
     "@echo off`r`nexit /b 1`r`n" | Set-Content -Encoding ascii -Path $failSsh
-    $env:GIT_CONFIG_GLOBAL = $emptyGitConfig
     $env:GIT_SSH = $failSsh
     try { Invoke-Helper $cloneFailHelper @('reconcile') }
-    finally {
-        $env:GIT_CONFIG_GLOBAL = $gitConfig
-        Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue
-    }
+    finally { $env:GIT_SSH = $fixtureSsh }
     Assert-True (-not (Test-Path -LiteralPath $negativeCheckout)) 'failed clone left checkout content'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path $negativeRoot 'agents/state/private-agent-skills.json'))) 'failed clone left state'
     Assert-True (@(Get-ChildItem -LiteralPath $Stage -Filter '.negative-checkout.cz-private-agent-skills.*.tmp' -Force).Count -eq 0) 'failed clone left a temporary sibling'
@@ -237,8 +236,9 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     Write-Host 'private agent skills Windows lifecycle ok'
 }
 finally {
-    Remove-Item Env:GIT_CONFIG_GLOBAL -ErrorAction SilentlyContinue
-    Remove-Item Env:GIT_CONFIG_NOSYSTEM -ErrorAction SilentlyContinue
+    Remove-Item Env:REAL_GIT -ErrorAction SilentlyContinue
+    Remove-Item Env:FIXTURE_PRIVATE_SEED -ErrorAction SilentlyContinue
     Remove-Item Env:GIT_SSH -ErrorAction SilentlyContinue
+    Remove-Item Env:GIT_SSH_VARIANT -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $Stage -Recurse -Force -ErrorAction SilentlyContinue
 }
