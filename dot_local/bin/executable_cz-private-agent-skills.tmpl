@@ -1,0 +1,501 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+FAIL_HARD=false
+if [[ ${1:-} == --fail ]]; then
+  FAIL_HARD=true
+  shift
+fi
+
+OPERATION=${1:-reconcile}
+shift || true
+ARGUMENT_COUNT=$#
+CONFIRMATION=${1:-}
+
+warn() { printf 'warn: private agent skills: %s\n' "$*" >&2; }
+fatal() { printf 'error: private agent skills: %s\n' "$*" >&2; exit 1; }
+usage() {
+  cat <<'EOF'
+Usage: cz-private-agent-skills [--fail] [reconcile|deactivate|finalize [--confirm-delete]]
+
+reconcile         Validate the private checkout and reconcile direct skill entries.
+deactivate        Remove only ledger-proven integration entries and preserve the checkout.
+finalize          Delete a deactivated checkout and clear configuration. Requires
+                  the exact --confirm-delete argument.
+--fail            Return a failure status instead of isolating integration errors.
+EOF
+}
+
+# {{ $pasRemote := "" }}
+# {{ $pasCheckout := "" }}
+# {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") }}{{ $pasRemote = (.private_agent_skills.remote | replace "'" "'\\''") }}{{ end }}
+# {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") }}{{ $pasCheckout = (.private_agent_skills.checkout | replace "'" "'\\''") }}{{ end }}
+# {{ $pasSource := (.chezmoi.sourceDir | replace "'" "'\\''") }}
+# {{ $pasConfig := (.chezmoi.configFile | replace "'" "'\\''") }}
+TEMPLATE_PERSONAL='{{ if .personal }}true{{ else }}false{{ end }}'
+TEMPLATE_OS='{{ .chezmoi.os }}'
+# shellcheck disable=SC2016
+CONFIGURED_REMOTE='{{ $pasRemote }}'
+# shellcheck disable=SC2016
+CONFIGURED_CHECKOUT='{{ $pasCheckout }}'
+# shellcheck disable=SC2016
+PUBLIC_SOURCE='{{ $pasSource }}'
+# shellcheck disable=SC2016
+CHEZMOI_CONFIG='{{ $pasConfig }}'
+
+PUBLIC_ROOT=''
+AGENT_SKILLS=''
+STATE_FILE=''
+EXCLUDE_FILE=''
+CHECKOUT=''
+
+declare -a LEDGER_DESTINATIONS=()
+declare -a LEDGER_SOURCES=()
+declare -a LEDGER_EXCLUDES=()
+LEDGER_PENDING=false
+LEDGER_RECORDED_CHECKOUT=''
+LEDGER_CHECKOUT_DELETED=false
+
+declare -a INVENTORY_NAMES=()
+declare -a INVENTORY_DESTINATIONS=()
+declare -a INVENTORY_SOURCES=()
+declare -a INVENTORY_EXCLUDES=()
+
+is_eligible() {
+  [[ $TEMPLATE_PERSONAL == true && $TEMPLATE_OS == darwin ]]
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || fatal "$1 is required"
+}
+
+valid_skill_name() {
+  [[ $1 =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$ ]]
+}
+
+path_is_within() {
+  local candidate=$1 root=$2
+  [[ $candidate == "$root" || $candidate == "$root"/* ]]
+}
+
+normalize_checkout() {
+  local raw=$1 parent base physical_parent
+  [[ $raw == /* && $raw != *$'\n'* && $raw != *$'\r'* ]] || return 1
+  while [[ $raw != / && $raw == */ ]]; do raw=${raw%/}; done
+  parent=${raw%/*}
+  base=${raw##*/}
+  [[ -n $parent ]] || parent=/
+  [[ -n $base && $base != . && $base != .. ]] || return 1
+  [[ -d $parent ]] || return 1
+  physical_parent=$(cd "$parent" 2>/dev/null && pwd -P) || return 1
+  printf '%s/%s\n' "${physical_parent%/}" "$base"
+}
+
+valid_ssh_remote() {
+  local remote=$1
+  [[ -n $remote && $remote != -* && $remote != *$'\n'* && $remote != *$'\r'* ]] || return 1
+  [[ $remote =~ ^ssh://[^[:space:]]+$ || $remote =~ ^[^/@:[:space:]]+@[^/:[:space:]]+:.+$ ]]
+}
+
+initialize_paths() {
+  require_command git
+  require_command jq
+  [[ -d $PUBLIC_SOURCE ]] || fatal 'the public Chezmoi source directory is unavailable'
+  PUBLIC_ROOT=$(cd "$PUBLIC_SOURCE" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Chezmoi source directory'
+  local top
+  top=$(git -C "$PUBLIC_ROOT" rev-parse --show-toplevel 2>/dev/null) || fatal 'the public Chezmoi source is not a Git checkout'
+  top=$(cd "$top" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Git checkout'
+  [[ $top == "$PUBLIC_ROOT" ]] || fatal 'the configured public source is not the public Git checkout root'
+  AGENT_SKILLS="$PUBLIC_ROOT/agents/skills"
+  STATE_FILE="$PUBLIC_ROOT/agents/state/private-agent-skills.json"
+  EXCLUDE_FILE=$(git -C "$PUBLIC_ROOT" rev-parse --git-path info/exclude 2>/dev/null) || fatal 'cannot locate public Git excludes'
+  [[ $EXCLUDE_FILE == /* ]] || EXCLUDE_FILE="$PUBLIC_ROOT/$EXCLUDE_FILE"
+}
+
+validate_configuration() {
+  [[ -n $CONFIGURED_REMOTE || -n $CONFIGURED_CHECKOUT ]] || return 2
+  [[ -n $CONFIGURED_REMOTE && -n $CONFIGURED_CHECKOUT ]] || fatal 'both the SSH remote and absolute checkout path are required'
+  valid_ssh_remote "$CONFIGURED_REMOTE" || fatal 'the configured repository must use SSH addressing'
+  CHECKOUT=$(normalize_checkout "$CONFIGURED_CHECKOUT") || fatal 'the configured checkout must be a normalized absolute path with an existing parent'
+  path_is_within "$CHECKOUT" "$PUBLIC_ROOT" && fatal 'the private checkout must be outside the public Chezmoi source tree'
+  path_is_within "$CHECKOUT" "${AGENT_SKILLS%/skills}" && fatal 'the private checkout must be outside the unified agent home'
+  return 0
+}
+
+validate_checkout() {
+  [[ -d $CHECKOUT && ! -L $CHECKOUT ]] || fatal 'the configured private checkout is not a regular directory'
+  local top remote
+  top=$(git -C "$CHECKOUT" rev-parse --show-toplevel 2>/dev/null) || fatal 'the configured private checkout is not a Git worktree'
+  top=$(cd "$top" 2>/dev/null && pwd -P) || fatal 'cannot resolve the private Git worktree'
+  [[ $top == "$CHECKOUT" ]] || fatal 'the configured path is not the private Git worktree root'
+  remote=$(git -C "$CHECKOUT" config --get remote.origin.url 2>/dev/null) || fatal 'the private checkout has no origin remote'
+  [[ $remote == "$CONFIGURED_REMOTE" ]] || fatal 'the private checkout origin does not match machine-local configuration'
+}
+
+checkout_is_interrupted() {
+  local git_dir marker
+  git_dir=$(git -C "$CHECKOUT" rev-parse --absolute-git-dir 2>/dev/null) || return 0
+  for marker in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_START rebase-apply rebase-merge sequencer; do
+    [[ ! -e "$git_dir/$marker" ]] || return 0
+  done
+  return 1
+}
+
+clone_checkout_if_missing() {
+  [[ ! -e $CHECKOUT && ! -L $CHECKOUT ]] || return 0
+  local parent base temporary
+  parent=${CHECKOUT%/*}
+  base=${CHECKOUT##*/}
+  temporary="$parent/.${base}.cz-private-agent-skills.$$.tmp"
+  [[ ! -e $temporary && ! -L $temporary ]] || fatal 'a private checkout temporary sibling already exists'
+  if ! git clone --quiet -- "$CONFIGURED_REMOTE" "$temporary" >/dev/null 2>&1; then
+    rm -rf -- "$temporary"
+    fatal 'SSH clone failed; unlock Bitwarden, verify its SSH agent and configured alias, refresh SSH keys, then apply again'
+  fi
+  if ! mv -- "$temporary" "$CHECKOUT"; then
+    rm -rf -- "$temporary"
+    fatal 'the validated temporary checkout could not be moved into place'
+  fi
+}
+
+load_ledger() {
+  LEDGER_DESTINATIONS=()
+  LEDGER_SOURCES=()
+  LEDGER_EXCLUDES=()
+  LEDGER_PENDING=false
+  LEDGER_RECORDED_CHECKOUT=''
+  LEDGER_CHECKOUT_DELETED=false
+  [[ -e $STATE_FILE ]] || return 0
+  [[ -f $STATE_FILE && ! -L $STATE_FILE ]] || fatal 'the ownership ledger is not a regular file'
+  jq -e '
+    type == "object" and
+    .schema_version == 1 and
+    (.entries | type == "array") and
+    (.decommission_pending | type == "boolean") and
+    ((.recorded_checkout == null) or (.recorded_checkout | type == "string")) and
+    (.checkout_deleted | type == "boolean") and
+    ([.entries[].destination] | length == (unique | length)) and
+    all(.entries[];
+      type == "object" and
+      (.destination | type == "string") and
+      (.source | type == "string") and
+      (.exclude | type == "string") and
+      ([.destination, .source, .exclude] | all(test("[[:cntrl:]]") | not))
+    )
+  ' "$STATE_FILE" >/dev/null 2>&1 || fatal 'the ownership ledger is malformed or uses an unknown schema'
+  local count i destination source exclude name
+  count=$(jq '.entries | length' "$STATE_FILE")
+  for ((i = 0; i < count; i++)); do
+    destination=$(jq -r --argjson i "$i" '.entries[$i].destination' "$STATE_FILE")
+    source=$(jq -r --argjson i "$i" '.entries[$i].source' "$STATE_FILE")
+    exclude=$(jq -r --argjson i "$i" '.entries[$i].exclude' "$STATE_FILE")
+    name=${destination##*/}
+    valid_skill_name "$name" || fatal 'the ownership ledger contains an invalid skill name'
+    [[ $destination == "$AGENT_SKILLS/$name" ]] || fatal 'the ownership ledger contains an unsafe destination'
+    [[ $source == */skills/"$name" && $source == /* ]] || fatal 'the ownership ledger contains an unsafe source'
+    [[ $exclude == "agents/skills/$name" ]] || fatal 'the ownership ledger contains an unsafe local exclude'
+    LEDGER_DESTINATIONS+=("$destination")
+    LEDGER_SOURCES+=("$source")
+    LEDGER_EXCLUDES+=("$exclude")
+  done
+  LEDGER_PENDING=$(jq -r '.decommission_pending' "$STATE_FILE")
+  LEDGER_RECORDED_CHECKOUT=$(jq -r '.recorded_checkout // ""' "$STATE_FILE")
+  LEDGER_CHECKOUT_DELETED=$(jq -r '.checkout_deleted' "$STATE_FILE")
+  if [[ $LEDGER_PENDING == true ]]; then
+    [[ -n $LEDGER_RECORDED_CHECKOUT && $LEDGER_RECORDED_CHECKOUT == /* ]] || fatal 'the pending ledger has no safe recorded checkout'
+  elif [[ -n $LEDGER_RECORDED_CHECKOUT || $LEDGER_CHECKOUT_DELETED == true ]]; then
+    fatal 'the active ownership ledger has invalid decommission state'
+  fi
+}
+
+inventory_checkout() {
+  INVENTORY_NAMES=()
+  INVENTORY_DESTINATIONS=()
+  INVENTORY_SOURCES=()
+  INVENTORY_EXCLUDES=()
+  local skills_root="$CHECKOUT/skills" directory name
+  [[ -d $skills_root ]] || return 0
+  while IFS= read -r directory; do
+    [[ -n $directory && -d $directory && ! -L $directory && -f $directory/SKILL.md ]] || continue
+    name=${directory##*/}
+    valid_skill_name "$name" || fatal 'the private checkout contains an invalid direct skill name'
+    INVENTORY_NAMES+=("$name")
+    INVENTORY_DESTINATIONS+=("$AGENT_SKILLS/$name")
+    INVENTORY_SOURCES+=("$directory")
+    INVENTORY_EXCLUDES+=("agents/skills/$name")
+  done < <(find "$skills_root" -mindepth 1 -maxdepth 1 -type d -print | LC_ALL=C sort)
+}
+
+ledger_index_for_destination() {
+  local wanted=$1 i
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    [[ ${LEDGER_DESTINATIONS[$i]} == "$wanted" ]] && { printf '%s\n' "$i"; return 0; }
+  done
+  return 1
+}
+
+inventory_index_for_destination() {
+  local wanted=$1 i
+  for ((i = 0; i < ${#INVENTORY_DESTINATIONS[@]}; i++)); do
+    [[ ${INVENTORY_DESTINATIONS[$i]} == "$wanted" ]] && { printf '%s\n' "$i"; return 0; }
+  done
+  return 1
+}
+
+path_entry_exists() {
+  [[ -e $1 || -L $1 ]]
+}
+
+exclude_has_line() {
+  local line=$1
+  [[ -f $EXCLUDE_FILE ]] && grep -Fqx -- "$line" "$EXCLUDE_FILE"
+}
+
+preflight_reconcile() {
+  local i j destination source exclude target
+  for ((i = 0; i < ${#INVENTORY_DESTINATIONS[@]}; i++)); do
+    destination=${INVENTORY_DESTINATIONS[$i]}
+    source=${INVENTORY_SOURCES[$i]}
+    exclude=${INVENTORY_EXCLUDES[$i]}
+    if j=$(ledger_index_for_destination "$destination"); then
+      [[ ${LEDGER_SOURCES[$j]} == "$source" && ${LEDGER_EXCLUDES[$j]} == "$exclude" ]] || fatal 'checkout-path changes require deactivation before reconciliation'
+      if path_entry_exists "$destination"; then
+        [[ -L $destination ]] || fatal "destination collision for private skill '${INVENTORY_NAMES[$i]}'"
+        target=$(readlink "$destination") || fatal 'cannot inspect an owned skill link'
+        [[ $target == "$source" ]] || fatal "uncertain ownership for private skill '${INVENTORY_NAMES[$i]}'"
+      fi
+    else
+      path_entry_exists "$destination" && fatal "destination collision for private skill '${INVENTORY_NAMES[$i]}'"
+      exclude_has_line "$exclude" && fatal "uncertain local-exclude ownership for private skill '${INVENTORY_NAMES[$i]}'"
+    fi
+  done
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    destination=${LEDGER_DESTINATIONS[$i]}
+    inventory_index_for_destination "$destination" >/dev/null && continue
+    if path_entry_exists "$destination"; then
+      [[ -L $destination ]] || fatal 'a stale owned destination was replaced by an unexpected entry'
+      target=$(readlink "$destination") || fatal 'cannot inspect a stale owned skill link'
+      [[ $target == "${LEDGER_SOURCES[$i]}" ]] || fatal 'a stale destination no longer has provable ownership'
+    fi
+  done
+}
+
+update_excludes() {
+  local tmp line i
+  mkdir -p "${EXCLUDE_FILE%/*}"
+  [[ -e $EXCLUDE_FILE ]] || : >"$EXCLUDE_FILE"
+  tmp=$(mktemp "${EXCLUDE_FILE%/*}/.private-agent-skills-exclude.XXXXXX") || return 1
+  declare -A managed=()
+  for line in "${LEDGER_EXCLUDES[@]}" "${INVENTORY_EXCLUDES[@]}"; do
+    [[ -n $line ]] && managed["$line"]=1
+  done
+  while IFS= read -r line || [[ -n $line ]]; do
+    [[ -n ${managed[$line]+x} ]] || printf '%s\n' "$line" >>"$tmp"
+  done <"$EXCLUDE_FILE"
+  for ((i = 0; i < ${#INVENTORY_EXCLUDES[@]}; i++)); do
+    printf '%s\n' "${INVENTORY_EXCLUDES[$i]}" >>"$tmp"
+  done
+  if cmp -s "$tmp" "$EXCLUDE_FILE"; then rm -f "$tmp"; else mv -f "$tmp" "$EXCLUDE_FILE"; fi
+}
+
+write_ledger() {
+  local pending=$1 recorded=$2 deleted=$3 entries_tmp output_tmp i
+  mkdir -p "${STATE_FILE%/*}"
+  entries_tmp=$(mktemp "${STATE_FILE%/*}/.private-agent-skills-entries.XXXXXX") || return 1
+  output_tmp=$(mktemp "${STATE_FILE%/*}/.private-agent-skills-state.XXXXXX") || { rm -f "$entries_tmp"; return 1; }
+  for ((i = 0; i < ${#INVENTORY_DESTINATIONS[@]}; i++)); do
+    jq -nc \
+      --arg destination "${INVENTORY_DESTINATIONS[$i]}" \
+      --arg source "${INVENTORY_SOURCES[$i]}" \
+      --arg exclude "${INVENTORY_EXCLUDES[$i]}" \
+      '{destination:$destination,source:$source,exclude:$exclude}' >>"$entries_tmp" || { rm -f "$entries_tmp" "$output_tmp"; return 1; }
+  done
+  jq -sS \
+    --argjson pending "$pending" \
+    --arg recorded "$recorded" \
+    --argjson deleted "$deleted" \
+    '{schema_version:1,entries:.,decommission_pending:$pending,recorded_checkout:(if $recorded == "" then null else $recorded end),checkout_deleted:$deleted}' \
+    "$entries_tmp" >"$output_tmp" || { rm -f "$entries_tmp" "$output_tmp"; return 1; }
+  rm -f "$entries_tmp"
+  if [[ -f $STATE_FILE ]] && cmp -s "$output_tmp" "$STATE_FILE"; then rm -f "$output_tmp"; else mv -f "$output_tmp" "$STATE_FILE"; fi
+}
+
+apply_reconcile() {
+  local i destination source target
+  local -a current_destinations=("${INVENTORY_DESTINATIONS[@]}")
+  local -a current_sources=("${INVENTORY_SOURCES[@]}")
+  local -a current_excludes=("${INVENTORY_EXCLUDES[@]}")
+  INVENTORY_DESTINATIONS=("${LEDGER_DESTINATIONS[@]}")
+  INVENTORY_SOURCES=("${LEDGER_SOURCES[@]}")
+  INVENTORY_EXCLUDES=("${LEDGER_EXCLUDES[@]}")
+  for ((i = 0; i < ${#current_destinations[@]}; i++)); do
+    if ! ledger_index_for_destination "${current_destinations[$i]}" >/dev/null; then
+      INVENTORY_DESTINATIONS+=("${current_destinations[$i]}")
+      INVENTORY_SOURCES+=("${current_sources[$i]}")
+      INVENTORY_EXCLUDES+=("${current_excludes[$i]}")
+    fi
+  done
+  write_ledger false '' false
+  INVENTORY_DESTINATIONS=("${current_destinations[@]}")
+  INVENTORY_SOURCES=("${current_sources[@]}")
+  INVENTORY_EXCLUDES=("${current_excludes[@]}")
+  mkdir -p "$AGENT_SKILLS"
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    destination=${LEDGER_DESTINATIONS[$i]}
+    inventory_index_for_destination "$destination" >/dev/null && continue
+    path_entry_exists "$destination" && rm -- "$destination"
+  done
+  for ((i = 0; i < ${#INVENTORY_DESTINATIONS[@]}; i++)); do
+    destination=${INVENTORY_DESTINATIONS[$i]}
+    source=${INVENTORY_SOURCES[$i]}
+    if [[ -L $destination ]]; then
+      target=$(readlink "$destination")
+      [[ $target == "$source" ]] && continue
+      rm -- "$destination"
+    fi
+    [[ -e $destination ]] || ln -s -- "$source" "$destination"
+  done
+  update_excludes
+  write_ledger false '' false
+}
+
+reconcile() {
+  is_eligible || return 0
+  initialize_paths
+  local configuration_status
+  if validate_configuration; then
+    :
+  else
+    configuration_status=$?
+    [[ $configuration_status -eq 2 ]] && return 0
+    return "$configuration_status"
+  fi
+  load_ledger
+  clone_checkout_if_missing
+  validate_checkout
+  if checkout_is_interrupted; then
+    fatal 'an interrupted Git operation is present; recover it with Git before applying again'
+  fi
+  inventory_checkout
+  preflight_reconcile
+  apply_reconcile
+}
+
+preflight_deactivate() {
+  local i destination target
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    destination=${LEDGER_DESTINATIONS[$i]}
+    if path_entry_exists "$destination"; then
+      [[ -L $destination ]] || fatal 'deactivation found an unexpected destination entry'
+      target=$(readlink "$destination") || fatal 'deactivation cannot inspect an owned skill link'
+      [[ $target == "${LEDGER_SOURCES[$i]}" ]] || fatal 'deactivation cannot prove destination ownership'
+    fi
+  done
+}
+
+derive_recorded_checkout() {
+  local candidate=''
+  if [[ -n $CONFIGURED_CHECKOUT ]]; then
+    candidate=$(normalize_checkout "$CONFIGURED_CHECKOUT") || fatal 'cannot normalize the configured checkout for deactivation'
+  elif ((${#LEDGER_SOURCES[@]})); then
+    candidate=${LEDGER_SOURCES[0]%/skills/*}
+  fi
+  [[ -n $candidate && $candidate == /* ]] || fatal 'cannot prove which checkout deactivation must preserve'
+  printf '%s\n' "$candidate"
+}
+
+deactivate() {
+  is_eligible || return 0
+  initialize_paths
+  load_ledger
+  [[ -e $STATE_FILE ]] || return 0
+  [[ $LEDGER_CHECKOUT_DELETED == false ]] || fatal 'the recorded checkout was already deleted; retry finalization instead'
+  preflight_deactivate
+  local recorded i destination
+  recorded=$LEDGER_RECORDED_CHECKOUT
+  [[ -n $recorded ]] || recorded=$(derive_recorded_checkout)
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    destination=${LEDGER_DESTINATIONS[$i]}
+    path_entry_exists "$destination" && rm -- "$destination"
+  done
+  INVENTORY_DESTINATIONS=()
+  INVENTORY_SOURCES=()
+  INVENTORY_EXCLUDES=()
+  update_excludes
+  INVENTORY_DESTINATIONS=("${LEDGER_DESTINATIONS[@]}")
+  INVENTORY_SOURCES=("${LEDGER_SOURCES[@]}")
+  INVENTORY_EXCLUDES=("${LEDGER_EXCLUDES[@]}")
+  write_ledger true "$recorded" false
+}
+
+clear_machine_configuration() {
+  [[ -n $CHEZMOI_CONFIG ]] || return 1
+  [[ -e $CHEZMOI_CONFIG ]] || return 0
+  [[ -f $CHEZMOI_CONFIG && ! -L $CHEZMOI_CONFIG ]] || return 1
+  local header='[data.private_agent_skills]' count tmp
+  count=$(grep -Fxc "$header" "$CHEZMOI_CONFIG" || true)
+  ((count <= 1)) || return 1
+  ((count == 1)) || return 0
+  tmp=$(mktemp "${CHEZMOI_CONFIG%/*}/.private-agent-skills-config.XXXXXX") || return 1
+  awk -v header="$header" '
+    $0 == header { skipping=1; next }
+    skipping && /^\[/ { skipping=0 }
+    !skipping { print }
+  ' "$CHEZMOI_CONFIG" >"$tmp" || { rm -f "$tmp"; return 1; }
+  mv -f "$tmp" "$CHEZMOI_CONFIG"
+}
+
+finalize() {
+  is_eligible || return 0
+  [[ $CONFIRMATION == --confirm-delete ]] || fatal 'finalization requires the exact --confirm-delete argument'
+  initialize_paths
+  load_ledger
+  [[ -e $STATE_FILE && $LEDGER_PENDING == true ]] || fatal 'deactivation must complete before finalization'
+  local i destination normalized
+  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
+    destination=${LEDGER_DESTINATIONS[$i]}
+    path_entry_exists "$destination" && fatal 'an integration destination still exists; finalization refused'
+    exclude_has_line "${LEDGER_EXCLUDES[$i]}" && fatal 'an owned local exclude still exists; finalization refused'
+  done
+  if [[ $LEDGER_CHECKOUT_DELETED == false ]]; then
+    [[ -n $CONFIGURED_REMOTE && -n $CONFIGURED_CHECKOUT ]] || fatal 'machine-local configuration is required to prove checkout identity'
+    valid_ssh_remote "$CONFIGURED_REMOTE" || fatal 'the configured repository no longer uses SSH addressing'
+    normalized=$(normalize_checkout "$CONFIGURED_CHECKOUT") || fatal 'the configured checkout can no longer be normalized'
+    [[ $normalized == "$LEDGER_RECORDED_CHECKOUT" ]] || fatal 'the configured checkout no longer matches deactivation state'
+    path_is_within "$normalized" "$PUBLIC_ROOT" && fatal 'the recorded checkout overlaps the public source tree'
+    path_is_within "$normalized" "${AGENT_SKILLS%/skills}" && fatal 'the recorded checkout overlaps the unified agent home'
+    CHECKOUT=$normalized
+    if path_entry_exists "$CHECKOUT"; then
+      validate_checkout
+      rm -rf -- "$CHECKOUT"
+    fi
+    INVENTORY_DESTINATIONS=("${LEDGER_DESTINATIONS[@]}")
+    INVENTORY_SOURCES=("${LEDGER_SOURCES[@]}")
+    INVENTORY_EXCLUDES=("${LEDGER_EXCLUDES[@]}")
+    write_ledger true "$LEDGER_RECORDED_CHECKOUT" true
+  fi
+  clear_machine_configuration || fatal 'checkout deletion completed but machine-local configuration could not be cleared; preserve the ledger and retry'
+  rm -f -- "$STATE_FILE"
+}
+
+dispatch() {
+  case "$OPERATION" in
+    reconcile) [[ $ARGUMENT_COUNT -eq 0 ]] || { usage >&2; return 2; }; reconcile ;;
+    deactivate) [[ $ARGUMENT_COUNT -eq 0 ]] || { usage >&2; return 2; }; deactivate ;;
+    finalize) [[ $ARGUMENT_COUNT -eq 1 ]] || { usage >&2; return 2; }; finalize ;;
+    -h|--help|help) usage ;;
+    *) usage >&2; return 2 ;;
+  esac
+}
+
+set +e
+(set -e; dispatch)
+status=$?
+if [[ $status -eq 0 ]]; then
+  exit 0
+fi
+if [[ $FAIL_HARD == true || $status -eq 2 ]]; then
+  exit "$status"
+fi
+warn 'integration was skipped; unrelated Chezmoi work can continue'
+exit 0

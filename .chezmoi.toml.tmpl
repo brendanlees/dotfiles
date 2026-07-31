@@ -85,6 +85,24 @@
 {{-   $git_email = promptStringOnce . "git_email" "Git email" -}}
 {{- end -}}
 
+# --- optional private agent skill integration ---
+{{- $private_agent_skills_remote := "" -}}
+{{- $private_agent_skills_checkout := "" -}}
+{{- if and $personal (or (eq .chezmoi.os "darwin") (eq .chezmoi.os "windows")) -}}
+{{-   if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") .private_agent_skills.remote -}}
+{{-     $private_agent_skills_remote = .private_agent_skills.remote -}}
+{{-   else if stdinIsATTY -}}
+{{-     $private_agent_skills_remote = promptStringOnce . "private_agent_skills_remote" "Private agent skills SSH remote (blank to skip)" -}}
+{{-   end -}}
+{{-   if $private_agent_skills_remote -}}
+{{-     if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") .private_agent_skills.checkout -}}
+{{-       $private_agent_skills_checkout = .private_agent_skills.checkout -}}
+{{-     else if stdinIsATTY -}}
+{{-       $private_agent_skills_checkout = promptStringOnce . "private_agent_skills_checkout" "Private agent skills absolute checkout path" -}}
+{{-     end -}}
+{{-   end -}}
+{{- end -}}
+
 # --- optional ssh/bitwarden manifest settings ---
 {{- $ssh_bw_manifest_item := "" -}}
 {{- $ssh_bw_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" -}}
@@ -186,6 +204,10 @@
 [data.ssh]
   bw_manifest_item = {{ $ssh_bw_manifest_item | quote }}
   bw_agent_sock_env = {{ $ssh_bw_agent_sock_env | quote }}
+
+[data.private_agent_skills]
+  remote = {{ $private_agent_skills_remote | quote }}
+  checkout = {{ $private_agent_skills_checkout | quote }}
 
 {{ if and (or $personal $work) (lookPath "bw") }}
 [bitwarden]
