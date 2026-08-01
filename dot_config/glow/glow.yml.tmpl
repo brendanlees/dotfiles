@@ -1,5 +1,7 @@
-# style name or JSON path (default "auto")
-style: "{{ (index .themes .theme).apps.glow }}"
+{{- $apps := (index .themes .theme).apps -}}
+# Use Glow's matching built-in style when available; otherwise render from the
+# active chezmoi palette instead of letting "auto" degrade piped output to plain text.
+style: "{{ if eq $apps.glow "auto" }}{{ .chezmoi.homeDir }}/.config/glow/chezmoi.json{{ else }}{{ $apps.glow }}{{ end }}"
 # mouse support (TUI-mode only)
 mouse: true
 # use pager to display markdown

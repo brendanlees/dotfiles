@@ -1,0 +1,138 @@
+{{- $p := (index .themes .theme).palette -}}
+{
+  "document": {
+    "block_prefix": "\n",
+    "block_suffix": "\n",
+    "color": "{{ $p.fg }}",
+    "margin": 0
+  },
+  "block_quote": {
+    "color": "{{ $p.comment }}",
+    "indent": 1,
+    "indent_token": "│ "
+  },
+  "paragraph": {},
+  "list": {
+    "level_indent": 2
+  },
+  "heading": {
+    "block_suffix": "\n",
+    "bold": true
+  },
+  "h1": {
+    "color": "{{ $p.secondary }}",
+    "bold": true
+  },
+  "h2": {
+    "color": "{{ $p.primary }}",
+    "bold": true
+  },
+  "h3": {
+    "color": "{{ $p.info }}",
+    "bold": true
+  },
+  "h4": {
+    "color": "{{ $p.success }}",
+    "bold": true
+  },
+  "h5": {
+    "color": "{{ $p.warn }}",
+    "bold": true
+  },
+  "h6": {
+    "color": "{{ $p.muted }}",
+    "bold": true
+  },
+  "text": {
+    "color": "{{ $p.fg }}"
+  },
+  "strikethrough": {
+    "crossed_out": true
+  },
+  "emph": {
+    "italic": true
+  },
+  "strong": {
+    "bold": true
+  },
+  "hr": {
+    "color": "{{ $p.border }}",
+    "format": "\n────────\n"
+  },
+  "item": {
+    "block_prefix": "• "
+  },
+  "enumeration": {
+    "block_prefix": ". "
+  },
+  "task": {
+    "ticked": "[✓] ",
+    "unticked": "[ ] "
+  },
+  "link": {
+    "color": "{{ $p.info }}",
+    "underline": true
+  },
+  "link_text": {
+    "color": "{{ $p.primary }}",
+    "bold": true
+  },
+  "image": {
+    "color": "{{ $p.secondary }}",
+    "underline": true
+  },
+  "image_text": {
+    "color": "{{ $p.muted }}",
+    "format": "Image: {{ "{{.text}}" }} →"
+  },
+  "code": {
+    "prefix": " ",
+    "suffix": " ",
+    "color": "{{ $p.orange }}"
+  },
+  "code_block": {
+    "color": "{{ $p.muted }}",
+    "margin": 0,
+    "chroma": {
+      "text": { "color": "{{ $p.fg }}" },
+      "error": { "color": "{{ $p.fg }}", "background_color": "{{ $p.error }}" },
+      "comment": { "color": "{{ $p.comment }}" },
+      "comment_preproc": { "color": "{{ $p.orange }}" },
+      "keyword": { "color": "{{ $p.primary }}" },
+      "keyword_reserved": { "color": "{{ $p.secondary }}" },
+      "keyword_namespace": { "color": "{{ $p.info }}" },
+      "keyword_type": { "color": "{{ $p.primary_alt }}" },
+      "operator": { "color": "{{ $p.error }}" },
+      "punctuation": { "color": "{{ $p.warn }}" },
+      "name": { "color": "{{ $p.fg }}" },
+      "name_builtin": { "color": "{{ $p.secondary }}" },
+      "name_tag": { "color": "{{ $p.secondary }}" },
+      "name_attribute": { "color": "{{ $p.primary_alt }}" },
+      "name_class": { "color": "{{ $p.fg }}", "underline": true, "bold": true },
+      "name_constant": { "color": "{{ $p.info_alt }}" },
+      "name_decorator": { "color": "{{ $p.warn }}" },
+      "name_exception": { "color": "{{ $p.error }}" },
+      "name_function": { "color": "{{ $p.success }}" },
+      "name_other": { "color": "{{ $p.fg }}" },
+      "literal": { "color": "{{ $p.orange }}" },
+      "literal_number": { "color": "{{ $p.info_alt }}" },
+      "literal_date": { "color": "{{ $p.warn }}" },
+      "literal_string": { "color": "{{ $p.success }}" },
+      "literal_string_escape": { "color": "{{ $p.accent }}" },
+      "generic_deleted": { "color": "{{ $p.error }}" },
+      "generic_emph": { "italic": true },
+      "generic_inserted": { "color": "{{ $p.success }}" },
+      "generic_strong": { "bold": true },
+      "generic_subheading": { "color": "{{ $p.muted }}" },
+      "background": { "background_color": "{{ $p.surface }}" }
+    }
+  },
+  "table": {},
+  "definition_list": {},
+  "definition_term": {},
+  "definition_description": {
+    "block_prefix": "\n🠶 "
+  },
+  "html_block": {},
+  "html_span": {}
+}

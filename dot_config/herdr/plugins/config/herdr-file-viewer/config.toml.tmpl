@@ -1,0 +1,9 @@
+{{- $apps := (index .themes .theme).apps -}}
+# Managed by chezmoi. See: herdr plugin config-dir herdr-file-viewer
+
+editor = "nvim"
+update_check = true
+markdown = 'glow -s "{{ if eq $apps.glow "auto" }}{{ .chezmoi.homeDir }}/.config/glow/chezmoi.json{{ else }}{{ $apps.glow }}{{ end }}" -w 0 -'
+diff = 'delta --syntax-theme="{{ $apps.bat }}"'
+syntax = 'bat --theme="{{ $apps.bat }}" --color=always --style=numbers --paging=never --file-name={name} -'
+tree_position = "right"

@@ -72,7 +72,12 @@ for removed_plugin in old-plugin third774.last-workspace persiyanov.reviewr; do
 done
 
 navigator_config="$repo_root/dot_config/herdr/plugins/config/herdr-navigator/config.toml"
-file_viewer_config="$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml"
+file_viewer_template="$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl"
+file_viewer_config="$tmpdir/file-viewer-config.toml"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data '{"theme":"black-metal-bathory"}' \
+  <"$file_viewer_template" >"$file_viewer_config"
 python3 - "$navigator_config" "$file_viewer_config" <<'PY'
 import sys
 import tomllib
@@ -92,6 +97,13 @@ file_viewer = tomllib.loads(Path(sys.argv[2]).read_text())
 assert file_viewer == {
     "editor": "nvim",
     "update_check": True,
+    "markdown": f'glow -s "{Path.home()}/.config/glow/chezmoi.json" -w 0 -',
+    "diff": 'delta --syntax-theme="Monokai Extended"',
+    "syntax": (
+        'bat --theme="Monokai Extended" --color=always --style=numbers '
+        '--paging=never --file-name={name} -'
+    ),
+    "tree_position": "right",
 }
 PY
 
