@@ -28,6 +28,14 @@ esac
 UNAME
 chmod +x "$fake_bin/uname"
 
+# Simulate another user's mise inherited through PATH. The installer must still
+# install into the current HOME when its expected binary is absent.
+cat > "$fake_bin/mise" <<'MISE'
+#!/usr/bin/env bash
+exit 0
+MISE
+chmod +x "$fake_bin/mise"
+
 cat > "$fake_bin/sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
