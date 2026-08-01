@@ -61,7 +61,7 @@ for field in (
 assert "previous_workspace" not in keys
 
 commands = keys["command"]
-assert len(commands) == 17
+assert len(commands) == 16
 resize_commands = commands[:4]
 for command, direction, key in zip(
     resize_commands,
@@ -99,8 +99,8 @@ assert commands[8] == {
 assert commands[9] == {
     "key": "prefix+L",
     "type": "plugin_action",
-    "command": "third774.last-workspace.toggle",
-    "description": "toggle last workspace",
+    "command": "herdr-navigator.jump-back",
+    "description": "jump back",
 }
 assert commands[10:] == [
     {
@@ -130,11 +130,6 @@ assert commands[10:] == [
         "key": "prefix+shift+f",
         "type": "shell",
         "command": "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer",
-    },
-    {
-        "key": "prefix+shift+r",
-        "type": "plugin_action",
-        "command": "persiyanov.reviewr.toggle",
     },
     {
         "key": "prefix+t",
