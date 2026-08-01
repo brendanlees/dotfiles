@@ -71,6 +71,30 @@ for removed_plugin in old-plugin third774.last-workspace persiyanov.reviewr; do
   fi
 done
 
+navigator_config="$repo_root/dot_config/herdr/plugins/config/herdr-navigator/config.toml"
+file_viewer_config="$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml"
+python3 - "$navigator_config" "$file_viewer_config" <<'PY'
+import sys
+import tomllib
+from pathlib import Path
+
+navigator = tomllib.loads(Path(sys.argv[1]).read_text())
+assert navigator == {
+    "picker": {"check_updates": True},
+    "jump_back": {"enabled": True, "pin_previous": True},
+    "roots": [
+        {"path": "~/Code", "max_depth": 3},
+        {"path": "~/src", "max_depth": 3},
+    ],
+}
+
+file_viewer = tomllib.loads(Path(sys.argv[2]).read_text())
+assert file_viewer == {
+    "editor": "nvim",
+    "update_check": True,
+}
+PY
+
 reviewr_config="$repo_root/dot_config/herdr/plugins/config/persiyanov.reviewr/config.toml"
 [[ ! -e "$reviewr_config" ]] || { echo "stale managed Reviewr config: $reviewr_config" >&2; exit 1; }
 

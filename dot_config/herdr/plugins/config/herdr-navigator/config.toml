@@ -1,0 +1,16 @@
+# Managed by chezmoi. See: herdr plugin config-dir herdr-navigator
+
+[picker]
+check_updates = true
+
+[jump_back]
+enabled = true
+pin_previous = true
+
+[[roots]]
+path = "~/Code"
+max_depth = 3
+
+[[roots]]
+path = "~/src"
+max_depth = 3
