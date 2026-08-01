@@ -49,7 +49,12 @@ fi
 mise_install_url="https://mise.run"
 echo "installing mise..."
 confirm_remote_script "mise" "$mise_install_url"
-curl "$mise_install_url" | sh
+if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
+  # Debian stable can have an older glibc than mise's GNU ARM64 build.
+  curl "$mise_install_url" | MISE_INSTALL_ARCH=arm64-musl sh
+else
+  curl "$mise_install_url" | sh
+fi
 
 echo "mise installed to ~/.local/bin/mise"
 {{- end -}}

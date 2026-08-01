@@ -44,7 +44,12 @@ if [ ! -x "$MISE" ]; then
 fi
 
 echo "updating mise..."
-"$MISE" self-update --yes --no-plugins
+if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
+  # Keep self-updates on the static musl build so older glibc remains supported.
+  MISE_LIBC=musl "$MISE" self-update --yes --no-plugins
+else
+  "$MISE" self-update --yes --no-plugins
+fi
 
 echo "installing mise tools..."
 "$MISE" install

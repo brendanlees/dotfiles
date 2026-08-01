@@ -17,10 +17,22 @@ printf '#!/usr/bin/env sh\necho remote-script-body\n'
 CURL
 chmod +x "$fake_bin/curl"
 
+cat > "$fake_bin/uname" <<'UNAME'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+  -s) printf 'Linux\n' ;;
+  -m) printf 'aarch64\n' ;;
+  *) exit 1 ;;
+esac
+UNAME
+chmod +x "$fake_bin/uname"
+
 cat > "$fake_bin/sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
 echo "sh-called $*" >> "${REMOTE_LOG:?}"
+echo "mise-install-arch ${MISE_INSTALL_ARCH:-}" >> "${REMOTE_LOG:?}"
 cat >/dev/null
 SH
 chmod +x "$fake_bin/sh"
@@ -60,5 +72,9 @@ REMOTE_LOG="$allow_log" PATH="$fake_bin:/usr/bin:/bin" HOME="$fake_home" CHEZMOI
 grep -Fq "CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 set; allowing mise installer." "$allow_out"
 grep -Fq "curl-called https://mise.run" "$allow_log"
 grep -Fq "sh-called" "$allow_log"
+grep -Fq "mise-install-arch arm64-musl" "$allow_log"
+
+grep -Fq 'MISE_LIBC=musl "$MISE" self-update --yes --no-plugins' \
+  "$repo_root/.chezmoiscripts/run_after_install_tools.sh.tmpl"
 
 echo "remote installer confirmation ok"
