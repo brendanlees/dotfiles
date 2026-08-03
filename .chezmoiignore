@@ -1,3 +1,6 @@
+# Repository-only agent context; do not install into the home directory.
+AGENTS.md
+
 {{- if ne .chezmoi.os "darwin" }}
 dotfiles-mac # only manage mac dotfiles on mac
 Library
