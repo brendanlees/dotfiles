@@ -9,7 +9,14 @@ chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
 home_dir=$(jq -r '.chezmoi.homeDir' "$tmpdir/data.json")
 
 for theme in $(jq -r '.themes | keys[]' "$tmpdir/data.json"); do
-  override=$(jq -cn --arg theme "$theme" '{theme: $theme}')
+  override=$(jq -cn --arg theme "$theme" '{
+    theme: $theme,
+    personal: false,
+    work: false,
+    homelab: false,
+    ephemeral: true,
+    headless: true
+  }')
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
     <"$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl" \
     >"$tmpdir/viewer.toml"

@@ -85,12 +85,26 @@ from pathlib import Path
 
 navigator = tomllib.loads(Path(sys.argv[1]).read_text())
 assert navigator == {
-    "picker": {"check_updates": True},
+    "picker": {
+        "engine": "nucleo",
+        "check_updates": True,
+        "vim_mode": True,
+        "vim_filter_search": True,
+        "preview": False,
+        "detailed_rows": True,
+    },
+    "theme": {"inherit_herdr": True},
     "jump_back": {"enabled": True, "pin_previous": True},
-    "roots": [
-        {"path": "~/Code", "max_depth": 3},
-        {"path": "~/src", "max_depth": 3},
-    ],
+    "sources": {
+        "open_workspaces": True,
+        "agents": True,
+        "herdr_plus_projects": True,
+        "sessions": True,
+        "servers": True,
+        "zoxide": False,
+        "roots": False,
+    },
+    "notifications": {"enabled": False},
 }
 
 file_viewer = tomllib.loads(Path(sys.argv[2]).read_text())
