@@ -5,7 +5,8 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
-chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
+CHEZMOI_ROLE=ephemeral,headless \
+  chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
 home_dir=$(jq -r '.chezmoi.homeDir' "$tmpdir/data.json")
 
 for theme in $(jq -r '.themes | keys[]' "$tmpdir/data.json"); do
