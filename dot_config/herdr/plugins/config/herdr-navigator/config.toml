@@ -1,16 +1,28 @@
 # Managed by chezmoi. See: herdr plugin config-dir herdr-navigator
 
 [picker]
+engine = "nucleo"
 check_updates = true
+vim_mode = true
+vim_filter_search = true
+preview = false
+detailed_rows = true
+
+[theme]
+inherit_herdr = true
 
 [jump_back]
 enabled = true
 pin_previous = true
 
-[[roots]]
-path = "~/Code"
-max_depth = 3
+[sources]
+open_workspaces = true
+agents = true
+herdr_plus_projects = true
+sessions = true
+servers = true
+zoxide = false
+roots = false
 
-[[roots]]
-path = "~/src"
-max_depth = 3
+[notifications]
+enabled = false
