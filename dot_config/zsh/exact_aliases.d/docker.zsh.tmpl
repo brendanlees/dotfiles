@@ -79,9 +79,167 @@ get_compose_dir() {
     fi
 }
 
+# Cache only the short-lived Universal Auth access token in the current Zsh
+# session. The client credentials are scoped to the login process and then
+# discarded. Re-sourcing this file preserves an existing token.
+if (( ! ${+_INFISICAL_COMPOSE_ACCESS_TOKEN} )); then
+    typeset -g _INFISICAL_COMPOSE_ACCESS_TOKEN=""
+else
+    typeset -g +x _INFISICAL_COMPOSE_ACCESS_TOKEN
+fi
+
+_infi_auth_login() {
+    if (( $# != 2 )); then
+        echo "_infi_auth_login: expected a client ID and client secret" >&2
+        return 2
+    fi
+
+    local client_id="$1"
+    local client_secret="$2"
+    local token
+
+    token="$(
+        INFISICAL_UNIVERSAL_AUTH_CLIENT_ID="$client_id" \
+        INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET="$client_secret" \
+        infisical login \
+            --domain=https://infisical.lab.brendans.cloud \
+            --method=universal-auth \
+            --silent \
+            --plain
+    )"
+    local rc=$?
+    client_id=""
+    client_secret=""
+
+    if (( rc != 0 )); then
+        token=""
+        return $rc
+    fi
+    if [[ -z "$token" ]]; then
+        echo "infi-auth: Infisical login returned an empty token" >&2
+        return 1
+    fi
+
+    typeset -g +x _INFISICAL_COMPOSE_ACCESS_TOKEN="$token"
+    token=""
+    echo "infi-auth: access token cached for this shell"
+}
+
+# Prompt for Universal Auth credentials and exchange them for a short-lived
+# access token. The secret is hidden and neither value enters shell history.
+infi-auth() {
+    local client_id client_secret
+
+    read -r "client_id?Client ID: " || return 1
+    if ! read -rs "client_secret?Client secret: "; then
+        print >&2
+        client_id=""
+        return 1
+    fi
+    print >&2
+
+    if [[ -z "$client_id" || -z "$client_secret" ]]; then
+        echo "infi-auth: client ID and client secret are required" >&2
+        client_id=""
+        client_secret=""
+        return 1
+    fi
+
+    _infi_auth_login "$client_id" "$client_secret"
+    local rc=$?
+    client_id=""
+    client_secret=""
+    return $rc
+}
+
+# Optionally retrieve a namespace credential pair from the shared Bitwarden
+# secure note. Namespace "komodo-rpi1" maps to the custom fields
+# KOMODO-RPI1_CLIENT_ID and KOMODO-RPI1_CLIENT_SECRET.
+infi-auth-bw() {
+    if (( $# != 1 )); then
+        echo "usage: infi-auth-bw <namespace>" >&2
+        return 2
+    fi
+    if ! command -v bw >/dev/null 2>&1; then
+        echo "infi-auth-bw: bw not on PATH; token unchanged" >&2
+        return 127
+    fi
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "infi-auth-bw: python3 not on PATH; token unchanged" >&2
+        return 127
+    fi
+
+    local namespace="${(U)1}"
+    local item_id="e0421ba7-4f2d-4c27-8fff-b49a00a87137"
+    local client_id_field="${namespace}_CLIENT_ID"
+    local client_secret_field="${namespace}_CLIENT_SECRET"
+    local bw_session="${BW_SESSION:-}"
+    local unlocked_here=0
+
+    if [[ -z "$bw_session" ]]; then
+        bw_session="$(bw unlock --raw)" || return 1
+        if [[ -z "$bw_session" ]]; then
+            echo "infi-auth-bw: Bitwarden returned an empty session" >&2
+            return 1
+        fi
+        unlocked_here=1
+    fi
+
+    local auth_output
+    auth_output="$(
+        BW_SESSION="$bw_session" bw get item "$item_id" |
+            python3 -c '
+import json
+import sys
+
+item = json.load(sys.stdin)
+fields = {
+    field.get("name"): field.get("value")
+    for field in item.get("fields", [])
+    if isinstance(field, dict)
+}
+values = [fields.get(name) for name in sys.argv[1:]]
+if not all(isinstance(value, str) and value for value in values):
+    missing = [name for name, value in zip(sys.argv[1:], values) if not value]
+    raise SystemExit("infi-auth-bw: missing custom field(s): " + ", ".join(missing))
+print(*values, sep="\n")
+' "$client_id_field" "$client_secret_field"
+    )"
+    local rc=$?
+
+    if (( unlocked_here )); then
+        BW_SESSION="$bw_session" bw lock >/dev/null 2>&1 ||
+            echo "infi-auth-bw: warning: could not re-lock Bitwarden" >&2
+    fi
+    bw_session=""
+
+    if (( rc != 0 )); then
+        auth_output=""
+        return $rc
+    fi
+
+    local -a auth_values
+    auth_values=("${(@f)auth_output}")
+    auth_output=""
+    if (( ${#auth_values[@]} != 2 )); then
+        echo "infi-auth-bw: invalid credential field output" >&2
+        return 1
+    fi
+
+    _infi_auth_login "${auth_values[1]}" "${auth_values[2]}"
+    rc=$?
+    auth_values=()
+    return $rc
+}
+
+infi-auth-clear() {
+    unset _INFISICAL_COMPOSE_ACCESS_TOKEN
+    echo "infi-auth: cached access token cleared"
+}
+
 # Run a Compose command with Infisical values selected by a Stack profile.
-# Universal Auth credentials must already be present in the current session as
-# INFISICAL_UNIVERSAL_AUTH_CLIENT_ID and INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET.
+# The first command in a shell prompts for credentials unless infi-auth-bw has
+# already populated the short-lived access-token cache.
 infisical_compose() {
     if (( $# < 2 )); then
         echo "usage: infisical_compose <stack> <compose-args...>" >&2
@@ -110,9 +268,8 @@ infisical_compose() {
         echo "infisical_compose: compose file not found: $compose_file" >&2
         return 1
     fi
-    if [[ -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" || -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" ]]; then
-        echo "infisical_compose: load the Infisical Universal Auth credentials into the current session" >&2
-        return 1
+    if [[ -z "${_INFISICAL_COMPOSE_ACCESS_TOKEN:-}" ]]; then
+        infi-auth || return 1
     fi
 
     local profile_output
@@ -154,36 +311,34 @@ PY
     local environment="${profile_fields[2]}"
     local secret_path="${profile_fields[3]}"
     local managed_keys="${profile_fields[4]}"
-    local token
+    local token="$_INFISICAL_COMPOSE_ACCESS_TOKEN"
 
     compose_args=()
     [[ -f "$default_env" ]] && compose_args+=(--env-file "$default_env")
     [[ -f "$stack_env" ]] && compose_args+=(--env-file "$stack_env")
     compose_args+=(-f "$compose_file")
 
-    token="$(infisical login \
-        --domain=https://infisical.lab.brendans.cloud \
-        --method=universal-auth \
-        --silent \
-        --plain)" || return 1
-    if [[ -z "$token" ]]; then
-        echo "infisical_compose: Infisical login returned an empty token" >&2
-        return 1
-    fi
-
-    env \
+    INFISICAL_UNIVERSAL_AUTH_ACCESS_TOKEN="$token" \
+        env \
+        -u BW_SESSION \
+        -u INFISICAL_TOKEN \
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_ID \
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET \
         infisical run \
         --domain=https://infisical.lab.brendans.cloud \
-        --token="$token" \
         --projectId="$project_id" \
         --env="$environment" \
         --path="$secret_path" \
-        -- sudo --preserve-env="$managed_keys" \
+        -- env \
+        -u BW_SESSION \
+        -u INFISICAL_TOKEN \
+        -u INFISICAL_UNIVERSAL_AUTH_ACCESS_TOKEN \
+        -u INFISICAL_UNIVERSAL_AUTH_CLIENT_ID \
+        -u INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET \
+        sudo --preserve-env="$managed_keys" \
         docker compose "${compose_args[@]}" "$@"
     local rc=$?
-    unset token
+    token=""
     return $rc
 }
 
