@@ -5,19 +5,14 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 export CHEZMOI_ROLE=ephemeral,headless
+role_data='{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}'
 
 chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
 home_dir=$(jq -r '.chezmoi.homeDir' "$tmpdir/data.json")
 
 for theme in $(jq -r '.themes | keys[]' "$tmpdir/data.json"); do
-  override=$(jq -cn --arg theme "$theme" '{
-    theme: $theme,
-    personal: false,
-    work: false,
-    homelab: false,
-    ephemeral: true,
-    headless: true
-  }')
+  override=$(jq -cn --arg theme "$theme" --argjson role "$role_data" \
+    '$role + {theme: $theme}')
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
     <"$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl" \
     >"$tmpdir/viewer.toml"
@@ -66,7 +61,7 @@ assert glow_style["code_block"]["chroma"]["generic_inserted"]["color"] == palett
 PY
 done
 
-chezmoi execute-template --source "$repo_root" \
+chezmoi execute-template --source "$repo_root" --override-data "$role_data" \
   <"$repo_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise.toml"
 python3 - "$tmpdir/mise.toml" <<'PY'
 import sys
