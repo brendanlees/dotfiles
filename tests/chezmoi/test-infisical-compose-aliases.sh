@@ -28,8 +28,7 @@ cat >"$COMPOSE_DIR/infisical/proxy/.infisical.json" <<'JSON'
 {
   "workspaceId": "project-123",
   "defaultEnvironment": "prod",
-  "defaultSecretPath": "/nodes/test-node",
-  "managedKeys": ["KOP_BIND_IP", "KOP_DOCKER_HOST", "KOP_REDIS_ADDR"]
+  "defaultSecretPath": "/nodes/test-node"
 }
 JSON
 
@@ -96,20 +95,18 @@ SH
 
 cat >"$BIN_DIR/sudo" <<'SH'
 #!/usr/bin/env bash
+echo 'sudo must not be used by Infisical Compose aliases' >&2
+exit 99
+SH
+
+cat >"$BIN_DIR/docker" <<'SH'
+#!/usr/bin/env bash
 set -euo pipefail
 [[ -z "${INFISICAL_TOKEN:-}" ]]
 [[ -z "${INFISICAL_UNIVERSAL_AUTH_ACCESS_TOKEN:-}" ]]
 [[ -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" ]]
 [[ -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" ]]
 [[ -z "${BW_SESSION:-}" ]]
-[[ "$1" == "--preserve-env=KOP_BIND_IP,KOP_DOCKER_HOST,KOP_REDIS_ADDR" ]]
-shift
-exec "$@"
-SH
-
-cat >"$BIN_DIR/docker" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
 [[ "$KOP_BIND_IP" == "bind" ]]
 [[ "$KOP_DOCKER_HOST" == "host" ]]
 [[ "$KOP_REDIS_ADDR" == "redis" ]]

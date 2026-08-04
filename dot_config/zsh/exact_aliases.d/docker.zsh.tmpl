@@ -283,18 +283,14 @@ try:
     project_id = profile["workspaceId"]
     environment = profile["defaultEnvironment"]
     secret_path = profile["defaultSecretPath"]
-    managed_keys = profile["managedKeys"]
     if not all(isinstance(value, str) and value for value in (project_id, environment, secret_path)):
         raise ValueError("project, environment, and path must be nonempty strings")
-    if not managed_keys or not all(isinstance(key, str) and key for key in managed_keys):
-        raise ValueError("managedKeys must be a nonempty string array")
 except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
     raise SystemExit(f"infisical_compose: invalid profile: {error}")
 
 print(project_id)
 print(environment)
 print(secret_path)
-print(",".join(managed_keys))
 PY
 )"; then
         return 1
@@ -302,7 +298,7 @@ PY
 
     local -a profile_fields compose_args
     profile_fields=("${(@f)profile_output}")
-    if (( ${#profile_fields[@]} != 4 )); then
+    if (( ${#profile_fields[@]} != 3 )); then
         echo "infisical_compose: invalid profile output" >&2
         return 1
     fi
@@ -310,7 +306,6 @@ PY
     local project_id="${profile_fields[1]}"
     local environment="${profile_fields[2]}"
     local secret_path="${profile_fields[3]}"
-    local managed_keys="${profile_fields[4]}"
     local token="$_INFISICAL_COMPOSE_ACCESS_TOKEN"
 
     compose_args=()
@@ -335,7 +330,6 @@ PY
         -u INFISICAL_UNIVERSAL_AUTH_ACCESS_TOKEN \
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_ID \
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET \
-        sudo --preserve-env="$managed_keys" \
         docker compose "${compose_args[@]}" "$@"
     local rc=$?
     token=""
