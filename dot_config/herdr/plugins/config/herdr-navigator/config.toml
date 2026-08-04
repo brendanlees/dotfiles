@@ -11,9 +11,11 @@ detailed_rows = true
 [theme]
 inherit_herdr = true
 
+# Herdr's native previous_workspace key tracks every focus path. Navigator's
+# history only tracks workspace changes made through its picker.
 [jump_back]
-enabled = true
-pin_previous = true
+enabled = false
+pin_previous = false
 
 [sources]
 open_workspaces = true

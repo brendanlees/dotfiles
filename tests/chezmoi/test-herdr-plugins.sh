@@ -94,7 +94,7 @@ assert navigator == {
         "detailed_rows": True,
     },
     "theme": {"inherit_herdr": True},
-    "jump_back": {"enabled": True, "pin_previous": True},
+    "jump_back": {"enabled": False, "pin_previous": False},
     "sources": {
         "open_workspaces": True,
         "agents": True,

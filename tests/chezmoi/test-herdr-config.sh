@@ -58,10 +58,10 @@ for field in (
     "focus_pane_right",
 ):
     assert keys[field] == ""
-assert "previous_workspace" not in keys
+assert keys["previous_workspace"] == "prefix+L"
 
 commands = keys["command"]
-assert len(commands) == 16
+assert len(commands) == 15
 resize_commands = commands[:4]
 for command, direction, key in zip(
     resize_commands,
@@ -96,13 +96,7 @@ assert commands[8] == {
     "command": "cloudmanic.herdr-plus.projects",
     "description": "herdr-plus: projects",
 }
-assert commands[9] == {
-    "key": "prefix+L",
-    "type": "plugin_action",
-    "command": "herdr-navigator.jump-back",
-    "description": "jump back",
-}
-assert commands[10:] == [
+assert commands[9:] == [
     {
         "key": "prefix+shift+g",
         "type": "plugin_action",
