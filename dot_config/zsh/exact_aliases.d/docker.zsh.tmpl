@@ -79,6 +79,114 @@ get_compose_dir() {
     fi
 }
 
+# Run a Compose command with Infisical values selected by a Stack profile.
+# Universal Auth credentials must already be present in the current session as
+# INFISICAL_UNIVERSAL_AUTH_CLIENT_ID and INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET.
+infisical_compose() {
+    if (( $# < 2 )); then
+        echo "usage: infisical_compose <stack> <compose-args...>" >&2
+        return 2
+    fi
+
+    local stack="$1"
+    shift
+
+    local compose_dir profile_file compose_file default_env stack_env
+    compose_dir="$(get_compose_dir)"
+    profile_file="$compose_dir/infisical/$stack/.infisical.json"
+    if [[ "$stack" == "default" ]]; then
+        compose_file="$compose_dir/compose.yml"
+    else
+        compose_file="$compose_dir/compose.$stack.yml"
+    fi
+    default_env="$compose_dir/.env"
+    stack_env="$compose_dir/.env-$stack"
+
+    if [[ ! -f "$profile_file" ]]; then
+        echo "infisical_compose: profile not found: $profile_file" >&2
+        return 1
+    fi
+    if [[ ! -f "$compose_file" ]]; then
+        echo "infisical_compose: compose file not found: $compose_file" >&2
+        return 1
+    fi
+    if [[ -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" || -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" ]]; then
+        echo "infisical_compose: load the Infisical Universal Auth credentials into the current session" >&2
+        return 1
+    fi
+
+    local profile_output
+    if ! profile_output="$(python3 - "$profile_file" <<'PY'
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as profile_file:
+        profile = json.load(profile_file)
+    project_id = profile["workspaceId"]
+    environment = profile["defaultEnvironment"]
+    secret_path = profile["defaultSecretPath"]
+    managed_keys = profile["managedKeys"]
+    if not all(isinstance(value, str) and value for value in (project_id, environment, secret_path)):
+        raise ValueError("project, environment, and path must be nonempty strings")
+    if not managed_keys or not all(isinstance(key, str) and key for key in managed_keys):
+        raise ValueError("managedKeys must be a nonempty string array")
+except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+    raise SystemExit(f"infisical_compose: invalid profile: {error}")
+
+print(project_id)
+print(environment)
+print(secret_path)
+print(",".join(managed_keys))
+PY
+)"; then
+        return 1
+    fi
+
+    local -a profile_fields compose_args
+    profile_fields=("${(@f)profile_output}")
+    if (( ${#profile_fields[@]} != 4 )); then
+        echo "infisical_compose: invalid profile output" >&2
+        return 1
+    fi
+
+    local project_id="${profile_fields[1]}"
+    local environment="${profile_fields[2]}"
+    local secret_path="${profile_fields[3]}"
+    local managed_keys="${profile_fields[4]}"
+    local token
+
+    compose_args=()
+    [[ -f "$default_env" ]] && compose_args+=(--env-file "$default_env")
+    [[ -f "$stack_env" ]] && compose_args+=(--env-file "$stack_env")
+    compose_args+=(-f "$compose_file")
+
+    token="$(infisical login \
+        --domain=https://infisical.lab.brendans.cloud \
+        --method=universal-auth \
+        --silent \
+        --plain)" || return 1
+    if [[ -z "$token" ]]; then
+        echo "infisical_compose: Infisical login returned an empty token" >&2
+        return 1
+    fi
+
+    env \
+        -u INFISICAL_UNIVERSAL_AUTH_CLIENT_ID \
+        -u INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET \
+        infisical run \
+        --domain=https://infisical.lab.brendans.cloud \
+        --token="$token" \
+        --projectId="$project_id" \
+        --env="$environment" \
+        --path="$secret_path" \
+        -- sudo --preserve-env="$managed_keys" \
+        docker compose "${compose_args[@]}" "$@"
+    local rc=$?
+    unset token
+    return $rc
+}
+
 
 # --- containers ---
 
@@ -102,6 +210,15 @@ alias dcstop='dc stop'
 alias dcrec='dc up -d --force-recreate'
 alias dcrestart='dc restart'
 alias dcpull='dc pull'
+
+alias idc='infisical_compose default'
+alias idcup='idc up -d --build'
+alias idcdown='idc down'
+alias idcstart='idc start'
+alias idcstop='idc stop'
+alias idcrec='idc up -d --force-recreate'
+alias idcrestart='idc restart'
+alias idcpull='idc pull'
 
 # dynamic stack-specific compose aliases
 
@@ -131,6 +248,17 @@ for file in "$compose_dir"/compose.*.yml; do
     alias "dcrec.$stack"="$cmd_prefix up -d --force-recreate"
     alias "dcrestart.$stack"="$cmd_prefix restart"
     alias "dcpull.$stack"="$cmd_prefix pull"
+
+    if [[ -f "$compose_dir/infisical/$stack/.infisical.json" ]]; then
+        alias "idc.$stack"="infisical_compose $stack"
+        alias "idcup.$stack"="infisical_compose $stack up -d --build"
+        alias "idcdown.$stack"="infisical_compose $stack down"
+        alias "idcstart.$stack"="infisical_compose $stack start"
+        alias "idcstop.$stack"="infisical_compose $stack stop"
+        alias "idcrec.$stack"="infisical_compose $stack up -d --force-recreate"
+        alias "idcrestart.$stack"="infisical_compose $stack restart"
+        alias "idcpull.$stack"="infisical_compose $stack pull"
+    fi
 done
 
 
