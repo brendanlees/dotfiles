@@ -3,7 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ALIASES_TEMPLATE="$ROOT/dot_config/zsh/exact_aliases.d/docker.zsh.tmpl"
-TEST_ROOT="${TMPDIR:-/tmp}/infisical-compose-aliases-test-$$"
+TEST_BASE="${TMPDIR:-/tmp}"
+TEST_ROOT="${TEST_BASE%/}/infisical-compose-aliases-test-$$"
 ALIASES="$TEST_ROOT/docker.zsh"
 COMPOSE_DIR="$TEST_ROOT/home/docker/compose"
 BIN_DIR="$TEST_ROOT/bin"
@@ -28,7 +29,8 @@ cat >"$COMPOSE_DIR/infisical/proxy/.infisical.json" <<'JSON'
 {
   "workspaceId": "project-123",
   "defaultEnvironment": "prod",
-  "defaultSecretPath": "/nodes/test-node"
+  "defaultSecretPath": "/nodes/test-node",
+  "domain": "http://127.0.0.1:18080"
 }
 JSON
 
@@ -39,7 +41,9 @@ case "${1:-}" in
   login)
     [[ "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" == "client-id" ]]
     [[ "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" == "client-secret" ]]
-    printf '%s\n' 'infisical login' >>"$INFI_ALIAS_TEST_LOG"
+    printf 'infisical login' >>"$INFI_ALIAS_TEST_LOG"
+    printf ' <%s>' "$@" >>"$INFI_ALIAS_TEST_LOG"
+    printf '\n' >>"$INFI_ALIAS_TEST_LOG"
     printf '%s\n' 'test-token'
     ;;
   run)
@@ -135,8 +139,10 @@ printf '%s\n' client-id client-secret client-id client-secret | \
     eval 'idcrestart.proxy'
   "
 
-[[ "$(grep -c '^infisical login$' "$LOG")" -eq 2 ]]
+[[ "$(grep -c '^infisical login' "$LOG")" -eq 2 ]]
 [[ "$(grep -c '^infisical run' "$LOG")" -eq 3 ]]
+grep -Fq 'infisical login <login> <--domain=http://127.0.0.1:18080>' "$LOG"
+grep -Fq 'infisical run <run> <--domain=http://127.0.0.1:18080>' "$LOG"
 if grep -q '^bw ' "$LOG"; then
   echo 'manual auth unexpectedly invoked bw' >&2
   exit 1
@@ -149,6 +155,28 @@ grep -Fq '<--projectId=project-123>' "$LOG"
 grep -Fq '<--env=prod>' "$LOG"
 grep -Fq '<--path=/nodes/test-node>' "$LOG"
 grep -Fq "docker <compose> <--env-file> <$COMPOSE_DIR/.env> <--env-file> <$COMPOSE_DIR/.env-proxy> <-f> <$COMPOSE_DIR/compose.proxy.yml> <up> <-d> <--force-recreate>" "$LOG"
+
+# Profiles without a domain retain the public self-hosted endpoint.
+cat >"$COMPOSE_DIR/infisical/proxy/.infisical.json" <<'JSON'
+{
+  "workspaceId": "project-123",
+  "defaultEnvironment": "prod",
+  "defaultSecretPath": "/nodes/test-node"
+}
+JSON
+: >"$LOG"
+printf '%s\n' client-id client-secret | \
+  HOME="$TEST_ROOT/home" \
+  PATH="$BIN_DIR:$PATH" \
+  INFI_ALIAS_TEST_LOG="$LOG" \
+  "$ZSH_BIN" -fc "
+    cd '$COMPOSE_DIR'
+    setopt aliases
+    source '$ALIASES'
+    eval 'idcrec.proxy'
+  "
+grep -Fq 'infisical login <login> <--domain=https://infisical.lab.brendans.cloud>' "$LOG"
+grep -Fq 'infisical run <run> <--domain=https://infisical.lab.brendans.cloud>' "$LOG"
 
 # Bitwarden is opt-in. It derives the uppercase custom field names from the
 # explicit namespace, exchanges the pair, re-locks, and primes the same cache.
@@ -164,7 +192,7 @@ INFI_ALIAS_TEST_LOG="$LOG" \
   eval 'idcrec.proxy'
 "
 
-[[ "$(grep -c '^infisical login$' "$LOG")" -eq 1 ]]
+[[ "$(grep -c '^infisical login' "$LOG")" -eq 1 ]]
 [[ "$(grep -c '^infisical run' "$LOG")" -eq 1 ]]
 grep -Fq 'bw <unlock> <--raw>' "$LOG"
 grep -Fq 'bw <get> <item> <e0421ba7-4f2d-4c27-8fff-b49a00a87137>' "$LOG"
