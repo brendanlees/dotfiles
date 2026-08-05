@@ -89,20 +89,21 @@ else
 fi
 
 _infi_auth_login() {
-    if (( $# != 2 )); then
-        echo "_infi_auth_login: expected a client ID and client secret" >&2
+    if (( $# < 2 || $# > 3 )); then
+        echo "_infi_auth_login: expected a client ID, client secret, and optional domain" >&2
         return 2
     fi
 
     local client_id="$1"
     local client_secret="$2"
+    local domain="${3:-https://infisical.lab.brendans.cloud}"
     local token
 
     token="$(
         INFISICAL_UNIVERSAL_AUTH_CLIENT_ID="$client_id" \
         INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET="$client_secret" \
         infisical login \
-            --domain=https://infisical.lab.brendans.cloud \
+            --domain="$domain" \
             --method=universal-auth \
             --silent \
             --plain
@@ -128,7 +129,13 @@ _infi_auth_login() {
 # Prompt for Universal Auth credentials and exchange them for a short-lived
 # access token. The secret is hidden and neither value enters shell history.
 infi-auth() {
+    if (( $# > 1 )); then
+        echo "usage: infi-auth [domain]" >&2
+        return 2
+    fi
+
     local client_id client_secret
+    local domain="${1:-https://infisical.lab.brendans.cloud}"
 
     read -r "client_id?Client ID: " || return 1
     if ! read -rs "client_secret?Client secret: "; then
@@ -145,7 +152,7 @@ infi-auth() {
         return 1
     fi
 
-    _infi_auth_login "$client_id" "$client_secret"
+    _infi_auth_login "$client_id" "$client_secret" "$domain"
     local rc=$?
     client_id=""
     client_secret=""
@@ -156,8 +163,8 @@ infi-auth() {
 # secure note. Namespace "komodo-rpi1" maps to the custom fields
 # KOMODO-RPI1_CLIENT_ID and KOMODO-RPI1_CLIENT_SECRET.
 infi-auth-bw() {
-    if (( $# != 1 )); then
-        echo "usage: infi-auth-bw <namespace>" >&2
+    if (( $# < 1 || $# > 2 )); then
+        echo "usage: infi-auth-bw <namespace> [domain]" >&2
         return 2
     fi
     if ! command -v bw >/dev/null 2>&1; then
@@ -170,6 +177,7 @@ infi-auth-bw() {
     fi
 
     local namespace="${(U)1}"
+    local domain="${2:-https://infisical.lab.brendans.cloud}"
     local item_id="e0421ba7-4f2d-4c27-8fff-b49a00a87137"
     local client_id_field="${namespace}_CLIENT_ID"
     local client_secret_field="${namespace}_CLIENT_SECRET"
@@ -226,7 +234,7 @@ print(*values, sep="\n")
         return 1
     fi
 
-    _infi_auth_login "${auth_values[1]}" "${auth_values[2]}"
+    _infi_auth_login "${auth_values[1]}" "${auth_values[2]}" "$domain"
     rc=$?
     auth_values=()
     return $rc
@@ -268,14 +276,12 @@ infisical_compose() {
         echo "infisical_compose: compose file not found: $compose_file" >&2
         return 1
     fi
-    if [[ -z "${_INFISICAL_COMPOSE_ACCESS_TOKEN:-}" ]]; then
-        infi-auth || return 1
-    fi
 
     local profile_output
     if ! profile_output="$(python3 - "$profile_file" <<'PY'
 import json
 import sys
+from urllib.parse import urlsplit
 
 try:
     with open(sys.argv[1], encoding="utf-8") as profile_file:
@@ -283,14 +289,24 @@ try:
     project_id = profile["workspaceId"]
     environment = profile["defaultEnvironment"]
     secret_path = profile["defaultSecretPath"]
-    if not all(isinstance(value, str) and value for value in (project_id, environment, secret_path)):
-        raise ValueError("project, environment, and path must be nonempty strings")
+    domain = profile.get("domain", "https://infisical.lab.brendans.cloud")
+    if not all(
+        isinstance(value, str) and value
+        for value in (project_id, environment, secret_path, domain)
+    ):
+        raise ValueError("project, environment, path, and domain must be nonempty strings")
+    parsed_domain = urlsplit(domain)
+    if parsed_domain.scheme not in {"http", "https"} or not parsed_domain.netloc:
+        raise ValueError("domain must be an absolute HTTP(S) URL")
+    if parsed_domain.path not in {"", "/"} or parsed_domain.query or parsed_domain.fragment:
+        raise ValueError("domain must not include a path, query, or fragment")
 except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
     raise SystemExit(f"infisical_compose: invalid profile: {error}")
 
 print(project_id)
 print(environment)
 print(secret_path)
+print(domain.rstrip("/"))
 PY
 )"; then
         return 1
@@ -298,7 +314,7 @@ PY
 
     local -a profile_fields compose_args
     profile_fields=("${(@f)profile_output}")
-    if (( ${#profile_fields[@]} != 3 )); then
+    if (( ${#profile_fields[@]} != 4 )); then
         echo "infisical_compose: invalid profile output" >&2
         return 1
     fi
@@ -306,6 +322,10 @@ PY
     local project_id="${profile_fields[1]}"
     local environment="${profile_fields[2]}"
     local secret_path="${profile_fields[3]}"
+    local domain="${profile_fields[4]}"
+    if [[ -z "${_INFISICAL_COMPOSE_ACCESS_TOKEN:-}" ]]; then
+        infi-auth "$domain" || return 1
+    fi
     local token="$_INFISICAL_COMPOSE_ACCESS_TOKEN"
 
     compose_args=()
@@ -320,7 +340,7 @@ PY
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_ID \
         -u INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET \
         infisical run \
-        --domain=https://infisical.lab.brendans.cloud \
+        --domain="$domain" \
         --projectId="$project_id" \
         --env="$environment" \
         --path="$secret_path" \
