@@ -23,11 +23,9 @@ headless = true
 theme = "black-metal-bathory"
 TOML
 
-CHEZMOI_CONFIG_FILE="$TEST_ROOT/chezmoi.toml" \
-  chezmoi execute-template --source "$ROOT" \
+chezmoi --config "$TEST_ROOT/chezmoi.toml" execute-template --source "$ROOT" \
   <"$ROOT/dot_config/mise/config.toml.tmpl" >"$RENDERED_CONFIG"
-CHEZMOI_CONFIG_FILE="$TEST_ROOT/chezmoi.toml" \
-  chezmoi execute-template --source "$ROOT" \
+chezmoi --config "$TEST_ROOT/chezmoi.toml" execute-template --source "$ROOT" \
   <"$ROOT/.chezmoiscripts/run_after_install_tools.sh.tmpl" >"$RENDERED_SCRIPT"
 chmod +x "$RENDERED_SCRIPT"
 
