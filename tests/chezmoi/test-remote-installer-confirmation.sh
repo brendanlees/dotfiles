@@ -85,5 +85,7 @@ grep -Fq "mise-install-arch arm64-musl" "$allow_log"
 # shellcheck disable=SC2016 # Assert literal template syntax, not shell expansion.
 grep -Fq 'MISE_LIBC=musl "$MISE" self-update --yes --no-plugins' \
   "$repo_root/.chezmoiscripts/run_after_install_tools.sh.tmpl"
+grep -Fxq 'export MISE_USE_VERSIONS_HOST=0' \
+  "$repo_root/.chezmoiscripts/run_after_install_tools.sh.tmpl"
 
 echo "remote installer confirmation ok"

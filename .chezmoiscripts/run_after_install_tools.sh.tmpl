@@ -32,6 +32,10 @@ if [ -z "${GITHUB_API_TOKEN:-}" ]; then
 fi
 {{ end -}}
 
+# Use authoritative GitHub release metadata instead of the centralized
+# mise-versions cache. Mise still caches direct responses locally.
+export MISE_USE_VERSIONS_HOST=0
+
 # ------------------------------------------
 # install > mise tools (runs on every chezmoi apply)
 # ------------------------------------------
