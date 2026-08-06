@@ -33,8 +33,21 @@ fi
 {{ end -}}
 
 # Use authoritative GitHub release metadata instead of the centralized
-# mise-versions cache. Mise still caches direct responses locally.
+# mise-versions cache. Isolate direct responses because mise may reuse hosted
+# responses already present in its default local cache.
 export MISE_USE_VERSIONS_HOST=0
+export MISE_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/mise-direct"
+
+# Infisical republished the v0.43.118 archives under the same URLs. Remove a
+# generated lockfile containing the superseded checksums so mise can resolve
+# the replacement assets from GitHub.
+MISE_LOCK="${XDG_CONFIG_HOME:-$HOME/.config}/mise/mise.lock"
+if [[ -f "$MISE_LOCK" ]] && grep -Eq \
+  'sha256:(b8055a53ab862cc1de56d10c9660a34d355d0b8777f90a6d88baca15e97fe798|4403ad59f01e0f0a1465527163a5de882c685eabfd818997d1e314570591c293)' \
+  "$MISE_LOCK"; then
+  echo "removing mise lockfile with superseded Infisical checksums..."
+  rm -f "$MISE_LOCK"
+fi
 
 # ------------------------------------------
 # install > mise tools (runs on every chezmoi apply)
