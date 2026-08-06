@@ -42,7 +42,6 @@ brews:
     - bash
     - bitwarden-cli
     - oven-sh/bun/bun
-    - chezmoi
     - curl
     # - gh (mise)
     - git

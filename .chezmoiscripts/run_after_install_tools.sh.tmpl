@@ -73,6 +73,15 @@ echo "installing mise tools..."
 
 echo "mise tools installed."
 
+{{ if eq .chezmoi.os "darwin" -}}
+# Mise now provides the upstream static Chezmoi binary. Remove the Homebrew
+# formula only after the replacement has installed successfully.
+if command -v brew >/dev/null 2>&1 && brew list --formula chezmoi >/dev/null 2>&1; then
+  echo "removing Homebrew chezmoi formula..."
+  brew uninstall --formula chezmoi
+fi
+{{ end -}}
+
 # Upgrade all installed tools except starship.
 # starship is the active shell prompt; replacing its binary mid-apply glitches
 # the running session. Upgrade it on demand via the `mise-upgrade-starship`
