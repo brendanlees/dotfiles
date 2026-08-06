@@ -30,12 +30,6 @@ navigate_workspace_up = "ctrl+k"
 navigate_workspace_down = "ctrl+j"
 
 [[keys.command]]
-key = "prefix+L"
-type = "plugin_action"
-command = "herdr-navigator.jump-back"
-description = "jump back"
-
-[[keys.command]]
 key = "prefix+h"
 type = "shell"
 command = 'exec "$HERDR_BIN_PATH" pane resize --direction left --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
@@ -88,6 +82,12 @@ key = "prefix+K"
 type = "plugin_action"
 command = "cloudmanic.herdr-plus.projects"
 description = "herdr-plus: projects"
+
+[[keys.command]]
+key = "prefix+L"
+type = "plugin_action"
+command = "third774.last-workspace.toggle"
+description = "toggle last workspace"
 
 # --- worktrunk ---
 
