@@ -19,12 +19,27 @@ done
 grep -Fxq '/agents/state/' "$repo_root/.gitignore"
 grep -Fxq '/agents/backups/' "$repo_root/.gitignore"
 
-rendered_ignore="$tmpdir/ignore"
+personal_ignore="$tmpdir/personal-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":true,"work":false,"homelab":false,"headless":false}' \
-  <"$repo_root/.chezmoiignore" >"$rendered_ignore"
-grep -Fxq 'agents' "$rendered_ignore"
+  <"$repo_root/.chezmoiignore" >"$personal_ignore"
+grep -Fxq 'agents' "$personal_ignore"
+if grep -Fxq '.agents' "$personal_ignore"; then
+  echo 'personal machines must manage ~/.agents' >&2
+  exit 1
+fi
+
+nonpersonal_ignore="$tmpdir/nonpersonal-ignore"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data '{"personal":false,"work":true,"homelab":false,"headless":false}' \
+  <"$repo_root/.chezmoiignore" >"$nonpersonal_ignore"
+grep -Fxq 'agents' "$nonpersonal_ignore"
+if grep -Fxq '.agents' "$nonpersonal_ignore"; then
+  echo '.agents must not be ignored because .chezmoiremove cleans it up' >&2
+  exit 1
+fi
 python3 - "$repo_root/.chezmoiexternal.toml.tmpl" <<'PY'
 import re
 import sys
@@ -45,9 +60,17 @@ config_file="$tmpdir/chezmoi.toml"
 mkdir -p "$minimal_source/agents/skills" "$home_dir"
 printf '# canonical\n' >"$minimal_source/agents/AGENTS.md"
 printf '{}\n' >"$minimal_source/agents/.skill-lock.json"
-printf 'agents\n' >"$minimal_source/.chezmoiignore"
+cp "$repo_root/.chezmoiignore" "$minimal_source/.chezmoiignore"
+cp "$repo_root/.chezmoiremove.tmpl" "$minimal_source/.chezmoiremove.tmpl"
 cp "$repo_root/symlink_dot_agents.tmpl" "$minimal_source/symlink_dot_agents.tmpl"
-printf '[data]\n' >"$config_file"
+printf '%s\n' \
+  '[data]' \
+  'personal = true' \
+  'work = false' \
+  'homelab = false' \
+  'ephemeral = false' \
+  'headless = false' \
+  >"$config_file"
 
 chezmoi apply \
   --source "$minimal_source" \
@@ -60,6 +83,23 @@ chezmoi apply \
 [[ ! -e "$home_dir/agents" ]]
 printf '# edited through target\n' >"$home_dir/.agents/AGENTS.md"
 grep -Fxq '# edited through target' "$minimal_source/agents/AGENTS.md"
+
+printf '%s\n' \
+  '[data]' \
+  'personal = false' \
+  'work = true' \
+  'homelab = false' \
+  'ephemeral = false' \
+  'headless = false' \
+  >"$config_file"
+
+chezmoi apply \
+  --source "$minimal_source" \
+  --config "$config_file" \
+  --destination "$home_dir" \
+  --no-tty
+
+[[ ! -e "$home_dir/.agents" && ! -L "$home_dir/.agents" ]]
 
 if git -C "$repo_root" check-ignore -q agents/AGENTS.md; then
   echo 'portable AGENTS.md must be tracked' >&2

@@ -124,7 +124,7 @@ AppData
 .chezmoiscripts/windows/**
 {{- end }}
 
-# agents/ is source-owned and reached through ~/.agents
+# agents/ is source-owned and reached through ~/.agents on personal machines
 agents
 
 README.md
