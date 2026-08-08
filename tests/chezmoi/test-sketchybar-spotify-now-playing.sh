@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TMP="${TMPDIR:-/tmp}/sketchybar-spotify-now-playing-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
@@ -17,7 +18,7 @@ export GREY=0xff808080
 export SPOTIFY_COLOR=0xff00ff80
 SH
 
-cp "$ROOT/dot_config/sketchybar/plugins/executable_spotify.sh" "$CONFIG/plugins/spotify.sh" 2>/dev/null || : > "$CONFIG/plugins/spotify.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_spotify.sh" "$CONFIG/plugins/spotify.sh" 2>/dev/null || : > "$CONFIG/plugins/spotify.sh"
 chmod +x "$CONFIG/plugins/spotify.sh"
 
 python3 - "$CONFIG/plugins/spotify.sh" <<'PY'
@@ -202,7 +203,7 @@ if ! grep -q '^quit$' "$OSASCRIPT_LOG"; then
 fi
 
 : > "$LOG"
-CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SPOTIFY_COLOR=0xff00ff80 WHITE=0xffffffff SURFACE=0xff262626 TRANSPARENT=0x00000000 BORDER_RADIUS=8 PILL_HEIGHT=36 ITEM_PADDING=8 SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$ROOT/dot_config/sketchybar/items/spotify.sh"
+CONFIG_DIR="$CONFIG" ITEM_DIR="$CONFIG/items" PLUGIN_DIR="$CONFIG/plugins" FONT="JetBrainsMono Nerd Font Mono" ICON_COLOR=0xffffffff SPOTIFY_COLOR=0xff00ff80 WHITE=0xffffffff SURFACE=0xff262626 TRANSPARENT=0x00000000 BORDER_RADIUS=8 PILL_HEIGHT=36 ITEM_PADDING=8 SKETCHYBAR_STUB_LOG="$LOG" PATH="$BIN:$PATH" bash "$SOURCE_ROOT/dot_config/sketchybar/items/spotify.sh"
 assert_log_contains '--add item spotify right'
 assert_log_contains 'icon=:spotify:'
 assert_log_contains 'icon.font=sketchybar-app-font:Regular:14.0'

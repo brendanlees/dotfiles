@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TMP="${TMPDIR:-/tmp}/sketchybar-live-workspace-icons-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
@@ -31,11 +32,11 @@ export PILL_BG=0x88262626
 export SPACE_ACTIVE_BG=0xaa4a4253
 SH
 
-cp "$ROOT/dot_config/sketchybar/icons.sh" "$CONFIG/icons.sh"
-cp "$ROOT/dot_config/sketchybar/plugins/executable_icon_map.sh" "$CONFIG/plugins/icon_map.sh"
-cp "$ROOT/dot_config/sketchybar/plugins/executable_front_app.sh" "$CONFIG/plugins/front_app.sh"
-cp "$ROOT/dot_config/sketchybar/plugins/executable_battery.sh" "$CONFIG/plugins/battery.sh"
-cp "$ROOT/dot_config/sketchybar/plugins/executable_aerospace.sh" "$CONFIG/plugins/aerospace.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/icons.sh" "$CONFIG/icons.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_icon_map.sh" "$CONFIG/plugins/icon_map.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_front_app.sh" "$CONFIG/plugins/front_app.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_battery.sh" "$CONFIG/plugins/battery.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_aerospace.sh" "$CONFIG/plugins/aerospace.sh"
 chmod +x "$CONFIG/plugins/"*.sh
 
 cat > "$BIN/sketchybar" <<'SH'

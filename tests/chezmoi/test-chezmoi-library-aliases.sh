@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-HELPER="$ROOT/dot_config/zsh/exact_aliases.d/chezmoi.zsh.tmpl"
+SOURCE_ROOT="$ROOT/home"
+HELPER="$SOURCE_ROOT/dot_config/zsh/exact_aliases.d/chezmoi.zsh.tmpl"
 TMPDIR="${TMPDIR:-/tmp}"
 TMPDIR="${TMPDIR%/}/chezmoi-library-aliases-test-$$"
 mkdir -p "$TMPDIR"

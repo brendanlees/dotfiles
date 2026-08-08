@@ -2,9 +2,10 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-template="$repo_root/dot_config/private_mcp/private_mcp.json.tmpl"
-config_template="$repo_root/.chezmoi.toml.tmpl"
-ignore_template="$repo_root/.chezmoiignore"
+source_root="$repo_root/home"
+template="$source_root/dot_config/private_mcp/private_mcp.json.tmpl"
+config_template="$source_root/.chezmoi.toml.tmpl"
+ignore_template="$source_root/.chezmoiignore"
 ha_item_id="afa4395b-8044-46b1-86c9-b48d007e82ac"
 executor_url="https://executor.lab.brendans.cloud/mcp/toolkits/hermes-work"
 # shellcheck disable=SC2016 # Match the literal Go-template variable name.

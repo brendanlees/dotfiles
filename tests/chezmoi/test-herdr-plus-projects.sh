@@ -2,7 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-projects="$repo_root/dot_config/herdr/plugins/config/cloudmanic.herdr-plus/projects"
+source_root="$repo_root/home"
+projects="$source_root/dot_config/herdr/plugins/config/cloudmanic.herdr-plus/projects"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -102,10 +103,10 @@ no_roles_ignore="$tmpdir/no-roles-ignore"
 all_roles_ignore="$tmpdir/all-roles-ignore"
 chezmoi execute-template --source "$repo_root" \
   --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true}' \
-  <"$repo_root/.chezmoiignore" >"$no_roles_ignore"
+  <"$source_root/.chezmoiignore" >"$no_roles_ignore"
 chezmoi execute-template --source "$repo_root" \
   --override-data '{"personal":true,"work":true,"homelab":true,"ephemeral":false,"headless":false}' \
-  <"$repo_root/.chezmoiignore" >"$all_roles_ignore"
+  <"$source_root/.chezmoiignore" >"$all_roles_ignore"
 for pattern in personal work homelab; do
   target=".config/herdr/plugins/config/cloudmanic.herdr-plus/projects/$pattern-*.toml"
   grep -Fxq "$target" "$no_roles_ignore"

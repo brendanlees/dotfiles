@@ -102,11 +102,11 @@ function Initialize-Paths {
     if (-not (Test-Path -LiteralPath $PublicSource -PathType Container)) {
         throw 'the public Chezmoi source directory is unavailable'
     }
-    $script:PublicRoot = (Resolve-Path -LiteralPath $PublicSource).Path.TrimEnd('\', '/')
-    $top = Invoke-GitText @('-C', $PublicRoot, 'rev-parse', '--show-toplevel') 'the public Chezmoi source is not a Git checkout'
-    $top = (Resolve-Path -LiteralPath $top).Path.TrimEnd('\', '/')
-    if (-not $top.Equals($PublicRoot, [StringComparison]::OrdinalIgnoreCase)) {
-        throw 'the configured public source is not the public Git checkout root'
+    $sourceRoot = (Resolve-Path -LiteralPath $PublicSource).Path.TrimEnd('\', '/')
+    $top = Invoke-GitText @('-C', $sourceRoot, 'rev-parse', '--show-toplevel') 'the public Chezmoi source is not a Git checkout'
+    $script:PublicRoot = (Resolve-Path -LiteralPath $top).Path.TrimEnd('\', '/')
+    if (-not (Test-PathWithin $sourceRoot $PublicRoot)) {
+        throw 'the public Chezmoi source is outside its Git checkout'
     }
     $script:AgentSkills = Join-Path $PublicRoot 'agents/skills'
     $script:StateFile = Join-Path $PublicRoot 'agents/state/private-agent-skills.json'

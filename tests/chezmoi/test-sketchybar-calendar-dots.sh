@@ -2,14 +2,15 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TMP="${TMPDIR:-/tmp}/sketchybar-calendar-dots-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
 mkdir -p "$CONFIG/plugins" "$BIN"
 trap 'rm -rf "$TMP"' EXIT
 
-cp "$ROOT/dot_config/sketchybar/plugins/executable_calendar.sh" "$CONFIG/plugins/calendar.sh"
-cp "$ROOT/dot_config/sketchybar/plugins/executable_calendar_dots.sh" "$CONFIG/plugins/calendar_dots.sh" 2>/dev/null || : > "$CONFIG/plugins/calendar_dots.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_calendar.sh" "$CONFIG/plugins/calendar.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_calendar_dots.sh" "$CONFIG/plugins/calendar_dots.sh" 2>/dev/null || : > "$CONFIG/plugins/calendar_dots.sh"
 chmod +x "$CONFIG/plugins/calendar.sh" "$CONFIG/plugins/calendar_dots.sh"
 
 cat > "$BIN/sketchybar" <<'SB'

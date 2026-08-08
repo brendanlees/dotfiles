@@ -2,9 +2,10 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-template="$repo_root/.chezmoitemplates/pi-theme.json.tmpl"
-posix_writer="$repo_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl"
-windows_writer="$repo_root/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl"
+source_root="$repo_root/home"
+template="$source_root/.chezmoitemplates/pi-theme.json.tmpl"
+posix_writer="$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl"
+windows_writer="$source_root/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 

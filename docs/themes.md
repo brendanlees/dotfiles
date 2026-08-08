@@ -1,6 +1,6 @@
 # themes
 
-a single `theme` key in `.chezmoidata/defaults.yml` drives colors across ghostty, pi, herdr, tmux, nvim, btop, bat, starship, glow, zed, espanso, Sketchybar, and yabai borders.
+a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, herdr, tmux, nvim, btop, bat, starship, glow, zed, espanso, Sketchybar, and yabai borders.
 
 ## switching
 
@@ -11,7 +11,7 @@ theme --list             # list available themes (active marked)
 theme --current          # print active theme
 ```
 
-the script writes the choice to `.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, herdr, borders, Sketchybar, nvim (over its socket), and espanso.
+the script writes the choice to `home/.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, herdr, borders, Sketchybar, nvim (over its socket), and espanso.
 
 a few apps need a manual restart to pick up the new theme:
 
@@ -38,20 +38,20 @@ herdr uses a chezmoi-generated config at `~/.config/herdr/config.toml`. The temp
 
 | file                            | role                                                                  |
 | ------------------------------- | --------------------------------------------------------------------- |
-| `.chezmoidata/defaults.yml`     | tracked default — falls back here if no override                      |
-| `.chezmoidata/local.yml`        | gitignored, host-local override — `theme` writes here                 |
-| `.chezmoidata/themes.yml`       | registry: palette + per-app theme names                               |
-| `.chezmoitemplates/pi-theme.json.tmpl` | shared source for the generated Pi TUI theme |
-| `dot_config/herdr/config.toml.tmpl` | tmux-compatible herdr keys and generated custom palette |
-| `.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl` | POSIX atomic writer for `~/.pi/agent/themes/chezmoi.json` after the `.pi` external sync |
-| `.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl` | Windows atomic writer for the same generated runtime theme |
+| `home/.chezmoidata/defaults.yml`     | tracked default — falls back here if no override                      |
+| `home/.chezmoidata/local.yml`        | gitignored, host-local override — `theme` writes here                 |
+| `home/.chezmoidata/themes.yml`       | registry: palette + per-app theme names                               |
+| `home/.chezmoitemplates/pi-theme.json.tmpl` | shared source for the generated Pi TUI theme |
+| `home/dot_config/herdr/config.toml.tmpl` | tmux-compatible herdr keys and generated custom palette |
+| `home/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl` | POSIX atomic writer for `~/.pi/agent/themes/chezmoi.json` after the `.pi` external sync |
+| `home/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl` | Windows atomic writer for the same generated runtime theme |
 | `~/.pi/agent/themes/chezmoi.json` | ignored generated runtime output; never edit or track directly |
 
-chezmoi merges `.chezmoidata/*.yml` lexicographically, so `local.yml` beats `defaults.yml`.
+chezmoi merges `home/.chezmoidata/*.yml` lexicographically, so `local.yml` beats `defaults.yml`.
 
 ## adding a theme
 
-edit `.chezmoidata/themes.yml` and add a new entry under `themes:` with both blocks fully populated:
+edit `home/.chezmoidata/themes.yml` and add a new entry under `themes:` with both blocks fully populated:
 
 ```yaml
 themes:

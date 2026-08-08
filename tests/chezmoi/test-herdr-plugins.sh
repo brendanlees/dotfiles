@@ -2,7 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-template="$repo_root/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh.tmpl"
+source_root="$repo_root/home"
+template="$source_root/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh.tmpl"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -74,8 +75,8 @@ for removed_plugin in old-plugin persiyanov.reviewr; do
   fi
 done
 
-navigator_config="$repo_root/dot_config/herdr/plugins/config/herdr-navigator/config.toml"
-file_viewer_template="$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl"
+navigator_config="$source_root/dot_config/herdr/plugins/config/herdr-navigator/config.toml"
+file_viewer_template="$source_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl"
 file_viewer_config="$tmpdir/file-viewer-config.toml"
 chezmoi execute-template \
   --source "$repo_root" \
@@ -124,7 +125,7 @@ assert file_viewer == {
 }
 PY
 
-reviewr_config="$repo_root/dot_config/herdr/plugins/config/persiyanov.reviewr/config.toml"
+reviewr_config="$source_root/dot_config/herdr/plugins/config/persiyanov.reviewr/config.toml"
 [[ ! -e "$reviewr_config" ]] || { echo "stale managed Reviewr config: $reviewr_config" >&2; exit 1; }
 
 echo "Herdr plugin reconciliation ok"

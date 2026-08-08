@@ -1,6 +1,6 @@
 # zsh startup performance
 
-`dot_zshrc.tmpl` is tuned to minimize subprocess forks on shell startup. each fork on macOS costs ~20–80 ms; a vanilla "eval $(tool init zsh)" stack adds up to a noticeable lag.
+`home/dot_zshrc.tmpl` is tuned to minimize subprocess forks on shell startup. each fork on macOS costs ~20–80 ms; a vanilla "eval $(tool init zsh)" stack adds up to a noticeable lag.
 
 ## changes vs. a default zshrc
 

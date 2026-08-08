@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TEST_BASE="${TMPDIR:-/tmp}"
 TEST_ROOT="${TEST_BASE%/}/mise-direct-metadata-test-$$"
 TEST_HOME="$TEST_ROOT/home"
@@ -24,13 +25,13 @@ theme = "black-metal-bathory"
 TOML
 
 chezmoi --config "$TEST_ROOT/chezmoi.toml" execute-template --source "$ROOT" \
-  <"$ROOT/dot_config/mise/config.toml.tmpl" >"$RENDERED_CONFIG"
+  <"$SOURCE_ROOT/dot_config/mise/config.toml.tmpl" >"$RENDERED_CONFIG"
 chezmoi --config "$TEST_ROOT/chezmoi.toml" execute-template --source "$ROOT" \
-  <"$ROOT/.chezmoiscripts/run_after_install_tools.sh.tmpl" >"$RENDERED_SCRIPT"
+  <"$SOURCE_ROOT/.chezmoiscripts/run_after_install_tools.sh.tmpl" >"$RENDERED_SCRIPT"
 chmod +x "$RENDERED_SCRIPT"
 
 grep -Fxq 'chezmoi = "latest"' "$RENDERED_CONFIG"
-if grep -Fxq '    - chezmoi' "$ROOT/.chezmoidata/packages-darwin.yml"; then
+if grep -Fxq '    - chezmoi' "$SOURCE_ROOT/.chezmoidata/packages-darwin.yml"; then
   echo "chezmoi must not be managed by Homebrew" >&2
   exit 1
 fi

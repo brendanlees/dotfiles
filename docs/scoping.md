@@ -10,7 +10,7 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 | `ephemeral` | auto-detected for ci/containers; minimal config                                 |
 | `headless`  | skip gui config (ghostty, kanata); auto-set for homelab, prompted for work-only |
 
-known hostnames can also be auto-assigned without prompting in `.chezmoi.toml.tmpl`.
+known hostnames can also be auto-assigned without prompting in `home/.chezmoi.toml.tmpl`.
 
 
 ## skip prompts via flags

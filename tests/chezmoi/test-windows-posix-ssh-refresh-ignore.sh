@@ -38,19 +38,25 @@ posix_runner=".chezmoiscripts/refresh-ssh-keys.sh"
 windows_runner=".chezmoiscripts/windows/refresh-ssh-keys.ps1"
 posix_helper=".local/bin/cz-ssh-refresh"
 windows_helper=".local/bin/cz-ssh-refresh.ps1"
+posix_migration=".chezmoiscripts/migrate-source-root-local-data.sh"
+windows_migration=".chezmoiscripts/windows/migrate-source-root-local-data.ps1"
 
 windows_ignored=$(ignored_for_os windows)
 assert_ignored "$windows_ignored" "$posix_runner" windows
 assert_ignored "$windows_ignored" "$posix_helper" windows
+assert_ignored "$windows_ignored" "$posix_migration" windows
 assert_not_ignored "$windows_ignored" "$windows_runner" windows
 assert_not_ignored "$windows_ignored" "$windows_helper" windows
+assert_not_ignored "$windows_ignored" "$windows_migration" windows
 
 for os in darwin linux; do
   ignored=$(ignored_for_os "$os")
   assert_not_ignored "$ignored" "$posix_runner" "$os"
   assert_not_ignored "$ignored" "$posix_helper" "$os"
+  assert_not_ignored "$ignored" "$posix_migration" "$os"
   assert_ignored "$ignored" "$windows_runner" "$os"
   assert_ignored "$ignored" "$windows_helper" "$os"
+  assert_ignored "$ignored" "$windows_migration" "$os"
 done
 
-echo "windows ssh refresh target selection ok"
+echo "OS-specific script target selection ok"

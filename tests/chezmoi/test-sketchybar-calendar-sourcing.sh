@@ -2,8 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-RC="$ROOT/dot_config/sketchybar/executable_sketchybarrc"
-ITEM="$ROOT/dot_config/sketchybar/items/calendar.sh"
+SOURCE_ROOT="$ROOT/home"
+RC="$SOURCE_ROOT/dot_config/sketchybar/executable_sketchybarrc"
+ITEM="$SOURCE_ROOT/dot_config/sketchybar/items/calendar.sh"
 TMP="${TMPDIR:-/tmp}/sketchybar-calendar-sourcing-test-$$"
 BIN="$TMP/bin"
 LOG="$TMP/sketchybar.log"

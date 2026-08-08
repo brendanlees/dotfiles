@@ -1,0 +1,26 @@
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$SourceRoot = '{{ .chezmoi.sourceDir | replace "'" "''" }}'
+$RepoRoot = (& git -C $SourceRoot rev-parse --show-toplevel).Trim()
+if ($LASTEXITCODE -ne 0 -or -not $RepoRoot) {
+    throw 'cannot resolve the public Git checkout'
+}
+$Legacy = Join-Path $RepoRoot '.chezmoidata/local.yml'
+$Current = Join-Path $SourceRoot '.chezmoidata/local.yml'
+
+if (-not (Test-Path -LiteralPath $Legacy)) { exit 0 }
+if (Test-Path -LiteralPath $Current) {
+    Write-Warning "Preserving legacy chezmoi data at $Legacy because $Current already exists"
+    exit 0
+}
+$LegacyItem = Get-Item -LiteralPath $Legacy -Force
+if ($LegacyItem.PSIsContainer -or $LegacyItem.LinkType) {
+    Write-Warning "Refusing to migrate non-regular chezmoi data at $Legacy"
+    exit 0
+}
+
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Current) | Out-Null
+Move-Item -LiteralPath $Legacy -Destination $Current
+Remove-Item -LiteralPath (Split-Path -Parent $Legacy) -ErrorAction SilentlyContinue
+Write-Host 'Migrated local chezmoi data into the home/ source state; run chezmoi apply again to load it'

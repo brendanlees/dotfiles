@@ -5,6 +5,7 @@ if (Test-Path Variable:PSNativeCommandUseErrorActionPreference) {
 Set-StrictMode -Version Latest
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$SourceRoot = Join-Path $RepoRoot 'home'
 $RealGit = (Get-Command git -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $Chezmoi = (Get-Command chezmoi -ErrorAction Stop | Select-Object -First 1).Source
 $Stage = Join-Path ([IO.Path]::GetTempPath()) "private-agent-skills-$([guid]::NewGuid().ToString('N'))"
@@ -26,7 +27,7 @@ function ConvertTo-TomlString([string]$Value) {
 }
 
 function Render-Helper([string]$Source, [string]$Config, [string]$Output, [string]$Override = '') {
-    $template = Get-Content -Raw (Join-Path $RepoRoot 'dot_local/bin/executable_cz-private-agent-skills.ps1.tmpl')
+    $template = Get-Content -Raw (Join-Path $SourceRoot 'dot_local/bin/executable_cz-private-agent-skills.ps1.tmpl')
     $arguments = @('execute-template', '--source', $Source, '--config', $Config)
     if ($Override) { $arguments += @('--override-data', $Override) }
     $rendered = $template | & $Chezmoi @arguments | Out-String
@@ -69,7 +70,8 @@ try {
     $publicRoot = Join-Path $Stage 'public'
     Initialize-GitRepo $publicRoot
     $publicSkill = Join-Path $publicRoot 'agents/skills/public-fixture'
-    New-Item -ItemType Directory -Force -Path $publicSkill | Out-Null
+    New-Item -ItemType Directory -Force -Path $publicSkill, (Join-Path $publicRoot 'home') | Out-Null
+    Set-Content -Encoding utf8NoBOM -Path (Join-Path $publicRoot '.chezmoiroot') -Value 'home'
     Set-Content -Encoding utf8NoBOM -Path (Join-Path $publicSkill 'SKILL.md') -Value 'public'
     Set-Content -Encoding utf8NoBOM -Path (Join-Path $publicRoot '.gitignore') -Value '/agents/state/'
     & $RealGit -C $publicRoot add .
@@ -95,7 +97,8 @@ checkout = "$(ConvertTo-TomlString $checkout)"
     # Negative eligibility with otherwise valid machine-local configuration is a no-op.
     $negativeRoot = Join-Path $Stage 'negative-public'
     Initialize-GitRepo $negativeRoot
-    New-Item -ItemType Directory -Force -Path (Join-Path $negativeRoot 'agents/skills/public-fixture') | Out-Null
+    New-Item -ItemType Directory -Force -Path (Join-Path $negativeRoot 'agents/skills/public-fixture'), (Join-Path $negativeRoot 'home') | Out-Null
+    Set-Content -Encoding utf8NoBOM -Path (Join-Path $negativeRoot '.chezmoiroot') -Value 'home'
     Set-Content -Encoding utf8NoBOM -Path (Join-Path $negativeRoot 'agents/skills/public-fixture/SKILL.md') -Value 'public'
     & $RealGit -C $negativeRoot add .
     & $RealGit -C $negativeRoot commit -qm 'test: initialize negative fixture'

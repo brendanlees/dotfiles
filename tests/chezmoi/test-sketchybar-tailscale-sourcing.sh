@@ -2,8 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-RC="$ROOT/dot_config/sketchybar/executable_sketchybarrc"
-ITEM="$ROOT/dot_config/sketchybar/items/tailscale.sh"
+SOURCE_ROOT="$ROOT/home"
+RC="$SOURCE_ROOT/dot_config/sketchybar/executable_sketchybarrc"
+ITEM="$SOURCE_ROOT/dot_config/sketchybar/items/tailscale.sh"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 [ -f "$ITEM" ] || fail "items/tailscale.sh missing"

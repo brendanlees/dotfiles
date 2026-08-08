@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_root='{{ .chezmoi.sourceDir | replace "'" "'\\''" }}'
+repo_root=$(git -C "$source_root" rev-parse --show-toplevel)
+legacy="$repo_root/.chezmoidata/local.yml"
+current="$source_root/.chezmoidata/local.yml"
+
+[[ -e $legacy || -L $legacy ]] || exit 0
+if [[ -e $current || -L $current ]]; then
+  echo "warn: preserving legacy chezmoi data at $legacy because $current already exists" >&2
+  exit 0
+fi
+if [[ ! -f $legacy || -L $legacy ]]; then
+  echo "warn: refusing to migrate non-regular chezmoi data at $legacy" >&2
+  exit 0
+fi
+
+mkdir -p "${current%/*}"
+mv -- "$legacy" "$current"
+rmdir -- "${legacy%/*}" 2>/dev/null || true
+echo 'info: migrated local chezmoi data into the home/ source state; run chezmoi apply again to load it'

@@ -1,6 +1,3 @@
-# Repository-only agent context; do not install into the home directory.
-AGENTS.md
-
 {{- if ne .chezmoi.os "darwin" }}
 dotfiles-mac # only manage mac dotfiles on mac
 Library
@@ -105,9 +102,11 @@ AppData
 
 {{- if eq .chezmoi.os "windows" }}
 .config/alacritty
-# POSIX SSH refresh plumbing is not executable on Windows.
+# POSIX-only scripts are not executable on Windows.
 .chezmoiscripts/refresh-ssh-keys.sh
 .chezmoiscripts/run_onchange_after_refresh-ssh-keys.sh.tmpl
+.chezmoiscripts/migrate-source-root-local-data.sh
+.chezmoiscripts/run_once_before_migrate-source-root-local-data.sh.tmpl
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}
@@ -124,13 +123,4 @@ AppData
 .chezmoiscripts/windows/**
 {{- end }}
 
-# agents/ is source-owned and reached through ~/.agents on personal machines
-agents
-
-README.md
-key.txt.age
-LICENSE
-install.sh
-docs
-tests
 .DS_Store

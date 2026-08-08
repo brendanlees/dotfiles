@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -9,7 +10,7 @@ for path in \
   "$repo_root/agents/AGENTS.md" \
   "$repo_root/agents/.skill-lock.json" \
   "$repo_root/agents/skills" \
-  "$repo_root/symlink_dot_agents.tmpl"; do
+  "$source_root/symlink_dot_agents.tmpl"; do
   [[ -e "$path" ]] || {
     echo "missing agents source path: $path" >&2
     exit 1
@@ -23,8 +24,11 @@ personal_ignore="$tmpdir/personal-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":true,"work":false,"homelab":false,"headless":false}' \
-  <"$repo_root/.chezmoiignore" >"$personal_ignore"
-grep -Fxq 'agents' "$personal_ignore"
+  <"$source_root/.chezmoiignore" >"$personal_ignore"
+if grep -Fxq 'agents' "$personal_ignore"; then
+  echo 'root-level agents must remain outside the chezmoi source state' >&2
+  exit 1
+fi
 if grep -Fxq '.agents' "$personal_ignore"; then
   echo 'personal machines must manage ~/.agents' >&2
   exit 1
@@ -34,13 +38,16 @@ nonpersonal_ignore="$tmpdir/nonpersonal-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":false,"work":true,"homelab":false,"headless":false}' \
-  <"$repo_root/.chezmoiignore" >"$nonpersonal_ignore"
-grep -Fxq 'agents' "$nonpersonal_ignore"
+  <"$source_root/.chezmoiignore" >"$nonpersonal_ignore"
+if grep -Fxq 'agents' "$nonpersonal_ignore"; then
+  echo 'root-level agents must remain outside the chezmoi source state' >&2
+  exit 1
+fi
 if grep -Fxq '.agents' "$nonpersonal_ignore"; then
   echo '.agents must not be ignored because .chezmoiremove cleans it up' >&2
   exit 1
 fi
-python3 - "$repo_root/.chezmoiexternal.toml.tmpl" <<'PY'
+python3 - "$source_root/.chezmoiexternal.toml.tmpl" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -57,12 +64,13 @@ PY
 minimal_source="$tmpdir/source"
 home_dir="$tmpdir/home"
 config_file="$tmpdir/chezmoi.toml"
-mkdir -p "$minimal_source/agents/skills" "$home_dir"
+mkdir -p "$minimal_source/agents/skills" "$minimal_source/home" "$home_dir"
+printf 'home\n' >"$minimal_source/.chezmoiroot"
 printf '# canonical\n' >"$minimal_source/agents/AGENTS.md"
 printf '{}\n' >"$minimal_source/agents/.skill-lock.json"
-cp "$repo_root/.chezmoiignore" "$minimal_source/.chezmoiignore"
-cp "$repo_root/.chezmoiremove.tmpl" "$minimal_source/.chezmoiremove.tmpl"
-cp "$repo_root/symlink_dot_agents.tmpl" "$minimal_source/symlink_dot_agents.tmpl"
+cp "$source_root/.chezmoiignore" "$minimal_source/home/.chezmoiignore"
+cp "$source_root/.chezmoiremove.tmpl" "$minimal_source/home/.chezmoiremove.tmpl"
+cp "$source_root/symlink_dot_agents.tmpl" "$minimal_source/home/symlink_dot_agents.tmpl"
 printf '%s\n' \
   '[data]' \
   'personal = true' \

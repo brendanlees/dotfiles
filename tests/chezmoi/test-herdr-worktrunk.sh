@@ -2,12 +2,13 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 rendered="$tmpdir/reconcile.sh"
 chezmoi execute-template --source "$repo_root" \
-  <"$repo_root/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh.tmpl" >"$rendered"
+  <"$source_root/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh.tmpl" >"$rendered"
 chmod +x "$rendered"
 mkdir -p "$tmpdir/bin" "$tmpdir/home" "$tmpdir/state" "$tmpdir/plugin-config"
 cat >"$tmpdir/bin/herdr" <<'SH'

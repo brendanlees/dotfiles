@@ -2,7 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-config="$repo_root/dot_config/worktrunk/config.toml"
+source_root="$repo_root/home"
+config="$source_root/dot_config/worktrunk/config.toml"
 
 python3 - "$config" <<'PY'
 import os

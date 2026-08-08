@@ -2,8 +2,9 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-packages_file="$repo_root/.chezmoidata/packages-darwin.yml"
-npm_script="$repo_root/.chezmoiscripts/darwin/run_onchange_after_install-packages-npm.sh.tmpl"
+source_root="$repo_root/home"
+packages_file="$source_root/.chezmoidata/packages-darwin.yml"
+npm_script="$source_root/.chezmoiscripts/darwin/run_onchange_after_install-packages-npm.sh.tmpl"
 
 python3 - "$packages_file" <<'PY'
 import sys

@@ -2,13 +2,14 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 render_ignore() {
   local name=$1 data=$2
   chezmoi execute-template --source "$repo_root" --override-data "$data" \
-    <"$repo_root/.chezmoiignore" >"$tmpdir/$name.ignore"
+    <"$source_root/.chezmoiignore" >"$tmpdir/$name.ignore"
 }
 
 assert_has() { grep -Fxq "$2" "$tmpdir/$1.ignore"; }

@@ -2,7 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-template="$repo_root/dot_config/herdr/config.toml.tmpl"
+source_root="$repo_root/home"
+template="$source_root/dot_config/herdr/config.toml.tmpl"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -174,18 +175,18 @@ darwin_ignore="$tmpdir/darwin-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"windows"}}' \
-  <"$repo_root/.chezmoiignore" >"$windows_ignore"
+  <"$source_root/.chezmoiignore" >"$windows_ignore"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"darwin"}}' \
-  <"$repo_root/.chezmoiignore" >"$darwin_ignore"
+  <"$source_root/.chezmoiignore" >"$darwin_ignore"
 grep -Fxq '.config/herdr' "$windows_ignore"
 if grep -Fxq '.config/herdr' "$darwin_ignore"; then
   echo "HerdR config must remain managed on macOS" >&2
   exit 1
 fi
 
-theme_switcher="$repo_root/dot_local/bin/executable_theme"
+theme_switcher="$source_root/dot_local/bin/executable_theme"
 grep -Fq 'command -v herdr >/dev/null 2>&1' "$theme_switcher"
 grep -Fq 'pgrep -xq herdr' "$theme_switcher"
 grep -Fq 'herdr server reload-config' "$theme_switcher"

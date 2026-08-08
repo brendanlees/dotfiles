@@ -101,11 +101,11 @@ initialize_paths() {
   require_command git
   require_command jq
   [[ -d $PUBLIC_SOURCE ]] || fatal 'the public Chezmoi source directory is unavailable'
-  PUBLIC_ROOT=$(cd "$PUBLIC_SOURCE" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Chezmoi source directory'
-  local top
-  top=$(git -C "$PUBLIC_ROOT" rev-parse --show-toplevel 2>/dev/null) || fatal 'the public Chezmoi source is not a Git checkout'
-  top=$(cd "$top" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Git checkout'
-  [[ $top == "$PUBLIC_ROOT" ]] || fatal 'the configured public source is not the public Git checkout root'
+  local source_root top
+  source_root=$(cd "$PUBLIC_SOURCE" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Chezmoi source directory'
+  top=$(git -C "$source_root" rev-parse --show-toplevel 2>/dev/null) || fatal 'the public Chezmoi source is not a Git checkout'
+  PUBLIC_ROOT=$(cd "$top" 2>/dev/null && pwd -P) || fatal 'cannot resolve the public Git checkout'
+  path_is_within "$source_root" "$PUBLIC_ROOT" || fatal 'the public Chezmoi source is outside its Git checkout'
   AGENT_SKILLS="$PUBLIC_ROOT/agents/skills"
   STATE_FILE="$PUBLIC_ROOT/agents/state/private-agent-skills.json"
   EXCLUDE_FILE=$(git -C "$PUBLIC_ROOT" rev-parse --git-path info/exclude 2>/dev/null) || fatal 'cannot locate public Git excludes'

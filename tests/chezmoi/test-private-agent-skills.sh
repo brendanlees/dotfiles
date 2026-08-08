@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 tmpdir=$(cd "$tmpdir" && pwd -P)
 trap 'rm -rf "$tmpdir"' EXIT
@@ -31,7 +32,7 @@ chmod +x "$tmpdir/init-bin/scutil"
 CHEZMOI_ROLE=personal PATH="$tmpdir/init-bin:/usr/bin:/bin:/usr/sbin:/sbin" \
   "$chezmoi_bin" execute-template --init --source "$repo_root" \
   --config "$tmpdir/init-input.toml" --override-data "$init_input" \
-  <"$repo_root/.chezmoi.toml.tmpl" >"$tmpdir/rendered-init.toml"
+  <"$source_root/.chezmoi.toml.tmpl" >"$tmpdir/rendered-init.toml"
 grep -Fxq '[data.private_agent_skills]' "$tmpdir/rendered-init.toml"
 grep -Fxq "  remote = \"$remote\"" "$tmpdir/rendered-init.toml"
 grep -Fxq "  checkout = \"$tmpdir/config-checkout\"" "$tmpdir/rendered-init.toml"
@@ -58,7 +59,8 @@ printf -- '---\nname: nested\n---\n' >"$private_seed/skills/nested-$runtime_id/c
 
 public_root="$tmpdir/public"
 init_repo "$public_root"
-mkdir -p "$public_root/agents/skills/public-fixture" "$public_root/agents/state"
+mkdir -p "$public_root/home" "$public_root/agents/skills/public-fixture" "$public_root/agents/state"
+printf 'home\n' >"$public_root/.chezmoiroot"
 printf -- '---\nname: public-fixture\n---\n' >"$public_root/agents/skills/public-fixture/SKILL.md"
 printf 'unrelated\n' >"$public_root/unrelated.txt"
 printf '/agents/state/\n' >"$public_root/.gitignore"
@@ -74,7 +76,7 @@ render_helper() {
   local source=$1 config=$2 output=$3 override=${4:-}
   [[ -n $override ]] || override='{"chezmoi":{"os":"darwin"}}'
   chezmoi execute-template --source "$source" --config "$config" --override-data "$override" \
-    <"$repo_root/dot_local/bin/executable_cz-private-agent-skills.tmpl" >"$output"
+    <"$source_root/dot_local/bin/executable_cz-private-agent-skills.tmpl" >"$output"
   chmod +x "$output"
 }
 
@@ -119,7 +121,8 @@ assert_no_integration() {
 # Eligibility is exactly personal macOS/Windows. Blank, non-personal, and Linux data are no-ops.
 negative_root="$tmpdir/negative-public"
 init_repo "$negative_root"
-mkdir -p "$negative_root/agents/skills/public-fixture"
+mkdir -p "$negative_root/home" "$negative_root/agents/skills/public-fixture"
+printf 'home\n' >"$negative_root/.chezmoiroot"
 printf 'public\n' >"$negative_root/agents/skills/public-fixture/SKILL.md"
 printf '/agents/state/\n' >"$negative_root/.gitignore"
 "$real_git" -C "$negative_root" add .
@@ -253,7 +256,8 @@ grep -Fxq applied "$tmpdir/unrelated-applied"
 # A failed initial clone leaves no partial checkout or integration state.
 clone_fail_root="$tmpdir/clone-fail-public"
 init_repo "$clone_fail_root"
-mkdir -p "$clone_fail_root/agents/skills/public-fixture"
+mkdir -p "$clone_fail_root/home" "$clone_fail_root/agents/skills/public-fixture"
+printf 'home\n' >"$clone_fail_root/.chezmoiroot"
 printf 'public\n' >"$clone_fail_root/agents/skills/public-fixture/SKILL.md"
 printf '/agents/state/\n' >"$clone_fail_root/.gitignore"
 "$real_git" -C "$clone_fail_root" add .

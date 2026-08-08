@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -10,7 +11,7 @@ rendered_zshrc="$tmpdir/zshrc"
 chezmoi execute-template \
   --source "$repo_root" \
   --override-data '{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false}' \
-  --file "$repo_root/dot_zshrc.tmpl" \
+  --file "$source_root/dot_zshrc.tmpl" \
   > "$rendered_zshrc"
 
 # shellcheck disable=SC2016

@@ -40,20 +40,21 @@ see [scoping](docs/scoping.md) for how to skip prompts with env vars or provisio
 ## architecture
 
 ```
-.chezmoi.toml.tmpl              # config templating based on role and environment
-.chezmoiexternal.toml.tmpl      # external dependencies (plugins, nvim config, harness configs, fonts)
-.chezmoidata/                   # state/data files (system defaults, themes, packages etc)
-.chezmoiscripts/
-  run_once_before_*             # bootstrapping
-  run_after_*                   # post-apply tooling
-  */run_onchange_*              # environment-specific
-.chezmoitemplates/              # chezmoi templating partials
-dot_zshrc.tmpl                  # zsh config
-dot_config/zsh/                 # aliases
-dot_config/                     # xdg config
-dot_local/bin/                  # user scripts
+.chezmoiroot                    # points chezmoi at home/
+home/                           # deployable chezmoi source state
+  .chezmoi.toml.tmpl            # role and environment config
+  .chezmoiexternal.toml.tmpl    # plugins, harness configs, and fonts
+  .chezmoidata/                 # defaults, themes, and package data
+  .chezmoiscripts/              # bootstrap and post-apply automation
+  .chezmoitemplates/            # shared template partials
+  dot_config/                   # XDG configuration
+  dot_local/bin/                # user scripts
+agents/                         # source-owned payload linked as ~/.agents
+tests/                          # repository-only tests
+docs/                           # repository-only documentation
 ```
 
+Pass the repository root to `chezmoi --source`; `.chezmoiroot` selects `home/` automatically. `chezmoi source-path` returns the resolved `home/` source-state directory.
 
 ## docs
 

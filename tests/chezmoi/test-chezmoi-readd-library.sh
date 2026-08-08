@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SCRIPT="$ROOT/dot_local/bin/executable_chezmoi-readd-library"
+SOURCE_ROOT="$ROOT/home"
+SCRIPT="$SOURCE_ROOT/dot_local/bin/executable_chezmoi-readd-library"
 TMPDIR="${TMPDIR:-/tmp}/chezmoi-readd-library-test-$$"
 BIN="$TMPDIR/bin"
 SOURCE_ROOT="$TMPDIR/source"

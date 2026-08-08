@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TMP="${TMPDIR:-/tmp}/sketchybar-tailscale-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
@@ -18,7 +19,7 @@ export WHITE=0xffeeeeee
 export LABEL_COLOR=0xffeeeeee
 COL
 
-cp "$ROOT/dot_config/sketchybar/plugins/executable_tailscale.sh" "$CONFIG/plugins/tailscale.sh" 2>/dev/null || : > "$CONFIG/plugins/tailscale.sh"
+cp "$SOURCE_ROOT/dot_config/sketchybar/plugins/executable_tailscale.sh" "$CONFIG/plugins/tailscale.sh" 2>/dev/null || : > "$CONFIG/plugins/tailscale.sh"
 chmod +x "$CONFIG/plugins/tailscale.sh"
 
 cat > "$BIN/sketchybar" <<'SB'

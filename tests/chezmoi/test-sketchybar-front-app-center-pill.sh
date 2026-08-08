@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SOURCE_ROOT="$ROOT/home"
 TMP="${TMPDIR:-/tmp}/sketchybar-front-app-center-pill-test-$$"
 BIN="$TMP/bin"
 LOG="$TMP/sketchybar.log"
@@ -23,7 +24,7 @@ PATH="$BIN:$PATH" \
   BORDER_RADIUS=8 \
   PILL_HEIGHT=36 \
   PLUGIN_DIR=/tmp/plugins \
-  bash "$ROOT/dot_config/sketchybar/items/front_app.sh"
+  bash "$SOURCE_ROOT/dot_config/sketchybar/items/front_app.sh"
 
 python3 - "$LOG" <<'PY'
 from pathlib import Path

@@ -65,16 +65,16 @@ pwsh -NoProfile -File tests/chezmoi/test-private-agent-skills-windows.ps1
 
 Template smoke skips these caller-dependent inputs:
 
-- `.chezmoi.toml.tmpl` and `.chezmoiexternal.toml.tmpl` require chezmoi initialization context such as `stdinIsATTY` and prompt helpers.
-- `.chezmoitemplates/` contains partials rendered by callers. Focused repository tests cover those contracts.
+- `home/.chezmoi.toml.tmpl` and `home/.chezmoiexternal.toml.tmpl` require chezmoi initialization context such as `stdinIsATTY` and prompt helpers.
+- `home/.chezmoitemplates/` contains partials rendered by callers. Focused repository tests cover those contracts.
 
-Static Taplo excludes `.chezmoitemplates/alacritty.toml` because it is a Go-template partial despite its `.toml` suffix.
+Static Taplo excludes `home/.chezmoitemplates/alacritty.toml` because it is a Go-template partial despite its `.toml` suffix.
 
 Strict JSON parsing excludes Zed's JSONC-compatible files:
 
-- `dot_config/zed/keymap.json`
-- `dot_config/zed/tasks.json`
-- Rendered `dot_config/zed/private_settings.json.tmpl`
+- `home/dot_config/zed/keymap.json`
+- `home/dot_config/zed/tasks.json`
+- Rendered `home/dot_config/zed/private_settings.json.tmpl`
 
 These files intentionally contain comments and trailing commas accepted by Zed. Other tracked and rendered `.json` files must parse as strict JSON.
 

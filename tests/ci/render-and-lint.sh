@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 config=${CHEZMOI_CONFIG_FILE:?CHEZMOI_CONFIG_FILE must name an initialized config}
 staging=$(mktemp -d)
 trap 'rm -rf "$staging"' EXIT
@@ -28,20 +29,20 @@ done
 
 is_init_only() {
   case "$1" in
-    ./.chezmoi.toml.tmpl | ./.chezmoiexternal.toml.tmpl) return 0 ;;
-    ./.chezmoitemplates/*) return 0 ;; # caller-context partials have focused tests
+    .chezmoi.toml.tmpl | .chezmoiexternal.toml.tmpl) return 0 ;;
+    .chezmoitemplates/*) return 0 ;; # caller-context partials have focused tests
     *) return 1 ;;
   esac
 }
 
 fails=0
 while IFS= read -r template; do
-  if is_init_only "$template"; then
-    printf 'SKIP %s (caller or init context)\n' "$template"
+  relative=${template#"$source_root/"}
+  if is_init_only "$relative"; then
+    printf 'SKIP %s (caller or init context)\n' "$relative"
     continue
   fi
 
-  relative=${template#./}
   output="$staging/${relative%.tmpl}"
   mkdir -p "$(dirname "$output")"
   if ! rendered=$(PATH="$render_path" "$chezmoi_bin" execute-template \
@@ -59,12 +60,7 @@ while IFS= read -r template; do
     fails=$((fails + 1))
   fi
   printf 'OK   %s\n' "$template"
-done < <(
-  find . -type f -name '*.tmpl' \
-    -not -path './.git/*' \
-    -not -path './.worktrees/*' \
-    | sort
-)
+done < <(find "$source_root" -type f -name '*.tmpl' | sort)
 
 mapfile -d '' rendered_shell < <(find "$staging" -type f -name '*.sh' -print0)
 ((${#rendered_shell[@]} == 0)) || shellcheck -e SC1091 "${rendered_shell[@]}"

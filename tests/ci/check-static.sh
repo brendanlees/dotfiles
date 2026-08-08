@@ -24,7 +24,7 @@ yaml_config='{extends: relaxed, rules: {line-length: disable, trailing-spaces: d
 ((${#yaml_files[@]} == 0)) || yamllint -d "$yaml_config" "${yaml_files[@]}"
 
 mapfile -d '' toml_files < <(
-  git ls-files -z '*.toml' | grep -zv '^.chezmoitemplates/' || true
+  git ls-files -z '*.toml' | grep -zv '^home/.chezmoitemplates/' || true
 )
 ((${#toml_files[@]} == 0)) || taplo lint --no-schema "${toml_files[@]}"
 
@@ -34,8 +34,8 @@ import subprocess
 from pathlib import Path
 
 excluded_jsonc = {
-    "dot_config/zed/keymap.json",
-    "dot_config/zed/tasks.json",
+    "home/dot_config/zed/keymap.json",
+    "home/dot_config/zed/tasks.json",
 }
 paths = [
     path

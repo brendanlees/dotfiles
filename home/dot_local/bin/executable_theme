@@ -7,11 +7,15 @@
 #   theme --list              # print available themes
 #   theme --current           # print currently active theme
 #
-# Theme keys are discovered from ~/.local/share/chezmoi/.chezmoidata/themes.yml.
+# Theme keys are discovered from the active chezmoi source state.
 
 set -euo pipefail
 
-CHEZMOI_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
+if [[ -n ${CHEZMOI_SOURCE_DIR:-} ]]; then
+  CHEZMOI_DIR=$(chezmoi source-path --source "$CHEZMOI_SOURCE_DIR")
+else
+  CHEZMOI_DIR=$(chezmoi source-path)
+fi
 THEMES_YML="$CHEZMOI_DIR/.chezmoidata/themes.yml"
 DEFAULTS_YML="$CHEZMOI_DIR/.chezmoidata/defaults.yml"
 # Host-local overlay: chezmoi merges .chezmoidata/*.yml lexicographically, so

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 export CHEZMOI_ROLE=ephemeral,headless
@@ -14,12 +15,12 @@ for theme in $(jq -r '.themes | keys[]' "$tmpdir/data.json"); do
   override=$(jq -cn --arg theme "$theme" --argjson role "$role_data" \
     '$role + {theme: $theme}')
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
-    <"$repo_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl" \
+    <"$source_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl" \
     >"$tmpdir/viewer.toml"
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
-    <"$repo_root/dot_config/glow/glow.yml.tmpl" >"$tmpdir/glow.yml"
+    <"$source_root/dot_config/glow/glow.yml.tmpl" >"$tmpdir/glow.yml"
   chezmoi execute-template --source "$repo_root" --override-data "$override" \
-    <"$repo_root/dot_config/glow/chezmoi.json.tmpl" >"$tmpdir/glow.json"
+    <"$source_root/dot_config/glow/chezmoi.json.tmpl" >"$tmpdir/glow.json"
 
   python3 - \
     "$tmpdir/data.json" "$tmpdir/viewer.toml" "$tmpdir/glow.yml" \
@@ -62,7 +63,7 @@ PY
 done
 
 chezmoi execute-template --source "$repo_root" --override-data "$role_data" \
-  <"$repo_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise.toml"
+  <"$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise.toml"
 python3 - "$tmpdir/mise.toml" <<'PY'
 import sys
 import tomllib

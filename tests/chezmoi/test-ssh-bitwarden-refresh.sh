@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -190,7 +191,7 @@ esac
 BW
 chmod +x "$fake_bin/bw"
 
-refresh_cmd="$repo_root/dot_local/bin/executable_cz-ssh-refresh.tmpl"
+refresh_cmd="$source_root/dot_local/bin/executable_cz-ssh-refresh.tmpl"
 
 new_home() {
   local name=$1

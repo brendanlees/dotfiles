@@ -6,7 +6,7 @@ dot_DS_Store
 .claudeignore
 
 # host-local chezmoi data overlay (theme switcher, runtime state)
-.chezmoidata/local.yml
+/home/.chezmoidata/local.yml
 /.claude
 /jiti
 

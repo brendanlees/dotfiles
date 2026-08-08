@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-ALIASES="$ROOT/dot_config/zsh/exact_aliases.d/pi.zsh.tmpl"
+SOURCE_ROOT="$ROOT/home"
+ALIASES="$SOURCE_ROOT/dot_config/zsh/exact_aliases.d/pi.zsh.tmpl"
 TMPDIR="${TMPDIR:-/tmp}"
 TMPDIR="${TMPDIR%/}/pi-loadout-aliases-test-$$"
 mkdir -p "$TMPDIR/bin"

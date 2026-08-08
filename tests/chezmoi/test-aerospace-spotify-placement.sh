@@ -2,8 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-CONFIG="$ROOT/dot_config/aerospace/aerospace.toml"
-HELPER="$ROOT/dot_config/aerospace/executable_move-spotify-to-music.sh"
+SOURCE_ROOT="$ROOT/home"
+CONFIG="$SOURCE_ROOT/dot_config/aerospace/aerospace.toml"
+HELPER="$SOURCE_ROOT/dot_config/aerospace/executable_move-spotify-to-music.sh"
 
 python3 - "$CONFIG" <<'PY'
 import pathlib

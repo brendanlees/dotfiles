@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -84,7 +85,7 @@ rendered_bridge=$(
   chezmoi execute-template \
     --source "$repo_root" \
     --override-data '{"theme":"black-metal-bathory"}' \
-    --file "$repo_root/dot_config/chezmoi-theme/active.lua.tmpl"
+    --file "$source_root/dot_config/chezmoi-theme/active.lua.tmpl"
 )
 if ! grep -Fq 'colorscheme = "bathory"' <<<"$rendered_bridge"; then
   echo 'black-metal-bathory bridge did not render colorscheme = "bathory"' >&2
