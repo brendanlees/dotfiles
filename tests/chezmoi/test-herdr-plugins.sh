@@ -44,6 +44,7 @@ worktrunk_ref='e9131c0b576fd68635194c758c9691dbfb778b61'
 file_viewer_ref='96fcc0a2bdd2727ec88c38f8c8806f97b7ca0ea0'
 browser_ref='be6888b71cf4eb5939ee79a746bd1a1c22ade046'
 navigator_ref='03b803a00341d58382b6cda70a7cd618af5b8806'
+crabbox_ref='70aaebd1083615eadeddb920b1f344822a2f013b'
 grep -Fxq "plugin install paulbkim-dev/vim-herdr-navigation --ref $nav_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install cloudmanic/herdr-plus --ref $plus_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install third774/herdr-last-workspace --ref $last_workspace_ref --yes" "$tmpdir/herdr.log"
@@ -51,6 +52,7 @@ grep -Fxq "plugin install devashish2203/herdr-worktrunk --ref $worktrunk_ref --y
 grep -Fxq "plugin install smarzban/herdr-file-viewer --ref $file_viewer_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install ogulcancelik/herdr-browser --ref $browser_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install thanhdat77/herdr-navigator --ref $navigator_ref --yes" "$tmpdir/herdr.log"
+grep -Fxq "plugin install openclaw/crabbox/plugins/herdr --ref $crabbox_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq 'plugin uninstall old-plugin' "$tmpdir/herdr.log"
 grep -Fxq 'plugin uninstall persiyanov.reviewr' "$tmpdir/herdr.log"
 grep -Fxq "vim-herdr-navigation|paulbkim-dev/vim-herdr-navigation|$nav_ref" \
@@ -66,6 +68,8 @@ grep -Fxq "herdr-file-viewer|smarzban/herdr-file-viewer|$file_viewer_ref" \
 grep -Fxq "official.browser|ogulcancelik/herdr-browser|$browser_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "herdr-navigator|thanhdat77/herdr-navigator|$navigator_ref" \
+  "$tmpdir/state/chezmoi/herdr-plugins.txt"
+grep -Fxq "crabbox|openclaw/crabbox/plugins/herdr|$crabbox_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq 'open_mode = "workspace"' "$tmpdir/plugin-config/config.toml"
 for removed_plugin in old-plugin persiyanov.reviewr; do

@@ -23,3 +23,6 @@ herdr:
     - id: herdr-navigator
       source: thanhdat77/herdr-navigator
       ref: 03b803a00341d58382b6cda70a7cd618af5b8806
+    - id: crabbox
+      source: openclaw/crabbox/plugins/herdr
+      ref: 70aaebd1083615eadeddb920b1f344822a2f013b
