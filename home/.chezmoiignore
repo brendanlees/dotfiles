@@ -21,6 +21,9 @@ Library
 
 {{- if not .personal }}
 .config/sesh/configs/personal.toml
+Library/Application Support/Syncthing
+Library/LaunchAgents/com.brendan.syncthing-health.plist
+Library/Logs/Syncthing
 {{- end }}
 {{- if not .work }}
 .config/sesh/configs/work.toml
