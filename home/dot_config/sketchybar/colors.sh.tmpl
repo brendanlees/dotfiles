@@ -33,6 +33,9 @@ export FRONT_APP_COLOR=$MAGENTA  # secondary
 export CALENDAR_COLOR=$CYAN      # info
 export SPOTIFY_COLOR=$ACCENT     # accent
 
+# Fixed safety signal: intentionally remains unmistakably red across themes.
+export MICROPHONE_ACTIVE_COLOR=0xffff453a
+
 # pill background (translucent surface)
 export PILL_BG=0x88{{ trimPrefix "#" $p.surface | lower }}
 

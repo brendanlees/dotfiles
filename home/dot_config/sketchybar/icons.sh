@@ -7,6 +7,7 @@ export ICON_APPLE=󰀵
 export ICON_PREFERENCES=󰒓
 export ICON_ACTIVITY=󱎫
 export ICON_LOCK=󰌾
+export ICON_MICROPHONE=󰍬
 
 # battery
 export ICON_BATTERY_100=󰁹

@@ -20,7 +20,9 @@ source_lines = [line.strip() for line in text if 'source "$ITEM_DIR/' in line]
 
 assert source_lines == [
     'source "$ITEM_DIR/spaces.sh"',
+    'source "$ITEM_DIR/microphone_balance.sh"',
     'source "$ITEM_DIR/front_app.sh"',
+    'source "$ITEM_DIR/microphone.sh"',
     'source "$ITEM_DIR/calendar.sh"',
     'source "$ITEM_DIR/battery.sh"',
     'source "$ITEM_DIR/backup_status.sh"',

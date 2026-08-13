@@ -90,6 +90,7 @@ add_spacer() {
 # ------------------------------------------
 
 sketchybar --add event aerospace_workspace_change
+sketchybar --add event microphone_change
 # Spotify posts this distributed notification on playback/track changes.
 sketchybar --add event spotify_change com.spotify.client.PlaybackStateChanged
 
@@ -103,7 +104,9 @@ source "$ITEM_DIR/spaces.sh"
 # center items (focused app)
 # ------------------------------------------
 
+source "$ITEM_DIR/microphone_balance.sh"
 source "$ITEM_DIR/front_app.sh"
+source "$ITEM_DIR/microphone.sh"
 
 # ------------------------------------------
 # right items
