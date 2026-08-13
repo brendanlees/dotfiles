@@ -131,7 +131,7 @@ chmod +x "$BIN/osascript"
 
 run_plugin() {
   local scenario="${SPOTIFY_SCENARIO:-playing}"
-  env     PATH="$BIN:$PATH"     CONFIG_DIR="$CONFIG"     SKETCHYBAR_STUB_LOG="$LOG"     OSASCRIPT_STUB_LOG="${OSASCRIPT_STUB_LOG:-}"     SPOTIFY_OSASCRIPT_SLEEP="${SPOTIFY_OSASCRIPT_SLEEP:-}"     SPOTIFY_SCENARIO="$scenario"     NAME=spotify     "$CONFIG/plugins/spotify.sh"
+  env     PATH="$BIN:$PATH"     TMPDIR="$TMP"     CONFIG_DIR="$CONFIG"     SKETCHYBAR_STUB_LOG="$LOG"     OSASCRIPT_STUB_LOG="${OSASCRIPT_STUB_LOG:-}"     SPOTIFY_OSASCRIPT_SLEEP="${SPOTIFY_OSASCRIPT_SLEEP:-}"     SPOTIFY_SCENARIO="$scenario"     NAME=spotify     "$CONFIG/plugins/spotify.sh"
 }
 
 assert_log_contains() {
