@@ -15,6 +15,10 @@ Library
 .config/espanso
 {{- end }}
 
+{{- if or (ne .chezmoi.os "darwin") (not .personal) }}
+.config/sketchybar
+{{- end }}
+
 {{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
 .config/spicetify
 {{- end }}
@@ -76,6 +80,7 @@ Library/Logs/Syncthing
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
 !.local/bin/theme
+!.local/bin/zsh-patina
 !.local/bin/chezmoi-apply-library
 !.local/bin/chezmoi-readd-library
 {{- if eq .chezmoi.os "windows" }}
@@ -108,6 +113,8 @@ AppData
 # POSIX-only scripts are not executable on Windows.
 .chezmoiscripts/refresh-ssh-keys.sh
 .chezmoiscripts/run_onchange_after_refresh-ssh-keys.sh.tmpl
+.chezmoiscripts/remove-out-of-scope-sketchybar.sh
+.chezmoiscripts/run_onchange_before_remove-out-of-scope-sketchybar.sh.tmpl
 .chezmoiscripts/migrate-source-root-local-data.sh
 .chezmoiscripts/run_once_before_migrate-source-root-local-data.sh.tmpl
 {{- end }}

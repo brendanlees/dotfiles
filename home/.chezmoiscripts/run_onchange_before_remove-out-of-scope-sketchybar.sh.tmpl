@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{- if or (ne .chezmoi.os "darwin") (not .personal) }}
+sketchybar_dir='{{ .chezmoi.homeDir | replace "'" "'\\''" }}/.config/sketchybar'
+rm -rf -- "$sketchybar_dir"
+{{- end }}

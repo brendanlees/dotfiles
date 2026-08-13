@@ -1,0 +1,7 @@
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+{{- if or (ne .chezmoi.os "darwin") (not .personal) }}
+$SketchyBarDir = Join-Path '{{ .chezmoi.homeDir | replace "'" "''" }}' '.config/sketchybar'
+Remove-Item -LiteralPath $SketchyBarDir -Recurse -Force -ErrorAction SilentlyContinue
+{{- end }}

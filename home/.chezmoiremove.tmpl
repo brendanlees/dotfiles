@@ -1,5 +1,10 @@
 # files removed from source — chezmoi will delete these from the target machine
 lazy-lock.json
+.local/bin/zsh-patina
+.config/zsh-patina
+{{ if or (ne .chezmoi.os "darwin") (not .personal) }}
+.config/sketchybar
+{{ end }}
 {{ if not .personal }}
 ~/.agents
 {{ end }}
