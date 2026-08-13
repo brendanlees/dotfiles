@@ -1,7 +1,12 @@
 # Project agent instructions
 
-- When changing behavior or configuration, inspect and update the related tests in `tests/`.
-- After the final edit, run `bash tests/ci/check-static.sh` and `bash tests/ci/run-chezmoi-tests.sh`.
+- Before changing behavior or configuration, identify the nearest owning test in `tests/` and run it to reproduce the current behavior when practical.
+- Every behavior or configuration change must either update its owning test or preserve an existing test that already covers the changed contract. State which test covers it in the final report.
+- Prefer extending one existing contract test over adding another file. Add a focused regression test for user-visible bugs that lacked coverage.
+- Test observable behavior, role or OS routing, destructive transitions, and regressions. Leave syntax, rendering, and broad apply coverage to the existing CI smoke jobs.
+- Keep one clear test owner per contract. Avoid duplicate assertions, implementation snapshots, and low-value matrices.
+- When behavior is removed or absorbed by broader coverage, remove or merge its stale tests and fixtures in the same change.
+- After the final edit, run the targeted owning tests, then `bash tests/ci/check-static.sh` and `bash tests/ci/run-chezmoi-tests.sh`.
 - For template changes, also reproduce the template smoke job:
   ```bash
   config_dir=$(mktemp -d)
