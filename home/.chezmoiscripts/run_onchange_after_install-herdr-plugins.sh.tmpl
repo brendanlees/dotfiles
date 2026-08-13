@@ -12,8 +12,10 @@ desired_file=$(mktemp)
 trap 'rm -f "$desired_file"' EXIT
 
 cat >"$desired_file" <<'PLUGINS'
-{{- range .herdr.plugins }}
-{{ .id }}|{{ .source }}|{{ .ref }}
+{{- range $plugin := .herdr.plugins }}
+{{- if or (not (hasKey $plugin "personal_only")) $.personal }}
+{{ $plugin.id }}|{{ $plugin.source }}|{{ $plugin.ref }}
+{{- end }}
 {{- end }}
 PLUGINS
 
@@ -24,11 +26,13 @@ while IFS='|' read -r id source ref; do
 done <"$desired_file"
 
 {{- range $plugin := .herdr.plugins }}
+{{- if or (not (hasKey $plugin "personal_only")) $.personal }}
 {{- with (index $plugin "config") }}
 {{- with (index . "open_mode") }}
 config_dir=$(herdr plugin config-dir "{{ $plugin.id }}")
 mkdir -p "$config_dir"
 printf 'open_mode = "%s"\n' "{{ . }}" >"$config_dir/config.toml"
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

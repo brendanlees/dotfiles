@@ -10,7 +10,10 @@ trap 'rm -rf "$tmpdir"' EXIT
 [[ -f "$template" ]] || { echo "missing Herdr plugin reconciler: $template" >&2; exit 1; }
 
 rendered="$tmpdir/install-herdr-plugins.sh"
-chezmoi execute-template --source "$repo_root" <"$template" >"$rendered"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data '{"personal":true}' \
+  <"$template" >"$rendered"
 chmod +x "$rendered"
 
 fakebin="$tmpdir/bin"
@@ -78,6 +81,30 @@ for removed_plugin in old-plugin persiyanov.reviewr; do
     exit 1
   fi
 done
+
+nonpersonal_rendered="$tmpdir/install-herdr-plugins-nonpersonal.sh"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data '{"personal":false}' \
+  <"$template" >"$nonpersonal_rendered"
+chmod +x "$nonpersonal_rendered"
+: >"$tmpdir/herdr.log"
+HERDR_TEST_LOG="$tmpdir/herdr.log" \
+HERDR_TEST_CONFIG_DIR="$tmpdir/plugin-config" \
+HOME="$tmpdir/home" \
+XDG_STATE_HOME="$tmpdir/state" \
+PATH="$fakebin:/usr/bin:/bin" \
+  "$nonpersonal_rendered"
+
+if grep -Fq 'plugin install openclaw/crabbox/plugins/herdr' "$tmpdir/herdr.log"; then
+  echo 'non-personal install must not install the Crabbox plugin' >&2
+  exit 1
+fi
+grep -Fxq 'plugin uninstall crabbox' "$tmpdir/herdr.log"
+if grep -Fq 'crabbox|' "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
+  echo 'non-personal install retained Crabbox in the managed plugin ledger' >&2
+  exit 1
+fi
 
 navigator_config="$source_root/dot_config/herdr/plugins/config/herdr-navigator/config.toml"
 file_viewer_template="$source_root/dot_config/herdr/plugins/config/herdr-file-viewer/config.toml.tmpl"

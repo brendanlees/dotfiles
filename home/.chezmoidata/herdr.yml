@@ -26,3 +26,4 @@ herdr:
     - id: crabbox
       source: openclaw/crabbox/plugins/herdr
       ref: 70aaebd1083615eadeddb920b1f344822a2f013b
+      personal_only: true
