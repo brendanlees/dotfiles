@@ -13,60 +13,8 @@ right_format = """$os$username$hostname$directory$git_branch$git_status${env_var
 # STARSHIP_CACHE ramdisk: skipped on macOS (no tmpfs by default). Revisit on
 # Linux hosts where `/dev/shm` or a tmpfs mount is available.
 
-
-# palette driven by .chezmoidata/themes.yml
+# theme palette driven by .chezmoidata/themes.yml
 palette = '{{ (index .themes .theme).apps.starship }}'
-
-[palettes.monokai]
-# overrides
-red = '#e87d3e'
-green = '#b4d273'
-yellow = '#e5b567'
-blue = '#6c99bb'
-black = '#2e2e2e'
-white = '#d6d6d6'
-gray = '#797979'
-
-# semantic
-accent = 'red'
-primary = 'yellow'
-neutral = 'gray'
-
-[palettes.tokyo-night]
-# overrides
-red = '#f7768e'
-green = '#9ece6a'
-blue = '#769ff0'
-white = '#c0caf5'
-
-# semantic
-accent = '#73daca'
-primary = '#769ff0'
-neutral = '#a9b1d6'
-
-[palettes.kanagawa-wave]
-# overrides
-red = '#C34043'
-green = '#98BB6C'
-blue = '#7E9CD8'
-white = '#DCD7BA'
-
-# semantic
-accent = '#7AA89F'
-primary = '#7E9CD8'
-neutral = '#C8C093'
-
-[palettes.rosepine]
-# overrides
-red = '#eb6f92'
-green = '#31748f'
-blue = '#9ccfd8'
-white = '#e0def4'
-
-# semantic
-accent = '#9ccfd8'
-primary = '#31748f'
-neutral = '#908caa'
 
 [os]
 format = '[$symbol](bold white) '
@@ -84,7 +32,6 @@ success_symbol = "[❯](accent)"
 error_symbol = "[✗](red)"
 vicmd_symbol = "[❮](red)"
 
-# Shows the username
 [username]
 style_user = 'white bold'
 style_root = 'red bold'
@@ -92,13 +39,11 @@ format = '[$user]($style) '
 disabled = false
 show_always = true
 
-# Shows the hostname
 [hostname]
 ssh_only = false
 format = '[on](neutral) [$hostname](primary bold) '
 disabled = false
 
-# Shows current directory
 [directory]
 style = 'accent bold'
 truncation_length = 1
@@ -108,7 +53,6 @@ read_only_style = '197'
 read_only = '  '
 format = '[at](neutral) [$path]($style)[$read_only]($read_only_style) '
 
-# Shows current git branch
 [git_branch]
 symbol = ' '
 format = 'via [$symbol$branch]($style)'
@@ -116,7 +60,6 @@ format = 'via [$symbol$branch]($style)'
 truncation_symbol = '…/'
 style = 'bold green'
 
-# Shows current git status
 [git_status]
 format = '([ \( $all_status$ahead_behind\)]($style) )'
 style = 'bold green'
@@ -132,7 +75,6 @@ staged = '[󰐗 staged=${count}](green) '
 renamed = '[󱍸 renamed=${count}](yellow) '
 deleted = '[󰍶 deleted=${count}](red) '
 
-# ddev icon
 [env_var.DDEV_PROJECT]
 format = '[🐳 $env_value]($style) '
 style = 'bold blue'
