@@ -16,6 +16,27 @@ right_format = """$os$username$hostname$directory$git_branch$git_status${env_var
 # theme palette driven by .chezmoidata/themes.yml
 palette = '{{ (index .themes .theme).apps.starship }}'
 
+# Palettes auto-generated from .chezmoidata/themes.yml
+{{- range $name := keys .themes | sortAlpha }}
+{{- $t := index $.themes $name -}}
+{{- $pal := $t.palette }}
+
+[palettes.{{ $t.apps.starship }}]
+# ANSI overrides
+red = "{{ $pal.error }}"
+green = "{{ $pal.success }}"
+yellow = "{{ $pal.warn }}"
+blue = "{{ $pal.primary }}"
+black = "{{ $pal.bg }}"
+white = "{{ $pal.fg }}"
+gray = "{{ $pal.muted }}"
+
+# Semantic keys
+accent = "{{ $pal.accent }}"
+primary = "{{ $pal.primary }}"
+neutral = "{{ $pal.muted }}"
+{{- end }}
+
 [os]
 format = '[$symbol](bold white) '
 disabled = false
