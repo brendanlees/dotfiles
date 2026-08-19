@@ -147,9 +147,9 @@ assert file_viewer == {
     "editor": "nvim",
     "update_check": True,
     "markdown": f'glow -s "{Path.home()}/.config/glow/chezmoi.json" -w 0 -',
-    "diff": 'delta --syntax-theme="Monokai Extended"',
+    "diff": 'delta --syntax-theme="base16"',
     "syntax": (
-        'bat --theme="Monokai Extended" --color=always --style=numbers '
+        'bat --theme="base16" --color=always --style=numbers '
         '--paging=never --file-name={name} -'
     ),
     "tree_position": "right",
