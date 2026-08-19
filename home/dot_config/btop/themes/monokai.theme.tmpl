@@ -1,0 +1,53 @@
+# Theme generated from .chezmoidata/themes.yml
+# Active theme: {{ .theme }}
+{{- $p := (index .themes .theme).palette }}
+
+theme[main_bg]="{{ $p.bg }}"
+theme[main_fg]="{{ $p.fg }}"
+
+theme[title]="{{ $p.fg }}"
+
+theme[hi_fg]="{{ $p.orange }}"
+
+theme[selected_bg]="{{ $p.surface }}"
+theme[selected_fg]="{{ $p.info }}"
+
+theme[proc_misc]="{{ $p.info }}"
+
+theme[cpu_box]="{{ $p.info_alt }}"
+theme[mem_box]="{{ $p.info_alt }}"
+theme[net_box]="{{ $p.info_alt }}"
+theme[proc_box]="{{ $p.info_alt }}"
+theme[div_line]="{{ $p.info_alt }}"
+
+theme[temp_start]="{{ $p.success }}"
+theme[temp_mid]="{{ $p.warn }}"
+theme[temp_end]="{{ $p.error }}"
+
+theme[cpu_start]="{{ $p.success }}"
+theme[cpu_mid]="{{ $p.warn }}"
+theme[cpu_end]="{{ $p.error }}"
+
+theme[free_start]="{{ $p.success }}"
+theme[free_mid]="{{ $p.warn }}"
+theme[free_end]="{{ $p.error }}"
+
+theme[cached_start]="{{ $p.success }}"
+theme[cached_mid]="{{ $p.warn }}"
+theme[cached_end]="{{ $p.error }}"
+
+theme[available_start]="{{ $p.success }}"
+theme[available_mid]="{{ $p.warn }}"
+theme[available_end]="{{ $p.error }}"
+
+theme[used_start]="{{ $p.success }}"
+theme[used_mid]="{{ $p.warn }}"
+theme[used_end]="{{ $p.error }}"
+
+theme[download_start]="{{ $p.success }}"
+theme[download_mid]="{{ $p.warn }}"
+theme[download_end]="{{ $p.error }}"
+
+theme[upload_start]="{{ $p.success }}"
+theme[upload_mid]="{{ $p.warn }}"
+theme[upload_end]="{{ $p.error }}"

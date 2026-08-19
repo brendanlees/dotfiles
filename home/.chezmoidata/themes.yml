@@ -286,11 +286,11 @@ themes:
     apps:
       ghostty: "Black Metal"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal"
       nvim: "bathory"
       nvim_background: "dark"
 
@@ -318,11 +318,11 @@ themes:
     apps:
       ghostty: "Black Metal (Bathory)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-bathory"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Bathory)"
       nvim: "bathory"
       nvim_background: "dark"
 
@@ -350,11 +350,11 @@ themes:
     apps:
       ghostty: "Black Metal (Burzum)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-burzum"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Burzum)"
       nvim: "burzum"
       nvim_background: "dark"
 
@@ -382,11 +382,11 @@ themes:
     apps:
       ghostty: "Black Metal (Dark Funeral)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-dark-funeral"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Dark Funeral)"
       nvim: "dark-funeral"
       nvim_background: "dark"
 
@@ -414,7 +414,7 @@ themes:
     apps:
       ghostty: "Black Metal (Darkthrone)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-darkthrone"
       tmux_ukiyo: "gruvbox/dark"
@@ -446,7 +446,7 @@ themes:
     apps:
       ghostty: "Black Metal (Emperor)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-emperor"
       tmux_ukiyo: "gruvbox/dark"
@@ -478,11 +478,11 @@ themes:
     apps:
       ghostty: "Black Metal (Gorgoroth)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-gorgoroth"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Gorgoroth)"
       nvim: "gorgoroth"
       nvim_background: "dark"
 
@@ -510,11 +510,11 @@ themes:
     apps:
       ghostty: "Black Metal (Immortal)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-immortal"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Immortal)"
       nvim: "immortal"
       nvim_background: "dark"
 
@@ -542,7 +542,7 @@ themes:
     apps:
       ghostty: "Black Metal (Impaled Nazarene)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-impaled-nazarene"
       tmux_ukiyo: "gruvbox/dark"
@@ -574,11 +574,11 @@ themes:
     apps:
       ghostty: "Black Metal (Khold)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-khold"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Khold)"
       nvim: "khold"
       nvim_background: "dark"
 
@@ -606,11 +606,11 @@ themes:
     apps:
       ghostty: "Black Metal (Marduk)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-marduk"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Marduk)"
       nvim: "marduk"
       nvim_background: "dark"
 
@@ -638,11 +638,11 @@ themes:
     apps:
       ghostty: "Black Metal (Mayhem)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-mayhem"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Mayhem)"
       nvim: "mayhem"
       nvim_background: "dark"
 
@@ -670,11 +670,11 @@ themes:
     apps:
       ghostty: "Black Metal (Nile)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-nile"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Nile)"
       nvim: "nile"
       nvim_background: "dark"
 
@@ -702,11 +702,11 @@ themes:
     apps:
       ghostty: "Black Metal (Venom)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-venom"
       tmux_ukiyo: "gruvbox/dark"
-      zed: "Monokai Pro"
+      zed: "Black Metal (Venom)"
       nvim: "venom"
       nvim_background: "dark"
 
@@ -734,7 +734,7 @@ themes:
     apps:
       ghostty: "Black Metal (Taake)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-taake"
       tmux_ukiyo: "gruvbox/dark"
@@ -766,7 +766,7 @@ themes:
     apps:
       ghostty: "Black Metal (Thyrfing)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-thyrfing"
       tmux_ukiyo: "gruvbox/dark"
@@ -798,7 +798,7 @@ themes:
     apps:
       ghostty: "Black Metal (Windir)"
       btop: "monokai"
-      bat: "Monokai Extended"
+      bat: "base16"
       glow: "auto"
       starship: "black-metal-windir"
       tmux_ukiyo: "gruvbox/dark"
