@@ -12,8 +12,9 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 
 known hostnames can also be auto-assigned without prompting in `home/.chezmoi.toml.tmpl`.
 
+## non-interactive options
 
-## skip prompts via flags
+### flags
 
 data flags can be added to `chezmoi init` to bypass interactive prompts:
 
@@ -21,7 +22,7 @@ data flags can be added to `chezmoi init` to bypass interactive prompts:
 chezmoi init --apply --data='{"personal":true,"work":false,"homelab":false}' brendanlees
 ```
 
-## skip prompts via env var
+### env vars
 
 set `CHEZMOI_ROLE` (comma-separated) before running `chezmoi init` — useful when you don't want to type a long `--data=` json blob, or when something else (mise, direnv, systemd unit) is already managing per-machine env:
 
@@ -42,7 +43,7 @@ precedence: `CHEZMOI_ROLE` env var → hostname allow-list → interactive promp
 
 ## configure via ansible
 
-if provisioning non-interactively (e.g. from an ansible role)
+an example of how you can provision non-interactively from an ansible role
 
 ```yaml
 - name: Initialize chezmoi with scope (primary user)
