@@ -1,0 +1,6 @@
+spicetify:
+  extensions:
+    - filename: keyboardShortcut.js
+      url: https://raw.githubusercontent.com/spicetify/cli/c9571cd0365ec653f18f002c9958f36026d753d5/Extensions/keyboardShortcut.js
+    - filename: cat-jam.js
+      url: https://raw.githubusercontent.com/BlafKing/spicetify-cat-jam-synced/e7bfd49fcc13457bbc98e696294cf5cf43eb6c31/marketplace/cat-jam.js
