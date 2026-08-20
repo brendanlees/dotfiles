@@ -106,7 +106,7 @@
 # --- optional ssh/bitwarden manifest settings ---
 {{- $ssh_bw_manifest_item := "" -}}
 {{- $ssh_bw_agent_sock_env := "BITWARDEN_SSH_AUTH_SOCK" -}}
-{{- if and (or $personal $work) (not $ephemeral) -}}
+{{- if and $personal (not $ephemeral) -}}
 {{-   if and (hasKey . "ssh_bw_manifest_item") .ssh_bw_manifest_item -}}
 {{-     $ssh_bw_manifest_item = .ssh_bw_manifest_item -}}
 {{-   else if stdinIsATTY -}}
@@ -183,7 +183,7 @@
   bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}
 {{- end }}
 
-{{- if and $work (lookPath "bw") }}
+{{- if and $personal $work (lookPath "bw") }}
 {{- $bw_work := bitwardenFields "item" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" }}
 
 [data.bw_work]
@@ -209,7 +209,7 @@
   remote = {{ $private_agent_skills_remote | quote }}
   checkout = {{ $private_agent_skills_checkout | quote }}
 
-{{ if and (or $personal $work) (lookPath "bw") }}
+{{ if and $personal (lookPath "bw") }}
 [bitwarden]
   unlock = "auto"
 {{ end }}

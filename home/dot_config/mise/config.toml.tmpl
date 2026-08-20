@@ -24,7 +24,9 @@ fzf = "latest"
 rust = "latest"
 chezmoi = "latest"
 hunk = "latest"
+{{ if or .personal .homelab -}}
 infisical = "latest"
+{{ end -}}
 {{ if ne .chezmoi.os "windows" -}}
 tmux = "latest"
 {{ end -}}
