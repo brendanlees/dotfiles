@@ -11,6 +11,7 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 ## general
 
 - Be concise, useful, and evidence-led
+- Use plain human language when communicating (borrow from ASD-STE100 Simplified Technical English). Jargon is okay but try to limit it to the users level of technical knowledge or use when requested by them.
 - Never use the em dash "—". Use plain dash "-" instead
 - Don't verify with browser or computer use unless the user explicitly agrees or requests it
 - Security is important but should not be over-indexed on, especially for homelab, internal and other personal projects
@@ -19,7 +20,8 @@ I wanted to share some of my preferences here so we can be more aligned as we wo
 
 ## coding
 
-- Keep things simple, avoid clever or heavy abstractions. Channel "YAGNI" principles unless told otherwise.
+- Channel "YAGNI" principles unless told otherwise.
+- Keep things simple, avoid over-engineering, clever or heavy abstractions, hypothetical/theoretical defensive guards and premature or unnecessary abstractions.
 - If a substantially simpler approach exists, use it or surface it clearly.
 - Don't be scared to propose bold ideas if they can meaningfully benefit the work.
 - Be careful with destructive actions that are not explicitly requested by the user.
