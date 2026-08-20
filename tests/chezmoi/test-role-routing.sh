@@ -62,4 +62,41 @@ assert_has homelab "$windows_private_helper"
 assert_has homelab "$posix_private_apply"
 assert_has homelab "$windows_private_apply"
 
+render_scope_templates() {
+  local name=$1 data=$2
+  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+    <"$source_root/.chezmoiexternal.toml.tmpl" >"$tmpdir/$name.external"
+  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+    <"$source_root/.chezmoiremove.tmpl" >"$tmpdir/$name.remove"
+  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+    <"$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/$name.mise"
+}
+
+personal_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
+personal_work_data='{"personal":true,"work":true,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
+work_data='{"personal":false,"work":true,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
+homelab_data='{"personal":false,"work":false,"homelab":true,"ephemeral":false,"headless":true,"chezmoi":{"os":"linux","username":"test"}}'
+
+render_scope_templates personal "$personal_data"
+render_scope_templates personal-work "$personal_work_data"
+render_scope_templates work "$work_data"
+render_scope_templates homelab "$homelab_data"
+
+assert_file_has() { grep -Fq "$2" "$1"; }
+assert_file_lacks() { if grep -Fq "$2" "$1"; then return 1; fi; }
+pi_remove=$(printf '%s/%s' '~' '.pi')
+
+for scope in personal personal-work; do
+  assert_file_has "$tmpdir/$scope.external" '[".pi"]'
+  assert_file_lacks "$tmpdir/$scope.remove" "$pi_remove"
+  assert_file_has "$tmpdir/$scope.mise" 'infisical = "latest"'
+done
+
+assert_file_has "$tmpdir/work.remove" "$pi_remove"
+assert_file_has "$tmpdir/homelab.remove" "$pi_remove"
+assert_file_lacks "$tmpdir/work.external" '[".pi"]'
+assert_file_lacks "$tmpdir/homelab.external" '[".pi"]'
+assert_file_lacks "$tmpdir/work.mise" 'infisical = "latest"'
+assert_file_has "$tmpdir/homelab.mise" 'infisical = "latest"'
+
 echo 'role routing matrix ok'

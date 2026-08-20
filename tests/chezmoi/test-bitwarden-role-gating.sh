@@ -139,6 +139,7 @@ assert_bw_item_ids() {
 
 assert_zero_bw_calls "ephemeral,headless"
 assert_zero_bw_calls "homelab"
+assert_zero_bw_calls "work"
 
 assert_bw_item_ids "personal" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
@@ -149,7 +150,14 @@ assert_bw_item_ids "personal" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e"
 
-assert_bw_item_ids "work" \
+assert_bw_item_ids "personal,work" \
+  "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
+  "d256649b-8944-43a3-a016-abc1018ad825" \
+  "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
+  "040ae08a-b331-4d3b-abc6-b303002d2a94" \
+  "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
+  "afa4395b-8044-46b1-86c9-b48d007e82ac" \
+  "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
   "0b9286df-9ffc-4ab8-996e-b42d014e44d4"
 
 echo "bitwarden role gating ok"
