@@ -17,9 +17,6 @@ herdr:
     - id: herdr-file-viewer
       source: smarzban/herdr-file-viewer
       ref: 96fcc0a2bdd2727ec88c38f8c8806f97b7ca0ea0
-    - id: official.browser
-      source: ogulcancelik/herdr-browser
-      ref: be6888b71cf4eb5939ee79a746bd1a1c22ade046
     - id: herdr-navigator
       source: thanhdat77/herdr-navigator
       ref: 03b803a00341d58382b6cda70a7cd618af5b8806
