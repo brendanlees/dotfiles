@@ -867,7 +867,7 @@ themes:
       starship: "flatland"
       tmux_ukiyo: "tokyonight/night"
       zed: "Tokyo Night"
-      nvim: "tokyonight-night"
+      nvim: "base24-flatland"
       nvim_background: "dark"
 
   japanesque:
@@ -899,7 +899,7 @@ themes:
       starship: "japanesque"
       tmux_ukiyo: "tokyonight/night"
       zed: "Tokyo Night"
-      nvim: "tokyonight-night"
+      nvim: "base24-japanesque"
       nvim_background: "dark"
 
   nvim-dark:
@@ -931,7 +931,7 @@ themes:
       starship: "nvim-dark"
       tmux_ukiyo: "tokyonight/night"
       zed: "Tokyo Night"
-      nvim: "default"
+      nvim: "github_dark"
       nvim_background: "dark"
 
   sleepy-hollow:
@@ -963,7 +963,7 @@ themes:
       starship: "sleepy-hollow"
       tmux_ukiyo: "tokyonight/night"
       zed: "Tokyo Night"
-      nvim: "tokyonight-night"
+      nvim: "base24-sleepy-hollow"
       nvim_background: "dark"
 
   twilight:
@@ -995,7 +995,7 @@ themes:
       starship: "twilight"
       tmux_ukiyo: "gruvbox/dark"
       zed: "Monokai Pro"
-      nvim: "monokai-pro"
+      nvim: "base24-twilight"
       nvim_background: "dark"
 
   wryan:
@@ -1027,5 +1027,5 @@ themes:
       starship: "wryan"
       tmux_ukiyo: "tokyonight/night"
       zed: "Tokyo Night"
-      nvim: "tokyonight-night"
+      nvim: "base24-wryan"
       nvim_background: "dark"

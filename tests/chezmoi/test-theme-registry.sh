@@ -69,6 +69,23 @@ for key, expected in expected_black_metal_nvim.items():
             f"{key}: expected Neovim colorscheme {expected!r}, got {actual!r}"
         )
 
+expected_exact_nvim = {
+    "fahrenheit": "fahrenheit",
+    "flatland": "base24-flatland",
+    "japanesque": "base24-japanesque",
+    "nvim-dark": "github_dark",
+    "nightfly": "nightfly",
+    "sleepy-hollow": "base24-sleepy-hollow",
+    "twilight": "base24-twilight",
+    "wryan": "base24-wryan",
+}
+for key, expected in expected_exact_nvim.items():
+    actual = themes[key]["apps"]["nvim"]
+    if actual != expected:
+        raise SystemExit(
+            f"{key}: expected Neovim colorscheme {expected!r}, got {actual!r}"
+        )
+
 root = Path(sys.argv[2]) if sys.argv[2] else None
 if root:
     if not root.is_dir():
