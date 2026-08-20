@@ -3,6 +3,8 @@
 # active-theme: {{ .theme }}
 # config-sha: {{ includeTemplate "dot_config/spicetify/config-xpui.ini.tmpl" . | sha256sum }}
 # color-sha: {{ includeTemplate "dot_config/spicetify/Themes/text/color.ini.tmpl" . | sha256sum }}
+# spotify-version: {{ output "sh" "-c" "/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' /Applications/Spotify.app/Contents/Info.plist 2>/dev/null || true" | trim }}
+# spicetify-version: {{ output "sh" "-c" "spicetify -v 2>/dev/null || true" | trim }}
 
 set -eu
 
@@ -35,10 +37,6 @@ spicetify config custom_apps marketplace
 spicetify config custom_apps stats
 spicetify config custom_apps library
 
-# Create the initial backup when needed. If a backup already exists, Spicetify
-# exits non-zero and asks for restore/reinstall; that is not fatal for applying
-# config changes, so continue to `apply`.
-spicetify backup || true
-
-# Per Spicetify CLI docs, `apply` restarts Spotify unless --no-restart is used.
-spicetify apply
+# Refresh the backup when Spotify changes, then apply the declared theme,
+# extensions, and custom apps. Spicetify supports chaining these commands.
+spicetify backup apply

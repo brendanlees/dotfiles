@@ -21,7 +21,7 @@ remove_rtl_rule    = 1
 expose_apis        = 1
 
 [AdditionalOptions]
-extensions            = 
+extensions            = {{ range $index, $extension := .spicetify.extensions }}{{ if $index }}|{{ end }}{{ $extension.filename }}{{ end }}
 custom_apps           = marketplace|stats|library
 sidebar_config        = 0
 home_config           = 1
