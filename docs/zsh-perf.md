@@ -1,15 +1,15 @@
-# zsh startup performance
+# zsh performance
 
 `home/dot_zshrc.tmpl` is tuned to minimize subprocess forks on shell startup. each fork on macOS costs ~20–80 ms; a vanilla "eval $(tool init zsh)" stack adds up to a noticeable lag.
 
 ## changes vs. a default zshrc
 
-| change                           | why                                                              |
-| -------------------------------- | ---------------------------------------------------------------- |
-| `_cached_eval` helper            | caches `tool init zsh` output to disk; reruns only when binary is newer |
-| daily-only `compinit -u`         | full `$fpath` security scan once per 24h, `-C` fast path otherwise |
-| `zsh-syntax-highlighting` last   | must be sourced after all other widget-defining plugins or it silently fails to hook them |
-| opt-in `zprof` profiler          | `ZPROF=1 zsh -ic exit` enables timing without polluting normal sessions |
+| change                         | why                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `_cached_eval` helper          | caches `tool init zsh` output to disk; reruns only when binary is newer                   |
+| daily-only `compinit -u`       | full `$fpath` security scan once per 24h, `-C` fast path otherwise                        |
+| `zsh-syntax-highlighting` last | must be sourced after all other widget-defining plugins or it silently fails to hook them |
+| opt-in `zprof` profiler        | `ZPROF=1 zsh -ic exit` enables timing without polluting normal sessions                   |
 
 ## `_cached_eval`
 

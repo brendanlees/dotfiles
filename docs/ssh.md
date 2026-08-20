@@ -1,12 +1,12 @@
 # ssh
 
-this repo maintains only generic ssh plumbing, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.
+these maintain a generic ssh config scaffold, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.
 
 ## setup
 
-1. install `bw` (and `jq` for POSIX refreshes; Windows uses PowerShell JSON parsing).
-2. sign in and unlock bitwarden: `export BW_SESSION=$(bw unlock --raw)` on POSIX, or `$env:BW_SESSION = bw unlock --raw` on Windows.
-3. create a bitwarden secure note whose notes field contains the manifest json.
+1. install `bw` (and `jq` for posix refreshes; windows uses powershell json parsing).
+2. sign in and unlock bitwarden: `export BW_SESSION=$(bw unlock --raw)` on posix, or `$env:BW_SESSION = bw unlock --raw` in powershell.
+3. create a bitwarden secure and add manifest json to the notes field.
 4. re-run `chezmoi init --apply brendanlees` on an enabled machine and set `ssh_bw_manifest_item` to that item name or id.
 5. run `chezmoi apply`, or refresh manually with helper alias `cz-ssh-refresh`.
 
@@ -60,7 +60,7 @@ to migrate to `bitwarden_agent`, import the key into bitwarden, change the manif
 
 ## refresh behavior
 
-`cz-ssh-refresh` is non-blocking during `chezmoi apply`: missing bitwarden, missing `jq` on POSIX, lock state, or manifest config prints `warn:` and exits 0. use `cz-ssh-refresh --fail` when refresh errors should be fatal. On Windows the managed helper is `~/.local/bin/cz-ssh-refresh.ps1`; the PowerShell profile prepends `~/.local/bin` to `PATH`, so a new shell can run `cz-ssh-refresh` directly.
+`cz-ssh-refresh` is non-blocking during `chezmoi apply`: missing bitwarden, missing `jq` on posix, lock state, or manifest config prints `warn:` and exits 0. use `cz-ssh-refresh --fail` when refresh errors should be fatal. On windows the managed helper is `~/.local/bin/cz-ssh-refresh.ps1`; the powershell profile prepends `~/.local/bin` to `PATH`, so a new shell can run `cz-ssh-refresh` directly.
 
 if bitwarden is locked, run:
 
@@ -69,7 +69,7 @@ export BW_SESSION=$(bw unlock --raw)
 cz-ssh-refresh
 ```
 
-On Windows PowerShell:
+if in powershell:
 
 ```powershell
 $env:BW_SESSION = bw unlock --raw

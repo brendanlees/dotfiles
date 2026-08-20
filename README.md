@@ -23,7 +23,7 @@ winget install -e --id twpayne.chezmoi --accept-source-agreements --accept-packa
 chezmoi init --apply brendanlees
 ```
 
-on first run you'll be prompted to set your machine role. these role flags gate which config and packages are applied.
+on first run you'll be prompted to set machine role. these role flags gate which config and packages are applied.
 
 ```
 personal | work | homelab
@@ -35,7 +35,7 @@ chezmoi will detect the system environment automatically, and configure things a
 darwin | windows| linux
 ```
 
-see [scoping](docs/scoping.md) for how to skip prompts with env vars or provision via ansible.
+see [scoping](docs/scoping.md) for non-interactive options via env vars, ansible.
 
 ## architecture
 
@@ -43,27 +43,23 @@ see [scoping](docs/scoping.md) for how to skip prompts with env vars or provisio
 .chezmoiroot                    # points chezmoi at home/
 home/                           # deployable chezmoi source state
   .chezmoi.toml.tmpl            # role and environment config
-  .chezmoiexternal.toml.tmpl    # plugins, harness configs, and fonts
-  .chezmoidata/                 # defaults, themes, and package data
+  .chezmoiexternal.toml.tmpl    # plugins, harness configs, fonts
+  .chezmoidata/                 # defaults, themes, package data
   .chezmoiscripts/              # bootstrap and post-apply automation
   .chezmoitemplates/            # shared template partials
   dot_config/                   # XDG configuration
   dot_local/bin/                # user scripts
-agents/                         # source-owned payload linked as ~/.agents
-tests/                          # repository-only tests
-docs/                           # repository-only documentation
+agents/                         # ~/.agents config
+tests/                          # repo-only tests
+docs/                           # repo-only documentation
 ```
-
-Pass the repository root to `chezmoi --source`; `.chezmoiroot` selects `home/` automatically. `chezmoi source-path` returns the resolved `home/` source-state directory.
 
 ## docs
 
-- [usage](docs/usage.md) — updating and installing
 - [secrets](docs/secrets.md) — token and secrets (backed by bitwarden)
 - [ssh](docs/ssh.md) — reproducable ssh config and keys (from bitwarden manifest file)
-- [scoping](docs/scoping.md) — machine roles, skipping prompts, ansible usage
-- [themes](docs/themes.md) — switching theme, adding new themes
-- [file tracking](docs/file-tracking.md) — adding dotfiles to track
+- [scoping](docs/scoping.md) — define machine roles, non-interactive options
+- [themes](docs/themes.md) — global theming, how to switch and add new
 - [testing](docs/testing.md) - ci pipeline and branch testing
-- [private agent skills](docs/private-agent-skills.md) - authorized-machine setup, authoring, recovery, and rollback
-- [inspiration](docs/inspiration.md) - reference repos and tools
+- [private agent skills](docs/private-agent-skills.md) - sync/overlay additional private skills repo
+- [zsh performance](docs/zsh-perf.md) - documentation of small zsh/starship performance tweaks
