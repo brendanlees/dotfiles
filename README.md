@@ -62,3 +62,4 @@ docs/                           # repo-only documentation
 - [themes](docs/themes.md) — global theming, how to switch and add new
 - [testing](docs/testing.md) - ci pipeline and branch testing
 - [private agent skills](docs/private-agent-skills.md) - sync/overlay additional private skills repo
+- [zsh performance](docs/zsh-perf.md) - documentation of small zsh/starship performance tweaks
