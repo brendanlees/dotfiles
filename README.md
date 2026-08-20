@@ -61,7 +61,6 @@ docs/                           # repo-only documentation
 - [ssh](docs/ssh.md) — reproducable ssh config and keys (from bitwarden manifest file)
 - [scoping](docs/scoping.md) — define machine roles, non-interactive options
 - [themes](docs/themes.md) — global theming, how to switch and add new
-- [file tracking](docs/file-tracking.md) — file tracking practices
 - [testing](docs/testing.md) - ci pipeline and branch testing
 - [private agent skills](docs/private-agent-skills.md) - sync/overlay additional private skills repo
 - [inspiration](docs/inspiration.md) - reference repos and tools
