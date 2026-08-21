@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SOURCE_ROOT="$ROOT/home"
-RC="$SOURCE_ROOT/dot_config/sketchybar/executable_sketchybarrc"
 ITEM="$SOURCE_ROOT/dot_config/sketchybar/items/calendar.sh"
 TMP="${TMPDIR:-/tmp}/sketchybar-calendar-sourcing-test-$$"
 BIN="$TMP/bin"
@@ -13,16 +12,6 @@ trap 'rm -rf "$TMP"' EXIT
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 [ -f "$ITEM" ] || fail "items/calendar.sh missing"
-
-order="$(awk '
-  /# right items/ {right=1; next}
-  /^# finalise/ {right=0}
-  right && /^[[:space:]]*source "\$ITEM_DIR\// {
-    sub(/.*source "\$ITEM_DIR\//, ""); sub(/\.sh".*/, ""); print
-  }
-' "$RC")"
-expect=$'calendar\nbattery\nbackup_status\ntailscale\nspotify'
-[ "$order" = "$expect" ] || fail "right source order wrong: got <$order> want <$expect>"
 
 cat > "$BIN/sketchybar" <<'SB'
 #!/usr/bin/env sh

@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SOURCE_ROOT="$ROOT/home"
+ITEM="$SOURCE_ROOT/dot_config/sketchybar/items/tailscale.sh"
 TMP="${TMPDIR:-/tmp}/sketchybar-tailscale-test-$$"
 CONFIG="$TMP/config"
 BIN="$TMP/bin"
@@ -52,6 +53,12 @@ run_case() {
 }
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
+
+[ -f "$ITEM" ] || fail "items/tailscale.sh missing"
+grep -q -- 'sketchybar --add item tailscale right' "$ITEM" || fail 'item not added on right'
+grep -q -- 'update_freq=30' "$ITEM" || fail 'missing update_freq=30'
+grep -q -- 'system_woke' "$ITEM" || fail 'missing system_woke subscription'
+grep -q -- '--set tailscale' "$ITEM" || fail 'missing --set tailscale'
 
 # Every asserted field is followed by another --set arg, so a trailing-space
 # boundary disambiguates "label=off" from "label=offline" without end-anchors.
