@@ -15,9 +15,10 @@ used for re-mapping internal laptop keyboards.
 | `j`    | j   | ctrl  |
 | `k`    | k   | shift |
 | `l`    | l   | alt   |
-| `;`    | ;   | `lmet` (left Command) |
-| `caps` | esc | hyper |
+| `;`    | ;   | `rmet` (right Command) |
+| `caps` | esc | - |
 | `lmet` | bspc | left Command |
+| `/`    | /   | hyper |
 
 **positional disambiguation (timeless homerow mods).** the eight letter HRMs (a/s/d/f/j/k/l/`;`) use `tap-hold-release-keys` so:
 
@@ -27,21 +28,23 @@ used for re-mapping internal laptop keyboards.
 
 hand groupings live in `(defvar left-hand-keys ...)` / `right-hand-keys` and cover every alpha column in `defsrc` **except the eight HRM positions themselves** (`a`/`s`/`d`/`f`, `j`/`k`/`l`/`;`) — those are excluded so same-hand mod chords like `Alt+Shift+T` still work. see `docs/timeless-hrm.md` for the polarity gotcha and the chord-vs-roll trade-off.
 
-`caps` (esc/hyper) and `lmet` (bspc/left Command) remain plain timing-based tap-hold — not homerow letters, no roll concern.
+`caps` is plain Escape. `/` (slash/Hyper) and `lmet` (backspace/left Command) remain plain timing-based tap-hold — not homerow letters, no roll concern.
 
 tap-timeout: 300ms, hold-timeout: 200ms.
 
-### bottom-row tap-dance macros (tap/hold)
+### base-layer tap-dance macros (tap/hold)
 
-mirrors QMK tap-dance + macro setup on z/x/c/v/b. hold fires once via `(macro ...)` so the OS doesn't auto-repeat the command on long hold.
+mirrors the QMK tap-dance + macro setup on q/e/z/x/c/v. hold fires once via `(macro ...)` so the OS doesn't auto-repeat the command on long hold.
 
 | key | tap | hold               |
 | --- | --- | ------------------ |
+| `q` | q   | Cmd+Q (quit)       |
+| `e` | e   | Cmd+A (select all) |
 | `z` | z   | Cmd+Z (undo)       |
 | `x` | x   | Cmd+X (cut)        |
 | `c` | c   | Cmd+C (copy)       |
 | `v` | v   | Cmd+V (paste)      |
-| `b` | b   | Cmd+A (select all) |
+| `b` | b   | -                  |
 
 timeout matches homerow mods (300ms tap, 200ms hold).
 
@@ -69,7 +72,7 @@ timeout matches homerow mods (300ms tap, 200ms hold).
 
 ### space-hold layer (arrows)
 
-hold `space` to activate the arrows layer. synced from QMK Layer 1 (Iris split keyboard).
+hold `space` to activate the arrows layer. synced from QMK Layer 1 (Iris split keyboard). The dual-role uses a deferred 200ms tap-hold, matching QMK `LT1(KC_SPACE)`.
 
 **number row — screenshot shortcuts:**
 
@@ -101,7 +104,7 @@ mirrors `SGUI(KC_2)` / `SGUI(KC_3)` from QMK Layer 1 (macOS screenshot-style sho
 | key  | output         |
 | ---- | -------------- |
 | caps | tab            |
-| a    | OSM(Shift+Cmd) |
+| a    | transparent    |
 | s    | `(`            |
 | d    | `)`            |
 | f    | `{`            |
@@ -118,12 +121,12 @@ mirrors `SGUI(KC_2)` / `SGUI(KC_3)` from QMK Layer 1 (macOS screenshot-style sho
 | key  | output      |
 | ---- | ----------- |
 | lsft | Shift+Tab   |
-| z    | LCtrl       |
+| z    | transparent |
 | x    | Cmd+Shift+C |
-| c    | keypad dot      |
+| c    | transparent  |
 | v    | `[`         |
 | b    | `]`         |
-| n    | `\`         |
+| n    | keypad `/`  |
 | m    | `\|`        |
 | ,    | `-`         |
 | .    | `+`         |
