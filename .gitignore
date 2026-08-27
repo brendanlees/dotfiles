@@ -27,3 +27,4 @@ dot_DS_Store
 /docs/private/**
 !/docs/private/
 !/docs/private/.gitkeep
+/home/dot_config/atuin/atuin-receipt.json
