@@ -151,6 +151,13 @@ unset zcompdump
 source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
 # ------------------------------------------
+# atuin
+# ------------------------------------------
+
+# Load after fzf so Atuin owns Ctrl-R and the Up Arrow history search.
+_cached_eval atuin atuin atuin init zsh
+
+# ------------------------------------------
 # carapace 
 # ------------------------------------------
 

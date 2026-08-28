@@ -202,6 +202,14 @@ if (Get-Module -ListAvailable PSFzf) {
 }
 
 # ------------------------------------------
+# atuin — history hooks + search
+# ------------------------------------------
+# Load after PSFzf so Atuin owns Ctrl+R.
+if (Get-Command atuin -ErrorAction SilentlyContinue) {
+    atuin init powershell | Out-String | Invoke-Expression
+}
+
+# ------------------------------------------
 # zoxide — `cd <fuzzy>` shadowing
 # ------------------------------------------
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
