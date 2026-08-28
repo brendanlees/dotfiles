@@ -1,0 +1,25 @@
+# Theme generated from .chezmoidata/themes.yml
+# Active theme: {{ .theme }}
+# Atuin inherits any future meanings from its autumn theme.
+{{- $p := (index .themes .theme).palette }}
+
+[theme]
+name = "chezmoi"
+parent = "autumn"
+
+[colors]
+Base = "{{ $p.fg }}"
+AlertInfo = "{{ $p.info }}"
+AlertWarn = "{{ $p.warn }}"
+AlertError = "{{ $p.error }}"
+Annotation = "{{ $p.comment }}"
+Guidance = "{{ $p.accent }}"
+Important = "{{ $p.primary }}"
+Title = "{{ $p.primary_alt }}"
+Muted = "{{ $p.muted }}"
+SyntaxCommand = "{{ $p.primary }}"
+SyntaxFlag = "{{ $p.secondary }}"
+SyntaxString = "{{ $p.success }}"
+SyntaxVariable = "{{ $p.info_alt }}"
+SyntaxOperator = "{{ $p.fg }}"
+SyntaxComment = "{{ $p.comment }}"
