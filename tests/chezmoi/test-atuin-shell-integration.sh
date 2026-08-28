@@ -6,7 +6,50 @@ source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
-data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"chezmoi":{"os":"darwin","username":"test"}}'
+data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"theme":"guts","chezmoi":{"os":"darwin","username":"test"}}'
+
+atuin_theme_template="$source_root/dot_config/atuin/themes/chezmoi.toml.tmpl"
+chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  --file "$atuin_theme_template" >"$tmpdir/atuin-theme.toml"
+chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
+python3 - "$tmpdir/atuin-theme.toml" "$tmpdir/data.json" \
+  "$source_root/dot_config/atuin/private_config.toml" <<'PY'
+import json
+import sys
+import tomllib
+from pathlib import Path
+
+theme = tomllib.loads(Path(sys.argv[1]).read_text())
+data = json.loads(Path(sys.argv[2]).read_text())
+config = tomllib.loads(Path(sys.argv[3]).read_text())
+palette = data["themes"]["guts"]["palette"]
+expected_mapping = {
+    "Base": "fg",
+    "AlertInfo": "info",
+    "AlertWarn": "warn",
+    "AlertError": "error",
+    "Annotation": "comment",
+    "Guidance": "accent",
+    "Important": "primary",
+    "Title": "primary_alt",
+    "Muted": "muted",
+    "SyntaxCommand": "primary",
+    "SyntaxFlag": "secondary",
+    "SyntaxString": "success",
+    "SyntaxVariable": "info_alt",
+    "SyntaxOperator": "fg",
+    "SyntaxComment": "comment",
+}
+if theme["theme"] != {"name": "chezmoi", "parent": "autumn"}:
+    raise SystemExit(f"unexpected Atuin theme inheritance: {theme['theme']!r}")
+expected_colors = {key: palette[value] for key, value in expected_mapping.items()}
+if theme.get("colors") != expected_colors:
+    raise SystemExit(f"Atuin palette mapping mismatch: {theme.get('colors')!r}")
+if config.get("theme") != {"name": "chezmoi"}:
+    raise SystemExit(f"Atuin config does not select chezmoi theme: {config.get('theme')!r}")
+if "name" in config.get("daemon", {}):
+    raise SystemExit("Atuin theme name must not be nested under daemon")
+PY
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   <"$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise.toml"
