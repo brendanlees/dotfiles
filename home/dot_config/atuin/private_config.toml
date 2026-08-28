@@ -75,7 +75,7 @@ dialect = "uk"
 
 ## which display style to use
 ## possible values: auto, full, compact
-# style = "compact"
+style = "full"
 
 ## the maximum number of lines the interface should take up
 ## set it to 0 to always go full screen
@@ -108,7 +108,7 @@ invert = true
 
 ## use ctrl instead of alt as the shortcut modifier key for numerical UI shortcuts
 ## alt-0 .. alt-9
-# ctrl_n_shortcuts = false
+ctrl_n_shortcuts = true
 
 ## Show numeric shortcuts (1..9) beside list items in the TUI
 ## set to false to hide the moving numbers if you find them distracting
@@ -149,7 +149,7 @@ invert = true
 ## Configure whether or not to show the help row, which includes the current Atuin
 ## version (and whether an update is available), a keymap hint, and the total
 ## amount of commands in your history.
-# show_help = true
+show_help = false
 
 ## Configure whether or not to show tabs for search and inspect
 # show_tabs = true
@@ -184,7 +184,7 @@ search_mode = "daemon-fuzzy"
 ## selected based on the shell's keymap where the keybinding is defined. If
 ## this is set to "emacs", "vim-insert", or "vim-normal", the startup keymap
 ## mode in the Atuin search is forced to be the specified one.
-# keymap_mode = "emacs"
+keymap_mode = "vim-insert"
 
 ## Cursor style in each keymap mode. If specified, the cursor style is changed
 ## in entering the cursor shape. Available values are "default" and
@@ -360,10 +360,11 @@ enabled = true
 ## Can be a percentage, or integer (e.g. "100" means 100 lines tall)
 # height = "60%"
 
-[ui]
 
 [ai]
 enabled = true
+
+[ui]
 ## Columns to display in the interactive search, from left to right.
 ## The selection indicator (" > ") is always shown first implicitly.
 ##
@@ -385,7 +386,7 @@ enabled = true
 ## column fill remaining space. Only one column should have expand = true.
 ##
 ## Default:
-# columns = ["duration", "time", "command"]
+columns = ["command"]
 ##
 ## Examples:
 ##
