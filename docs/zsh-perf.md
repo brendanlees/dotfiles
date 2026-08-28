@@ -19,7 +19,7 @@ _cached_eval <tag> <bin> <init-cmd…>
 
 writes `<init-cmd>` output to `$XDG_CACHE_HOME/zsh/init/<tag>.zsh` and sources it. cache is invalidated when `$commands[<bin>]` (the resolved binary path) is newer than the cache file — so a `brew upgrade` or `mise install` triggers a regen on the next shell.
 
-currently wraps: `mise`, `starship`, `fzf`, `carapace`, `wt`, `zoxide`.
+currently wraps: `mise`, `starship`, `fzf`, `atuin`, `carapace`, `wt`, `zoxide`.
 
 ### force a rebuild
 
