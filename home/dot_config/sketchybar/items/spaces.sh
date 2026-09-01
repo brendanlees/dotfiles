@@ -6,6 +6,7 @@ fi
 
 WORKSPACES=$(aerospace list-workspaces --all | sort -t- -k1,1n -k2,2)
 FOCUSED=$(aerospace list-workspaces --focused)
+FOCUSED_MONITOR_IS_MAIN=$(aerospace list-workspaces --focused --format '%{monitor-is-main}')
 APP_FONT="sketchybar-app-font"
 SPACE_ITEMS=()
 
@@ -58,10 +59,11 @@ while IFS= read -r workspace; do
         SPACE_BG_Drawing=off
     fi
 
-    # Only show spaces that hold windows, plus the focused space (so you never
-    # lose track of where you are). Empty non-focused spaces stay hidden until
-    # a window appears; aerospace.sh keeps `drawing` in sync on later events.
-    if [ "$workspace" = "$FOCUSED" ] || workspace_has_windows "$workspace"; then
+    # The main display keeps the full workspace list. On another display, keep
+    # only the focused workspace visible so the left side stays compact.
+    if [ "$FOCUSED_MONITOR_IS_MAIN" = "false" ] && [ "$workspace" != "$FOCUSED" ]; then
+        SPACE_Drawing=off
+    elif [ "$workspace" = "$FOCUSED" ] || workspace_has_windows "$workspace"; then
         SPACE_Drawing=on
     else
         SPACE_Drawing=off
@@ -72,6 +74,7 @@ while IFS= read -r workspace; do
     sketchybar --add item space."$workspace" left \
         --set space."$workspace" \
         drawing="$SPACE_Drawing" \
+        display=active \
         icon="$num" \
         icon.font="$FONT:Regular:16.0" \
         icon.color="$IC_COLOR" \
@@ -90,12 +93,13 @@ while IFS= read -r workspace; do
         update_freq=60 \
         script="$PLUGIN_DIR/aerospace.sh $workspace" \
         click_script="aerospace workspace $workspace" \
-        --subscribe space."$workspace" aerospace_workspace_change front_app_switched system_woke
+        --subscribe space."$workspace" aerospace_workspace_change display_change front_app_switched system_woke
 done <<<"$WORKSPACES"
 
 # consolidate spaces into a single shared pill
 sketchybar --add bracket spaces '/space\..*/' \
     --set spaces \
+    display=active \
     background.drawing=on \
     background.color="$PILL_BG" \
     background.border_color="$TRANSPARENT" \

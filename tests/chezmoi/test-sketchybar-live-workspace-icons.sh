@@ -164,3 +164,22 @@ assert_log_contains 'label.drawing=on'
 SENDER=aerospace_workspace_change NAME=space.6-misc1 FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 6-misc1
 assert_log_contains 'space.6-misc1 drawing=off icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'
+
+: > "$LOG"
+SENDER=aerospace_workspace_change NAME=space.2-code \
+  FOCUSED_WORKSPACE=4-files FOCUSED_MONITOR_IS_MAIN=false \
+  run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
+assert_log_contains 'space.2-code drawing=off'
+
+: > "$LOG"
+SENDER=aerospace_workspace_change NAME=space.4-files \
+  FOCUSED_WORKSPACE=4-files FOCUSED_MONITOR_IS_MAIN=false \
+  run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
+assert_log_contains 'space.4-files drawing=on'
+
+SPACES="$SOURCE_ROOT/dot_config/sketchybar/items/spaces.sh"
+NOTIFY="$SOURCE_ROOT/dot_config/aerospace/executable_notify-sketchybar.sh"
+grep -F 'FOCUSED_MONITOR_IS_MAIN=' "$SPACES" >/dev/null
+grep -F 'display=active' "$SPACES" >/dev/null
+grep -F 'display_change' "$SPACES" >/dev/null
+grep -F 'FOCUSED_MONITOR_IS_MAIN' "$NOTIFY" >/dev/null
