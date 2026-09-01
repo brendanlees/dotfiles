@@ -15,8 +15,14 @@ if [ -z "$workspace" ]; then
 fi
 
 focused_workspace="${FOCUSED_WORKSPACE:-}"
-if [ -z "$focused_workspace" ] && [ -n "$aerospace_bin" ]; then
-  focused_workspace="$($aerospace_bin list-workspaces --focused 2>/dev/null || true)"
+focused_monitor_is_main="${FOCUSED_MONITOR_IS_MAIN:-}"
+if [ -n "$aerospace_bin" ]; then
+  if [ -z "$focused_workspace" ]; then
+    focused_workspace="$($aerospace_bin list-workspaces --focused 2>/dev/null || true)"
+  fi
+  if [ -z "$focused_monitor_is_main" ]; then
+    focused_monitor_is_main="$($aerospace_bin list-workspaces --focused --format '%{monitor-is-main}' 2>/dev/null || true)"
+  fi
 fi
 
 item_name="${NAME:-space.$workspace}"
@@ -61,7 +67,9 @@ for window in windows:
 
 app_name="$(representative_app "$workspace" || true)"
 
-if [ -n "$app_name" ] || [ "$workspace" = "$focused_workspace" ]; then
+if [ "$focused_monitor_is_main" = "false" ] && [ "$workspace" != "$focused_workspace" ]; then
+  SPACE_Drawing=off
+elif [ -n "$app_name" ] || [ "$workspace" = "$focused_workspace" ]; then
   SPACE_Drawing=on
 else
   SPACE_Drawing=off

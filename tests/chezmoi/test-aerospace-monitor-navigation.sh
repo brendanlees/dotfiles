@@ -24,6 +24,10 @@ assert parsed['persistent-workspaces'] == [
     '8-notes',
     '9-music',
 ]
+assert parsed['on-focused-monitor-changed'] == [
+    'move-mouse monitor-lazy-center',
+    'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/notify-sketchybar.sh"',
+]
 expected = {
     "cmd-alt-shift-h": "focus-monitor left",
     "cmd-alt-shift-j": "focus-monitor down",
