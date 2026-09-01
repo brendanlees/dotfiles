@@ -15,6 +15,7 @@ cat > "$CONFIG/colors.sh" <<'SH'
 export WHITE=0xffffffff
 export GREY=0xff808080
 export MUTED=0xff808080
+export SECONDARY_MUTED=0x99808080
 export GREEN=0xff00ff00
 export YELLOW=0xffffff00
 export ORANGE=0xffffa500
@@ -183,8 +184,15 @@ assert_log_contains 'label=:arc:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
+SENDER=aerospace_workspace_change NAME=space.1-browser FOCUSED_WORKSPACE=4-files \
+  run_plugin "$CONFIG/plugins/aerospace.sh" 1-browser
+assert_log_contains 'space.1-browser drawing=on'
+assert_log_contains 'icon.color=0x99808080'
+assert_log_contains 'background.drawing=off'
+
+: > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.2-code FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
-assert_log_contains 'space.2-code drawing=on icon.color=0xff808080'
+assert_log_contains 'space.2-code drawing=on icon.color=0x99808080'
 assert_log_contains 'background.drawing=off'
 assert_log_contains 'label=:ghostty:'
 assert_log_contains 'label.drawing=on'
@@ -224,6 +232,7 @@ assert_log_contains 'label.drawing=on'
   export BORDER_RADIUS=8
   export WHITE=0xffffffff
   export MUTED=0xff808080
+  export SECONDARY_MUTED=0x99808080
   export PILL_BG=0x88262626
   export SURFACE=0xff202020
   export TRANSPARENT=0x00000000
@@ -232,6 +241,8 @@ assert_log_contains 'label.drawing=on'
 )
 assert_log_contains 'secondary_space.1-browser'
 assert_log_contains 'secondary_space.2-code'
+assert_log_contains 'space.1-browser drawing=on display=1'
+assert_log_contains 'icon.color=0x99808080'
 assert_log_contains 'secondary_space.1-browser drawing=on display=2'
 assert_log_contains 'secondary_space.2-code drawing=on display=2'
 assert_log_contains 'secondary_space.4-files drawing=off'

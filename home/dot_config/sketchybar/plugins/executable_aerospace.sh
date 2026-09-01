@@ -8,6 +8,7 @@ aerospace_bin="$(command -v aerospace || true)"
 if [ -z "$aerospace_bin" ] && [ -x /opt/homebrew/bin/aerospace ]; then
   aerospace_bin=/opt/homebrew/bin/aerospace
 fi
+secondary_muted_color="${SECONDARY_MUTED:-$MUTED}"
 
 workspace_selector="${1:-}"
 if [ -z "$workspace_selector" ]; then
@@ -16,21 +17,21 @@ fi
 
 is_secondary_indicator=false
 workspace="$workspace_selector"
-workspace_is_secondary=true
+workspace_is_secondary=false
 if [ "$workspace_selector" = "secondary" ]; then
   is_secondary_indicator=true
   workspace="${2:-}"
-  workspace_is_secondary="$({
-    [ -n "$aerospace_bin" ] || exit 0
-    "$aerospace_bin" list-workspaces \
-      --monitor all \
-      --format '%{monitor-is-main}%{tab}%{workspace}' 2>/dev/null |
-      awk -F '\t' -v target="$workspace" \
-        '$1 == "false" && $2 == target { print "yes"; exit }'
-  } || true)"
 fi
 if [ -z "$workspace" ]; then
   exit 0
+fi
+
+if [ -n "$aerospace_bin" ]; then
+  workspace_is_secondary="$("$aerospace_bin" list-workspaces \
+    --monitor all \
+    --format '%{monitor-is-main}%{tab}%{workspace}' 2>/dev/null |
+    awk -F '\t' -v target="$workspace" \
+      '$1 == "false" && $2 == target { print "yes"; exit }' || true)"
 fi
 
 focused_workspace="${FOCUSED_WORKSPACE:-}"
@@ -60,6 +61,9 @@ fi
 if [ "$workspace" = "$focused_workspace" ]; then
   IC_COLOR="$WHITE"
   SPACE_BG_Drawing=on
+elif [ "$is_secondary_indicator" = false ] && [ "$workspace_is_secondary" = yes ]; then
+  IC_COLOR="$secondary_muted_color"
+  SPACE_BG_Drawing=off
 else
   IC_COLOR="$MUTED"
   SPACE_BG_Drawing=off

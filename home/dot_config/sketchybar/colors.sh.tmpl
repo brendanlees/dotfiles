@@ -16,6 +16,8 @@ export CYAN=0xff{{ trimPrefix "#" $p.info | lower }}
 export ACCENT=0xff{{ trimPrefix "#" $p.accent | lower }}
 export GREY=0xff{{ trimPrefix "#" $p.border | lower }}
 export MUTED=0xff{{ trimPrefix "#" $p.muted | lower }}
+# Lower-alpha muted color for secondary-display workspaces on the main bar.
+export SECONDARY_MUTED=0x99{{ trimPrefix "#" $p.muted | lower }}
 export SURFACE=0xff{{ trimPrefix "#" $p.surface | lower }}
 export TRANSPARENT=0x00000000
 

@@ -66,6 +66,9 @@ while IFS= read -r workspace; do
     if [ "$workspace" = "$FOCUSED" ]; then
         IC_COLOR=$WHITE
         SPACE_BG_Drawing=on
+    elif grep -Fqx -- "$workspace" <<<"$SECONDARY_WORKSPACES"; then
+        IC_COLOR="${SECONDARY_MUTED:-$MUTED}"
+        SPACE_BG_Drawing=off
     else
         IC_COLOR=$MUTED
         SPACE_BG_Drawing=off
