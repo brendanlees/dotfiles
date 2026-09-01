@@ -80,6 +80,13 @@ alt-j = 'focus down'
 alt-k = 'focus up'
 alt-l = 'focus right'
 
+# Focus or move the current workspace to the iPad/external monitor.
+cmd-alt-shift-h = 'focus-monitor left'
+cmd-alt-shift-j = 'focus-monitor down'
+cmd-alt-shift-k = 'focus-monitor up'
+cmd-alt-shift-l = 'focus-monitor right'
+cmd-alt-shift-i = 'move-workspace-to-monitor iPad'
+
 # See: https://nikitabobko.github.io/AeroSpace/commands#move
 alt-shift-h = 'move left'
 alt-shift-j = 'move down'
