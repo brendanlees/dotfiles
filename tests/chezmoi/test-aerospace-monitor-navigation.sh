@@ -30,8 +30,8 @@ assert parsed['on-focused-monitor-changed'] == [
 ]
 expected = {
     "cmd-alt-shift-h": "focus-monitor left",
-    "cmd-alt-shift-j": "focus-monitor down",
-    "cmd-alt-shift-k": "focus-monitor up",
+    "cmd-alt-shift-j": "focus-monitor up",
+    "cmd-alt-shift-k": "focus-monitor down",
     "cmd-alt-shift-l": "focus-monitor right",
     "cmd-alt-shift-i": "move-workspace-to-monitor iPad secondary",
     "cmd-alt-shift-comma": "move-workspace-to-monitor main",

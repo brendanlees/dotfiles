@@ -99,8 +99,9 @@ alt-l = 'focus right'
 
 # Focus or move the current workspace to the iPad/external monitor.
 cmd-alt-shift-h = 'focus-monitor left'
-cmd-alt-shift-j = 'focus-monitor down'
-cmd-alt-shift-k = 'focus-monitor up'
+# AeroSpace's vertical monitor directions are inverted on this macOS layout.
+cmd-alt-shift-j = 'focus-monitor up'
+cmd-alt-shift-k = 'focus-monitor down'
 cmd-alt-shift-l = 'focus-monitor right'
 cmd-alt-shift-i = 'move-workspace-to-monitor iPad secondary'
 cmd-alt-shift-comma = 'move-workspace-to-monitor main'
