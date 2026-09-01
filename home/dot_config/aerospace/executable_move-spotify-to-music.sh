@@ -5,6 +5,12 @@ if [ "${1:-}" = "--delay" ]; then
   sleep "${2:-1}"
 fi
 
+placement_helper="${HOME:-}/.config/aerospace/move-window-if-first.sh"
+if [ -n "${AEROSPACE_WINDOW_ID:-}" ] && [ -x "$placement_helper" ]; then
+  "$placement_helper" com.spotify.client 9-music
+  exit 0
+fi
+
 if ! command -v aerospace >/dev/null 2>&1; then
   exit 0
 fi

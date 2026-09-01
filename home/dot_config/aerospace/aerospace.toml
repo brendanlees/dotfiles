@@ -195,75 +195,78 @@ alt-shift-l = ['join-with right', 'mode main']
 # window detection
 # ------------------------------------------
 
+# Route the first window of an app to its default workspace. Later windows
+# stay where they are opened, so they can be split across monitors.
+
 # --- 1. browser ---
 [[on-window-detected]]
 if.app-id = 'company.thebrowser.Browser'
-run = 'move-node-to-workspace 1-browser'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" company.thebrowser.Browser 1-browser'
 
 [[on-window-detected]]
 if.app-id = 'app.zen-browser.zen'
-run = 'move-node-to-workspace 1-browser'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" app.zen-browser.zen 1-browser'
 
 # --- 2. code ---
 [[on-window-detected]]
 if.app-id = 'com.microsoft.VSCode'
-run = 'move-node-to-workspace 2-code'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.microsoft.VSCode 2-code'
 
 [[on-window-detected]]
 if.app-id = 'dev.zed.Zed'
-run = 'move-node-to-workspace 2-code'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" dev.zed.Zed 2-code'
 
 # --- 3. email / work ---
 [[on-window-detected]]
 if.app-id = 'com.mimestream.Mimestream'
-run = 'move-node-to-workspace 3-email'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.mimestream.Mimestream 3-email'
 
 [[on-window-detected]]
 if.app-id = 'notion.id'
-run = 'move-node-to-workspace 3-email'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" notion.id 3-email'
 
 [[on-window-detected]]
 if.app-id = 'com.invoiceninja.app'
-run = 'move-node-to-workspace 3-email'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.invoiceninja.app 3-email'
 
 # --- 4. files ---
 [[on-window-detected]]
 if.app-id = 'com.apple.finder'
-run = 'move-node-to-workspace 4-files'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.apple.finder 4-files'
 
 # --- 5. docs ---
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
-run = 'move-node-to-workspace 5-docs'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.figma.Desktop 5-docs'
 
 [[on-window-detected]]
 if.app-id = 'asc.onlyoffice.ONLYOFFICE'
-run = 'move-node-to-workspace 5-docs'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" asc.onlyoffice.ONLYOFFICE 5-docs'
 
 # --- 6/7. misc ---
 [[on-window-detected]]
 if.app-id = 'com.hnc.Discord'
-run = 'move-node-to-workspace 6-misc1'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.hnc.Discord 6-misc1'
 
 [[on-window-detected]]
 if.app-id = 'com.nousresearch.hermes'
-run = 'move-node-to-workspace 6-misc1'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.nousresearch.hermes 6-misc1'
 
 # --- 8. notes ---
 [[on-window-detected]]
 if.app-id = 'md.obsidian'
-run = 'move-node-to-workspace 8-notes'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" md.obsidian 8-notes'
 
 [[on-window-detected]]
 if.app-id = 'com.todoist.mac.Todoist'
 if.window-title-regex-substring = '^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$'
-run = 'move-node-to-workspace 8-notes'
+run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.todoist.mac.Todoist 8-notes'
 
 # --- 9. music ---
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
 run = [
-  'move-node-to-workspace 9-music',
+  'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.spotify.client 9-music',
   'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
 ]
 
