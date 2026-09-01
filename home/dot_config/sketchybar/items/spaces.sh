@@ -63,12 +63,12 @@ while IFS= read -r workspace; do
 
     num="${workspace%%-*}"
 
-    if [ "$workspace" = "$FOCUSED" ]; then
-        IC_COLOR=$WHITE
-        SPACE_BG_Drawing=on
-    elif grep -Fqx -- "$workspace" <<<"$SECONDARY_WORKSPACES"; then
+    if grep -Fqx -- "$workspace" <<<"$SECONDARY_WORKSPACES"; then
         IC_COLOR="${SECONDARY_MUTED:-$MUTED}"
         SPACE_BG_Drawing=off
+    elif [ "$workspace" = "$FOCUSED" ]; then
+        IC_COLOR=$WHITE
+        SPACE_BG_Drawing=on
     else
         IC_COLOR=$MUTED
         SPACE_BG_Drawing=off

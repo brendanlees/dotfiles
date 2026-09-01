@@ -58,12 +58,12 @@ fi
 
 # Focus is conveyed by icon/label color plus a highlight block drawn behind
 # the focused space item, inside its shared spaces pill.
-if [ "$workspace" = "$focused_workspace" ]; then
-  IC_COLOR="$WHITE"
-  SPACE_BG_Drawing=on
-elif [ "$is_secondary_indicator" = false ] && [ "$workspace_is_secondary" = yes ]; then
+if [ "$is_secondary_indicator" = false ] && [ "$workspace_is_secondary" = yes ]; then
   IC_COLOR="$secondary_muted_color"
   SPACE_BG_Drawing=off
+elif [ "$workspace" = "$focused_workspace" ]; then
+  IC_COLOR="$WHITE"
+  SPACE_BG_Drawing=on
 else
   IC_COLOR="$MUTED"
   SPACE_BG_Drawing=off
