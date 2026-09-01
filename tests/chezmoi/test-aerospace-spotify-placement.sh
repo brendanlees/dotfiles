@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SOURCE_ROOT="$ROOT/home"
 CONFIG="$SOURCE_ROOT/dot_config/aerospace/aerospace.toml"
 HELPER="$SOURCE_ROOT/dot_config/aerospace/executable_move-spotify-to-music.sh"
+PLACEMENT_HELPER="$SOURCE_ROOT/dot_config/aerospace/executable_move-window-if-first.sh"
 
 python3 - "$CONFIG" <<'PY'
 import pathlib
@@ -22,14 +23,17 @@ match = re.search(
 )
 assert match, "Spotify on-window-detected rule should use an array with immediate and delayed placement commands"
 body = match.group("body")
-assert "'move-node-to-workspace 9-music'" in body, "Spotify rule should still move the detected window immediately"
-assert "move-spotify-to-music.sh --delay 1" in body, "Spotify rule should schedule a delayed window-id sweep"
+assert "move-window-if-first.sh" in body, "Spotify should use first-window placement"
+assert "'move-node-to-workspace 9-music'" not in body, "Spotify must not force every window to the music workspace"
+assert "move-spotify-to-music.sh --delay 1" in body, "Spotify rule should retain delayed placement"
 PY
 
-if [ ! -x "$HELPER" ]; then
-  printf 'expected executable helper at %s\n' "$HELPER" >&2
-  exit 1
-fi
+for helper in "$HELPER" "$PLACEMENT_HELPER"; do
+  if [ ! -x "$helper" ]; then
+    printf 'expected executable helper at %s\n' "$helper" >&2
+    exit 1
+  fi
+done
 
 grep -F "%{window-id}|%{app-bundle-id}" "$HELPER" >/dev/null
 grep -F "com.spotify.client" "$HELPER" >/dev/null
