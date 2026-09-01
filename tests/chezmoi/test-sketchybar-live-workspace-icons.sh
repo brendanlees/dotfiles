@@ -198,6 +198,12 @@ assert_log_contains 'label=:ghostty:'
 assert_log_contains 'label.drawing=on'
 
 : > "$LOG"
+SENDER=aerospace_workspace_change NAME=space.2-code FOCUSED_WORKSPACE=2-code \
+  run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
+assert_log_contains 'space.2-code drawing=on icon.color=0x99808080'
+assert_log_contains 'background.drawing=off'
+
+: > "$LOG"
 SENDER=aerospace_workspace_change NAME=space.6-misc1 FOCUSED_WORKSPACE=4-files run_plugin "$CONFIG/plugins/aerospace.sh" 6-misc1
 assert_log_contains 'space.6-misc1 drawing=off icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'
