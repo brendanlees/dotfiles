@@ -21,7 +21,10 @@ if [ "$workspace_selector" = "secondary" ]; then
   if [ -z "$aerospace_bin" ]; then
     exit 0
   fi
-  workspace="$($aerospace_bin list-workspaces --monitor 2 --visible 2>/dev/null || true)"
+  workspace="$("$aerospace_bin" list-workspaces \
+    --monitor all --visible \
+    --format '%{monitor-is-main}%{tab}%{workspace}' 2>/dev/null |
+    awk -F '\t' '$1 == "false" { print $2; exit }' || true)"
   if [ -z "$workspace" ]; then
     exit 0
   fi
