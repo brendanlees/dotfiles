@@ -30,6 +30,7 @@ expected = {
     "cmd-alt-shift-k": "focus-monitor up",
     "cmd-alt-shift-l": "focus-monitor right",
     "cmd-alt-shift-i": "move-workspace-to-monitor iPad secondary",
+    "cmd-alt-shift-comma": "move-workspace-to-monitor main",
 }
 for key, command in expected.items():
     pattern = rf"^{re.escape(key)}\s*=\s*'{re.escape(command)}'$"
