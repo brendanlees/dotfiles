@@ -75,8 +75,12 @@ if [ "$mode" = "workspaces" ] && [ "$focused" = "yes" ]; then
   exit 0
 fi
 
-if [ "$mode" = "workspaces" ] && [ "$monitor" = "2" ] && [ "$visible" = "yes" ]; then
-  printf '8-notes\n'
+if [ "$mode" = "workspaces" ] && [ "$monitor" = "all" ] && [ "$visible" = "yes" ]; then
+  if [ "$format" = "%{monitor-is-main}%{tab}%{workspace}" ]; then
+    printf 'true\t4-files\nfalse\t8-notes\n'
+  else
+    printf '8-notes\n'
+  fi
   exit 0
 fi
 
@@ -203,6 +207,7 @@ NOTIFY="$SOURCE_ROOT/dot_config/aerospace/executable_notify-sketchybar.sh"
 grep -F "display=\"\$PRIMARY_DISPLAY\"" "$SPACES" >/dev/null
 grep -F "display=\"\$SECONDARY_DISPLAY\"" "$SPACES" >/dev/null
 grep -F 'secondary_space_indicator' "$SPACES" >/dev/null
+grep -F -- "--format '%{monitor-is-main}%{tab}%{workspace}'" "$SPACES" >/dev/null
 grep -F 'display_change' "$SPACES" >/dev/null
 grep -F 'display=active' "$SPACES" >/dev/null && exit 1
 grep -F 'FOCUSED_WORKSPACE' "$NOTIFY" >/dev/null

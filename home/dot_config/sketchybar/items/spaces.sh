@@ -4,6 +4,7 @@ if ! command -v aerospace >/dev/null 2>&1; then
     exit 0
 fi
 
+# SketchyBar arrangement IDs for the primary and secondary bars.
 PRIMARY_DISPLAY=1
 SECONDARY_DISPLAY=2
 WORKSPACES=$(aerospace list-workspaces --all | sort -t- -k1,1n -k2,2)
@@ -107,7 +108,9 @@ sketchybar --add bracket spaces '/space\..*/' \
     blur_radius=0
 
 secondary_workspace=$(aerospace list-workspaces \
-    --monitor "$SECONDARY_DISPLAY" --visible 2>/dev/null || true)
+    --monitor all --visible \
+    --format '%{monitor-is-main}%{tab}%{workspace}' 2>/dev/null |
+    awk -F '\t' '$1 == "false" { print $2; exit }' || true)
 secondary_num="${secondary_workspace%%-*}"
 secondary_drawing=off
 secondary_click_script=:
