@@ -2,6 +2,20 @@
 # defaults
 # ------------------------------------------
 
+config-version = 2
+# Keep workspace names stable instead of inferring them from bindings.
+persistent-workspaces = [
+  '1-browser',
+  '2-code',
+  '3-email',
+  '4-files',
+  '5-docs',
+  '6-misc1',
+  '7-misc2',
+  '8-notes',
+  '9-music',
+]
+
 # Start AeroSpace at login
 start-at-login = true
 after-login-command = []
@@ -85,7 +99,7 @@ cmd-alt-shift-h = 'focus-monitor left'
 cmd-alt-shift-j = 'focus-monitor down'
 cmd-alt-shift-k = 'focus-monitor up'
 cmd-alt-shift-l = 'focus-monitor right'
-cmd-alt-shift-i = 'move-workspace-to-monitor iPad'
+cmd-alt-shift-i = 'move-workspace-to-monitor iPad secondary'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#move
 alt-shift-h = 'move left'

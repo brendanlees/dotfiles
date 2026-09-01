@@ -8,14 +8,28 @@ python3 - "$CONFIG" <<'PY'
 import pathlib
 import re
 import sys
+import tomllib
 
 config = pathlib.Path(sys.argv[1]).read_text()
+parsed = tomllib.loads(config)
+assert parsed['config-version'] == 2
+assert parsed['persistent-workspaces'] == [
+    '1-browser',
+    '2-code',
+    '3-email',
+    '4-files',
+    '5-docs',
+    '6-misc1',
+    '7-misc2',
+    '8-notes',
+    '9-music',
+]
 expected = {
     "cmd-alt-shift-h": "focus-monitor left",
     "cmd-alt-shift-j": "focus-monitor down",
     "cmd-alt-shift-k": "focus-monitor up",
     "cmd-alt-shift-l": "focus-monitor right",
-    "cmd-alt-shift-i": "move-workspace-to-monitor iPad",
+    "cmd-alt-shift-i": "move-workspace-to-monitor iPad secondary",
 }
 for key, command in expected.items():
     pattern = rf"^{re.escape(key)}\s*=\s*'{re.escape(command)}'$"
