@@ -49,19 +49,34 @@ cat > "$BIN/aerospace" <<'SH'
 #!/usr/bin/env sh
 mode=""
 workspace=""
+monitor=""
+format=""
 focused="no"
+visible="no"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     list-workspaces) mode="workspaces" ;;
     list-windows) mode="windows" ;;
     --focused) focused="yes" ;;
     --workspace) shift; workspace="${1:-}" ;;
+    --monitor) shift; monitor="${1:-}" ;;
+    --format) shift; format="${1:-}" ;;
+    --visible) visible="yes" ;;
   esac
   shift || true
 done
 
 if [ "$mode" = "workspaces" ] && [ "$focused" = "yes" ]; then
-  printf '4-files\n'
+  if [ "$format" = "%{monitor-is-main}" ]; then
+    printf '%s\n' "${FOCUSED_MONITOR_IS_MAIN:-true}"
+  else
+    printf '4-files\n'
+  fi
+  exit 0
+fi
+
+if [ "$mode" = "workspaces" ] && [ "$monitor" = "2" ] && [ "$visible" = "yes" ]; then
+  printf '8-notes\n'
   exit 0
 fi
 
@@ -166,20 +181,28 @@ assert_log_contains 'space.6-misc1 drawing=off icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'
 
 : > "$LOG"
-SENDER=aerospace_workspace_change NAME=space.2-code \
-  FOCUSED_WORKSPACE=4-files FOCUSED_MONITOR_IS_MAIN=false \
-  run_plugin "$CONFIG/plugins/aerospace.sh" 2-code
-assert_log_contains 'space.2-code drawing=off'
+SENDER=aerospace_workspace_change NAME=secondary_space_indicator \
+  FOCUSED_WORKSPACE=4-files \
+  run_plugin "$CONFIG/plugins/aerospace.sh" secondary
+assert_log_contains 'secondary_space_indicator icon=8'
+assert_log_contains 'secondary_space_indicator drawing=on'
+assert_log_contains 'icon.color=0xff808080'
+assert_log_contains 'background.drawing=off'
 
 : > "$LOG"
-SENDER=aerospace_workspace_change NAME=space.4-files \
-  FOCUSED_WORKSPACE=4-files FOCUSED_MONITOR_IS_MAIN=false \
-  run_plugin "$CONFIG/plugins/aerospace.sh" 4-files
-assert_log_contains 'space.4-files drawing=on'
+SENDER=aerospace_workspace_change NAME=secondary_space_indicator \
+  FOCUSED_WORKSPACE=8-notes \
+  run_plugin "$CONFIG/plugins/aerospace.sh" secondary
+assert_log_contains 'secondary_space_indicator icon=8'
+assert_log_contains 'secondary_space_indicator drawing=on'
+assert_log_contains 'icon.color=0xffffffff'
+assert_log_contains 'background.drawing=on'
 
 SPACES="$SOURCE_ROOT/dot_config/sketchybar/items/spaces.sh"
 NOTIFY="$SOURCE_ROOT/dot_config/aerospace/executable_notify-sketchybar.sh"
-grep -F 'FOCUSED_MONITOR_IS_MAIN=' "$SPACES" >/dev/null
-grep -F 'display=active' "$SPACES" >/dev/null
+grep -F "display=\"\$PRIMARY_DISPLAY\"" "$SPACES" >/dev/null
+grep -F "display=\"\$SECONDARY_DISPLAY\"" "$SPACES" >/dev/null
+grep -F 'secondary_space_indicator' "$SPACES" >/dev/null
 grep -F 'display_change' "$SPACES" >/dev/null
-grep -F 'FOCUSED_MONITOR_IS_MAIN' "$NOTIFY" >/dev/null
+grep -F 'display=active' "$SPACES" >/dev/null && exit 1
+grep -F 'FOCUSED_WORKSPACE' "$NOTIFY" >/dev/null

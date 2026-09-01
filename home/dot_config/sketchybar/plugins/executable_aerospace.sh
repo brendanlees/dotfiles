@@ -9,20 +9,27 @@ if [ -z "$aerospace_bin" ] && [ -x /opt/homebrew/bin/aerospace ]; then
   aerospace_bin=/opt/homebrew/bin/aerospace
 fi
 
-workspace="${1:-}"
-if [ -z "$workspace" ]; then
+workspace_selector="${1:-}"
+if [ -z "$workspace_selector" ]; then
   exit 0
 fi
 
+is_secondary_indicator=false
+workspace="$workspace_selector"
+if [ "$workspace_selector" = "secondary" ]; then
+  is_secondary_indicator=true
+  if [ -z "$aerospace_bin" ]; then
+    exit 0
+  fi
+  workspace="$($aerospace_bin list-workspaces --monitor 2 --visible 2>/dev/null || true)"
+  if [ -z "$workspace" ]; then
+    exit 0
+  fi
+fi
+
 focused_workspace="${FOCUSED_WORKSPACE:-}"
-focused_monitor_is_main="${FOCUSED_MONITOR_IS_MAIN:-}"
-if [ -n "$aerospace_bin" ]; then
-  if [ -z "$focused_workspace" ]; then
-    focused_workspace="$($aerospace_bin list-workspaces --focused 2>/dev/null || true)"
-  fi
-  if [ -z "$focused_monitor_is_main" ]; then
-    focused_monitor_is_main="$($aerospace_bin list-workspaces --focused --format '%{monitor-is-main}' 2>/dev/null || true)"
-  fi
+if [ -z "$focused_workspace" ] && [ -n "$aerospace_bin" ]; then
+  focused_workspace="$($aerospace_bin list-workspaces --focused 2>/dev/null || true)"
 fi
 
 item_name="${NAME:-space.$workspace}"
@@ -67,12 +74,20 @@ for window in windows:
 
 app_name="$(representative_app "$workspace" || true)"
 
-if [ "$focused_monitor_is_main" = "false" ] && [ "$workspace" != "$focused_workspace" ]; then
-  SPACE_Drawing=off
-elif [ -n "$app_name" ] || [ "$workspace" = "$focused_workspace" ]; then
+if [ "$is_secondary_indicator" = true ]; then
   SPACE_Drawing=on
 else
-  SPACE_Drawing=off
+  if [ -n "$app_name" ] || [ "$workspace" = "$focused_workspace" ]; then
+    SPACE_Drawing=on
+  else
+    SPACE_Drawing=off
+  fi
+fi
+
+if [ "$is_secondary_indicator" = true ]; then
+  sketchybar --set "$item_name" \
+    icon="${workspace%%-*}" \
+    click_script="aerospace workspace $workspace"
 fi
 
 if [ -n "$app_name" ]; then
