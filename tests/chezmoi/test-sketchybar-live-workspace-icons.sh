@@ -51,12 +51,14 @@ mode=""
 workspace=""
 monitor=""
 format=""
+all="no"
 focused="no"
 visible="no"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     list-workspaces) mode="workspaces" ;;
     list-windows) mode="windows" ;;
+    --all) all="yes" ;;
     --focused) focused="yes" ;;
     --workspace) shift; workspace="${1:-}" ;;
     --monitor) shift; monitor="${1:-}" ;;
@@ -65,6 +67,11 @@ while [ "$#" -gt 0 ]; do
   esac
   shift || true
 done
+
+if [ "$mode" = "workspaces" ] && [ "$all" = "yes" ]; then
+  printf '1-browser\n2-code\n3-email\n4-files\n5-docs\n6-misc1\n7-misc2\n8-notes\n9-music\n'
+  exit 0
+fi
 
 if [ "$mode" = "workspaces" ] && [ "$focused" = "yes" ]; then
   if [ "$format" = "%{monitor-is-main}" ]; then
@@ -75,17 +82,20 @@ if [ "$mode" = "workspaces" ] && [ "$focused" = "yes" ]; then
   exit 0
 fi
 
-if [ "$mode" = "workspaces" ] && [ "$monitor" = "all" ] && [ "$visible" = "yes" ]; then
+if [ "$mode" = "workspaces" ] && [ "$monitor" = "all" ]; then
   if [ "$format" = "%{monitor-is-main}%{tab}%{workspace}" ]; then
-    printf 'true\t4-files\nfalse\t8-notes\n'
+    printf 'true\t4-files\nfalse\t1-browser\nfalse\t2-code\n'
   else
-    printf '8-notes\n'
+    printf '1-browser\n2-code\n'
   fi
   exit 0
 fi
 
 if [ "$mode" = "windows" ]; then
   case "$workspace" in
+    1-browser)
+      printf '[{"app-name":"Arc","window-id":11,"window-title":"Arc"}]\n'
+      ;;
     4-files)
       printf '[{"app-name":"Arc","window-id":41,"window-title":"Arc"}]\n'
       ;;
@@ -185,28 +195,53 @@ assert_log_contains 'space.6-misc1 drawing=off icon.color=0xff808080'
 assert_log_contains 'label.drawing=off'
 
 : > "$LOG"
-SENDER=aerospace_workspace_change NAME=secondary_space_indicator \
+SENDER=aerospace_workspace_change NAME=secondary_space.1-browser \
   FOCUSED_WORKSPACE=4-files \
-  run_plugin "$CONFIG/plugins/aerospace.sh" secondary
-assert_log_contains 'secondary_space_indicator icon=8'
-assert_log_contains 'secondary_space_indicator drawing=on'
+  run_plugin "$CONFIG/plugins/aerospace.sh" secondary 1-browser
+assert_log_contains 'secondary_space.1-browser icon=1'
+assert_log_contains 'secondary_space.1-browser drawing=on'
 assert_log_contains 'icon.color=0xff808080'
 assert_log_contains 'background.drawing=off'
 
 : > "$LOG"
-SENDER=aerospace_workspace_change NAME=secondary_space_indicator \
-  FOCUSED_WORKSPACE=8-notes \
-  run_plugin "$CONFIG/plugins/aerospace.sh" secondary
-assert_log_contains 'secondary_space_indicator icon=8'
-assert_log_contains 'secondary_space_indicator drawing=on'
+SENDER=aerospace_workspace_change NAME=secondary_space.2-code \
+  FOCUSED_WORKSPACE=2-code \
+  run_plugin "$CONFIG/plugins/aerospace.sh" secondary 2-code
+assert_log_contains 'secondary_space.2-code icon=2'
+assert_log_contains 'secondary_space.2-code drawing=on'
 assert_log_contains 'icon.color=0xffffffff'
 assert_log_contains 'background.drawing=on'
+assert_log_contains 'label=:ghostty:'
+assert_log_contains 'label.drawing=on'
+
+: > "$LOG"
+(
+  export PATH="$BIN:$PATH"
+  export SKETCHYBAR_STUB_LOG="$LOG"
+  export FONT='JetBrainsMono Nerd Font Mono'
+  export ITEM_PADDING=8
+  export PILL_HEIGHT=36
+  export BORDER_RADIUS=8
+  export WHITE=0xffffffff
+  export MUTED=0xff808080
+  export PILL_BG=0x88262626
+  export SURFACE=0xff202020
+  export TRANSPARENT=0x00000000
+  export PLUGIN_DIR="$CONFIG/plugins"
+  source "$SOURCE_ROOT/dot_config/sketchybar/items/spaces.sh"
+)
+assert_log_contains 'secondary_space.1-browser'
+assert_log_contains 'secondary_space.2-code'
+assert_log_contains 'secondary_space.1-browser drawing=on display=2'
+assert_log_contains 'secondary_space.2-code drawing=on display=2'
+assert_log_contains 'secondary_space.4-files drawing=off'
 
 SPACES="$SOURCE_ROOT/dot_config/sketchybar/items/spaces.sh"
 NOTIFY="$SOURCE_ROOT/dot_config/aerospace/executable_notify-sketchybar.sh"
 grep -F "display=\"\$PRIMARY_DISPLAY\"" "$SPACES" >/dev/null
 grep -F "display=\"\$SECONDARY_DISPLAY\"" "$SPACES" >/dev/null
-grep -F 'secondary_space_indicator' "$SPACES" >/dev/null
+grep -F 'secondary_space.' "$SPACES" >/dev/null
+grep -F 'secondary_spaces' "$SPACES" >/dev/null
 grep -F -- "--format '%{monitor-is-main}%{tab}%{workspace}'" "$SPACES" >/dev/null
 grep -F 'display_change' "$SPACES" >/dev/null
 grep -F 'display=active' "$SPACES" >/dev/null && exit 1
