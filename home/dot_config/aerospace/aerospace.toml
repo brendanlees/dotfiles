@@ -122,8 +122,11 @@ alt-shift-equal = 'resize smart +50'
 # ------------------------------------------
 # See:  https://nikitabobko.github.io/AeroSpace/commands#workspace, aerospace list-apps
 
-alt-1 = 'workspace 1-browser'
-#raycast: alt+b = browser
+alt-1 = [
+  'workspace 1-browser',
+  'exec-and-forget "$HOME/.config/aerospace/activate-arc-if-present.sh"',
+]
+alt-b = ['workspace 1-browser', 'exec-and-forget open -a Arc']
 
 alt-2 = 'workspace 2-code'
 #raycast:
