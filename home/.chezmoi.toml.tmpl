@@ -144,7 +144,7 @@
 # --- secrets (sourced once at init from Bitwarden; cached in ~/.config/chezmoi/chezmoi.toml) ---
 # Every value below is fetched at `chezmoi init` time so subsequent `chezmoi apply`
 # runs never touch bw — that means one master-password prompt per init, zero per apply.
-# Re-run `chezmoi init` whenever a referenced Bitwarden field changes. See docs/usage.md.
+# Re-run `chezmoi init` whenever a referenced Bitwarden field changes. See docs/secrets.md.
 
 {{- if and $personal (lookPath "bw") }}
 {{- $bw_info   := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" }}

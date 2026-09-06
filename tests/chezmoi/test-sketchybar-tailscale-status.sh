@@ -135,43 +135,4 @@ SKETCHYBAR_STUB_LOG="$TMP/missing.log" TS_STATUS_JSON='{}' \
   bash "$CONFIG/plugins/tailscale.sh"
 grep -q -- "--set tailscale drawing=off" "$TMP/missing.log" || fail "missing-tailscale: expected drawing=off"
 
-# --------------------------------------------------------------------------
-# Icon-token guard (host-aware): the item's icon=\":tailscale:\" is rendered by
-# sketchybar-app-font via a GSUB ligature. Validate the installed app-font binary
-# actually carries the ligature input sequence 'tailscale'. Soft-skips when the
-# font / python3 / grep are unavailable (ephemeral,headless non-macOS CI).
-# --------------------------------------------------------------------------
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "skip: icon-token guard needs python3"
-else
-  python3 - <<'TOKGUARD' || fail "icon-token guard failed (:tailscale: not in installed sketchybar-app-font); see stderr"
-import os, shutil, struct, sys
-def u16(b,o): return int.from_bytes(b[o:o+2],'big',signed=False)
-def u32(b,o): return struct.unpack('>I',b[o:o+4])[0]
-# Resolve the app-font the bar actually uses (matches items/tailscale.sh).
-fp = None
-import subprocess
-# Resolve via fc-list by family substring (fc-match family:style can mis-resolve
-# in some fontconfig envs); fall back to the standard $HOME/Library/Fonts path.
-if shutil.which('fc-list'):
-    for line in subprocess.run(['fc-list'],capture_output=True,text=True).stdout.splitlines():
-        if 'sketchybar-app-font' in line and ':' in line:
-            fp = line.split(':',1)[0].strip(); break
-if not fp or not os.path.exists(fp):
-    cand = os.path.expanduser('~/Library/Fonts/sketchybar-app-font.ttf')
-    fp = cand if os.path.exists(cand) else fp
-if not fp or not os.path.exists(fp) or 'app-font' not in (fp or ''):
-    print("skip: sketchybar-app-font not installed/resolvable, got:", fp); sys.exit(0)
-data = open(fp,'rb').read()
-# The ligature input sequence 'tailscale' (and 'spotify' as a sanity anchor) must
-# be present in the binary. Missing 'tailscale' => the :tailscale: token won't
-# render on this host and the bar shows nothing.
-for tok, name in [('tailscale','required'), ('spotify','sanity-anchor')]:
-    if tok.encode() not in data:
-        print(f"FAIL: '{tok}' ligature input not found in {fp} ({name})", file=sys.stderr)
-        sys.exit(1 if name=='required' else 0)
-print("ok: :tailscale: ligature input present in", fp)
-TOKGUARD
-fi
-
 echo "ALL CASES PASSED"

@@ -6,11 +6,13 @@ every push to `main` and every pull request runs `.github/workflows/ci.yml`.
 superseded runs on the same branch or pull request are cancelled automatically.
 the workflow has read-only repository permissions and an explicit timeout on every job.
 
-- **`policy-lint` on Ubuntu 24.04** - validates the workflow with actionlint, then scopes ShellCheck, YAML, TOML, JSON, and policy checks to `.github/`, `home/`, `tests/`, `install.sh`, and the root skill lock. Skill assets under `agents/skills/` are scanned separately by SkillSpector when distributed.
+- **`policy-lint` on Ubuntu 24.04** - validates the workflow with actionlint, then scopes ShellCheck, YAML, TOML, JSON, and policy checks to `.github/`, `home/`, `tests/`, `install.sh`, and `agents/.skill-lock.json`. Skill assets under `agents/skills/` are scanned separately by SkillSpector when distributed.
 - **`repository-tests` on Ubuntu 24.04** - runs every maintained `tests/chezmoi/test-*.sh` through the aggregate runner.
 - **`template-smoke` on Ubuntu 24.04** - renders the supported template inventory once under the `ephemeral,headless` role, then validates rendered shell, YAML, TOML, and strict JSON.
 - **`apply-dry-run` on Ubuntu 24.04 and macOS 15** - initializes an isolated `ephemeral,headless` config and runs `chezmoi apply --dry-run --exclude=externals`. The macOS leg also lints every tracked plist with `plutil`.
 - **`powershell-windows` on Windows 2025** - parses tracked and rendered PowerShell, then executes the synthetic private-agent-skills junction and lifecycle contract.
+
+ShellCheck discovers shell files by suffix and supported shebang, including extensionless commands. Templates are checked after rendering. Focused tests cover behavior and ownership boundaries, not complete keybinding or color snapshots.
 
 ## local checks
 
