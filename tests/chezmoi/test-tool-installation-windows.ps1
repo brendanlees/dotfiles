@@ -10,8 +10,8 @@ function mise {
     if ($args.Count -ne 3 -or $args[0] -ne '--cd' -or $args[1] -ne $HOME -or $args[2] -ne 'install') {
         throw 'apply must only install missing global tools'
     }
-    if ($env:GITHUB_TOKEN -ne $script:expectedToken) { throw 'bootstrap token priority changed' }
-    $global:LASTEXITCODE = $script:installStatus
+    if ($env:GITHUB_TOKEN -ne $global:expectedToken) { throw 'bootstrap token priority changed' }
+    $global:LASTEXITCODE = $global:installStatus
 }
 function bat { $global:LASTEXITCODE = 0 }
 
@@ -24,18 +24,18 @@ try {
         Set-Content $rendered
     if ($LASTEXITCODE -ne 0) { throw 'template rendering failed' }
 
-    $script:installStatus = 0
-    $script:expectedToken = 'fixture-cached-token'
+    $global:installStatus = 0
+    $global:expectedToken = 'fixture-cached-token'
     $env:GITHUB_TOKEN = $null
     & $rendered
-    $script:expectedToken = 'fixture-injected-token'
-    $env:GITHUB_TOKEN = $script:expectedToken
+    $global:expectedToken = 'fixture-injected-token'
+    $env:GITHUB_TOKEN = $global:expectedToken
     & $rendered
     if ([Environment]::GetEnvironmentVariable('GITHUB_TOKEN', 'User') -ne $userToken) {
         throw 'bootstrap token must not change the persistent User environment'
     }
 
-    $script:installStatus = 42
+    $global:installStatus = 42
     $failed = $false
     try { & $rendered } catch { $failed = $true }
     if (-not $failed) { throw 'tool install failure must fail apply' }
