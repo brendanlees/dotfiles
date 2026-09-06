@@ -8,6 +8,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 for path in \
   "$repo_root/agents/AGENTS.md" \
+  "$repo_root/agents/pi/APPEND_SYSTEM.md" \
   "$repo_root/agents/.skill-lock.json" \
   "$repo_root/agents/skills" \
   "$source_root/symlink_dot_agents.tmpl"; do
