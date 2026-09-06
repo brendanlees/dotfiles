@@ -12,47 +12,45 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 
 known hostnames can also be auto-assigned without prompting in `home/.chezmoi.toml.tmpl`.
 
-## non-interactive options
+## non-interactive initialization
 
-### flags
-
-data flags can be added to `chezmoi init` to bypass interactive prompts:
-
-```sh
-chezmoi init --apply --data='{"personal":true,"work":false,"homelab":false}' brendanlees
-```
-
-### env vars
-
-set `CHEZMOI_ROLE` (comma-separated) before running `chezmoi init` — useful when you don't want to type a long `--data=` json blob, or when something else (mise, direnv, systemd unit) is already managing per-machine env:
+set `CHEZMOI_ROLE` to a comma-separated list before running `chezmoi init`:
 
 ```sh
 CHEZMOI_ROLE=personal,work chezmoi init --apply brendanlees
 ```
 
-valid tokens: `personal`, `work`, `homelab`, `headless`, `ephemeral`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false. ci uses `CHEZMOI_ROLE=ephemeral,headless` for non-interactive validation — see [testing](testing.md).
+valid tokens: `personal`, `work`, `homelab`, `headless`, `ephemeral`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false. CI uses `CHEZMOI_ROLE=ephemeral,headless` for non-interactive validation.
 
-env vars are read from the chezmoi process at init time, so any of these work:
+precedence: `CHEZMOI_ROLE` environment variable, then hostname defaults, then interactive prompts. the environment is read at init time; changing it before a plain `chezmoi apply` does not reinitialize the role.
 
-- inline prefix (`CHEZMOI_ROLE=… chezmoi init`)
-- shell `export`
-- mise `[env]` block in `~/.config/mise/config.toml` (set once per machine, persists across shells)
-- direnv `.envrc`
-
-precedence: `CHEZMOI_ROLE` env var → hostname allow-list → interactive prompts.
+`chezmoi init --data` is a boolean flag, not a JSON data argument. use the role environment variable for initialization; `--override-data` is useful for temporary rendering and tests.
 
 ## configure via ansible
 
-an example of how you can provision non-interactively from an ansible role
+set `dotfile_roles` to a list such as `[homelab, headless]`. pass it through the task environment rather than a shell-quoted JSON argument:
 
 ```yaml
-- name: Initialize chezmoi with scope (primary user)
-  vars:
-    _scope: "{{ {'personal': false, 'work': false, 'homelab': false, 'headless': false, 'ephemeral': false} | combine(dotfile_scope) }}"
-  shell: "chezmoi init --apply --data='{{ _scope | to_json }}' {{ dotfile_repo }}"
-  timeout: 60
-  when:
-    - chezmoi_binary_user.rc == 0
-    - not chezmoi_source_user.stat.exists
-    - dotfile_scope is defined
+- name: Initialize chezmoi with scope
+  ansible.builtin.command: chezmoi init --apply brendanlees
+  environment:
+    CHEZMOI_ROLE: "{{ dotfile_roles | join(',') }}"
+  args:
+    creates: "{{ ansible_env.HOME }}/.local/share/chezmoi/.git"
 ```
+
+run this as the intended dotfiles owner. an existing checkout can be reinitialized explicitly when its role changes.
+
+## root on servers
+
+root keeps its own global mise tools. `~/.config/mise/miserc.toml` ignores project configs under `/home`, rather than trusting code owned by every user there. This removes the repeated trust warnings without granting those configs root execution.
+
+if you intentionally need project-specific tools as root, override `MISE_IGNORED_CONFIG_PATHS` for that session and explicitly trust the particular project. Ordinary user accounts keep mise's normal trust behaviour.
+
+## private agent configuration
+
+personal machines bootstrap private `.pi` and `.claude` repositories. those repositories own their settings, packages and instructions; dotfiles supply the shared theme bridge and the `~/.agents` link.
+
+removing the personal role stops managing the private harness repositories; it must not delete them or unrelated user directories. `~/.agents` is a managed symlink, so it is removed when no longer in scope, leaving its source intact.
+
+on personal macOS and Windows machines, `cz-private-agent-skills reconcile` links direct skills from the configured private checkout into the shared skill directory. It clones a missing checkout but does not pull or reset an existing one. `deactivate` removes only owned links and Git excludes, keeping the checkout and machine configuration. Updating or deleting the private repository is an explicit Git/filesystem operation, outside this helper.

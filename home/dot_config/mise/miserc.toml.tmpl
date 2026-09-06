@@ -1,0 +1,5 @@
+{{- if eq .chezmoi.username "root" -}}
+# Root uses its own global tools, not project configuration owned by other users.
+# Ignoring these paths also avoids repeated trust warnings when browsing /home.
+ignored_config_paths = ["/home"]
+{{- end }}

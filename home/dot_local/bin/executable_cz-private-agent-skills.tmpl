@@ -10,18 +10,15 @@ fi
 OPERATION=${1:-reconcile}
 shift || true
 ARGUMENT_COUNT=$#
-CONFIRMATION=${1:-}
 
 warn() { printf 'warn: private agent skills: %s\n' "$*" >&2; }
 fatal() { printf 'error: private agent skills: %s\n' "$*" >&2; exit 1; }
 usage() {
   cat <<'EOF'
-Usage: cz-private-agent-skills [--fail] [reconcile|deactivate|finalize [--confirm-delete]]
+Usage: cz-private-agent-skills [--fail] [reconcile|deactivate]
 
 reconcile         Validate the private checkout and reconcile direct skill entries.
-deactivate        Remove only ledger-proven integration entries and preserve the checkout.
-finalize          Delete a deactivated checkout and clear configuration. Requires
-                  the exact --confirm-delete argument.
+deactivate        Remove ledger-owned links and excludes, preserving checkout and config.
 --fail            Return a failure status instead of isolating integration errors.
 EOF
 }
@@ -31,7 +28,6 @@ EOF
 # {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") }}{{ $pasRemote = (.private_agent_skills.remote | replace "'" "'\\''") }}{{ end }}
 # {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") }}{{ $pasCheckout = (.private_agent_skills.checkout | replace "'" "'\\''") }}{{ end }}
 # {{ $pasSource := (.chezmoi.sourceDir | replace "'" "'\\''") }}
-# {{ $pasConfig := (.chezmoi.configFile | replace "'" "'\\''") }}
 TEMPLATE_PERSONAL='{{ if .personal }}true{{ else }}false{{ end }}'
 TEMPLATE_OS='{{ .chezmoi.os }}'
 # shellcheck disable=SC2016
@@ -40,8 +36,6 @@ CONFIGURED_REMOTE='{{ $pasRemote }}'
 CONFIGURED_CHECKOUT='{{ $pasCheckout }}'
 # shellcheck disable=SC2016
 PUBLIC_SOURCE='{{ $pasSource }}'
-# shellcheck disable=SC2016
-CHEZMOI_CONFIG='{{ $pasConfig }}'
 
 PUBLIC_ROOT=''
 AGENT_SKILLS=''
@@ -52,9 +46,6 @@ CHECKOUT=''
 declare -a LEDGER_DESTINATIONS=()
 declare -a LEDGER_SOURCES=()
 declare -a LEDGER_EXCLUDES=()
-LEDGER_PENDING=false
-LEDGER_RECORDED_CHECKOUT=''
-LEDGER_CHECKOUT_DELETED=false
 
 declare -a INVENTORY_NAMES=()
 declare -a INVENTORY_DESTINATIONS=()
@@ -162,18 +153,12 @@ load_ledger() {
   LEDGER_DESTINATIONS=()
   LEDGER_SOURCES=()
   LEDGER_EXCLUDES=()
-  LEDGER_PENDING=false
-  LEDGER_RECORDED_CHECKOUT=''
-  LEDGER_CHECKOUT_DELETED=false
   [[ -e $STATE_FILE ]] || return 0
   [[ -f $STATE_FILE && ! -L $STATE_FILE ]] || fatal 'the ownership ledger is not a regular file'
   jq -e '
     type == "object" and
     .schema_version == 1 and
     (.entries | type == "array") and
-    (.decommission_pending | type == "boolean") and
-    ((.recorded_checkout == null) or (.recorded_checkout | type == "string")) and
-    (.checkout_deleted | type == "boolean") and
     ([.entries[].destination] | length == (unique | length)) and
     all(.entries[];
       type == "object" and
@@ -198,14 +183,6 @@ load_ledger() {
     LEDGER_SOURCES+=("$source")
     LEDGER_EXCLUDES+=("$exclude")
   done
-  LEDGER_PENDING=$(jq -r '.decommission_pending' "$STATE_FILE")
-  LEDGER_RECORDED_CHECKOUT=$(jq -r '.recorded_checkout // ""' "$STATE_FILE")
-  LEDGER_CHECKOUT_DELETED=$(jq -r '.checkout_deleted' "$STATE_FILE")
-  if [[ $LEDGER_PENDING == true ]]; then
-    [[ -n $LEDGER_RECORDED_CHECKOUT && $LEDGER_RECORDED_CHECKOUT == /* ]] || fatal 'the pending ledger has no safe recorded checkout'
-  elif [[ -n $LEDGER_RECORDED_CHECKOUT || $LEDGER_CHECKOUT_DELETED == true ]]; then
-    fatal 'the active ownership ledger has invalid decommission state'
-  fi
 }
 
 inventory_checkout() {
@@ -299,7 +276,7 @@ update_excludes() {
 }
 
 write_ledger() {
-  local pending=$1 recorded=$2 deleted=$3 entries_tmp output_tmp i
+  local entries_tmp output_tmp i
   mkdir -p "${STATE_FILE%/*}"
   entries_tmp=$(mktemp "${STATE_FILE%/*}/.private-agent-skills-entries.XXXXXX") || return 1
   output_tmp=$(mktemp "${STATE_FILE%/*}/.private-agent-skills-state.XXXXXX") || { rm -f "$entries_tmp"; return 1; }
@@ -310,12 +287,7 @@ write_ledger() {
       --arg exclude "${INVENTORY_EXCLUDES[$i]}" \
       '{destination:$destination,source:$source,exclude:$exclude}' >>"$entries_tmp" || { rm -f "$entries_tmp" "$output_tmp"; return 1; }
   done
-  jq -sS \
-    --argjson pending "$pending" \
-    --arg recorded "$recorded" \
-    --argjson deleted "$deleted" \
-    '{schema_version:1,entries:.,decommission_pending:$pending,recorded_checkout:(if $recorded == "" then null else $recorded end),checkout_deleted:$deleted}' \
-    "$entries_tmp" >"$output_tmp" || { rm -f "$entries_tmp" "$output_tmp"; return 1; }
+  jq -sS '{schema_version:1,entries:.}' "$entries_tmp" >"$output_tmp" || { rm -f "$entries_tmp" "$output_tmp"; return 1; }
   rm -f "$entries_tmp"
   if [[ -f $STATE_FILE ]] && cmp -s "$output_tmp" "$STATE_FILE"; then rm -f "$output_tmp"; else mv -f "$output_tmp" "$STATE_FILE"; fi
 }
@@ -335,7 +307,7 @@ apply_reconcile() {
       INVENTORY_EXCLUDES+=("${current_excludes[$i]}")
     fi
   done
-  write_ledger false '' false
+  write_ledger
   INVENTORY_DESTINATIONS=("${current_destinations[@]}")
   INVENTORY_SOURCES=("${current_sources[@]}")
   INVENTORY_EXCLUDES=("${current_excludes[@]}")
@@ -356,7 +328,7 @@ apply_reconcile() {
     [[ -e $destination ]] || ln -s -- "$source" "$destination"
   done
   update_excludes
-  write_ledger false '' false
+  write_ledger
 }
 
 reconcile() {
@@ -393,27 +365,13 @@ preflight_deactivate() {
   done
 }
 
-derive_recorded_checkout() {
-  local candidate=''
-  if [[ -n $CONFIGURED_CHECKOUT ]]; then
-    candidate=$(normalize_checkout "$CONFIGURED_CHECKOUT") || fatal 'cannot normalize the configured checkout for deactivation'
-  elif ((${#LEDGER_SOURCES[@]})); then
-    candidate=${LEDGER_SOURCES[0]%/skills/*}
-  fi
-  [[ -n $candidate && $candidate == /* ]] || fatal 'cannot prove which checkout deactivation must preserve'
-  printf '%s\n' "$candidate"
-}
-
 deactivate() {
   is_eligible || return 0
   initialize_paths
   load_ledger
   [[ -e $STATE_FILE ]] || return 0
-  [[ $LEDGER_CHECKOUT_DELETED == false ]] || fatal 'the recorded checkout was already deleted; retry finalization instead'
   preflight_deactivate
-  local recorded i destination
-  recorded=$LEDGER_RECORDED_CHECKOUT
-  [[ -n $recorded ]] || recorded=$(derive_recorded_checkout)
+  local i destination
   for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
     destination=${LEDGER_DESTINATIONS[$i]}
     path_entry_exists "$destination" && rm -- "$destination"
@@ -422,59 +380,6 @@ deactivate() {
   INVENTORY_SOURCES=()
   INVENTORY_EXCLUDES=()
   update_excludes
-  INVENTORY_DESTINATIONS=("${LEDGER_DESTINATIONS[@]}")
-  INVENTORY_SOURCES=("${LEDGER_SOURCES[@]}")
-  INVENTORY_EXCLUDES=("${LEDGER_EXCLUDES[@]}")
-  write_ledger true "$recorded" false
-}
-
-clear_machine_configuration() {
-  [[ -n $CHEZMOI_CONFIG ]] || return 1
-  [[ -e $CHEZMOI_CONFIG ]] || return 0
-  [[ -f $CHEZMOI_CONFIG && ! -L $CHEZMOI_CONFIG ]] || return 1
-  local header='[data.private_agent_skills]' count tmp
-  count=$(grep -Fxc "$header" "$CHEZMOI_CONFIG" || true)
-  ((count <= 1)) || return 1
-  ((count == 1)) || return 0
-  tmp=$(mktemp "${CHEZMOI_CONFIG%/*}/.private-agent-skills-config.XXXXXX") || return 1
-  awk -v header="$header" '
-    $0 == header { skipping=1; next }
-    skipping && /^\[/ { skipping=0 }
-    !skipping { print }
-  ' "$CHEZMOI_CONFIG" >"$tmp" || { rm -f "$tmp"; return 1; }
-  mv -f "$tmp" "$CHEZMOI_CONFIG"
-}
-
-finalize() {
-  is_eligible || return 0
-  [[ $CONFIRMATION == --confirm-delete ]] || fatal 'finalization requires the exact --confirm-delete argument'
-  initialize_paths
-  load_ledger
-  [[ -e $STATE_FILE && $LEDGER_PENDING == true ]] || fatal 'deactivation must complete before finalization'
-  local i destination normalized
-  for ((i = 0; i < ${#LEDGER_DESTINATIONS[@]}; i++)); do
-    destination=${LEDGER_DESTINATIONS[$i]}
-    path_entry_exists "$destination" && fatal 'an integration destination still exists; finalization refused'
-    exclude_has_line "${LEDGER_EXCLUDES[$i]}" && fatal 'an owned local exclude still exists; finalization refused'
-  done
-  if [[ $LEDGER_CHECKOUT_DELETED == false ]]; then
-    [[ -n $CONFIGURED_REMOTE && -n $CONFIGURED_CHECKOUT ]] || fatal 'machine-local configuration is required to prove checkout identity'
-    valid_ssh_remote "$CONFIGURED_REMOTE" || fatal 'the configured repository no longer uses SSH addressing'
-    normalized=$(normalize_checkout "$CONFIGURED_CHECKOUT") || fatal 'the configured checkout can no longer be normalized'
-    [[ $normalized == "$LEDGER_RECORDED_CHECKOUT" ]] || fatal 'the configured checkout no longer matches deactivation state'
-    path_is_within "$normalized" "$PUBLIC_ROOT" && fatal 'the recorded checkout overlaps the public source tree'
-    path_is_within "$normalized" "${AGENT_SKILLS%/skills}" && fatal 'the recorded checkout overlaps the unified agent home'
-    CHECKOUT=$normalized
-    if path_entry_exists "$CHECKOUT"; then
-      validate_checkout
-      rm -rf -- "$CHECKOUT"
-    fi
-    INVENTORY_DESTINATIONS=("${LEDGER_DESTINATIONS[@]}")
-    INVENTORY_SOURCES=("${LEDGER_SOURCES[@]}")
-    INVENTORY_EXCLUDES=("${LEDGER_EXCLUDES[@]}")
-    write_ledger true "$LEDGER_RECORDED_CHECKOUT" true
-  fi
-  clear_machine_configuration || fatal 'checkout deletion completed but machine-local configuration could not be cleared; preserve the ledger and retry'
   rm -f -- "$STATE_FILE"
 }
 
@@ -482,7 +387,6 @@ dispatch() {
   case "$OPERATION" in
     reconcile) [[ $ARGUMENT_COUNT -eq 0 ]] || { usage >&2; return 2; }; reconcile ;;
     deactivate) [[ $ARGUMENT_COUNT -eq 0 ]] || { usage >&2; return 2; }; deactivate ;;
-    finalize) [[ $ARGUMENT_COUNT -eq 1 ]] || { usage >&2; return 2; }; finalize ;;
     -h|--help|help) usage ;;
     *) usage >&2; return 2 ;;
   esac

@@ -84,19 +84,35 @@ render_scope_templates homelab "$homelab_data"
 
 assert_file_has() { grep -Fq "$2" "$1"; }
 assert_file_lacks() { if grep -Fq "$2" "$1"; then return 1; fi; }
-pi_remove=$(printf '%s/%s' '~' '.pi')
-
 for scope in personal personal-work; do
   assert_file_has "$tmpdir/$scope.external" '[".pi"]'
-  assert_file_lacks "$tmpdir/$scope.remove" "$pi_remove"
   assert_file_has "$tmpdir/$scope.mise" 'infisical = "latest"'
 done
 
-assert_file_has "$tmpdir/work.remove" "$pi_remove"
-assert_file_has "$tmpdir/homelab.remove" "$pi_remove"
 assert_file_lacks "$tmpdir/work.external" '[".pi"]'
 assert_file_lacks "$tmpdir/homelab.external" '[".pi"]'
 assert_file_lacks "$tmpdir/work.mise" 'infisical = "latest"'
 assert_file_has "$tmpdir/homelab.mise" 'infisical = "latest"'
 
-echo 'role routing matrix ok'
+# Leaving the personal role must not rewrite or remove private harness data.
+fixture="$tmpdir/source"
+home="$tmpdir/home"
+mkdir -p "$fixture/.chezmoiscripts" "$home/.pi/agent" "$home/.claude" \
+  "$home/Assets" "$home/Documents/PowerShell"
+cp "$source_root/.chezmoiremove.tmpl" "$fixture/"
+cp "$source_root"/.chezmoiscripts/run_onchange_after_configure-pi-*.py.tmpl "$fixture/.chezmoiscripts/"
+printf '{"theme":"chosen-by-harness","custom":true}\n' >"$home/.pi/agent/settings.json"
+cp "$home/.pi/agent/settings.json" "$tmpdir/settings.before"
+printf 'keep\n' >"$home/.claude/keep"
+printf 'keep\n' >"$home/Assets/keep"
+printf 'keep\n' >"$home/Documents/PowerShell/keep"
+printf '[data]\npersonal=false\nwork=true\nhomelab=false\nephemeral=false\nheadless=true\n' >"$tmpdir/config.toml"
+HOME="$home" chezmoi apply --source "$fixture" --destination "$home" \
+  --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" \
+  --override-data '{"chezmoi":{"os":"linux"}}' --exclude=externals --no-tty
+cmp "$tmpdir/settings.before" "$home/.pi/agent/settings.json"
+for file in .claude/keep Assets/keep Documents/PowerShell/keep; do
+  grep -Fxq keep "$home/$file"
+done
+
+echo 'role routing matrix and private ownership boundary ok'

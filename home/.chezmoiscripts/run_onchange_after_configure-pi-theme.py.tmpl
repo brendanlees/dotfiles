@@ -1,4 +1,4 @@
-{{- if ne .chezmoi.os "windows" -}}
+{{- if and .personal (ne .chezmoi.os "windows") -}}
 #!/usr/bin/env python3
 """Atomically write the chezmoi-rendered Pi theme after the .pi external sync."""
 

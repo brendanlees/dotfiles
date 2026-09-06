@@ -2,9 +2,6 @@
 {{ if and (hasKey . "github_token") .github_token -}}
 github.credential_command = 'chezmoi execute-template "{{ "{{ .github_token }}" }}"'
 {{ end -}}
-{{ if eq .chezmoi.username "root" -}}
-trusted_config_paths = ["/home"] # trust user home dirs with mise configs (prevent trust prompts)
-{{ end -}}
 
 [tools]
 uv = "latest"

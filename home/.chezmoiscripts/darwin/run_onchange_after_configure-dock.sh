@@ -4,33 +4,7 @@ set -euo pipefail
 
 trap 'killall Dock' EXIT
 
-# remove apple defaults
-declare -a remove_labels=(
-    "App Store"
-    Calendar
-    Contacts
-    FaceTime
-    Freeform
-    Keynote
-    Launchpad
-    Mail
-    Maps
-    Messages
-    Music
-    Notes
-    Numbers
-    Pages
-    Photos
-    Reminders
-    Safari
-    TV
-)
-
-for label in "${remove_labels[@]}"; do
-    dockutil --no-restart --remove "${label}" 2>/dev/null || true
-done
-
-# remove everything else to start clean
+# start clean before adding the configured items
 dockutil --no-restart --remove all || true
 
 # system

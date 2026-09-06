@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$repo_root"
+source "$repo_root/tests/ci/shell-files.sh"
 
 require() {
   command -v "$1" >/dev/null || {
@@ -80,8 +81,10 @@ tracked_existing_files() {
   done < <(git ls-files -z -- "$@")
 }
 
-mapfile -d '' shell_files < <(tracked_existing_files "${shellcheck_filespecs[@]}")
-((${#shell_files[@]} == 0)) || shellcheck -e SC1091 "${shell_files[@]}"
+mapfile -d '' shell_paths < <(
+  git ls-files -z -- .github home tests install.sh | shell_files
+)
+((${#shell_paths[@]} == 0)) || shellcheck -e SC1091 "${shell_paths[@]}"
 
 yaml_config='{extends: relaxed, rules: {line-length: disable, trailing-spaces: disable, empty-lines: disable, document-start: disable, comments: disable, truthy: disable}}'
 mapfile -d '' yaml_files < <(tracked_existing_files "${yaml_filespecs[@]}")

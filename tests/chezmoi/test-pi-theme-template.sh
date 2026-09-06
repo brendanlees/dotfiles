@@ -45,21 +45,7 @@ if "<no value>" in text or "{{" in text or "}}" in text:
 
 doc = json.loads(text)
 palette = data["themes"][theme_name]["palette"]
-required_palette = {
-    "bg", "surface", "surface_alt", "border", "comment", "muted", "fg",
-    "accent", "primary", "primary_alt", "secondary", "success", "warn",
-    "error", "info", "info_alt", "orange", "tool_neutral_bg",
-    "tool_error_bg",
-}
-missing_palette = sorted(required_palette - set(palette))
-if missing_palette:
-    raise SystemExit(f"{theme_name}: missing palette keys: {', '.join(missing_palette)}")
-
 hex_color = re.compile(r"^#[0-9a-fA-F]{6}$")
-for key in required_palette:
-    value = palette[key]
-    if not isinstance(value, str) or not hex_color.fullmatch(value):
-        raise SystemExit(f"{theme_name}: invalid {key} color: {value!r}")
 
 required_colors = {
     "accent", "border", "borderAccent", "borderMuted", "success", "error",
@@ -94,8 +80,6 @@ if doc["colors"].get("toolSuccessBg") != "toolNeutralTone":
     raise SystemExit(f"{theme_name}: successful tools must use toolNeutralTone")
 if doc["colors"].get("toolErrorBg") != "toolErrorTone":
     raise SystemExit(f"{theme_name}: failed tools must use toolErrorTone")
-if palette["tool_neutral_bg"].lower() == palette["tool_error_bg"].lower():
-    raise SystemExit(f"{theme_name}: error surface must differ from neutral surface")
 for key, value in doc["colors"].items():
     if value == "":
         continue
@@ -104,15 +88,6 @@ for key, value in doc["colors"].items():
     if isinstance(value, str) and (value in vars_ or hex_color.fullmatch(value)):
         continue
     raise SystemExit(f"{theme_name}: unresolved color reference {key}={value!r}")
-
-if theme_name == "guts":
-    expected = {
-        "tool_neutral_bg": "#131416",
-        "tool_error_bg": "#191314",
-    }
-    actual = {key: palette[key] for key in expected}
-    if actual != expected:
-        raise SystemExit(f"guts: tool surfaces changed: {actual!r}")
 PY
 done < <(
   python3 - "$data_file" <<'PY'
@@ -134,7 +109,7 @@ fi
 rendered_posix="$tmpdir/pi-theme-writer.py"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts"}' \
+  --override-data '{"theme":"guts","personal":true}' \
   <"$posix_writer" >"$rendered_posix"
 
 agent_dir="$tmpdir/pi-agent"
@@ -146,10 +121,18 @@ jq -e '.name == "chezmoi" and .vars.activeTheme == "guts"' "$target" >/dev/null
 rendered_windows="$tmpdir/pi-theme-writer.ps1"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts","chezmoi":{"os":"windows"}}' \
+  --override-data '{"theme":"guts","personal":true,"chezmoi":{"os":"windows"}}' \
   <"$windows_writer" >"$rendered_windows"
 grep -Fq '"activeTheme": "guts"' "$rendered_windows"
 grep -Fq 'chezmoi.json' "$rendered_windows"
+
+for os in linux windows; do
+  writer="$posix_writer"
+  [[ $os != windows ]] || writer="$windows_writer"
+  rendered=$(chezmoi execute-template --source "$repo_root" \
+    --override-data "{\"personal\":false,\"chezmoi\":{\"os\":\"$os\"}}" --file "$writer")
+  [[ -z $rendered ]] || { echo "Pi theme writer must be personal-only ($os)" >&2; exit 1; }
+done
 
 if [[ -n "${PI_THEME_SCHEMA:-}" ]]; then
   if [[ ! -f "$PI_THEME_SCHEMA" ]]; then

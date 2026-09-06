@@ -1,3 +1,4 @@
+{{- if and .personal (not .headless) (eq .chezmoi.os "darwin") -}}
 #!/bin/sh
 # managed by chezmoi - re-runs when Spicetify config/theme inputs change
 # active-theme: {{ .theme }}
@@ -40,3 +41,4 @@ spicetify config custom_apps library
 # Refresh the backup when Spotify changes, then apply the declared theme,
 # extensions, and custom apps. Spicetify supports chaining these commands.
 spicetify backup apply
+{{- end }}
