@@ -189,6 +189,10 @@ jobs:
           CHEZMOI_CONFIG_FILE: ${{ runner.temp }}/chezmoi-config.toml
         run: pwsh -NoProfile -File tests/ci/check-powershell.ps1
 
-      - name: run private agent skills lifecycle contract
+      - name: run Windows behavior contracts
         shell: pwsh
-        run: pwsh -NoProfile -File tests/chezmoi/test-private-agent-skills-windows.ps1
+        run: |
+          pwsh -NoProfile -File tests/chezmoi/test-private-agent-skills-windows.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pwsh -NoProfile -File tests/chezmoi/test-tool-installation-windows.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

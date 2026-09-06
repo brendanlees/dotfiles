@@ -10,7 +10,7 @@ the workflow has read-only repository permissions and an explicit timeout on eve
 - **`repository-tests` on Ubuntu 24.04** - runs every maintained `tests/chezmoi/test-*.sh` through the aggregate runner.
 - **`template-smoke` on Ubuntu 24.04** - renders the supported template inventory once under the `ephemeral,headless` role, then validates rendered shell, YAML, TOML, and strict JSON.
 - **`apply-dry-run` on Ubuntu 24.04 and macOS 15** - initializes an isolated `ephemeral,headless` config and runs `chezmoi apply --dry-run --exclude=externals`. The macOS leg also lints every tracked plist with `plutil`.
-- **`powershell-windows` on Windows 2025** - parses tracked and rendered PowerShell, then executes the synthetic private-agent-skills junction and lifecycle contract.
+- **`powershell-windows` on Windows 2025** - parses tracked and rendered PowerShell, then executes the synthetic private-skill junction lifecycle and tool-install authentication contracts.
 
 ShellCheck discovers shell files by suffix and supported shebang, including extensionless commands. Templates are checked after rendering. Focused tests cover behavior and ownership boundaries, not complete keybinding or color snapshots.
 
@@ -57,4 +57,5 @@ chezmoi init --source=$PWD --config=$config --apply=false
 $env:CHEZMOI_CONFIG_FILE = $config
 pwsh -NoProfile -File tests/ci/check-powershell.ps1
 pwsh -NoProfile -File tests/chezmoi/test-private-agent-skills-windows.ps1
+pwsh -NoProfile -File tests/chezmoi/test-tool-installation-windows.ps1
 ```

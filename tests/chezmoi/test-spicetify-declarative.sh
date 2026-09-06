@@ -52,4 +52,12 @@ grep -Fq 'filename: cat-jam.js' "$source_root/.chezmoidata/spicetify.yml"
 grep -Fq 'e7bfd49fcc13457bbc98e696294cf5cf43eb6c31/marketplace/cat-jam.js' \
   "$source_root/.chezmoidata/spicetify.yml"
 
+for data in \
+  '{"personal":false,"headless":false,"chezmoi":{"os":"darwin"}}' \
+  '{"personal":true,"headless":true,"chezmoi":{"os":"darwin"}}'; do
+  output=$(chezmoi execute-template --source "$repo_root" --override-data "$data" \
+    --file "$source_root/.chezmoiscripts/darwin/run_onchange_after_apply-spicetify.sh.tmpl")
+  [[ -z $output ]] || { echo 'Spicetify hook must skip out-of-scope hosts' >&2; exit 1; }
+done
+
 echo 'declarative Spicetify contract ok'

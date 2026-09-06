@@ -43,13 +43,9 @@ brews:
     - bitwarden-cli
     - oven-sh/bun/bun
     - curl
-    # - gh (mise)
     - git
     - mysql
-    # - node (mise)
     - pnpm
-    - tmux
-    # - uv (mise)
     - wget
     - zsh
   personal:

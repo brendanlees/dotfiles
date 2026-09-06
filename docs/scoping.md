@@ -41,8 +41,16 @@ set `dotfile_roles` to a list such as `[homelab, headless]`. pass it through the
 
 run this as the intended dotfiles owner. an existing checkout can be reinitialized explicitly when its role changes.
 
+## root on servers
+
+root keeps its own global mise tools. `~/.config/mise/miserc.toml` ignores project configs under `/home`, rather than trusting code owned by every user there. This removes the repeated trust warnings without granting those configs root execution.
+
+if you intentionally need project-specific tools as root, override `MISE_IGNORED_CONFIG_PATHS` for that session and explicitly trust the particular project. Ordinary user accounts keep mise's normal trust behaviour.
+
 ## private agent configuration
 
 personal machines bootstrap private `.pi` and `.claude` repositories. those repositories own their settings, packages and instructions; dotfiles supply the shared theme bridge and the `~/.agents` link.
 
 removing the personal role stops managing the private harness repositories; it must not delete them or unrelated user directories. `~/.agents` is a managed symlink, so it is removed when no longer in scope, leaving its source intact.
+
+on personal macOS and Windows machines, `cz-private-agent-skills reconcile` links direct skills from the configured private checkout into the shared skill directory. It clones a missing checkout but does not pull or reset an existing one. `deactivate` removes only owned links and Git excludes, keeping the checkout and machine configuration. Updating or deleting the private repository is an explicit Git/filesystem operation, outside this helper.

@@ -44,7 +44,7 @@ if grep -Fxq 'agents' "$nonpersonal_ignore"; then
   exit 1
 fi
 if grep -Fxq '.agents' "$nonpersonal_ignore"; then
-  echo '.agents must not be ignored because .chezmoiremove cleans it up' >&2
+  echo '.agents must not be ignored: its empty symlink template removes the link' >&2
   exit 1
 fi
 python3 - "$source_root/.chezmoiexternal.toml.tmpl" <<'PY'

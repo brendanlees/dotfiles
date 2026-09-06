@@ -2,9 +2,8 @@
 # .aliases/mise
 # ------------------------------------------
 
-# upgrade starship on demand. excluded from the bulk mise upgrade in
-# .chezmoiscripts/run_after_install_tools.sh.tmpl because the binary swap
-# glitches the active shell prompt. run this, then exec zsh to reload.
+# Upgrade the active prompt separately from `mise upgrade --exclude starship`.
+# Run this, then exec zsh to reload the replaced prompt binary.
 mise-upgrade-starship() {
     "$HOME/.local/bin/mise" upgrade starship || return $?
     printf '\nstarship upgraded. run `exec zsh` to reload your shell.\n'

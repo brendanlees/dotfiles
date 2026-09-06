@@ -109,7 +109,7 @@ fi
 rendered_posix="$tmpdir/pi-theme-writer.py"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts"}' \
+  --override-data '{"theme":"guts","personal":true}' \
   <"$posix_writer" >"$rendered_posix"
 
 agent_dir="$tmpdir/pi-agent"
@@ -121,10 +121,18 @@ jq -e '.name == "chezmoi" and .vars.activeTheme == "guts"' "$target" >/dev/null
 rendered_windows="$tmpdir/pi-theme-writer.ps1"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts","chezmoi":{"os":"windows"}}' \
+  --override-data '{"theme":"guts","personal":true,"chezmoi":{"os":"windows"}}' \
   <"$windows_writer" >"$rendered_windows"
 grep -Fq '"activeTheme": "guts"' "$rendered_windows"
 grep -Fq 'chezmoi.json' "$rendered_windows"
+
+for os in linux windows; do
+  writer="$posix_writer"
+  [[ $os != windows ]] || writer="$windows_writer"
+  rendered=$(chezmoi execute-template --source "$repo_root" \
+    --override-data "{\"personal\":false,\"chezmoi\":{\"os\":\"$os\"}}" --file "$writer")
+  [[ -z $rendered ]] || { echo "Pi theme writer must be personal-only ($os)" >&2; exit 1; }
+done
 
 if [[ -n "${PI_THEME_SCHEMA:-}" ]]; then
   if [[ ! -f "$PI_THEME_SCHEMA" ]]; then

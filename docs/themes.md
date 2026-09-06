@@ -11,7 +11,9 @@ theme --list             # list available themes (active marked)
 theme --current          # print active theme
 ```
 
-the script writes the choice to `home/.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, herdr, borders, sketchybar and nvim (over its socket).
+the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi and Spicetify theme hooks for the current OS. It does not install packages, update plugins or sync private repositories.
+
+tmux, ghostty, herdr, borders, sketchybar and nvim are live-reloaded where available.
 
 a few apps need a manual restart to pick up the new theme:
 

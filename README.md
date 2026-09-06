@@ -45,6 +45,20 @@ darwin | windows | linux
 
 see [scoping](docs/scoping.md) for non-interactive options via env vars, ansible.
 
+## maintenance
+
+`chezmoi apply` updates configuration and installs missing global tools. It does not upgrade mise, upgrade installed tools or prune old versions. Theme switching also skips package scripts and external repository updates.
+
+update tools explicitly when convenient:
+
+```sh
+mise --cd "$HOME" self-update
+mise --cd "$HOME" upgrade --exclude starship
+mise --cd "$HOME" prune
+```
+
+on Linux aarch64 hosts using the static musl build, prefix self-update with `MISE_LIBC=musl`. Upgrade the active prompt separately with `mise-upgrade-starship`, then start a new shell. Removing a package from the dotfiles does not automatically uninstall an existing copy.
+
 ## architecture
 
 ```

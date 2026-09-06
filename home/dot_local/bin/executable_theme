@@ -138,23 +138,22 @@ else
   printf 'theme: "%s"\n' "$TARGET" >> "$LOCAL_YML"
 fi
 
-# unlock bw before apply so chezmoi can resolve bitwardenFields
-if command -v bw >/dev/null 2>&1 && bw status 2>/dev/null | grep -q '"status":"locked"'; then
-  echo ":: bw vault locked — unlocking for chezmoi apply"
-  BW_SESSION=$(bw unlock --raw) && export BW_SESSION \
-    || echo "warn: bw unlock failed; bw-backed templates will error" >&2
-fi
+echo ":: apply configuration (no installers or external updates)"
+chezmoi apply --source "$CHEZMOI_DIR" --exclude=scripts,externals -v
 
-echo ":: chezmoi apply"
-chezmoi apply --source "$CHEZMOI_DIR" -v
-
-# ---- tmux plugin install (idempotent) -------------------------------------
-
-TPM_INSTALL="$HOME/.config/tmux/plugins/tpm/bin/install_plugins"
-if [[ -x "$TPM_INSTALL" ]] && pgrep -x tmux >/dev/null 2>&1; then
-  echo ":: tpm install_plugins"
-  "$TPM_INSTALL" >/dev/null || echo "warn: tpm install_plugins failed" >&2
-fi
+# Run only the theme hooks. Native script selection retains run_onchange state
+# without running package installers or syncing private harness repositories.
+theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl")
+case "$(chezmoi execute-template --source "$CHEZMOI_DIR" '{{ .chezmoi.os }}')" in
+  darwin)
+    theme_scripts+=("$CHEZMOI_DIR/.chezmoiscripts/darwin/run_onchange_after_apply-spicetify.sh.tmpl")
+    ;;
+  windows)
+    theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl")
+    ;;
+esac
+chezmoi apply --source "$CHEZMOI_DIR" --include=scripts --exclude=externals \
+  --source-path "${theme_scripts[@]}"
 
 # ---- live reload ----------------------------------------------------------
 

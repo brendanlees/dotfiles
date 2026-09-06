@@ -79,10 +79,11 @@ Library/Logs/Syncthing
 
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
-!.local/bin/theme
-!.local/bin/zsh-patina
+# Keep retired helpers visible to .chezmoiremove.
 !.local/bin/chezmoi-apply-library
 !.local/bin/chezmoi-readd-library
+!.local/bin/theme
+!.local/bin/zsh-patina
 {{- if eq .chezmoi.os "windows" }}
 !.local/bin/cz-ssh-refresh.ps1
 !.local/bin/cz-private-agent-skills.ps1
