@@ -7,28 +7,24 @@ Set-StrictMode -Version Latest
 
 $FailHard = $false
 $Operation = 'reconcile'
-$Confirmation = ''
 $positionals = [System.Collections.Generic.List[string]]::new()
 foreach ($argument in $args) {
     if ($argument -eq '--fail') { $FailHard = $true }
     else { $positionals.Add([string]$argument) }
 }
 if ($positionals.Count -gt 0) { $Operation = $positionals[0] }
-if ($positionals.Count -gt 1) { $Confirmation = $positionals[1] }
-if ($positionals.Count -gt 2) { $Operation = '__invalid__' }
+if ($positionals.Count -gt 1) { $Operation = '__invalid__' }
 
 # {{ $pasRemote := "" }}
 # {{ $pasCheckout := "" }}
 # {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") }}{{ $pasRemote = (.private_agent_skills.remote | replace "'" "''") }}{{ end }}
 # {{ if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") }}{{ $pasCheckout = (.private_agent_skills.checkout | replace "'" "''") }}{{ end }}
 # {{ $pasSource := (.chezmoi.sourceDir | replace "'" "''") }}
-# {{ $pasConfig := (.chezmoi.configFile | replace "'" "''") }}
 $TemplatePersonal = {{ if .personal }}$true{{ else }}$false{{ end }}
 $TemplateOs = '{{ .chezmoi.os }}'
 $ConfiguredRemote = '{{ $pasRemote }}'
 $ConfiguredCheckout = '{{ $pasCheckout }}'
 $PublicSource = '{{ $pasSource }}'
-$ChezmoiConfig = '{{ $pasConfig }}'
 
 $PublicRoot = ''
 $AgentSkills = ''
@@ -36,19 +32,14 @@ $StateFile = ''
 $ExcludeFile = ''
 $Checkout = ''
 $LedgerEntries = @()
-$LedgerPending = $false
-$LedgerRecordedCheckout = ''
-$LedgerCheckoutDeleted = $false
 $InventoryEntries = @()
 
 function Show-Usage {
     @'
-Usage: cz-private-agent-skills [--fail] [reconcile|deactivate|finalize [--confirm-delete]]
+Usage: cz-private-agent-skills [--fail] [reconcile|deactivate]
 
 reconcile         Validate the private checkout and reconcile direct skill entries.
-deactivate        Remove only ledger-proven integration entries and preserve the checkout.
-finalize          Delete a deactivated checkout and clear configuration. Requires
-                  the exact --confirm-delete argument.
+deactivate        Remove ledger-owned links and excludes, preserving checkout and config.
 --fail            Return a failure status instead of isolating integration errors.
 '@ | Write-Host
 }
@@ -177,9 +168,6 @@ function Get-RequiredProperty($Object, [string]$Name) {
 
 function Import-Ledger {
     $script:LedgerEntries = @()
-    $script:LedgerPending = $false
-    $script:LedgerRecordedCheckout = ''
-    $script:LedgerCheckoutDeleted = $false
     $item = Get-Item -LiteralPath $StateFile -Force -ErrorAction SilentlyContinue
     if ($null -eq $item) { return }
     if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'the ownership ledger is not a regular file' }
@@ -187,10 +175,6 @@ function Import-Ledger {
     catch { throw 'the ownership ledger is malformed or uses an unknown schema' }
     if ((Get-RequiredProperty $ledger 'schema_version') -ne 1) { throw 'the ownership ledger is malformed or uses an unknown schema' }
     $entries = @(Get-RequiredProperty $ledger 'entries')
-    $pending = Get-RequiredProperty $ledger 'decommission_pending'
-    $recorded = Get-RequiredProperty $ledger 'recorded_checkout'
-    $deleted = Get-RequiredProperty $ledger 'checkout_deleted'
-    if ($pending -isnot [bool] -or $deleted -isnot [bool]) { throw 'the ownership ledger is malformed or uses an unknown schema' }
     $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $validated = [System.Collections.Generic.List[object]]::new()
     foreach ($entry in $entries) {
@@ -209,14 +193,7 @@ function Import-Ledger {
         if (-not $seen.Add($destination)) { throw 'the ownership ledger contains duplicate destinations' }
         $validated.Add([pscustomobject]@{ destination = $destination; source = $source; exclude = $exclude; name = $name })
     }
-    if ($pending) {
-        if (-not $recorded -or -not [IO.Path]::IsPathFullyQualified([string]$recorded)) { throw 'the pending ledger has no safe recorded checkout' }
-    }
-    elseif ($recorded -or $deleted) { throw 'the active ownership ledger has invalid decommission state' }
     $script:LedgerEntries = @($validated)
-    $script:LedgerPending = $pending
-    $script:LedgerRecordedCheckout = [string]$recorded
-    $script:LedgerCheckoutDeleted = $deleted
 }
 
 function Get-Inventory {
@@ -314,19 +291,15 @@ function Set-ExcludeEntries([object[]]$DesiredEntries) {
     Move-Item -LiteralPath $temporary -Destination $ExcludeFile -Force
 }
 
-function Export-Ledger([object[]]$Entries, [bool]$Pending, [string]$RecordedCheckout, [bool]$CheckoutDeleted) {
+function Export-Ledger([object[]]$Entries) {
     $parent = Split-Path -Parent $StateFile
     New-Item -ItemType Directory -Force -Path $parent | Out-Null
     $serializedEntries = @($Entries | ForEach-Object {
         [ordered]@{ destination = [string]$_.destination; source = [string]$_.source; exclude = [string]$_.exclude }
     })
-    $recordedValue = if ($RecordedCheckout) { $RecordedCheckout } else { $null }
     $ledger = [ordered]@{
         schema_version = 1
         entries = $serializedEntries
-        decommission_pending = $Pending
-        recorded_checkout = $recordedValue
-        checkout_deleted = $CheckoutDeleted
     }
     $content = ($ledger | ConvertTo-Json -Depth 5) + "`n"
     if ((Test-Path -LiteralPath $StateFile -PathType Leaf) -and ([IO.File]::ReadAllText($StateFile) -ceq $content)) { return }
@@ -354,7 +327,7 @@ function Invoke-Reconcile {
     foreach ($entry in $InventoryEntries) {
         if ($null -eq (Get-Entry $LedgerEntries $entry.destination)) { $ownershipUnion.Add($entry) }
     }
-    Export-Ledger @($ownershipUnion) $false '' $false
+    Export-Ledger @($ownershipUnion)
     New-Item -ItemType Directory -Force -Path $AgentSkills | Out-Null
     foreach ($owned in $LedgerEntries) {
         if ($null -eq (Get-Entry $InventoryEntries $owned.destination) -and $null -ne (Get-PathEntry $owned.destination)) {
@@ -371,7 +344,7 @@ function Invoke-Reconcile {
         New-Item -ItemType Junction -Path $entry.destination -Target $entry.source | Out-Null
     }
     Set-ExcludeEntries $InventoryEntries
-    Export-Ledger $InventoryEntries $false '' $false
+    Export-Ledger $InventoryEntries
 }
 
 function Test-DeactivateSafety {
@@ -385,84 +358,16 @@ function Test-DeactivateSafety {
     }
 }
 
-function Get-RecordedCheckout {
-    if ($ConfiguredCheckout) {
-        $normalized = Get-NormalizedPath $ConfiguredCheckout
-        if (-not $normalized) { throw 'cannot normalize the configured checkout for deactivation' }
-        return $normalized
-    }
-    if ($LedgerEntries.Count -gt 0) {
-        return (Split-Path -Parent (Split-Path -Parent ([string]$LedgerEntries[0].source)))
-    }
-    throw 'cannot prove which checkout deactivation must preserve'
-}
-
 function Invoke-Deactivate {
     if (-not (Test-Eligible)) { return }
     Initialize-Paths
     Import-Ledger
     if (-not (Test-Path -LiteralPath $StateFile -PathType Leaf)) { return }
-    if ($LedgerCheckoutDeleted) { throw 'the recorded checkout was already deleted; retry finalization instead' }
     Test-DeactivateSafety
-    $recorded = if ($LedgerRecordedCheckout) { $LedgerRecordedCheckout } else { Get-RecordedCheckout }
     foreach ($owned in $LedgerEntries) {
         if ($null -ne (Get-PathEntry $owned.destination)) { Remove-Junction $owned.destination }
     }
     Set-ExcludeEntries @()
-    Export-Ledger $LedgerEntries $true $recorded $false
-}
-
-function Clear-MachineConfiguration {
-    if (-not $ChezmoiConfig -or -not (Test-Path -LiteralPath $ChezmoiConfig)) { return }
-    $item = Get-Item -LiteralPath $ChezmoiConfig -Force
-    if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'machine-local configuration is not a regular file' }
-    $header = '[data.private_agent_skills]'
-    $sourceLines = @([IO.File]::ReadAllLines($ChezmoiConfig))
-    $count = @($sourceLines | Where-Object { $_ -ceq $header }).Count
-    if ($count -gt 1) { throw 'machine-local private configuration is ambiguous' }
-    if ($count -eq 0) { return }
-    $output = [System.Collections.Generic.List[string]]::new()
-    $skipping = $false
-    foreach ($line in $sourceLines) {
-        if ($line -ceq $header) { $skipping = $true; continue }
-        if ($skipping -and $line.StartsWith('[')) { $skipping = $false }
-        if (-not $skipping) { $output.Add($line) }
-    }
-    $parent = Split-Path -Parent $ChezmoiConfig
-    $temporary = Join-Path $parent ".private-agent-skills-config.$([guid]::NewGuid().ToString('N')).tmp"
-    [IO.File]::WriteAllLines($temporary, $output, [Text.UTF8Encoding]::new($false))
-    Move-Item -LiteralPath $temporary -Destination $ChezmoiConfig -Force
-}
-
-function Invoke-Finalize {
-    if (-not (Test-Eligible)) { return }
-    if ($Confirmation -cne '--confirm-delete') { throw 'finalization requires the exact --confirm-delete argument' }
-    Initialize-Paths
-    Import-Ledger
-    if (-not (Test-Path -LiteralPath $StateFile -PathType Leaf) -or -not $LedgerPending) { throw 'deactivation must complete before finalization' }
-    foreach ($owned in $LedgerEntries) {
-        if ($null -ne (Get-PathEntry $owned.destination)) { throw 'an integration destination still exists; finalization refused' }
-        if (Test-ExcludeLine $owned.exclude) { throw 'an owned local exclude still exists; finalization refused' }
-    }
-    if (-not $LedgerCheckoutDeleted) {
-        if (-not $ConfiguredRemote -or -not $ConfiguredCheckout -or -not (Test-SshRemote $ConfiguredRemote)) {
-            throw 'machine-local SSH configuration is required to prove checkout identity'
-        }
-        $normalized = Get-NormalizedPath $ConfiguredCheckout
-        if (-not $normalized -or -not $normalized.Equals($LedgerRecordedCheckout, [StringComparison]::OrdinalIgnoreCase)) {
-            throw 'the configured checkout no longer matches deactivation state'
-        }
-        if ((Test-PathWithin $normalized $PublicRoot) -or (Test-PathWithin $normalized (Split-Path -Parent $AgentSkills))) {
-            throw 'the recorded checkout overlaps protected public paths'
-        }
-        $script:Checkout = $normalized
-        if ($null -ne (Get-PathEntry $Checkout)) {
-            Test-CheckoutIdentity
-            Remove-Item -LiteralPath $Checkout -Recurse -Force
-        }
-        Export-Ledger $LedgerEntries $true $LedgerRecordedCheckout $true
-    }
-    Clear-MachineConfiguration
     Remove-Item -LiteralPath $StateFile -Force
 }
 
@@ -475,10 +380,6 @@ try {
         'deactivate' {
             if ($positionals.Count -gt 1) { throw 'invalid deactivate arguments' }
             Invoke-Deactivate
-        }
-        'finalize' {
-            if ($positionals.Count -ne 2) { throw 'finalize requires --confirm-delete' }
-            Invoke-Finalize
         }
         '-h' { Show-Usage }
         '--help' { Show-Usage }

@@ -11,7 +11,9 @@ theme --list             # list available themes (active marked)
 theme --current          # print active theme
 ```
 
-the script writes the choice to `home/.chezmoidata/local.yml`, runs `chezmoi apply`, and live-reloads tmux, ghostty, herdr, borders, skeychbar and nvim (over its socket).
+the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi and Spicetify theme hooks for the current OS. It does not install packages, update plugins or sync private repositories.
+
+tmux, ghostty, herdr, borders, sketchybar and nvim are live-reloaded where available.
 
 a few apps need a manual restart to pick up the new theme:
 
@@ -22,7 +24,9 @@ a few apps need a manual restart to pick up the new theme:
 
 ### pi
 
-pi uses a chezmoi-generated theme named `chezmoi` at `~/.pi/agent/themes/chezmoi.json` plus a custom powerline footer override at `~/.pi/agent/extensions/powerline-footer/theme.json`.
+on personal machines, dotfiles generate one theme named `chezmoi` at `~/.pi/agent/themes/chezmoi.json`. select it with `/theme` in Pi, or set `"theme": "chezmoi"` in the private harness settings.
+
+the private Pi repository owns settings, packages and extensions. dotfiles do not rewrite those choices or generate a separate footer override. the theme writer runs after the external checkout because chezmoi cannot also manage ordinary files inside an external Git repository.
 
 ### herdr
 

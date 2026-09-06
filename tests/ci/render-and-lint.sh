@@ -7,6 +7,7 @@ config=${CHEZMOI_CONFIG_FILE:?CHEZMOI_CONFIG_FILE must name an initialized confi
 staging=$(mktemp -d)
 trap 'rm -rf "$staging"' EXIT
 cd "$repo_root"
+source "$repo_root/tests/ci/shell-files.sh"
 
 require() {
   command -v "$1" >/dev/null || {
@@ -62,7 +63,7 @@ while IFS= read -r template; do
   printf 'OK   %s\n' "$template"
 done < <(find "$source_root" -type f -name '*.tmpl' | sort)
 
-mapfile -d '' rendered_shell < <(find "$staging" -type f -name '*.sh' -print0)
+mapfile -d '' rendered_shell < <(find "$staging" -type f -print0 | shell_files)
 ((${#rendered_shell[@]} == 0)) || shellcheck -e SC1091 "${rendered_shell[@]}"
 
 mapfile -d '' rendered_yaml < <(

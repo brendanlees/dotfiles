@@ -1,4 +1,4 @@
-{{- if eq .chezmoi.os "windows" -}}
+{{- if and .personal (eq .chezmoi.os "windows") -}}
 $ErrorActionPreference = "Stop"
 
 $themeJson = @'

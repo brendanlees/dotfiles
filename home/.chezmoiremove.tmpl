@@ -1,20 +1,11 @@
 # files removed from source — chezmoi will delete these from the target machine
 lazy-lock.json
 .local/bin/zsh-patina
+.local/bin/chezmoi-apply-library
+.local/bin/chezmoi-readd-library
 .config/zsh-patina
 {{ if or (ne .chezmoi.os "darwin") (not .personal) }}
 .config/sketchybar
-{{ end }}
-{{ if not .personal }}
-~/.agents
-~/.pi
-{{ end }}
-{{ if ne .chezmoi.os "darwin" }}
-~/Assets
-{{ end }}
-{{ if ne .chezmoi.os "windows" }}
-~/Documents/PowerShell
-~/Documents/WindowsPowerShell
 {{ end }}
 {{ if eq .chezmoi.os "windows" }}
 .local/bin/cz-ssh-refresh

@@ -2,108 +2,36 @@
 #!/bin/bash
 set -euo pipefail
 
-# ------------------------------------------
-# security: lock down aliases directory
-# ------------------------------------------
-
-# restrict ~/.aliases to owner-only; prevents other processes from dropping
-# files that would be auto-sourced on shell start
+# These files are sourced on shell startup.
 ALIASES_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/aliases.d"
-if [ -d "$ALIASES_DIR" ]; then
+if [[ -d "$ALIASES_DIR" ]]; then
   chmod 700 "$ALIASES_DIR"
 fi
 
-# ------------------------------------------
-# resolve github token (rate-limit bypass)
-# ------------------------------------------
-
-# priority: env var > chezmoi data
-{{ $github_token := "" }}
-{{ if hasKey . "github_token" }}
-{{ $github_token = .github_token }}
-{{ end }}
-{{ if $github_token }}
-github_token={{ $github_token | quote }}
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  export GITHUB_TOKEN="$github_token"
-fi
-if [ -z "${GITHUB_API_TOKEN:-}" ]; then
-  export GITHUB_API_TOKEN="$github_token"
-fi
+# Bootstrap authentication must be available before the first tool download.
+# Later mise commands use the credential_command in the global configuration.
+{{ if and (hasKey . "github_token") .github_token -}}
+github_token={{ .github_token | quote }}
+export GITHUB_TOKEN="${GITHUB_TOKEN:-$github_token}"
+export GITHUB_API_TOKEN="${GITHUB_API_TOKEN:-$GITHUB_TOKEN}"
 {{ end -}}
 
-# Use authoritative GitHub release metadata instead of the centralized
-# mise-versions cache. Isolate direct responses because mise may reuse hosted
-# responses already present in its default local cache.
+# Keep direct GitHub metadata separate from previously cached hosted responses.
 export MISE_USE_VERSIONS_HOST=0
 export MISE_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/mise-direct"
 
-# Infisical republished the v0.43.118 archives under the same URLs. Remove a
-# generated lockfile containing the superseded checksums so mise can resolve
-# the replacement assets from GitHub.
-MISE_LOCK="${XDG_CONFIG_HOME:-$HOME/.config}/mise/mise.lock"
-if [[ -f "$MISE_LOCK" ]] && grep -Eq \
-  'sha256:(b8055a53ab862cc1de56d10c9660a34d355d0b8777f90a6d88baca15e97fe798|4403ad59f01e0f0a1465527163a5de882c685eabfd818997d1e314570591c293)' \
-  "$MISE_LOCK"; then
-  echo "removing mise lockfile with superseded Infisical checksums..."
-  rm -f "$MISE_LOCK"
-fi
-
-# ------------------------------------------
-# install > mise tools (runs on every chezmoi apply)
-# ------------------------------------------
-
 MISE="$HOME/.local/bin/mise"
-
-if [ ! -x "$MISE" ]; then
-  echo "mise not found at $MISE, skipping tool install."
+if [[ ! -x "$MISE" ]]; then
+  echo "mise not found at $MISE" >&2
   exit 1
 fi
 
-echo "updating mise..."
-if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
-  # Keep self-updates on the static musl build so older glibc remains supported.
-  MISE_LIBC=musl "$MISE" self-update --yes --no-plugins
-else
-  "$MISE" self-update --yes --no-plugins
-fi
+# Bare install fills missing configured tools without upgrading installed ones.
+# Use HOME so applying from a project does not install its local dependencies.
+echo "installing missing mise tools..."
+"$MISE" --cd "$HOME" install
 
-echo "installing mise tools..."
-"$MISE" install
-
-echo "mise tools installed."
-
-{{ if eq .chezmoi.os "darwin" -}}
-# Mise now provides the upstream static Chezmoi binary. Remove the Homebrew
-# formula only after the replacement has installed successfully.
-if command -v brew >/dev/null 2>&1 && brew list --formula chezmoi >/dev/null 2>&1; then
-  echo "removing Homebrew chezmoi formula..."
-  brew uninstall --formula chezmoi
-fi
-{{ end -}}
-
-# Upgrade all installed tools except starship.
-# starship is the active shell prompt; replacing its binary mid-apply glitches
-# the running session. Upgrade it on demand via the `mise-upgrade-starship`
-# shell alias (see dot_config/zsh/aliases.d/mise.zsh).
-echo "upgrading mise tools (excluding starship)..."
-tools=()
-while IFS= read -r tool; do
-  tools+=("$tool")
-done < <("$MISE" ls --installed 2>/dev/null | awk '$1 != "starship" {print $1}' | sort -u)
-
-if [ ${#tools[@]} -gt 0 ]; then
-  "$MISE" upgrade --yes "${tools[@]}"
-fi
-
-echo "mise tools upgraded (starship deferred)."
-
-echo "pruning unused/outdated mise tools..."
-"$MISE" prune --yes
-
-# rebuild bat theme cache (bat may have just been installed)
-if command -v bat &>/dev/null; then
-  echo "rebuilding bat theme cache..."
+if command -v bat >/dev/null 2>&1; then
   bat cache --build
 fi
 {{- end -}}

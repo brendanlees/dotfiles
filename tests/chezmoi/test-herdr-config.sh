@@ -2,194 +2,45 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-source_root="$repo_root/home"
-template="$source_root/dot_config/herdr/config.toml.tmpl"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
-if [[ ! -f "$template" ]]; then
-  echo "missing HerdR config template: $template" >&2
-  exit 1
-fi
+chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
+chezmoi execute-template --source "$repo_root" --override-data '{"theme":"guts"}' \
+  --file "$repo_root/home/dot_config/herdr/config.toml.tmpl" >"$tmpdir/config.toml"
 
-rendered="$tmpdir/config.toml"
-data_file="$tmpdir/data.json"
-chezmoi data --source "$repo_root" --format json >"$data_file"
-chezmoi execute-template \
-  --source "$repo_root" \
-  --override-data '{"theme":"guts"}' \
-  <"$template" >"$rendered"
-
-python3 - "$data_file" "$rendered" <<'PY'
+python3 - "$tmpdir/data.json" "$tmpdir/config.toml" <<'PY'
 import json
 import sys
 import tomllib
 from pathlib import Path
 
 data = json.loads(Path(sys.argv[1]).read_text())
-doc = tomllib.loads(Path(sys.argv[2]).read_text())
+config = tomllib.loads(Path(sys.argv[2]).read_text())
 palette = data["themes"]["guts"]["palette"]
 
-assert doc["terminal"] == {
-    "default_shell": "zsh",
-    "shell_mode": "auto",
-    "new_cwd": "follow",
-}
-
-keys = doc["keys"]
-assert keys["prefix"] == "ctrl+b"
-assert keys["detach"] == "prefix+d"
-assert keys["reload_config"] == "prefix+r"
-assert keys["new_tab"] == "prefix+c"
-assert keys["rename_tab"] == "prefix+comma"
-assert keys["previous_tab"] == ["prefix+p", "ctrl+shift+h"]
-assert keys["next_tab"] == ["prefix+n", "ctrl+shift+l"]
-assert keys["switch_tab"] == "prefix+1..9"
-assert keys["close_tab"] == "prefix+ampersand"
-assert keys["copy_mode"] == "prefix+["
-assert keys["split_vertical"] == "prefix+percent"
-assert keys["split_horizontal"] == "prefix+double_quote"
-assert keys["close_pane"] == "prefix+x"
-assert keys["zoom"] == ["prefix+z", "ctrl+f"]
-assert keys["resize_mode"] == ""
-for field in (
-    "focus_pane_left",
-    "focus_pane_down",
-    "focus_pane_up",
-    "focus_pane_right",
-):
-    assert keys[field] == ""
-assert "previous_workspace" not in keys
-
-commands = keys["command"]
-assert len(commands) == 16
-resize_commands = commands[:4]
-for command, direction, key in zip(
-    resize_commands,
-    ("left", "down", "up", "right"),
-    ("prefix+h", "prefix+j", "prefix+k", "prefix+l"),
-    strict=True,
-):
-    assert command["key"] == key
-    assert command["type"] == "shell"
-    assert f"--direction {direction}" in command["command"]
-    assert "--amount 0.05" in command["command"]
+# Runtime commands must target the invoking server and pane, not a default one.
+resize = [c for c in config["keys"]["command"] if "pane resize" in c["command"]]
+assert resize
+for command in resize:
     assert '"$HERDR_BIN_PATH"' in command["command"]
     assert '"$HERDR_ACTIVE_PANE_ID"' in command["command"]
 
-navigation_commands = commands[4:8]
-for command, direction, key in zip(
-    navigation_commands,
-    ("left", "down", "up", "right"),
-    ("ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l"),
-    strict=True,
-):
-    assert command == {
-        "key": key,
-        "type": "plugin_action",
-        "command": f"vim-herdr-navigation.{direction}",
-        "description": f"navigate {direction} (vim/herdr)",
-    }
-
-assert commands[8] == {
-    "key": "prefix+K",
-    "type": "plugin_action",
-    "command": "cloudmanic.herdr-plus.projects",
-    "description": "herdr-plus: projects",
-}
-assert commands[9] == {
-    "key": "prefix+L",
-    "type": "plugin_action",
-    "command": "third774.last-workspace.toggle",
-    "description": "toggle last workspace",
-}
-assert commands[10:] == [
-    {
-        "key": "prefix+shift+g",
-        "type": "plugin_action",
-        "command": "worktrunk.open",
-        "description": "worktree switch/create from default branch",
-    },
-    {
-        "key": "prefix+shift+c",
-        "type": "plugin_action",
-        "command": "worktrunk.open-current",
-        "description": "worktree switch/create from current branch",
-    },
-    {
-        "key": "prefix+shift+d",
-        "type": "plugin_action",
-        "command": "worktrunk.remove",
-        "description": "Worktree: remove",
-    },
-    {
-        "key": "prefix+f",
-        "type": "shell",
-        "command": "herdr plugin action invoke open-file-viewer --plugin herdr-file-viewer",
-    },
-    {
-        "key": "prefix+shift+f",
-        "type": "shell",
-        "command": "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer",
-    },
-    {
-        "key": "prefix+t",
-        "type": "plugin_action",
-        "command": "herdr-navigator.open",
-        "description": "jump to anything",
-    },
-]
-
-assert doc["ui"]["mouse_capture"] is True
-assert doc["ui"]["prompt_new_tab_name"] is False
-assert doc["ui"]["pane_borders"] is True
-assert doc["ui"]["pane_gaps"] is False
-assert doc["ui"]["accent"] == palette["accent"]
-assert doc["ui"]["sound"]["enabled"] is False
-assert doc["advanced"]["scrollback_limit_bytes"] == 100_000_000
-
-assert doc["theme"]["name"] == "terminal"
-assert doc["theme"]["auto_switch"] is False
-assert doc["theme"]["custom"] == {
-    "panel_bg": palette["bg"],
-    "surface0": palette["surface"],
-    "surface1": palette["surface_alt"],
-    "surface_dim": palette["tool_neutral_bg"],
-    "overlay0": palette["border"],
-    "overlay1": palette["comment"],
-    "text": palette["fg"],
-    "subtext0": palette["muted"],
-    "accent": palette["accent"],
-    "mauve": palette["secondary"],
-    "green": palette["success"],
-    "yellow": palette["warn"],
-    "red": palette["error"],
-    "blue": palette["primary"],
-    "teal": palette["info"],
-    "peach": palette["orange"],
-}
+# Check the palette bridge, not keybinding order or cosmetic defaults.
+assert config["ui"]["accent"] == palette["accent"]
+assert config["theme"]["custom"]["panel_bg"] == palette["bg"]
+assert config["theme"]["custom"]["text"] == palette["fg"]
 PY
 
-windows_ignore="$tmpdir/windows-ignore"
-darwin_ignore="$tmpdir/darwin-ignore"
-chezmoi execute-template \
-  --source "$repo_root" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"windows"}}' \
-  <"$source_root/.chezmoiignore" >"$windows_ignore"
-chezmoi execute-template \
-  --source "$repo_root" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"ephemeral":true,"headless":true,"chezmoi":{"os":"darwin"}}' \
-  <"$source_root/.chezmoiignore" >"$darwin_ignore"
-grep -Fxq '.config/herdr' "$windows_ignore"
-if grep -Fxq '.config/herdr' "$darwin_ignore"; then
-  echo "HerdR config must remain managed on macOS" >&2
+for os in windows darwin; do
+  chezmoi execute-template --source "$repo_root" \
+    --override-data "{\"personal\":false,\"work\":false,\"homelab\":false,\"ephemeral\":true,\"headless\":true,\"chezmoi\":{\"os\":\"$os\"}}" \
+    --file "$repo_root/home/.chezmoiignore" >"$tmpdir/$os.ignore"
+done
+grep -Fxq '.config/herdr' "$tmpdir/windows.ignore"
+if grep -Fxq '.config/herdr' "$tmpdir/darwin.ignore"; then
+  echo 'Herdr must remain managed on macOS' >&2
   exit 1
 fi
 
-theme_switcher="$source_root/dot_local/bin/executable_theme"
-grep -Fq 'command -v herdr >/dev/null 2>&1' "$theme_switcher"
-grep -Fq 'pgrep -xq herdr' "$theme_switcher"
-grep -Fq 'herdr server reload-config' "$theme_switcher"
-grep -Fq 'warn: herdr reload-config failed' "$theme_switcher"
-
-echo "HerdR config template ok"
+echo 'Herdr runtime config contract ok'

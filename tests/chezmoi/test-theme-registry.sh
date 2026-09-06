@@ -108,3 +108,52 @@ if ! grep -Fq 'colorscheme = "bathory"' <<<"$rendered_bridge"; then
   echo 'black-metal-bathory bridge did not render colorscheme = "bathory"' >&2
   exit 1
 fi
+
+# Exercise theme switching through real chezmoi, with no access to live apps.
+fixture="$tmpdir/source"
+home="$tmpdir/home"
+mkdir -p "$fixture/.chezmoidata" "$fixture/.chezmoitemplates" \
+  "$fixture/.chezmoiscripts/darwin" "$fixture/dot_config" "$tmpdir/bin" "$home"
+cp "$source_root/.chezmoidata/themes.yml" "$fixture/.chezmoidata/themes.yml"
+printf 'theme: black-metal-bathory\n' >"$fixture/.chezmoidata/defaults.yml"
+cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" "$fixture/.chezmoitemplates/"
+cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" "$fixture/.chezmoiscripts/"
+printf '{{ .theme }}\n' >"$fixture/dot_config/active-theme.tmpl"
+cat >"$fixture/.chezmoiscripts/run_after_install_tools.sh" <<'SCRIPT'
+#!/bin/sh
+printf 'unexpected tool install\n' >"$HOME/tools-ran"
+exit 99
+SCRIPT
+cat >"$fixture/.chezmoiscripts/darwin/run_onchange_after_apply-spicetify.sh.tmpl" <<'SCRIPT'
+#!/bin/sh
+printf '{{ .theme }}\n' >"$HOME/spicetify-theme"
+SCRIPT
+cat >"$fixture/.chezmoiexternal.toml" <<EXTERNAL
+["external.txt"]
+type = "file"
+url = "file://$tmpdir/must-not-be-fetched"
+EXTERNAL
+printf '[data]\npersonal = true\nheadless = false\n' >"$tmpdir/config.toml"
+chezmoi_bin=$(command -v chezmoi)
+bash_bin=$(command -v bash)
+cat >"$tmpdir/bin/chezmoi" <<'WRAPPER'
+#!/bin/sh
+exec "$REAL_CHEZMOI" --config "$TEST_CONFIG" --destination "$HOME" \
+  --persistent-state "$HOME/state.boltdb" --cache "$HOME/cache" \
+  --override-data '{"chezmoi":{"os":"darwin"}}' "$@"
+WRAPPER
+printf '#!/bin/sh\nexit 1\n' >"$tmpdir/bin/pgrep"
+chmod +x "$tmpdir/bin/chezmoi" "$tmpdir/bin/pgrep"
+HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
+  PI_AGENT_DIR="$home/.pi/agent" CHEZMOI_SOURCE_DIR="$fixture" \
+  REAL_CHEZMOI="$chezmoi_bin" TEST_CONFIG="$tmpdir/config.toml" \
+  "$bash_bin" "$source_root/dot_local/bin/executable_theme" guts >"$tmpdir/switch.log" 2>&1 || {
+    cat "$tmpdir/switch.log" >&2
+    exit 1
+  }
+
+grep -Fxq guts "$home/.config/active-theme"
+grep -Fxq guts "$home/spicetify-theme"
+jq -e '.vars.activeTheme == "guts"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
+[[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
+echo 'theme switches without tool or external updates'
