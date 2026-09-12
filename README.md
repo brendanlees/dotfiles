@@ -6,15 +6,15 @@ my personal setup for macos, linux and windows environments, managed by [chezmoi
 
 ## approach
 
-machine roles (`work/personal/homelab`) to scope, sync and distribute configuration across multiple operating systems, while also checking machine environment type (`desktop/headless`) to determine depth of configuration.
+- machine roles (`work/personal/homelab`) to scope, sync and distribute configuration across multiple operating systems, while also checking machine environment type (`desktop/headless`) to determine depth of configuration.
+- [mise](https://github.com/jdx/mise) for cross-platform CLI tools, package managers to cover system dependencies and desktop apps.
+- configuration stays in each tools native format, with chezmoi / go templating where a role or shared theme actually changes it.
+- tests to focus on bootstrap, role changes and scripts that can overwrite or remove files.
+- CI to handle syntax and template validation.
+- `agents/skills/` to sync upstream [skills.sh](https://skills.sh/) skills
+- custom agent harness configurations and skills synced from personal/private external repositories.
+- custom distributed theming to sync shell and (most) cli tooling.
 
-[mise](https://github.com/jdx/mise) for cross-platform CLI tools, package managers to cover system dependencies and desktop apps. configuration stays in each tool's native format, with chezmoi / go templating where a role or shared theme actually changes it.
-
-tests to focus on bootstrap, role changes and scripts that can overwrite or remove files. CI to handle syntax and template validation.
-
-`agents/skills/` contains upstream [skills.sh](https://skills.sh/) skills, private harness configuration and private/custom skills live in external repositories.
-
-custom distributed theming system to sync shell and (most) cli tooling.
 
 ## architecture
 
@@ -33,8 +33,9 @@ tests/                          # repo-only tests
 docs/                           # repo-only documentation
 ```
 
-## docs and reference notes
+## docs
 
+- [installation](docs/installation.md) - install and maintenance commands and process
 - [secrets](docs/secrets.md) - token and secrets integration (backed by bitwarden)
 - [ssh](docs/ssh.md) - reproducible ssh config and keys (from a bitwarden manifest file)
 - [scoping](docs/scoping.md) - define machine roles, non-interactive options
