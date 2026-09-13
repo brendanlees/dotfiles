@@ -28,7 +28,9 @@ rendered_config=$(chezmoi execute-template \
   --override-data "$role_data" \
   <"$source_root/dot_config/spicetify/config-xpui.ini.tmpl")
 
-grep -Fq 'spicetify backup apply' <<<"$rendered"
+grep -Fq 'if spicetify apply; then' <<<"$rendered"
+grep -Fq 'elif spicetify backup apply; then' <<<"$rendered"
+grep -Fq 'spicetify restore backup apply' <<<"$rendered"
 grep -Fq 'extensions            = keyboardShortcut.js|cat-jam.js' <<<"$rendered_config"
 grep -Fq 'custom_apps           = marketplace|stats|library' <<<"$rendered_config"
 if grep -Fq 'spicetify auto' <<<"$rendered"; then
