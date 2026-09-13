@@ -74,6 +74,9 @@ export PI_TMUX_WINDOW_NAME_CONVENTION=kebab
 # Speed up pi startup by skipping the network version check.
 export PI_SKIP_VERSION_CHECK=1
 
+# Keep provider prompt caches available longer where supported.
+export PI_CACHE_RETENTION=long
+
 # opentui's SGR mouse stream floods tmux's parser, rendering keys as raw
 # escape codes inside the opencode prompt. https://github.com/sst/opencode/issues/4097
 # export OPENCODE_DISABLE_MOUSE=1
