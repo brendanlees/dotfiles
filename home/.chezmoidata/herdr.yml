@@ -11,7 +11,7 @@ herdr:
       ref: 8b55ebf15deaa52b49ff1c2500aab0c19c729420
     - id: worktrunk
       source: devashish2203/herdr-worktrunk
-      ref: e9131c0b576fd68635194c758c9691dbfb778b61
+      ref: 37605f0cde8037a58560ef87ce428e1a095fa3e2
       config:
         open_mode: workspace
     - id: herdr-file-viewer

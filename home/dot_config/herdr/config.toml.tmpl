@@ -29,6 +29,8 @@ resize_mode = ""
 navigate_workspace_up = "ctrl+k"
 navigate_workspace_down = "ctrl+j"
 
+# --- resize ---
+
 [[keys.command]]
 key = "prefix+h"
 type = "shell"
@@ -52,6 +54,8 @@ key = "prefix+l"
 type = "shell"
 command = 'exec "$HERDR_BIN_PATH" pane resize --direction right --amount 0.05 --pane "$HERDR_ACTIVE_PANE_ID"'
 description = "resize pane right"
+
+# --- vim ---
 
 [[keys.command]]
 key = "ctrl+h"
@@ -77,17 +81,14 @@ type = "plugin_action"
 command = "vim-herdr-navigation.right"
 description = "navigate right (vim/herdr)"
 
+# --- projects ---
+
 [[keys.command]]
 key = "prefix+K"
 type = "plugin_action"
 command = "cloudmanic.herdr-plus.projects"
 description = "herdr-plus: projects"
 
-[[keys.command]]
-key = "prefix+L"
-type = "plugin_action"
-command = "third774.last-workspace.toggle"
-description = "toggle last workspace"
 
 # --- worktrunk ---
 
@@ -121,11 +122,26 @@ key = "prefix+shift+f"
 type = "shell"
 command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
 
+# --- navigator ---
+
 [[keys.command]]
 key = "prefix+t"
 type = "plugin_action"
 command = "herdr-navigator.open"
 description = "jump to anything"
+
+[[keys.command]]
+key = "prefix+L"
+type = "plugin_action"
+command = "herdr-navigator.jump-back"
+description = "toggle last workspace"
+
+# [[keys.command]]
+# key = "prefix+L"
+# type = "plugin_action"
+# command = "third774.last-workspace.toggle"
+# description = "toggle last workspace"
+
 
 [ui]
 mouse_capture = true
