@@ -38,7 +38,16 @@ spicetify config custom_apps marketplace
 spicetify config custom_apps stats
 spicetify config custom_apps library
 
-# Refresh the backup when Spotify changes, then apply the declared theme,
-# extensions, and custom apps. Spicetify supports chaining these commands.
-spicetify backup apply
+# Reuse the existing backup for ordinary config changes. If the backup is
+# missing or stale (for example, after a Spotify update), recover by rebuilding
+# it and applying the declared theme, extensions, and custom apps.
+if spicetify apply; then
+  :
+elif spicetify backup apply; then
+  :
+else
+  # A backup can exist while Spotify is already applied (for example, after a
+  # Spicetify CLI update), so restore it before rebuilding it in that case.
+  spicetify restore backup apply
+fi
 {{- end }}
