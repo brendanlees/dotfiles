@@ -52,6 +52,17 @@ Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.t
 
 chezmoi merges `home/.chezmoidata/*.yml` 'lexicographically', so `local.yml` beats `defaults.yml`.
 
+## github palette provenance and app fallbacks
+
+the GitHub imports cover the upstream dark styles except Colorblind and Tritanopia; light styles are excluded. Palette values come from [github-nvim-theme at `c106c9472154d6b2c74b74565616b877ae8ed31d`](https://github.com/projekt0n/github-nvim-theme/tree/c106c9472154d6b2c74b74565616b877ae8ed31d), the upstream `main` revision checked for this import (newer than release `v1.1.2`, commit `8db454eb272eabb349209ec62ceb63b8eea5f011`). This is palette provenance, not a plugin version change.
+
+values were evaluated from the upstream [palette modules and Primer primitives](https://github.com/projekt0n/github-nvim-theme/tree/c106c9472154d6b2c74b74565616b877ae8ed31d/lua/github-theme/palette), using the [spec API](https://github.com/projekt0n/github-nvim-theme/blob/c106c9472154d6b2c74b74565616b877ae8ed31d/lua/github-theme/spec.lua): `bg`, `surface`, `surface_alt` use spec `bg1`, `bg2`, `bg3`; foreground/muted use `fg1`/`fg2`; comments use `syntax.comment`. Border/accent use palette `border.default`/`accent.fg`; primary/alternate/secondary use `blue.base`/`blue.bright`/`magenta.base`; success uses `success.fg`, warning/error/info use diagnostics, and info-alt/orange use `cyan.base`/`orange`. Tool backgrounds use upstream `neutral.subtle`/`danger.subtle`, including its own blend rounding. These are semantic mappings, not a complete copy of Neovim syntax highlighting or an app-wide accessibility guarantee.
+
+- Neovim selects each exact upstream colorscheme through the existing plugin. `nvim-dark` remains unchanged: its palette is Nvim Dark, with only its Neovim mapping pointing to `github_dark`.
+- Ghostty uses the corresponding bundled [GitHub terminal ports](https://github.com/mbadolato/iTerm2-Color-Schemes/tree/752a9c079396cc9939b86e893578ed81e80c140f/ghostty), not semantic recolouring. These are family matches, not exact Neovim palettes: notably “GitHub Dark” has background `#101216` and foreground `#8b949e`, versus Neovim's `#30363d`/`#e6edf3`. Default, Dimmed and High Contrast match the main background/foreground but differ in terminal accents, selections and ANSI colors.
+- bat and btop retain the shipped `tokyonight_night` fallback; tmux-ukiyo uses `tokyonight/night` with the existing semantic overrides; Zed uses the existing “Tokyo Night” fallback, not a GitHub palette. No new app assets or plugins are installed.
+- Starship palettes are generated from the registry. Glow's `auto` mapping selects the generated `chezmoi.json` style, not a built-in GitHub theme. Other semantic consumers, including Pi, use the imported colors through their existing templates.
+
 ## adding a theme
 
 edit `home/.chezmoidata/themes.yml` and add a new entry under `themes:` with both blocks fully populated:
