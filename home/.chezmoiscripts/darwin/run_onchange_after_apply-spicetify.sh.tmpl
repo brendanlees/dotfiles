@@ -26,6 +26,21 @@ if [ ! -f "$prefs_path" ]; then
   exit 0
 fi
 
+# Spicetify restarts Spotify after applying changes. Preserve its current
+# state so applying chezmoi does not launch a closed Spotify instance.
+spotify_was_running=0
+if pgrep -x Spotify >/dev/null 2>&1; then
+  spotify_was_running=1
+fi
+
+spicetify_apply() {
+  if [ "$spotify_was_running" -eq 1 ]; then
+    spicetify "$@"
+  else
+    spicetify "$@" --no-restart
+  fi
+}
+
 spicetify config \
   current_theme text \
   color_scheme "{{ .theme }}" \
@@ -41,13 +56,13 @@ spicetify config custom_apps library
 # Reuse the existing backup for ordinary config changes. If the backup is
 # missing or stale (for example, after a Spotify update), recover by rebuilding
 # it and applying the declared theme, extensions, and custom apps.
-if spicetify apply; then
+if spicetify_apply apply; then
   :
-elif spicetify backup apply; then
+elif spicetify_apply backup apply; then
   :
 else
   # A backup can exist while Spotify is already applied (for example, after a
   # Spicetify CLI update), so restore it before rebuilding it in that case.
-  spicetify restore backup apply
+  spicetify_apply restore backup apply
 fi
 {{- end }}
