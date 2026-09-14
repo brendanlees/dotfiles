@@ -86,6 +86,34 @@ for key, expected in expected_exact_nvim.items():
             f"{key}: expected Neovim colorscheme {expected!r}, got {actual!r}"
         )
 
+# Keep the upstream dark styles distinct, without importing excluded or light variants.
+expected_github = {
+    "github_dark": ("GitHub Dark", "#30363d"),
+    "github_dark_default": ("GitHub Dark Default", "#0d1117"),
+    "github_dark_dimmed": ("GitHub Dark Dimmed", "#22272e"),
+    "github_dark_high_contrast": ("GitHub Dark High Contrast", "#0a0c10"),
+}
+if {key for key in themes if key.startswith("github")} != set(expected_github):
+    raise SystemExit("expected only the four non-colorblind, non-tritanopia GitHub dark styles")
+for key, (ghostty, bg) in expected_github.items():
+    if themes[key]["palette"]["bg"] != bg:
+        raise SystemExit(f"{key}: upstream background must remain {bg}")
+    expected_apps = {
+        "ghostty": ghostty,
+        "nvim": key,
+        "nvim_background": "dark",
+        "starship": key,
+        "glow": "auto",
+        "bat": "tokyonight_night",
+        "btop": "tokyonight_night",
+        "tmux_ukiyo": "tokyonight/night",
+        "zed": "Tokyo Night",
+    }
+    if themes[key]["apps"] != expected_apps:
+        raise SystemExit(f"{key}: named/generated mappings or documented fallbacks changed")
+if themes["nvim-dark"]["palette"]["bg"] != "#14161b":
+    raise SystemExit("nvim-dark must retain its own palette despite its github_dark alias")
+
 root = Path(sys.argv[2]) if sys.argv[2] else None
 if root:
     if not root.is_dir():
@@ -108,6 +136,18 @@ if ! grep -Fq 'colorscheme = "bathory"' <<<"$rendered_bridge"; then
   echo 'black-metal-bathory bridge did not render colorscheme = "bathory"' >&2
   exit 1
 fi
+
+for theme in github_dark github_dark_default github_dark_dimmed github_dark_high_contrast; do
+  rendered_bridge=$(
+    chezmoi execute-template --source "$repo_root" \
+      --override-data "{\"theme\":\"$theme\"}" \
+      --file "$source_root/dot_config/chezmoi-theme/active.lua.tmpl"
+  )
+  if ! grep -Fq "colorscheme = \"$theme\"" <<<"$rendered_bridge"; then
+    echo "$theme bridge did not select its upstream colorscheme" >&2
+    exit 1
+  fi
+done
 
 # Exercise theme switching through real chezmoi, with no access to live apps.
 fixture="$tmpdir/source"
