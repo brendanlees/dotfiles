@@ -1,0 +1,26 @@
+{{- $p := (index .themes .theme).palette -}}
+/* Generated from the {{ .theme }} palette. Manual-copy proof only; not activated.
+ * Minimal 8.1.5 core variables: https://github.com/kepano/obsidian-minimal
+ * Keep Things' HSL-derived frame/overlays, highlights and semantic colors.
+ * Body specificity beats the Things scheme without !important or element rules.
+ */
+body.theme-dark.minimal-things-dark {
+  --bg1: {{ $p.bg }};
+  --bg2: {{ $p.surface }};
+  --bg3: {{ $p.surface_alt }};
+  --tx1: {{ $p.fg }};
+  --tx2: {{ $p.muted }};
+  --tx3: {{ $p.comment }};
+  --tx4: {{ $p.muted }};
+  --ui1: {{ $p.border }};
+  --ui2: {{ $p.comment }};
+  --ui3: {{ $p.muted }};
+  /* Things hardcodes these instead of inheriting Minimal's ui1 mapping. */
+  --divider-color: var(--ui1);
+  --tab-outline-color: var(--ui1);
+  --ax1: {{ $p.accent }};
+  --ax2: {{ $p.primary_alt }};
+  --ax3: {{ $p.primary }};
+  /* Minimal maps interactive-accent to ax3; keep its RGB companion consistent. */
+  --interactive-accent-rgb: {{ int (printf "0x%s" (substr 1 3 $p.primary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.primary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.primary)) }};
+}

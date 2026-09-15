@@ -36,6 +36,16 @@ herdr uses a chezmoi-generated config at `~/.config/herdr/config.toml`. The temp
 
 Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.toml`. The template maps the active shared palette to Atuin's semantic colors and inherits any future meanings from Atuin's built-in `autumn` theme.
 
+## obsidian manual-copy proof
+
+personal, non-headless macOS machines generate `~/.config/chezmoi-theme/obsidian.css`. Nothing copies or enables it in Obsidian, and no vault path, alias, settings or existing snippet is managed. The `theme` workflow is unchanged: a configuration apply can refresh this neutral file, but does not update Obsidian.
+
+The stylesheet targets only Minimal's Things dark scheme, checked against Minimal 8.1.5. It maps backgrounds to `bg`/`surface`/`surface_alt`, text to `fg`/`muted`/`comment`, borders to `border`/`comment`/`muted`, and accent/link, hover and interactive colors to `accent`/`primary_alt`/`primary`. The interactive RGB value follows `primary`. Minimal's tonal background behavior remains in control.
+
+This is a core override, not a replacement color scheme. Things' HSL-derived frame and overlay colors, selection/highlight colors and semantic colors remain; so do personal fixed-color rules and Style Settings choices. There are no element rules or `!important` declarations. See [Minimal's custom color scheme guidance](https://minimal.guide/color-schemes) and [Obsidian's CSS snippet instructions](https://help.obsidian.md/snippets).
+
+For a future manual proof, copy the generated CSS as an ordinary snippet file and enable only that file, after separately approving vault access. Do not replace existing snippets or use an in-vault file symlink ([Obsidian symlink limitations](https://help.obsidian.md/symlinks)). Discovery, reload, actual cascade and visual contrast still need validation in Obsidian; rendering tests cannot establish those. Multi-device ownership and automated copying remain out of scope.
+
 ## file overview
 
 | file                                                                          | role                                                                                    |
