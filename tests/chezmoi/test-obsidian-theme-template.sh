@@ -58,7 +58,7 @@ done < <(jq -r '.themes | keys[]' "$tmpdir/data.json")
 check_routing() {
   local os=$1 personal=$2 headless=$3 expected=$4
   chezmoi execute-template --source "$repo_root" \
-    --override-data "{\"personal\":$personal,\"work\":true,\"headless\":$headless,\"chezmoi\":{\"os\":\"$os\"}}" \
+    --override-data "{\"personal\":$personal,\"work\":true,\"homelab\":false,\"headless\":$headless,\"chezmoi\":{\"os\":\"$os\"}}" \
     --file "$source_root/.chezmoiignore" >"$tmpdir/ignore"
   local actual=managed
   if grep -Fxq '.config/chezmoi-theme/obsidian.css' "$tmpdir/ignore"; then
