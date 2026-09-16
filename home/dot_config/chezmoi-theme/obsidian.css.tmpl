@@ -1,27 +1,99 @@
 {{- $p := (index .themes .theme).palette -}}
+{{/* Minimal snippets consume numeric HSL components; derive them from the
+    palette instead of duplicating HSL metadata in themes.yml. */}}
+{{- $bgR := divf (int (printf "0x%s" (substr 1 3 $p.bg))) 255 -}}
+{{- $bgG := divf (int (printf "0x%s" (substr 3 5 $p.bg))) 255 -}}
+{{- $bgB := divf (int (printf "0x%s" (substr 5 7 $p.bg))) 255 -}}
+{{- $bgMax := maxf $bgR $bgG $bgB -}}
+{{- $bgMin := minf $bgR $bgG $bgB -}}
+{{- $bgDelta := subf $bgMax $bgMin -}}
+{{- $bgSum := addf $bgMax $bgMin -}}
+{{- $bgL := divf $bgSum 2 -}}
+{{- $bgS := 0.0 -}}
+{{- if gt $bgDelta 0.0 -}}
+  {{- if le $bgSum 1.0 -}}
+    {{- $bgS = divf $bgDelta $bgSum -}}
+  {{- else -}}
+    {{- $bgS = divf $bgDelta (subf 2 $bgSum) -}}
+  {{- end -}}
+{{- end -}}
+{{- $bgH := 0.0 -}}
+{{- if gt $bgDelta 0.0 -}}
+  {{- if eq $bgMax $bgR -}}
+    {{- $bgH = mulf 60 (divf (subf $bgG $bgB) $bgDelta) -}}
+    {{- if lt $bgH 0.0 -}}{{- $bgH = addf $bgH 360 -}}{{- end -}}
+  {{- else if eq $bgMax $bgG -}}
+    {{- $bgH = mulf 60 (addf 2 (divf (subf $bgB $bgR) $bgDelta)) -}}
+  {{- else -}}
+    {{- $bgH = mulf 60 (addf 4 (divf (subf $bgR $bgG) $bgDelta)) -}}
+    {{- if ge $bgH 360.0 -}}{{- $bgH = subf $bgH 360 -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $accentR := divf (int (printf "0x%s" (substr 1 3 $p.accent))) 255 -}}
+{{- $accentG := divf (int (printf "0x%s" (substr 3 5 $p.accent))) 255 -}}
+{{- $accentB := divf (int (printf "0x%s" (substr 5 7 $p.accent))) 255 -}}
+{{- $accentMax := maxf $accentR $accentG $accentB -}}
+{{- $accentMin := minf $accentR $accentG $accentB -}}
+{{- $accentDelta := subf $accentMax $accentMin -}}
+{{- $accentSum := addf $accentMax $accentMin -}}
+{{- $accentL := divf $accentSum 2 -}}
+{{- $accentS := 0.0 -}}
+{{- if gt $accentDelta 0.0 -}}
+  {{- if le $accentSum 1.0 -}}
+    {{- $accentS = divf $accentDelta $accentSum -}}
+  {{- else -}}
+    {{- $accentS = divf $accentDelta (subf 2 $accentSum) -}}
+  {{- end -}}
+{{- end -}}
+{{- $accentH := 0.0 -}}
+{{- if gt $accentDelta 0.0 -}}
+  {{- if eq $accentMax $accentR -}}
+    {{- $accentH = mulf 60 (divf (subf $accentG $accentB) $accentDelta) -}}
+    {{- if lt $accentH 0.0 -}}{{- $accentH = addf $accentH 360 -}}{{- end -}}
+  {{- else if eq $accentMax $accentG -}}
+    {{- $accentH = mulf 60 (addf 2 (divf (subf $accentB $accentR) $accentDelta)) -}}
+  {{- else -}}
+    {{- $accentH = mulf 60 (addf 4 (divf (subf $accentR $accentG) $accentDelta)) -}}
+    {{- if ge $accentH 360.0 -}}{{- $accentH = subf $accentH 360 -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
 /* Generated from the {{ .theme }} palette. Vault activation remains opt-in.
  * Minimal 8.1.5 is the framework; this bridge owns its dark colour tokens.
- * The values are rendered from the active chezmoi palette, never from a named
+ * Values are rendered from the active chezmoi palette, never from a named
  * Minimal preset. Layout, typography, and existing personal CSS remain local.
- * The broader selector works with or without Minimal Theme Settings classes.
+ * The Style Settings-specific selector beats its generated body rule without
+ * !important, while explicitly important personal overrides still win.
  */
 body.theme-dark,
-body.theme-dark[class*="minimal-"] {
+body.theme-dark[class*="minimal-"],
+body.theme-dark.css-settings-manager[class] {
   /* Rendered chezmoi palette tokens. */
   --cz-bg: {{ $p.bg }};
   --cz-bg-rgb: {{ int (printf "0x%s" (substr 1 3 $p.bg)) }}, {{ int (printf "0x%s" (substr 3 5 $p.bg)) }}, {{ int (printf "0x%s" (substr 5 7 $p.bg)) }};
+  --cz-bg-h: {{ printf "%.2f" $bgH }};
+  --cz-bg-s: {{ printf "%.2f" (mulf $bgS 100) }}%;
+  --cz-bg-l: {{ printf "%.2f" (mulf $bgL 100) }}%;
   --cz-surface: {{ $p.surface }};
+  --cz-surface-rgb: {{ int (printf "0x%s" (substr 1 3 $p.surface)) }}, {{ int (printf "0x%s" (substr 3 5 $p.surface)) }}, {{ int (printf "0x%s" (substr 5 7 $p.surface)) }};
   --cz-surface-alt: {{ $p.surface_alt }};
   --cz-surface-alt-rgb: {{ int (printf "0x%s" (substr 1 3 $p.surface_alt)) }}, {{ int (printf "0x%s" (substr 3 5 $p.surface_alt)) }}, {{ int (printf "0x%s" (substr 5 7 $p.surface_alt)) }};
   --cz-border: {{ $p.border }};
+  --cz-border-rgb: {{ int (printf "0x%s" (substr 1 3 $p.border)) }}, {{ int (printf "0x%s" (substr 3 5 $p.border)) }}, {{ int (printf "0x%s" (substr 5 7 $p.border)) }};
   --cz-comment: {{ $p.comment }};
+  --cz-comment-rgb: {{ int (printf "0x%s" (substr 1 3 $p.comment)) }}, {{ int (printf "0x%s" (substr 3 5 $p.comment)) }}, {{ int (printf "0x%s" (substr 5 7 $p.comment)) }};
   --cz-muted: {{ $p.muted }};
+  --cz-muted-rgb: {{ int (printf "0x%s" (substr 1 3 $p.muted)) }}, {{ int (printf "0x%s" (substr 3 5 $p.muted)) }}, {{ int (printf "0x%s" (substr 5 7 $p.muted)) }};
   --cz-fg: {{ $p.fg }};
+  --cz-fg-rgb: {{ int (printf "0x%s" (substr 1 3 $p.fg)) }}, {{ int (printf "0x%s" (substr 3 5 $p.fg)) }}, {{ int (printf "0x%s" (substr 5 7 $p.fg)) }};
   --cz-accent: {{ $p.accent }};
   --cz-accent-rgb: {{ int (printf "0x%s" (substr 1 3 $p.accent)) }}, {{ int (printf "0x%s" (substr 3 5 $p.accent)) }}, {{ int (printf "0x%s" (substr 5 7 $p.accent)) }};
+  --cz-accent-h: {{ printf "%.2f" $accentH }};
+  --cz-accent-s: {{ printf "%.2f" (mulf $accentS 100) }}%;
+  --cz-accent-l: {{ printf "%.2f" (mulf $accentL 100) }}%;
   --cz-primary: {{ $p.primary }};
   --cz-primary-rgb: {{ int (printf "0x%s" (substr 1 3 $p.primary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.primary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.primary)) }};
   --cz-primary-alt: {{ $p.primary_alt }};
+  --cz-primary-alt-rgb: {{ int (printf "0x%s" (substr 1 3 $p.primary_alt)) }}, {{ int (printf "0x%s" (substr 3 5 $p.primary_alt)) }}, {{ int (printf "0x%s" (substr 5 7 $p.primary_alt)) }};
   --cz-secondary: {{ $p.secondary }};
   --cz-secondary-rgb: {{ int (printf "0x%s" (substr 1 3 $p.secondary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.secondary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.secondary)) }};
   --cz-success: {{ $p.success }};
@@ -39,6 +111,15 @@ body.theme-dark[class*="minimal-"] {
   --cz-orange: {{ $p.orange }};
   --cz-orange-rgb: {{ int (printf "0x%s" (substr 1 3 $p.orange)) }}, {{ int (printf "0x%s" (substr 3 5 $p.orange)) }}, {{ int (printf "0x%s" (substr 5 7 $p.orange)) }};
 
+  /* Minimal's raw HSL contract keeps existing snippets palette-aware. */
+  --base-h: var(--cz-bg-h);
+  --base-s: var(--cz-bg-s);
+  --base-l: var(--cz-bg-l);
+  --base-d: var(--cz-bg-l);
+  --accent-h: var(--cz-accent-h);
+  --accent-s: var(--cz-accent-s);
+  --accent-l: var(--cz-accent-l);
+
   /* Minimal core tokens. */
   --bg1: var(--cz-bg);
   --bg2: var(--cz-surface);
@@ -54,9 +135,12 @@ body.theme-dark[class*="minimal-"] {
   --ax2: var(--cz-primary-alt);
   --ax3: var(--cz-primary);
   --divider-color: var(--cz-border);
+  --divider-color-hover: var(--cz-comment);
   --tab-outline-color: var(--cz-border);
+  --frame-divider-color: var(--cz-border);
+  --frame-outline-color: var(--cz-border);
 
-  /* Do not inherit preset-specific rainbow semantic colours. */
+  /* Minimal's extended semantic palette. */
   --color-red: var(--cz-error);
   --color-red-rgb: var(--cz-error-rgb);
   --color-orange: var(--cz-orange);
@@ -74,27 +158,148 @@ body.theme-dark[class*="minimal-"] {
   --color-pink: var(--cz-error);
   --color-pink-rgb: var(--cz-error-rgb);
 
+  /* Obsidian aliases and Minimal's granular colour settings. */
+  --background-modifier-accent: var(--cz-primary);
+  --background-modifier-border-rgb: var(--cz-border-rgb);
+  --background-modifier-error-rgb: var(--cz-error-rgb);
+  --background-modifier-success-rgb: var(--cz-success-rgb);
+  --background-modifier-border-focus: var(--cz-muted);
+  --background-modifier-border-hover: var(--cz-comment);
+  --background-modifier-border: var(--cz-border);
+  --mobile-sidebar-background: var(--cz-surface);
+  --background-modifier-form-field-highlighted: var(--cz-surface-alt);
+  --background-modifier-form-field: var(--cz-bg);
+  --background-modifier-success: var(--cz-success);
+  --background-modifier-hover: var(--cz-surface-alt);
+  --background-modifier-active-hover: var(--cz-surface-alt);
+  --checkbox-color: var(--cz-primary);
+  --code-normal: var(--cz-fg);
+  --icon-color-active: var(--cz-accent);
+  --icon-color-focused: var(--cz-accent);
+  --icon-color-hover: var(--cz-muted);
+  --icon-color: var(--cz-muted);
+  --interactive-normal: var(--cz-border);
+  --interactive-accent-hover: var(--cz-primary-alt);
+  --interactive-accent: var(--cz-primary);
+  --interactive-hover: var(--cz-surface-alt);
+  --list-marker-color: var(--cz-comment);
+  --nav-item-background-active: var(--cz-surface-alt);
+  --nav-item-background-hover: var(--cz-surface-alt);
+  --nav-item-color: var(--cz-muted);
+  --nav-item-color-active: var(--cz-fg);
+  --nav-item-color-hover: var(--cz-fg);
+  --nav-item-color-selected: var(--cz-fg);
+  --nav-collapse-icon-color: var(--cz-muted);
+  --nav-collapse-icon-color-collapsed: var(--cz-muted);
+  --nav-indentation-guide-color: var(--cz-border);
+  --prompt-border-color: var(--cz-muted);
+  --quote-opening-modifier: var(--cz-comment);
+  --ribbon-background: var(--cz-surface);
+  --scrollbar-active-thumb-bg: var(--cz-muted);
+  --scrollbar-thumb-bg: var(--cz-border);
+  --search-result-background: var(--cz-bg);
+  --tab-text-color-focused-active: var(--cz-fg);
+  --text-accent-hover: var(--cz-primary-alt);
+  --text-accent: var(--cz-accent);
+  --text-blockquote: var(--cz-muted);
+  --text-bold: var(--cz-fg);
+  --text-code: var(--cz-muted);
+  --text-error: var(--cz-error);
+  --text-faint: var(--cz-comment);
+  --text-highlight-bg: var(--hl2);
+  --text-italic: var(--cz-fg);
+  --text-muted: var(--cz-muted);
+  --text-normal: var(--cz-fg);
+  --text-on-accent: var(--cz-bg);
+  --text-selection: var(--hl1);
+  --text-formatting: var(--cz-comment);
+  --title-color-inactive: var(--cz-muted);
+  --title-color: var(--cz-fg);
+  --titlebar-background: var(--cz-surface);
+  --titlebar-background-focused: var(--cz-surface);
+  --titlebar-text-color-focused: var(--cz-fg);
+  --vault-profile-color: var(--cz-fg);
+  --vault-profile-color-hover: var(--cz-fg);
+
+  --blockquote-color: var(--cz-muted);
+  --blockquote-border-color: var(--cz-border);
+  --canvas-dot-pattern: var(--cz-border);
+  --code-background: var(--cz-surface);
+  --code-comment: var(--cz-comment);
+  --code-function: var(--cz-primary-alt);
+  --code-keyword: var(--cz-secondary);
+  --code-important: var(--cz-error);
+  --code-operator: var(--cz-accent);
+  --code-property: var(--cz-info-alt);
+  --code-punctuation: var(--cz-comment);
+  --code-string: var(--cz-success);
+  --code-tag: var(--cz-warn);
+  --code-value: var(--cz-orange);
+  --embed-decoration-color: var(--cz-accent);
+  --embed-background: rgba(var(--cz-surface-alt-rgb), 0.40);
+  --graph-line: var(--cz-border);
+  --graph-node: var(--cz-primary);
+  --graph-node-focused: var(--cz-accent);
+  --graph-node-tag: var(--cz-secondary);
+  --graph-node-attachment: var(--cz-info-alt);
+  --graph-node-unresolved: var(--cz-error);
+  --h1-color: var(--cz-error);
+  --h2-color: var(--cz-orange);
+  --h3-color: var(--cz-warn);
+  --h4-color: var(--cz-success);
+  --h5-color: var(--cz-primary);
+  --h6-color: var(--cz-secondary);
+  --image-grid-background: var(--cz-surface);
+  --indentation-guide-color: var(--cz-border);
+  --indentation-guide-color-active: var(--cz-accent);
+  --link-color: var(--cz-accent);
+  --link-color-hover: var(--cz-primary-alt);
+  --link-unresolved-color: var(--cz-error);
+  --link-unresolved-decoration-color: var(--cz-error);
+  --link-external-color: var(--cz-info);
+  --link-external-color-hover: var(--cz-info-alt);
+  --gutter-background: var(--cz-bg);
+  --line-number-color: var(--cz-comment);
+  --line-number-color-active: var(--cz-accent);
+  --active-line-bg: rgba(var(--cz-surface-alt-rgb), 0.40);
+  --progress-complete: var(--cz-success);
+  --table-row-background-hover: rgba(var(--cz-primary-rgb), 0.18);
+  --minimal-tab-text-color: var(--cz-muted);
+  --minimal-tab-text-color-active: var(--cz-fg);
+  --tag-color: var(--cz-muted);
+  --tag-color-hover: var(--cz-fg);
+  --tag-background: rgba(var(--cz-surface-alt-rgb), 0.30);
+  --tag-background-hover: rgba(var(--cz-surface-alt-rgb), 0.50);
+  --tag-border-color: var(--cz-border);
+  --tag-border-color-hover: var(--cz-comment);
+  --italic-color: var(--cz-fg);
+  --bold-color: var(--cz-fg);
+  --inline-title-color: var(--cz-fg);
+  --workspace-background-translucent: rgba(var(--cz-bg-rgb), 0.70);
+  --frame-background: var(--cz-surface);
+  --frame-icon-color: var(--cz-accent);
+  --frame-muted-color: var(--cz-muted);
+  --titlebar-text-color: var(--cz-muted);
+
   /* Final consumers of Minimal's HSL-derived preset values. */
   --hl1: rgba(var(--cz-primary-rgb), 0.30);
   --hl2: rgba(var(--cz-warn-rgb), 0.30);
   --sp1: var(--cz-bg);
-  --text-on-accent: var(--cz-bg);
   --text-on-accent-inverted: var(--cz-fg);
   --accent-color: var(--cz-primary);
   --accent-color-hover: var(--cz-primary-alt);
   --interactive-accent-rgb: var(--cz-primary-rgb);
   --background-modifier-cover: rgba(var(--cz-bg-rgb), 0.50);
-  --workspace-background-translucent: rgba(var(--cz-bg-rgb), 0.70);
-  --active-line-bg: rgba(var(--cz-surface-alt-rgb), 0.40);
   --text-highlight-bg-active: rgba(var(--cz-warn-rgb), 0.35);
   --background-modifier-error: rgba(var(--cz-error-rgb), 0.12);
   --background-modifier-error-hover: rgba(var(--cz-error-rgb), 0.18);
   --background-modifier-box-shadow: rgba(var(--cz-bg-rgb), 0.30);
   --shadow-color: rgba(var(--cz-bg-rgb), 0.30);
   --btn-shadow-color: rgba(var(--cz-bg-rgb), 0.20);
-  --frame-background: var(--cz-surface);
-  --frame-outline-color: var(--cz-border);
-  --frame-muted-color: var(--cz-muted);
+
+  /* Compatibility names used by older local snippets. */
+  --color-accent-1: var(--cz-accent);
+  --accent-2: var(--cz-primary-alt);
 
   /* Keep surface roles stable when Minimal's style preset changes. */
   --background-primary: var(--cz-bg);
@@ -103,10 +308,4 @@ body.theme-dark[class*="minimal-"] {
   --background-secondary-alt: var(--cz-bg);
   --background-table-rows: var(--cz-surface);
   --setting-items-background: var(--cz-surface-alt);
-  --ribbon-background: var(--cz-surface);
-  --titlebar-background: var(--cz-surface);
-  --titlebar-background-focused: var(--cz-surface);
-  --background-modifier-form-field: var(--cz-bg);
-  --background-modifier-form-field-highlighted: var(--cz-bg);
-  --search-result-background: var(--cz-bg);
 }

@@ -10,11 +10,12 @@ trap 'rm -rf "$tmpdir"' EXIT
 [[ -f $template ]] || { echo 'missing Obsidian palette template' >&2; exit 1; }
 chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
 
-# One owner for the palette mapping and its deliberately narrow CSS surface.
+# One owner for the palette mapping and Minimal's dark colour surface.
 while IFS= read -r theme; do
   chezmoi execute-template --source "$repo_root" \
     --override-data "{\"theme\":\"$theme\"}" --file "$template" >"$tmpdir/obsidian.css"
   python3 - "$tmpdir/data.json" "$tmpdir/obsidian.css" "$theme" <<'PY'
+import colorsys
 import json
 import re
 import sys
@@ -24,7 +25,8 @@ palette = json.loads(Path(sys.argv[1]).read_text())["themes"][sys.argv[3]]["pale
 css = re.sub(r"/\*.*?\*/", "", Path(sys.argv[2]).read_text(), flags=re.S).strip()
 # Own the dark palette with or without Minimal Theme Settings' preset classes.
 match = re.fullmatch(
-    r'body\.theme-dark,\s*body\.theme-dark\[class\*="minimal-"\]\s*\{([^{}]*)\}',
+    r'body\.theme-dark,\s*body\.theme-dark\[class\*="minimal-"\],\s*'
+    r'body\.theme-dark\.css-settings-manager\[class\]\s*\{([^{}]*)\}',
     css,
     re.S,
 )
@@ -132,6 +134,160 @@ expected = {
     "--background-modifier-form-field-highlighted": "var(--cz-bg)",
     "--search-result-background": "var(--cz-bg)",
 }
+
+def hsl_split(value):
+    channels = [int(value[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+    hue, lightness, saturation = colorsys.rgb_to_hls(*channels)
+    return {
+        "h": f"{hue * 360:.2f}",
+        "s": f"{saturation * 100:.2f}%",
+        "l": f"{lightness * 100:.2f}%",
+    }
+
+bg_hsl = hsl_split(palette["bg"])
+accent_hsl = hsl_split(palette["accent"])
+expected.update(
+    {
+        "--cz-bg-h": bg_hsl["h"],
+        "--cz-bg-s": bg_hsl["s"],
+        "--cz-bg-l": bg_hsl["l"],
+        "--cz-surface-rgb": rgb(palette["surface"]),
+        "--cz-border-rgb": rgb(palette["border"]),
+        "--cz-comment-rgb": rgb(palette["comment"]),
+        "--cz-muted-rgb": rgb(palette["muted"]),
+        "--cz-fg-rgb": rgb(palette["fg"]),
+        "--cz-accent-h": accent_hsl["h"],
+        "--cz-accent-s": accent_hsl["s"],
+        "--cz-accent-l": accent_hsl["l"],
+        "--cz-primary-alt-rgb": rgb(palette["primary_alt"]),
+        "--base-h": "var(--cz-bg-h)",
+        "--base-s": "var(--cz-bg-s)",
+        "--base-l": "var(--cz-bg-l)",
+        "--base-d": "var(--cz-bg-l)",
+        "--accent-h": "var(--cz-accent-h)",
+        "--accent-s": "var(--cz-accent-s)",
+        "--accent-l": "var(--cz-accent-l)",
+        "--divider-color-hover": "var(--cz-comment)",
+        "--frame-divider-color": "var(--cz-border)",
+        "--background-modifier-accent": "var(--cz-primary)",
+        "--background-modifier-border-rgb": "var(--cz-border-rgb)",
+        "--background-modifier-error-rgb": "var(--cz-error-rgb)",
+        "--background-modifier-success-rgb": "var(--cz-success-rgb)",
+        "--background-modifier-border-focus": "var(--cz-muted)",
+        "--background-modifier-border-hover": "var(--cz-comment)",
+        "--background-modifier-border": "var(--cz-border)",
+        "--mobile-sidebar-background": "var(--cz-surface)",
+        "--background-modifier-form-field-highlighted": "var(--cz-surface-alt)",
+        "--background-modifier-success": "var(--cz-success)",
+        "--background-modifier-hover": "var(--cz-surface-alt)",
+        "--background-modifier-active-hover": "var(--cz-surface-alt)",
+        "--checkbox-color": "var(--cz-primary)",
+        "--code-normal": "var(--cz-fg)",
+        "--icon-color-active": "var(--cz-accent)",
+        "--icon-color-focused": "var(--cz-accent)",
+        "--icon-color-hover": "var(--cz-muted)",
+        "--icon-color": "var(--cz-muted)",
+        "--interactive-normal": "var(--cz-border)",
+        "--interactive-accent-hover": "var(--cz-primary-alt)",
+        "--interactive-accent": "var(--cz-primary)",
+        "--interactive-hover": "var(--cz-surface-alt)",
+        "--list-marker-color": "var(--cz-comment)",
+        "--nav-item-background-active": "var(--cz-surface-alt)",
+        "--nav-item-background-hover": "var(--cz-surface-alt)",
+        "--nav-item-color": "var(--cz-muted)",
+        "--nav-item-color-active": "var(--cz-fg)",
+        "--nav-item-color-hover": "var(--cz-fg)",
+        "--nav-item-color-selected": "var(--cz-fg)",
+        "--nav-collapse-icon-color": "var(--cz-muted)",
+        "--nav-collapse-icon-color-collapsed": "var(--cz-muted)",
+        "--nav-indentation-guide-color": "var(--cz-border)",
+        "--prompt-border-color": "var(--cz-muted)",
+        "--quote-opening-modifier": "var(--cz-comment)",
+        "--scrollbar-active-thumb-bg": "var(--cz-muted)",
+        "--scrollbar-thumb-bg": "var(--cz-border)",
+        "--tab-text-color-focused-active": "var(--cz-fg)",
+        "--text-accent-hover": "var(--cz-primary-alt)",
+        "--text-accent": "var(--cz-accent)",
+        "--text-blockquote": "var(--cz-muted)",
+        "--text-bold": "var(--cz-fg)",
+        "--text-code": "var(--cz-muted)",
+        "--text-error": "var(--cz-error)",
+        "--text-faint": "var(--cz-comment)",
+        "--text-highlight-bg": "var(--hl2)",
+        "--text-italic": "var(--cz-fg)",
+        "--text-muted": "var(--cz-muted)",
+        "--text-normal": "var(--cz-fg)",
+        "--text-selection": "var(--hl1)",
+        "--text-formatting": "var(--cz-comment)",
+        "--title-color-inactive": "var(--cz-muted)",
+        "--title-color": "var(--cz-fg)",
+        "--titlebar-text-color-focused": "var(--cz-fg)",
+        "--vault-profile-color": "var(--cz-fg)",
+        "--vault-profile-color-hover": "var(--cz-fg)",
+        "--blockquote-color": "var(--cz-muted)",
+        "--blockquote-border-color": "var(--cz-border)",
+        "--canvas-dot-pattern": "var(--cz-border)",
+        "--code-background": "var(--cz-surface)",
+        "--code-comment": "var(--cz-comment)",
+        "--code-function": "var(--cz-primary-alt)",
+        "--code-keyword": "var(--cz-secondary)",
+        "--code-important": "var(--cz-error)",
+        "--code-operator": "var(--cz-accent)",
+        "--code-property": "var(--cz-info-alt)",
+        "--code-punctuation": "var(--cz-comment)",
+        "--code-string": "var(--cz-success)",
+        "--code-tag": "var(--cz-warn)",
+        "--code-value": "var(--cz-orange)",
+        "--embed-decoration-color": "var(--cz-accent)",
+        "--embed-background": "rgba(var(--cz-surface-alt-rgb), 0.40)",
+        "--graph-line": "var(--cz-border)",
+        "--graph-node": "var(--cz-primary)",
+        "--graph-node-focused": "var(--cz-accent)",
+        "--graph-node-tag": "var(--cz-secondary)",
+        "--graph-node-attachment": "var(--cz-info-alt)",
+        "--graph-node-unresolved": "var(--cz-error)",
+        "--h1-color": "var(--cz-error)",
+        "--h2-color": "var(--cz-orange)",
+        "--h3-color": "var(--cz-warn)",
+        "--h4-color": "var(--cz-success)",
+        "--h5-color": "var(--cz-primary)",
+        "--h6-color": "var(--cz-secondary)",
+        "--image-grid-background": "var(--cz-surface)",
+        "--indentation-guide-color": "var(--cz-border)",
+        "--indentation-guide-color-active": "var(--cz-accent)",
+        "--link-color": "var(--cz-accent)",
+        "--link-color-hover": "var(--cz-primary-alt)",
+        "--link-unresolved-color": "var(--cz-error)",
+        "--link-unresolved-decoration-color": "var(--cz-error)",
+        "--link-external-color": "var(--cz-info)",
+        "--link-external-color-hover": "var(--cz-info-alt)",
+        "--gutter-background": "var(--cz-bg)",
+        "--line-number-color": "var(--cz-comment)",
+        "--line-number-color-active": "var(--cz-accent)",
+        "--active-line-bg": "rgba(var(--cz-surface-alt-rgb), 0.40)",
+        "--progress-complete": "var(--cz-success)",
+        "--table-row-background-hover": "rgba(var(--cz-primary-rgb), 0.18)",
+        "--minimal-tab-text-color": "var(--cz-muted)",
+        "--minimal-tab-text-color-active": "var(--cz-fg)",
+        "--tag-color": "var(--cz-muted)",
+        "--tag-color-hover": "var(--cz-fg)",
+        "--tag-background": "rgba(var(--cz-surface-alt-rgb), 0.30)",
+        "--tag-background-hover": "rgba(var(--cz-surface-alt-rgb), 0.50)",
+        "--tag-border-color": "var(--cz-border)",
+        "--tag-border-color-hover": "var(--cz-comment)",
+        "--italic-color": "var(--cz-fg)",
+        "--bold-color": "var(--cz-fg)",
+        "--inline-title-color": "var(--cz-fg)",
+        "--workspace-background-translucent": "rgba(var(--cz-bg-rgb), 0.70)",
+        "--frame-background": "var(--cz-surface)",
+        "--frame-icon-color": "var(--cz-accent)",
+        "--frame-muted-color": "var(--cz-muted)",
+        "--titlebar-text-color": "var(--cz-muted)",
+        "--color-accent-1": "var(--cz-accent)",
+        "--accent-2": "var(--cz-primary-alt)",
+    }
+)
+assert "!important" not in css, f"{sys.argv[3]}: bridge must not add !important"
 assert declarations == expected, f"{sys.argv[3]}: full palette mismatch: {declarations}"
 PY
 done < <(jq -r '.themes | keys[]' "$tmpdir/data.json")
