@@ -36,15 +36,15 @@ herdr uses a chezmoi-generated config at `~/.config/herdr/config.toml`. The temp
 
 Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.toml`. The template maps the active shared palette to Atuin's semantic colors and inherits any future meanings from Atuin's built-in `autumn` theme.
 
-## obsidian manual-copy proof
+## obsidian palette bridge
 
-personal, non-headless macOS machines generate `~/.config/chezmoi-theme/obsidian.css`. Nothing copies or enables it in Obsidian, and no vault path, alias, settings or existing snippet is managed. The `theme` workflow is unchanged: a configuration apply can refresh this neutral file, but does not update Obsidian.
+Personal, non-headless macOS machines generate `~/.config/chezmoi-theme/obsidian.css`. The stylesheet is dark-only and renders its tokens from the active chezmoi palette, while Minimal remains the UI framework. It owns Minimal's dark core, semantic, highlight, frame, overlay and surface tokens; layout, typography and existing personal CSS remain local.
 
-The stylesheet targets only Minimal's Things dark scheme, checked against Minimal 8.1.5. It maps backgrounds to `bg`/`surface`/`surface_alt`, text to `fg`/`muted`/`comment`, borders to `border`/`comment`/`muted`, and accent/link, hover and interactive colors to `accent`/`primary_alt`/`primary`. The interactive RGB value follows `primary`. Minimal's tonal background behavior remains in control.
+The public `theme` workflow refreshes this neutral file during `chezmoi apply`. It then invokes the optional executable `~/.config/chezmoi-theme/obsidian-sync` when present, passing the generated stylesheet path as its only argument. That adapter is deliberately not managed by this repository: it reads one absolute vault path from `~/.config/chezmoi-theme/obsidian-vault` (or `OBSIDIAN_THEME_VAULT_CONFIG`), then atomically updates only `.obsidian/snippets/chezmoi-theme.css`. It never edits `appearance.json`, enables snippets, replaces existing snippets, or touches personal overrides such as `[me] my-custom-css.css`.
 
-This is a core override, not a replacement color scheme. Things' HSL-derived frame and overlay colors, selection/highlight colors and semantic colors remain; so do personal fixed-color rules and Style Settings choices. There are no element rules or `!important` declarations. See [Minimal's custom color scheme guidance](https://minimal.guide/color-schemes) and [Obsidian's CSS snippet instructions](https://help.obsidian.md/snippets).
+Enable `chezmoi-theme` manually once in Obsidian and keep `[me] my-custom-css` after it in the enabled snippet order when it should win the cascade. The bridge has no `!important` declarations or element rules, so explicit personal rules remain overrides. See [Minimal's custom color scheme guidance](https://minimal.guide/color-schemes) and [Obsidian's CSS snippet instructions](https://help.obsidian.md/snippets).
 
-For a future manual proof, copy the generated CSS as an ordinary snippet file and enable only that file, after separately approving vault access. Do not replace existing snippets or use an in-vault file symlink ([Obsidian symlink limitations](https://help.obsidian.md/symlinks)). Discovery, reload, actual cascade and visual contrast still need validation in Obsidian; rendering tests cannot establish those. Multi-device ownership and automated copying remain out of scope.
+Do not use an in-vault symlink ([Obsidian symlink limitations](https://help.obsidian.md/symlinks)). A synced vault should have one deliberate writer for this generated file; separate device themes otherwise create last-writer-wins conflicts. On another device, install a private adapter only if that device is intended to regenerate the shared snippet. Rendering tests validate dynamic palette output and routing, but not Obsidian's live reload or visual cascade.
 
 ## file overview
 

@@ -158,6 +158,12 @@ fixture="$tmpdir/source"
 home="$tmpdir/home"
 mkdir -p "$fixture/.chezmoidata" "$fixture/.chezmoitemplates" \
   "$fixture/.chezmoiscripts/darwin" "$fixture/dot_config" "$tmpdir/bin" "$home"
+mkdir -p "$home/.config/chezmoi-theme"
+cat >"$home/.config/chezmoi-theme/obsidian-sync" <<'SCRIPT'
+#!/bin/sh
+printf '%s\n' "$@" >"$HOME/obsidian-sync-args"
+SCRIPT
+chmod +x "$home/.config/chezmoi-theme/obsidian-sync"
 cp "$source_root/.chezmoidata/themes.yml" "$fixture/.chezmoidata/themes.yml"
 printf 'theme: black-metal-bathory\n' >"$fixture/.chezmoidata/defaults.yml"
 cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" "$fixture/.chezmoitemplates/"
@@ -198,6 +204,7 @@ HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
 
 grep -Fxq guts "$home/.config/active-theme"
 grep -Fxq guts "$home/spicetify-theme"
+grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "guts"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
 [[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
-echo 'theme switches without tool or external updates'
+echo 'theme switches without tool or external updates and invokes the optional Obsidian adapter'
