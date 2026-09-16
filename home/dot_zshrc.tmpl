@@ -187,6 +187,7 @@ fi
 {{- end }}
 
 {{- if and .personal (eq .chezmoi.os "darwin") }}
+{{- $matrix_color := (index (index .themes .theme).apps "matrix") -}}
 # ------------------------------------------
 # mac
 # ------------------------------------------
@@ -198,7 +199,45 @@ export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 export HOMEBREW_NO_ENV_HINTS=1
 
 # dumb/fun stuff
-alias matrix='osascript -e "tell application \"System Events\" to key code 36 using {command down}" && { [[ -n $TMUX ]] && tmux new-window cmatrix -C cyan || tmux new-session cmatrix -C cyan; }'
+# Herdr exposes pane split/zoom through its CLI. Sidebar visibility is a
+# client-side keybinding, so use macOS accessibility events for its Ctrl-b, b
+# toggle while keeping tmux and plain-terminal behavior unchanged.
+matrix() {
+  if [[ "${HERDR_ENV:-}" == 1 ]]; then
+    local herdr_bin="${HERDR_BIN_PATH:-herdr}"
+    local pane_id
+
+    pane_id=$(
+      "$herdr_bin" pane split --current --direction right --no-focus |
+        python3 -c 'import json, sys; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])'
+    ) || return 1
+    [[ -n "$pane_id" ]] || return 1
+
+    if ! "$herdr_bin" pane zoom "$pane_id" --on >/dev/null; then
+      "$herdr_bin" pane close "$pane_id" >/dev/null 2>&1 || true
+      return 1
+    fi
+
+    # Herdr has no CLI/API operation for the client-local sidebar toggle.
+    osascript \
+      -e 'tell application "System Events" to keystroke "b" using {control down}' \
+      -e 'tell application "System Events" to keystroke "b"' \
+      >/dev/null 2>&1 || true
+
+    if ! "$herdr_bin" pane run "$pane_id" \
+      "cmatrix -C {{ $matrix_color }}; \"\${HERDR_BIN_PATH:-herdr}\" pane zoom ${pane_id} --off >/dev/null 2>&1; osascript -e 'tell application \"System Events\" to keystroke \"b\" using {control down}' -e 'tell application \"System Events\" to keystroke \"b\"' >/dev/null 2>&1 || true; exit"; then
+      "$herdr_bin" pane zoom "$pane_id" --off >/dev/null 2>&1 || true
+      "$herdr_bin" pane close "$pane_id" >/dev/null 2>&1 || true
+      osascript \
+        -e 'tell application "System Events" to keystroke "b" using {control down}' \
+        -e 'tell application "System Events" to keystroke "b"' \
+        >/dev/null 2>&1 || true
+      return 1
+    fi
+  else
+    osascript -e "tell application \"System Events\" to key code 36 using {command down}" && { [[ -n $TMUX ]] && tmux new-window cmatrix -C {{ $matrix_color }} || tmux new-session cmatrix -C {{ $matrix_color }}; }
+  fi
+}
 
 {{- end }}
 

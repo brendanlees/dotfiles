@@ -2,7 +2,8 @@
 #
 # Active theme is selected via `theme:` in defaults.yml.
 # Each theme provides a semantic palette (used by hex-color templates) and
-# an apps map (used by templates that reference the theme by name).
+# an apps map (used by templates that reference the theme by name). The
+# `apps.matrix` value is the nearest supported cmatrix color to the accent.
 #
 # Adding a theme: define every key in `palette` and every key in `apps`.
 themes:
@@ -37,6 +38,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "tokyonight-night"
       nvim_background: "dark"
+      matrix: "cyan"
 
   kanagawa-wave:
     palette:
@@ -69,6 +71,7 @@ themes:
       zed: "Kanagawa Wave"
       nvim: "kanagawa-wave"
       nvim_background: "dark"
+      matrix: "cyan"
 
   kanagawa-dragon:
     palette:
@@ -101,6 +104,7 @@ themes:
       zed: "Kanagawa Dragon"
       nvim: "kanagawa-dragon"
       nvim_background: "dark"
+      matrix: "cyan"
 
   monokai-pro:
     palette:
@@ -133,6 +137,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "monokai-pro"
       nvim_background: "dark"
+      matrix: "cyan"
 
   rosepine:
     palette:
@@ -165,6 +170,7 @@ themes:
       zed: "Rosé Pine"
       nvim: "rose-pine-main"
       nvim_background: "dark"
+      matrix: "cyan"
 
   nightfly:
     palette:
@@ -197,6 +203,7 @@ themes:
       zed: "Nightfly"
       nvim: "nightfly"
       nvim_background: "dark"
+      matrix: "cyan"
 
   moonfly:
     palette:
@@ -229,6 +236,7 @@ themes:
       zed: "Moonfly"
       nvim: "moonfly"
       nvim_background: "dark"
+      matrix: "cyan"
 
   guts:
     palette:
@@ -261,6 +269,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "guts"
       nvim_background: "dark"
+      matrix: "green"
 
   black-metal:
     palette:
@@ -293,6 +302,7 @@ themes:
       zed: "Black Metal"
       nvim: "bathory"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-bathory:
     palette:
@@ -325,6 +335,7 @@ themes:
       zed: "Black Metal (Bathory)"
       nvim: "bathory"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-burzum:
     palette:
@@ -357,6 +368,7 @@ themes:
       zed: "Black Metal (Burzum)"
       nvim: "burzum"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-dark-funeral:
     palette:
@@ -389,6 +401,7 @@ themes:
       zed: "Black Metal (Dark Funeral)"
       nvim: "dark-funeral"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-darkthrone:
     palette:
@@ -421,6 +434,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "darkthrone"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-emperor:
     palette:
@@ -453,6 +467,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "emperor"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-gorgoroth:
     palette:
@@ -485,6 +500,7 @@ themes:
       zed: "Black Metal (Gorgoroth)"
       nvim: "gorgoroth"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-immortal:
     palette:
@@ -517,6 +533,7 @@ themes:
       zed: "Black Metal (Immortal)"
       nvim: "immortal"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-impaled-nazarene:
     palette:
@@ -549,6 +566,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "impaled-nazarene"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-khold:
     palette:
@@ -581,6 +599,7 @@ themes:
       zed: "Black Metal (Khold)"
       nvim: "khold"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-marduk:
     palette:
@@ -613,6 +632,7 @@ themes:
       zed: "Black Metal (Marduk)"
       nvim: "marduk"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-mayhem:
     palette:
@@ -645,6 +665,7 @@ themes:
       zed: "Black Metal (Mayhem)"
       nvim: "mayhem"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-nile:
     palette:
@@ -677,6 +698,7 @@ themes:
       zed: "Black Metal (Nile)"
       nvim: "nile"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-venom:
     palette:
@@ -709,6 +731,7 @@ themes:
       zed: "Black Metal (Venom)"
       nvim: "venom"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-taake:
     palette:
@@ -741,6 +764,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "taake"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-thyrfing:
     palette:
@@ -773,6 +797,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "thyrfing"
       nvim_background: "dark"
+      matrix: "white"
 
   black-metal-windir:
     palette:
@@ -805,6 +830,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "windir"
       nvim_background: "dark"
+      matrix: "white"
 
   fahrenheit:
     palette:
@@ -837,6 +863,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "fahrenheit"
       nvim_background: "dark"
+      matrix: "white"
 
   flatland:
     palette:
@@ -869,6 +896,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "base24-flatland"
       nvim_background: "dark"
+      matrix: "cyan"
 
   japanesque:
     palette:
@@ -901,6 +929,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "base24-japanesque"
       nvim_background: "dark"
+      matrix: "yellow"
 
   github_dark:
     palette:
@@ -933,6 +962,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "github_dark"
       nvim_background: "dark"
+      matrix: "blue"
 
   github_dark_default:
     palette:
@@ -965,6 +995,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "github_dark_default"
       nvim_background: "dark"
+      matrix: "blue"
 
   github_dark_dimmed:
     palette:
@@ -997,6 +1028,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "github_dark_dimmed"
       nvim_background: "dark"
+      matrix: "blue"
 
   github_dark_high_contrast:
     palette:
@@ -1029,6 +1061,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "github_dark_high_contrast"
       nvim_background: "dark"
+      matrix: "blue"
 
   nvim-dark:
     palette:
@@ -1061,6 +1094,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "github_dark"
       nvim_background: "dark"
+      matrix: "white"
 
   sleepy-hollow:
     palette:
@@ -1093,6 +1127,7 @@ themes:
       zed: "Tokyo Night"
       nvim: "base24-sleepy-hollow"
       nvim_background: "dark"
+      matrix: "white"
 
   twilight:
     palette:
@@ -1125,6 +1160,7 @@ themes:
       zed: "Monokai Pro"
       nvim: "base24-twilight"
       nvim_background: "dark"
+      matrix: "white"
 
   wryan:
     palette:
@@ -1157,3 +1193,4 @@ themes:
       zed: "Tokyo Night"
       nvim: "base24-wryan"
       nvim_background: "dark"
+      matrix: "magenta"
