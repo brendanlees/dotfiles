@@ -22,8 +22,9 @@ required_palette = {
 }
 required_apps = {
     "ghostty", "btop", "bat", "glow", "starship", "tmux_ukiyo",
-    "zed", "nvim", "nvim_background",
+    "zed", "nvim", "nvim_background", "matrix",
 }
+valid_matrix_colors = {"black", "blue", "cyan", "green", "magenta", "red", "white", "yellow"}
 hex_color = re.compile(r"^#[0-9a-fA-F]{6}$")
 data = json.loads(Path(sys.argv[1]).read_text())
 themes = data["themes"]
@@ -41,6 +42,8 @@ for key, theme in sorted(themes.items()):
     for app_key, app_value in theme["apps"].items():
         if not isinstance(app_value, str) or not app_value:
             raise SystemExit(f"{key}: invalid {app_key} mapping: {app_value!r}")
+    if theme["apps"]["matrix"] not in valid_matrix_colors:
+        raise SystemExit(f"{key}: unsupported cmatrix color: {theme['apps']['matrix']!r}")
     for color_key, color in theme["palette"].items():
         if not isinstance(color, str) or not hex_color.fullmatch(color):
             raise SystemExit(f"{key}: invalid {color_key}: {color!r}")
@@ -102,6 +105,7 @@ for key, (ghostty, bg) in expected_github.items():
         "ghostty": ghostty,
         "nvim": key,
         "nvim_background": "dark",
+        "matrix": themes[key]["apps"]["matrix"],
         "starship": key,
         "glow": "auto",
         "bat": "tokyonight_night",
