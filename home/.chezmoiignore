@@ -91,9 +91,13 @@ Library/Logs/Syncthing
 !.local/bin/cz-ssh-refresh
 {{- if eq .chezmoi.os "darwin" }}
 !.local/bin/cz-private-agent-skills
+!.local/bin/obsidian
 {{- end }}
 {{- end }}
 .local/share/fonts
+{{- end }}
+{{- if ne .chezmoi.os "darwin" }}
+.local/bin/obsidian
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
