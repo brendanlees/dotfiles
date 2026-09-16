@@ -1,26 +1,112 @@
 {{- $p := (index .themes .theme).palette -}}
-/* Generated from the {{ .theme }} palette. Manual-copy proof only; not activated.
- * Minimal 8.1.5 core variables: https://github.com/kepano/obsidian-minimal
- * Keep Things' HSL-derived frame/overlays, highlights and semantic colors.
- * Body specificity beats the Things scheme without !important or element rules.
+/* Generated from the {{ .theme }} palette. Vault activation remains opt-in.
+ * Minimal 8.1.5 is the framework; this bridge owns its dark colour tokens.
+ * The values are rendered from the active chezmoi palette, never from a named
+ * Minimal preset. Layout, typography, and existing personal CSS remain local.
+ * The broader selector works with or without Minimal Theme Settings classes.
  */
-body.theme-dark.minimal-things-dark {
-  --bg1: {{ $p.bg }};
-  --bg2: {{ $p.surface }};
-  --bg3: {{ $p.surface_alt }};
-  --tx1: {{ $p.fg }};
-  --tx2: {{ $p.muted }};
-  --tx3: {{ $p.comment }};
-  --tx4: {{ $p.muted }};
-  --ui1: {{ $p.border }};
-  --ui2: {{ $p.comment }};
-  --ui3: {{ $p.muted }};
-  /* Things hardcodes these instead of inheriting Minimal's ui1 mapping. */
-  --divider-color: var(--ui1);
-  --tab-outline-color: var(--ui1);
-  --ax1: {{ $p.accent }};
-  --ax2: {{ $p.primary_alt }};
-  --ax3: {{ $p.primary }};
-  /* Minimal maps interactive-accent to ax3; keep its RGB companion consistent. */
-  --interactive-accent-rgb: {{ int (printf "0x%s" (substr 1 3 $p.primary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.primary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.primary)) }};
+body.theme-dark,
+body.theme-dark[class*="minimal-"] {
+  /* Rendered chezmoi palette tokens. */
+  --cz-bg: {{ $p.bg }};
+  --cz-bg-rgb: {{ int (printf "0x%s" (substr 1 3 $p.bg)) }}, {{ int (printf "0x%s" (substr 3 5 $p.bg)) }}, {{ int (printf "0x%s" (substr 5 7 $p.bg)) }};
+  --cz-surface: {{ $p.surface }};
+  --cz-surface-alt: {{ $p.surface_alt }};
+  --cz-surface-alt-rgb: {{ int (printf "0x%s" (substr 1 3 $p.surface_alt)) }}, {{ int (printf "0x%s" (substr 3 5 $p.surface_alt)) }}, {{ int (printf "0x%s" (substr 5 7 $p.surface_alt)) }};
+  --cz-border: {{ $p.border }};
+  --cz-comment: {{ $p.comment }};
+  --cz-muted: {{ $p.muted }};
+  --cz-fg: {{ $p.fg }};
+  --cz-accent: {{ $p.accent }};
+  --cz-accent-rgb: {{ int (printf "0x%s" (substr 1 3 $p.accent)) }}, {{ int (printf "0x%s" (substr 3 5 $p.accent)) }}, {{ int (printf "0x%s" (substr 5 7 $p.accent)) }};
+  --cz-primary: {{ $p.primary }};
+  --cz-primary-rgb: {{ int (printf "0x%s" (substr 1 3 $p.primary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.primary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.primary)) }};
+  --cz-primary-alt: {{ $p.primary_alt }};
+  --cz-secondary: {{ $p.secondary }};
+  --cz-secondary-rgb: {{ int (printf "0x%s" (substr 1 3 $p.secondary)) }}, {{ int (printf "0x%s" (substr 3 5 $p.secondary)) }}, {{ int (printf "0x%s" (substr 5 7 $p.secondary)) }};
+  --cz-success: {{ $p.success }};
+  --cz-success-rgb: {{ int (printf "0x%s" (substr 1 3 $p.success)) }}, {{ int (printf "0x%s" (substr 3 5 $p.success)) }}, {{ int (printf "0x%s" (substr 5 7 $p.success)) }};
+  --cz-warn: {{ $p.warn }};
+  --cz-warn-rgb: {{ int (printf "0x%s" (substr 1 3 $p.warn)) }}, {{ int (printf "0x%s" (substr 3 5 $p.warn)) }}, {{ int (printf "0x%s" (substr 5 7 $p.warn)) }};
+  --cz-error: {{ $p.error }};
+  --cz-error-rgb: {{ int (printf "0x%s" (substr 1 3 $p.error)) }}, {{ int (printf "0x%s" (substr 3 5 $p.error)) }}, {{ int (printf "0x%s" (substr 5 7 $p.error)) }};
+  --cz-info: {{ $p.info }};
+  --cz-info-rgb: {{ int (printf "0x%s" (substr 1 3 $p.info)) }}, {{ int (printf "0x%s" (substr 3 5 $p.info)) }}, {{ int (printf "0x%s" (substr 5 7 $p.info)) }};
+  --cz-info-alt: {{ $p.info_alt }};
+  --cz-info-alt-rgb: {{ int (printf "0x%s" (substr 1 3 $p.info_alt)) }}, {{ int (printf "0x%s" (substr 3 5 $p.info_alt)) }}, {{ int (printf "0x%s" (substr 5 7 $p.info_alt)) }};
+  --cz-tool-neutral-bg: {{ $p.tool_neutral_bg }};
+  --cz-tool-error-bg: {{ $p.tool_error_bg }};
+  --cz-orange: {{ $p.orange }};
+  --cz-orange-rgb: {{ int (printf "0x%s" (substr 1 3 $p.orange)) }}, {{ int (printf "0x%s" (substr 3 5 $p.orange)) }}, {{ int (printf "0x%s" (substr 5 7 $p.orange)) }};
+
+  /* Minimal core tokens. */
+  --bg1: var(--cz-bg);
+  --bg2: var(--cz-surface);
+  --bg3: var(--cz-surface-alt);
+  --tx1: var(--cz-fg);
+  --tx2: var(--cz-muted);
+  --tx3: var(--cz-comment);
+  --tx4: var(--cz-muted);
+  --ui1: var(--cz-border);
+  --ui2: var(--cz-comment);
+  --ui3: var(--cz-muted);
+  --ax1: var(--cz-accent);
+  --ax2: var(--cz-primary-alt);
+  --ax3: var(--cz-primary);
+  --divider-color: var(--cz-border);
+  --tab-outline-color: var(--cz-border);
+
+  /* Do not inherit preset-specific rainbow semantic colours. */
+  --color-red: var(--cz-error);
+  --color-red-rgb: var(--cz-error-rgb);
+  --color-orange: var(--cz-orange);
+  --color-orange-rgb: var(--cz-orange-rgb);
+  --color-yellow: var(--cz-warn);
+  --color-yellow-rgb: var(--cz-warn-rgb);
+  --color-green: var(--cz-success);
+  --color-green-rgb: var(--cz-success-rgb);
+  --color-cyan: var(--cz-info);
+  --color-cyan-rgb: var(--cz-info-rgb);
+  --color-blue: var(--cz-primary);
+  --color-blue-rgb: var(--cz-primary-rgb);
+  --color-purple: var(--cz-secondary);
+  --color-purple-rgb: var(--cz-secondary-rgb);
+  --color-pink: var(--cz-error);
+  --color-pink-rgb: var(--cz-error-rgb);
+
+  /* Final consumers of Minimal's HSL-derived preset values. */
+  --hl1: rgba(var(--cz-primary-rgb), 0.30);
+  --hl2: rgba(var(--cz-warn-rgb), 0.30);
+  --sp1: var(--cz-bg);
+  --text-on-accent: var(--cz-bg);
+  --text-on-accent-inverted: var(--cz-fg);
+  --accent-color: var(--cz-primary);
+  --accent-color-hover: var(--cz-primary-alt);
+  --interactive-accent-rgb: var(--cz-primary-rgb);
+  --background-modifier-cover: rgba(var(--cz-bg-rgb), 0.50);
+  --workspace-background-translucent: rgba(var(--cz-bg-rgb), 0.70);
+  --active-line-bg: rgba(var(--cz-surface-alt-rgb), 0.40);
+  --text-highlight-bg-active: rgba(var(--cz-warn-rgb), 0.35);
+  --background-modifier-error: rgba(var(--cz-error-rgb), 0.12);
+  --background-modifier-error-hover: rgba(var(--cz-error-rgb), 0.18);
+  --background-modifier-box-shadow: rgba(var(--cz-bg-rgb), 0.30);
+  --shadow-color: rgba(var(--cz-bg-rgb), 0.30);
+  --btn-shadow-color: rgba(var(--cz-bg-rgb), 0.20);
+  --frame-background: var(--cz-surface);
+  --frame-outline-color: var(--cz-border);
+  --frame-muted-color: var(--cz-muted);
+
+  /* Keep surface roles stable when Minimal's style preset changes. */
+  --background-primary: var(--cz-bg);
+  --background-primary-alt: var(--cz-surface);
+  --background-secondary: var(--cz-surface);
+  --background-secondary-alt: var(--cz-bg);
+  --background-table-rows: var(--cz-surface);
+  --setting-items-background: var(--cz-surface-alt);
+  --ribbon-background: var(--cz-surface);
+  --titlebar-background: var(--cz-surface);
+  --titlebar-background-focused: var(--cz-surface);
+  --background-modifier-form-field: var(--cz-bg);
+  --background-modifier-form-field-highlighted: var(--cz-bg);
+  --search-result-background: var(--cz-bg);
 }
