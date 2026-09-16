@@ -12,6 +12,24 @@ chezmoi execute-template \
   --file "$repo_root/home/dot_zshrc.tmpl" \
   >"$rendered"
 
+while IFS=: read -r theme expected_color; do
+  override_data=$(printf '{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"theme":"%s","chezmoi":{"os":"darwin"}}' "$theme")
+  if ! chezmoi execute-template \
+    --source "$repo_root" \
+    --override-data "$override_data" \
+    --file "$repo_root/home/dot_zshrc.tmpl" | grep -Fq "cmatrix -C $expected_color"; then
+    echo "$theme did not render cmatrix color $expected_color" >&2
+    exit 1
+  fi
+done <<'THEME_COLORS'
+tokyonight-night:cyan
+black-metal-bathory:white
+guts:green
+japanesque:yellow
+github_dark:blue
+wryan:magenta
+THEME_COLORS
+
 matrix_function="$tmpdir/matrix.zsh"
 awk '
   /^matrix\(\) \{$/ { in_matrix=1 }

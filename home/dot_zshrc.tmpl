@@ -187,6 +187,7 @@ fi
 {{- end }}
 
 {{- if and .personal (eq .chezmoi.os "darwin") }}
+{{- $matrix_color := (index (index .themes .theme).apps "matrix") -}}
 # ------------------------------------------
 # mac
 # ------------------------------------------
@@ -222,7 +223,7 @@ matrix() {
       >/dev/null 2>&1 || true
 
     if ! "$herdr_bin" pane run "$pane_id" \
-      "cmatrix -C cyan; \"\${HERDR_BIN_PATH:-herdr}\" pane zoom ${pane_id} --off >/dev/null 2>&1; osascript -e 'tell application \"System Events\" to keystroke \"b\" using {control down}' -e 'tell application \"System Events\" to keystroke \"b\"' >/dev/null 2>&1 || true; exit"; then
+      "cmatrix -C {{ $matrix_color }}; \"\${HERDR_BIN_PATH:-herdr}\" pane zoom ${pane_id} --off >/dev/null 2>&1; osascript -e 'tell application \"System Events\" to keystroke \"b\" using {control down}' -e 'tell application \"System Events\" to keystroke \"b\"' >/dev/null 2>&1 || true; exit"; then
       "$herdr_bin" pane zoom "$pane_id" --off >/dev/null 2>&1 || true
       "$herdr_bin" pane close "$pane_id" >/dev/null 2>&1 || true
       osascript \
@@ -232,7 +233,7 @@ matrix() {
       return 1
     fi
   else
-    osascript -e "tell application \"System Events\" to key code 36 using {command down}" && { [[ -n $TMUX ]] && tmux new-window cmatrix -C cyan || tmux new-session cmatrix -C cyan; }
+    osascript -e "tell application \"System Events\" to key code 36 using {command down}" && { [[ -n $TMUX ]] && tmux new-window cmatrix -C {{ $matrix_color }} || tmux new-session cmatrix -C {{ $matrix_color }}; }
   fi
 }
 
