@@ -141,6 +141,16 @@ fi
 echo ":: apply configuration (no installers or external updates)"
 chezmoi apply --source "$CHEZMOI_DIR" --exclude=scripts,externals -v
 
+# Optional private adapters can consume generated theme files without putting
+# private vault paths in the public source tree. The adapter owns its own path,
+# validation and copy policy; a failure must not block other theme updates.
+OBSIDIAN_THEME_SYNC="$HOME/.config/chezmoi-theme/obsidian-sync"
+if [[ -x "$OBSIDIAN_THEME_SYNC" ]]; then
+  echo ":: obsidian theme sync"
+  "$OBSIDIAN_THEME_SYNC" "$HOME/.config/chezmoi-theme/obsidian.css" \
+    || echo "warn: Obsidian theme sync failed" >&2
+fi
+
 # Run only the theme hooks. Native script selection retains run_onchange state
 # without running package installers or syncing private harness repositories.
 theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl")
