@@ -25,6 +25,17 @@ cz-bw-init() {
     BW_SESSION="$s" chezmoi init "$@"
 }
 
+# purge system & reinit with a single bw prompt
+cz-bw-r() {
+    command -v bw >/dev/null || {
+        printf 'cz-bw-r: bw not on PATH\n' >&2
+        return 1
+    }
+    local s
+    s="$(bw unlock --raw)" || return 1
+    BW_SESSION="$s" czr
+}
+
 # purge system & reinit
 # refuses if there is unpushed work or extra worktrees in the chezmoi source dir
 czr() {
