@@ -110,18 +110,6 @@ type = "plugin_action"
 command = "worktrunk.remove"
 description = "Worktree: remove"
 
-# --- file viewer ---
-
-[[keys.command]]              # open in a split beside your work
-key = "prefix+f"
-type = "shell"
-command = "herdr plugin action invoke open-file-viewer --plugin herdr-file-viewer"
-
-[[keys.command]]              # …or in its own tab
-key = "prefix+shift+f"
-type = "shell"
-command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
-
 # --- navigator ---
 
 [[keys.command]]
@@ -130,18 +118,17 @@ type = "plugin_action"
 command = "herdr-navigator.open"
 description = "jump to anything"
 
-[[keys.command]]
-key = "prefix+L"
-type = "plugin_action"
-command = "herdr-navigator.jump-back"
-description = "toggle last workspace"
-
 # [[keys.command]]
 # key = "prefix+L"
 # type = "plugin_action"
-# command = "third774.last-workspace.toggle"
+# command = "herdr-navigator.jump-back"
 # description = "toggle last workspace"
 
+[[keys.command]]
+key = "prefix+L"
+type = "plugin_action"
+command = "third774.last-workspace.toggle"
+description = "toggle last workspace"
 
 [ui]
 mouse_capture = true
