@@ -22,7 +22,6 @@ gui:
       - '{{ $p.error }}'
     defaultFgColor:
       - '{{ $p.fg }}'
-
 git:
-  pagers:
-    - pager: hunk pager
+  diffRenderers:
+    - command: hunk pager
