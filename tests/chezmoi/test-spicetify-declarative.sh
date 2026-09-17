@@ -41,6 +41,8 @@ grep -Fq 'pgrep -x Spotify' <<<"$rendered"
 grep -Fq 'spicetify "$@" --no-restart' <<<"$rendered"
 grep -Fq 'extensions            = keyboardShortcut.js|cat-jam.js' <<<"$rendered_config"
 grep -Fq 'custom_apps           = marketplace|stats|library' <<<"$rendered_config"
+# The upstream checker ignores GitHub tokens and runs on every CLI invocation.
+grep -Eq '^check_spicetify_update[[:space:]]*=[[:space:]]*0$' <<<"$rendered_config"
 if grep -Fq 'spicetify auto' <<<"$rendered"; then
   echo 'Spicetify has no auto command' >&2
   exit 1

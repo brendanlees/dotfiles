@@ -95,6 +95,19 @@ render_helper false "$helper"
 "$helper" --fail reconcile
 [[ ! -e $checkout && ! -e $state_file && ! -e $first_destination ]]
 
+# SCP-style remotes need an SSH user; do not attempt a clone for a bare host.
+remote='fixture.invalid:owner/private-skills.git'
+render_helper true "$helper"
+if "$helper" --fail reconcile >"$tmpdir/invalid-remote.log" 2>&1; then
+  echo 'missing SSH user unexpectedly accepted' >&2
+  exit 1
+fi
+[[ ! -e $checkout && ! -e $state_file ]]
+if grep -Fxq clone "$FIXTURE_GIT_LOG"; then
+  echo 'invalid remote must be rejected before cloning' >&2
+  exit 1
+fi
+remote='git@fixture.invalid:owner/private-skills.git'
 render_helper true "$helper"
 FIXTURE_FAIL_CLONE=true "$helper" reconcile >/dev/null 2>&1
 [[ ! -e $checkout && ! -e $state_file && ! -e $first_destination ]]

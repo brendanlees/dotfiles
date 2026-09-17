@@ -1,15 +1,48 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/bin/sh
 set -eu
 
-if ! command -v herdr >/dev/null 2>&1; then
+mise_bin="$HOME/.local/bin/mise"
+if [ ! -x "$mise_bin" ]; then
+  mise_bin=$(command -v mise) || {
+    echo "mise not found; install managed tools before reconciling Herdr plugins" >&2
+    exit 1
+  }
+fi
+PATH="$(dirname "$mise_bin"):$PATH"
+export PATH
+
+# Resolve global tools even when chezmoi starts inside a project or without shell activation.
+# https://mise.jdx.dev/cli/exec.html
+run_herdr() {
+  "$mise_bin" --cd "$HOME" exec -- herdr "$@"
+}
+
+# Herdr is optional on non-Windows hosts. Distinguish an absent executable from
+# a broken mise environment or an installed Herdr that fails its version check.
+herdr_path=$("$mise_bin" --cd "$HOME" exec -- sh -c 'command -v herdr || true')
+if [ -z "$herdr_path" ]; then
   echo "herdr not found; skipping plugin reconciliation" >&2
   exit 0
+fi
+if ! run_herdr --version >/dev/null; then
+  echo "Herdr is not usable; install managed tools before reconciling plugins" >&2
+  exit 1
+fi
+# Herdr Plus is managed in every non-Windows role. Its pinned build mistakes a
+# Go shim for a compiler and otherwise falls back to an unpinned release download.
+# The global mise Go pin must satisfy the pinned plugin's go.mod (Go 1.26.2):
+# https://github.com/cloudmanic/herdr-plus/blob/f32b0825f12543c1d03e54fb10d1741c40d66cdc/go.mod
+if ! "$mise_bin" --cd "$HOME" exec -- go version; then
+  echo "Go is not usable; install managed tools before reconciling Herdr plugins" >&2
+  exit 1
 fi
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi"
 state_file="$state_dir/herdr-plugins.txt"
 desired_file=$(mktemp)
-trap 'rm -f "$desired_file"' EXIT
+state_tmp=''
+trap 'rm -f "$desired_file"; if [ -n "$state_tmp" ]; then rm -f "$state_tmp"; fi' EXIT
 
 cat >"$desired_file" <<'PLUGINS'
 {{- range $plugin := .herdr.plugins }}
@@ -22,14 +55,14 @@ PLUGINS
 while IFS='|' read -r id source ref; do
   [ -n "$id" ] || continue
   echo "installing Herdr plugin: $id"
-  herdr plugin install "$source" --ref "$ref" --yes
+  run_herdr plugin install "$source" --ref "$ref" --yes
 done <"$desired_file"
 
 {{- range $plugin := .herdr.plugins }}
 {{- if or (not (hasKey $plugin "personal_only")) $.personal }}
 {{- with (index $plugin "config") }}
 {{- with (index . "open_mode") }}
-config_dir=$(herdr plugin config-dir "{{ $plugin.id }}")
+config_dir=$(run_herdr plugin config-dir "{{ $plugin.id }}")
 mkdir -p "$config_dir"
 printf 'open_mode = "%s"\n' "{{ . }}" >"$config_dir/config.toml"
 {{- end }}
@@ -42,10 +75,14 @@ if [ -f "$state_file" ]; then
     [ -n "$id" ] || continue
     if ! awk -F'|' -v id="$id" '$1 == id { found = 1 } END { exit !found }' "$desired_file"; then
       echo "uninstalling removed Herdr plugin: $id"
-      herdr plugin uninstall "$id"
+      run_herdr plugin uninstall "$id"
     fi
   done <"$state_file"
 fi
 
 mkdir -p "$state_dir"
-cp "$desired_file" "$state_file"
+# Publish the ledger only after reconciliation succeeds, without truncating the old ledger.
+state_tmp=$(mktemp "$state_dir/herdr-plugins.XXXXXX")
+cp "$desired_file" "$state_tmp"
+mv "$state_tmp" "$state_file"
+{{ end -}}

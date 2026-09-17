@@ -87,7 +87,7 @@ render_role() {
 TOML
   : > "$bw_log"
 
-  if ! CHEZMOI_ROLE="$role" BW_LOG="$bw_log" PATH="$fake_bin:$PATH" \
+  if ! CHEZMOI_ROLE="$role" GITHUB_TOKEN="${INIT_TOKEN:-}" BW_LOG="$bw_log" PATH="$fake_bin:$PATH" \
     chezmoi init \
       --source "$repo_root" \
       --config "$config_file" \
@@ -135,6 +135,12 @@ assert_bw_item_ids() {
       exit 1
     fi
   done
+  python3 - "$tmpdir/config-${role//[^A-Za-z0-9]/_}.toml" "${INIT_TOKEN:-github-token}" <<'PY'
+import sys
+import tomllib
+from pathlib import Path
+assert tomllib.loads(Path(sys.argv[1]).read_text())['data']['github_token'] == sys.argv[2]
+PY
 }
 
 assert_zero_bw_calls "ephemeral,headless"
@@ -150,7 +156,7 @@ assert_bw_item_ids "personal" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e"
 
-assert_bw_item_ids "personal,work" \
+INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \

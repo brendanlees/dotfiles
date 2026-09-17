@@ -36,27 +36,6 @@ _cached_eval() {
 source "$XDG_CONFIG_HOME/zsh/aliases.zsh"
 
 # ------------------------------------------
-# api tokens
-# ------------------------------------------
-
-{{- if .personal }}
-# Lazy accessor — keeps the GitHub token out of `env` and out of every child
-# process by default. Use it explicitly:
-#   GITHUB_TOKEN=$(gh-token) some-tool
-# To restore the old eager export (for tools that read GITHUB_TOKEN from the
-# environment without a way to be told otherwise), set GH_TOKEN_AUTOEXPORT=1
-# in a shell init file before this is sourced.
-gh-token() { command gh auth token 2>/dev/null; }
-if [[ -n "${GH_TOKEN_AUTOEXPORT:-}" ]] && command -v gh &>/dev/null && gh auth token &>/dev/null 2>&1; then
-  export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh-token)
-  export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
-fi
-{{- else }}
-# Work/headless: rely on pre-existing env (direnv, mise, runner secrets).
-[[ -n "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ]] && export GITHUB_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"
-{{- end }}
-
-# ------------------------------------------
 # vim
 # ------------------------------------------
 
@@ -124,6 +103,32 @@ setopt hist_find_no_dups
 
 export PATH=$HOME/.local/bin:$PATH
 _cached_eval mise mise mise activate zsh
+
+# ------------------------------------------
+# api tokens
+# ------------------------------------------
+
+# Reuse chezmoi's private cache, not a second token in this shell config.
+# Resolve after mise activation so its chezmoi/gh tools are on PATH.
+gh-token() {
+  local token="${GITHUB_TOKEN:-${GITHUB_PERSONAL_ACCESS_TOKEN:-}}"
+  if [[ -z "$token" ]] && command -v chezmoi >/dev/null 2>&1; then
+    token=$(command chezmoi execute-template '{{ "{{ if hasKey . \"github_token\" }}{{ .github_token }}{{ end }}" }}' 2>/dev/null) || token=''
+  fi
+  if [[ -z "$token" ]] && command -v gh >/dev/null 2>&1; then
+    token=$(command gh auth token 2>/dev/null) || token=''
+  fi
+  [[ -n "$token" ]] || return 1
+  printf '%s\n' "$token"
+}
+
+# Set GH_TOKEN_AUTOEXPORT=0 before startup to keep the accessor-only behavior.
+if [[ "${GH_TOKEN_AUTOEXPORT:-1}" != 0 ]]; then
+  if _github_token=$(gh-token); then
+    export GITHUB_TOKEN="$_github_token"
+  fi
+  unset _github_token
+fi
 
 # ------------------------------------------
 # starship
