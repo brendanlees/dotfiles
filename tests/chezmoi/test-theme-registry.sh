@@ -188,6 +188,10 @@ chezmoi_bin=$(command -v chezmoi)
 bash_bin=$(command -v bash)
 cat >"$tmpdir/bin/chezmoi" <<'WRAPPER'
 #!/bin/sh
+if [ "$1" = source-path ]; then
+  echo 'unexpected source-path lookup in theme picker' >&2
+  exit 99
+fi
 if [ "$1" = apply ]; then
   printf '%s\n' "$*" >>"$HOME/apply-calls"
 fi
