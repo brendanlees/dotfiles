@@ -2,7 +2,7 @@
 # theme — switch the global chezmoi theme and live-reload running apps.
 #
 # Usage:
-#   theme                     # interactive picker (gum choose)
+#   theme                     # fuzzy interactive picker (fzf)
 #   theme <theme-key>         # switch directly (e.g. tokyonight-night)
 #   theme --list              # print available themes
 #   theme --current           # print currently active theme
@@ -97,10 +97,10 @@ CURRENT="$(current_theme)"
 TARGET="${1:-}"
 
 if [[ -z "$TARGET" ]]; then
-  if command -v gum >/dev/null 2>&1; then
-    TARGET="$(printf '%s\n' "${VALID_THEMES[@]}" | gum choose --header "Select theme (current: $CURRENT)")"
+  if command -v fzf >/dev/null 2>&1; then
+    TARGET="$(printf '%s\n' "${VALID_THEMES[@]}" | fzf --header "Select theme (current: $CURRENT)")"
   else
-    echo "gum not installed; pick one of:" >&2
+    echo "fzf not installed; pick one of:" >&2
     printf '  %s\n' "${VALID_THEMES[@]}" >&2
     exit 1
   fi

@@ -165,11 +165,11 @@ printf '%s\n' "$@" >"$HOME/obsidian-sync-args"
 SCRIPT
 chmod +x "$home/.config/chezmoi-theme/obsidian-sync"
 cp "$source_root/.chezmoidata/themes.yml" "$fixture/.chezmoidata/themes.yml"
-printf 'theme: black-metal-bathory\n' >"$fixture/.chezmoidata/defaults.yml"
+cp "$source_root/.chezmoidata/defaults.yml" "$fixture/.chezmoidata/defaults.yml"
 cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" "$fixture/.chezmoitemplates/"
 cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" "$fixture/.chezmoiscripts/"
 printf '{{ .theme }}\n' >"$fixture/dot_config/active-theme.tmpl"
-cat >"$fixture/.chezmoiscripts/run_after_install_tools.sh" <<'SCRIPT'
+cat >"$fixture/.chezmoiscripts/run_after_00-install-tools.sh" <<'SCRIPT'
 #!/bin/sh
 printf 'unexpected tool install\n' >"$HOME/tools-ran"
 exit 99
@@ -188,16 +188,25 @@ chezmoi_bin=$(command -v chezmoi)
 bash_bin=$(command -v bash)
 cat >"$tmpdir/bin/chezmoi" <<'WRAPPER'
 #!/bin/sh
+if [ "$1" = apply ]; then
+  printf '%s\n' "$*" >>"$HOME/apply-calls"
+fi
 exec "$REAL_CHEZMOI" --config "$TEST_CONFIG" --destination "$HOME" \
   --persistent-state "$HOME/state.boltdb" --cache "$HOME/cache" \
   --override-data '{"chezmoi":{"os":"darwin"}}' "$@"
 WRAPPER
 printf '#!/bin/sh\nexit 1\n' >"$tmpdir/bin/pgrep"
 chmod +x "$tmpdir/bin/chezmoi" "$tmpdir/bin/pgrep"
-HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
-  PI_AGENT_DIR="$home/.pi/agent" CHEZMOI_SOURCE_DIR="$fixture" \
-  REAL_CHEZMOI="$chezmoi_bin" TEST_CONFIG="$tmpdir/config.toml" \
-  "$bash_bin" "$source_root/dot_local/bin/executable_theme" guts >"$tmpdir/switch.log" 2>&1 || {
+run_theme() {
+  HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
+    PI_AGENT_DIR="$home/.pi/agent" CHEZMOI_SOURCE_DIR="$fixture" \
+    REAL_CHEZMOI="$chezmoi_bin" TEST_CONFIG="$tmpdir/config.toml" \
+    "$bash_bin" "$source_root/dot_local/bin/executable_theme" "$@"
+}
+
+[[ $(run_theme --current) == moonfly ]]
+grep -Fxq '  moonfly (active)' <<<"$(run_theme --list)"
+run_theme guts >"$tmpdir/switch.log" 2>&1 || {
     cat "$tmpdir/switch.log" >&2
     exit 1
   }
@@ -208,3 +217,54 @@ grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "guts"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
 [[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
 echo 'theme switches without tool or external updates and invokes the optional Obsidian adapter'
+
+# A controlled picker keeps this test non-interactive and away from live apps.
+cat >"$tmpdir/bin/fzf" <<'PICKER'
+#!/bin/sh
+cat >"$HOME/picker-input"
+printf '%s\n' "$@" >"$HOME/picker-args"
+cat "$HOME/picker-choice"
+exit "$(cat "$HOME/picker-status")"
+PICKER
+chmod +x "$tmpdir/bin/fzf"
+printf 'unrelated: preserved\n' >>"$fixture/.chezmoidata/local.yml"
+printf 'moonfly\n' >"$home/picker-choice"
+printf '0\n' >"$home/picker-status"
+run_theme >"$tmpdir/picker.log" 2>&1 || {
+  cat "$tmpdir/picker.log" >&2
+  exit 1
+}
+grep -Fxq moonfly "$home/picker-input"
+grep -Fxq guts "$home/picker-input"
+grep -Fxq 'Select theme (current: guts)' "$home/picker-args"
+[[ $(run_theme --current) == moonfly ]]
+grep -Fxq moonfly "$home/.config/active-theme"
+grep -Fxq 'unrelated: preserved' "$fixture/.chezmoidata/local.yml"
+cmp "$source_root/.chezmoidata/defaults.yml" "$fixture/.chezmoidata/defaults.yml"
+[[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
+
+# Cancellation must not write even if the picker emitted a valid theme first.
+cp "$fixture/.chezmoidata/local.yml" "$tmpdir/local-before.yml"
+cp "$home/apply-calls" "$tmpdir/apply-before"
+printf 'guts\n' >"$home/picker-choice"
+printf '130\n' >"$home/picker-status"
+status=0
+run_theme >"$tmpdir/cancel.log" 2>&1 || status=$?
+[[ $status == 130 ]]
+cmp "$tmpdir/local-before.yml" "$fixture/.chezmoidata/local.yml"
+cmp "$tmpdir/apply-before" "$home/apply-calls"
+
+# Empty or invalid selections also leave the overlay and apply state untouched.
+printf '0\n' >"$home/picker-status"
+for choice in '' not-a-theme; do
+  printf '%s\n' "$choice" >"$home/picker-choice"
+  if run_theme >"$tmpdir/invalid.log" 2>&1; then
+    echo "unexpected success for picker choice '$choice'" >&2
+    exit 1
+  fi
+  cmp "$tmpdir/local-before.yml" "$fixture/.chezmoidata/local.yml"
+  cmp "$tmpdir/apply-before" "$home/apply-calls"
+done
+run_theme moonfly >"$tmpdir/unchanged.log" 2>&1
+cmp "$tmpdir/apply-before" "$home/apply-calls"
+echo 'moonfly default, fuzzy picker, local overlay and cancellation safety ok'
