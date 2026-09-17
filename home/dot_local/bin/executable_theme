@@ -11,13 +11,26 @@
 
 set -euo pipefail
 
-if [[ -n ${CHEZMOI_SOURCE_DIR:-} ]]; then
-  CHEZMOI_DIR=$(chezmoi source-path --source "$CHEZMOI_SOURCE_DIR")
-else
-  CHEZMOI_DIR=$(chezmoi source-path)
+# Resolve the usual source layout without starting chezmoi. This keeps the
+# interactive picker responsive; custom or incomplete layouts still use
+# chezmoi's canonical resolution as a fallback below.
+CHEZMOI_ROOT="${CHEZMOI_SOURCE_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi}"
+CHEZMOI_DIR="$CHEZMOI_ROOT"
+if [[ -f "$CHEZMOI_ROOT/.chezmoiroot" ]]; then
+  CHEZMOI_DIR="$CHEZMOI_ROOT/$(<"$CHEZMOI_ROOT/.chezmoiroot")"
 fi
 THEMES_YML="$CHEZMOI_DIR/.chezmoidata/themes.yml"
 DEFAULTS_YML="$CHEZMOI_DIR/.chezmoidata/defaults.yml"
+
+if [[ ! -f "$THEMES_YML" || ! -f "$DEFAULTS_YML" ]]; then
+  if [[ -n ${CHEZMOI_SOURCE_DIR:-} ]]; then
+    CHEZMOI_DIR=$(chezmoi source-path --source "$CHEZMOI_SOURCE_DIR")
+  else
+    CHEZMOI_DIR=$(chezmoi source-path)
+  fi
+  THEMES_YML="$CHEZMOI_DIR/.chezmoidata/themes.yml"
+  DEFAULTS_YML="$CHEZMOI_DIR/.chezmoidata/defaults.yml"
+fi
 # Host-local overlay: chezmoi merges .chezmoidata/*.yml lexicographically, so
 # local.yml beats defaults.yml. Gitignored to keep theme switches out of git.
 LOCAL_YML="$CHEZMOI_DIR/.chezmoidata/local.yml"
