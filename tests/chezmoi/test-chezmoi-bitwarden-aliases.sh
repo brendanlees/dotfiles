@@ -45,6 +45,7 @@ esac
 CHEZMOI
 chmod +x "$fake_bin/chezmoi"
 
+# shellcheck disable=SC2016 # Expanded by the isolated zsh process, not bash.
 printf 'yes\n' | env -u BW_SESSION \
   PATH="$fake_bin:$PATH" \
   ALIASES_FILE="$aliases_file" \
