@@ -10,7 +10,8 @@ current_theme          = text
 inject_theme_js        = 1
 inject_css             = 1
 spotify_launch_flags   = 
-check_spicetify_update = 1
+; Homebrew owns updates. The CLI checker uses unauthenticated GitHub requests.
+check_spicetify_update = 0
 always_enable_devtools = 0
 color_scheme           = {{ .theme }}
 

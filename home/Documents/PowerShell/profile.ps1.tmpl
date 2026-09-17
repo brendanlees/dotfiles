@@ -28,23 +28,6 @@ $env:FZF_ALT_C_COMMAND     = 'fd --type=d --hidden --strip-cwd-prefix --exclude 
 $env:FZF_DEFAULT_OPTS_FILE = "$HOME\.config\fzf\opts"
 
 # ------------------------------------------
-# github token (lazy accessor)
-# ------------------------------------------
-{{- if .personal }}
-# Match zsh pattern — gh auth provides the token on demand. Set
-# $env:GH_TOKEN_AUTOEXPORT (user-scope env var) if a tool requires
-# GITHUB_TOKEN unconditionally.
-function gh-token { gh auth token 2>$null }
-if ($env:GH_TOKEN_AUTOEXPORT -and (Get-Command gh -ErrorAction SilentlyContinue)) {
-    $env:GITHUB_PERSONAL_ACCESS_TOKEN = gh-token
-    $env:GITHUB_TOKEN = $env:GITHUB_PERSONAL_ACCESS_TOKEN
-}
-{{- else }}
-# Work/headless: rely on pre-existing env.
-if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { $env:GITHUB_TOKEN = $env:GITHUB_PERSONAL_ACCESS_TOKEN }
-{{- end }}
-
-# ------------------------------------------
 # PSReadLine — emacs mode for line nav, history search, kill-word, etc.
 # ------------------------------------------
 # Default Windows EditMode treats Ctrl+A as "select all" and Ctrl+E as no-op.
@@ -85,6 +68,31 @@ if (Get-Module -ListAvailable PSReadLine) {
 # ------------------------------------------
 if (Get-Command mise -ErrorAction SilentlyContinue) {
     mise activate pwsh | Out-String | Invoke-Expression
+}
+
+# ------------------------------------------
+# github token
+# ------------------------------------------
+# Reuse the private chezmoi cache after mise has put its tools on PATH.
+function gh-token {
+    if ($env:GITHUB_TOKEN) { return $env:GITHUB_TOKEN }
+    if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { return $env:GITHUB_PERSONAL_ACCESS_TOKEN }
+    $token = $null
+    if (Get-Command chezmoi -ErrorAction SilentlyContinue) {
+        $token = chezmoi execute-template '{{ "{{ if hasKey . \"github_token\" }}{{ .github_token }}{{ end }}" }}' 2>$null
+        if ($LASTEXITCODE -ne 0) { $token = $null }
+    }
+    if (-not $token -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+        $token = gh auth token 2>$null
+        if ($LASTEXITCODE -ne 0) { $token = $null }
+    }
+    return $token
+}
+# Process-only export. Set GH_TOKEN_AUTOEXPORT=0 for accessor-only behavior.
+if ($env:GH_TOKEN_AUTOEXPORT -ne '0') {
+    $githubToken = gh-token
+    if ($githubToken) { $env:GITHUB_TOKEN = $githubToken }
+    Remove-Variable githubToken
 }
 
 # ------------------------------------------

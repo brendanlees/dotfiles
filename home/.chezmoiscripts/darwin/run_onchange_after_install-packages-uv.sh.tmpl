@@ -1,10 +1,13 @@
 #!/bin/sh
 # managed by chezmoi - re-runs when packages-darwin.yml changes
+set -eu
 
 {{- $tools := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .uv .)) }}
 
 {{- if $tools }}
+# The early after-hook installs uv; do not depend on interactive shell PATH.
+MISE="$HOME/.local/bin/mise"
 {{ range $tools -}}
-uv tool install {{ . }}
+"$MISE" --cd "$HOME" exec -- uv tool install {{ . }}
 {{ end -}}
 {{- end }}

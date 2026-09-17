@@ -1,5 +1,22 @@
 # ssh
 
+## private agent skills remote
+
+On personal macOS and Windows hosts, the private-skills prompt expects a Git SSH clone URL, for example:
+
+```text
+git@github.com:OWNER/REPO.git
+ssh://git@git.example.com:2222/OWNER/REPO.git
+```
+
+For GitHub the SSH user is always `git`, not your GitHub username. `github.com:OWNER/REPO.git` is missing the user and is rejected. Use the SSH user and port advertised by a self-hosted Git service. SSH keys/agent access are separate from the GitHub API token.
+
+The values are cached in chezmoi's config under `[data.private_agent_skills]` as `remote` and `checkout`. The checkout must be an absolute path outside the public dotfiles repository; do not enter a literal `~`. Existing nonempty cached values are reused on init, so use `chezmoi edit-config` to correct them rather than expecting another prompt. Check host-local data overrides as well if an old value keeps winning.
+
+For an existing checkout, its `git remote get-url origin` must exactly match the configured URL, including SSH syntax and the `.git` suffix. The helper does not rewrite remotes, pull, reset or delete your checkout. Verify any mismatch before manually correcting the URL, then run `cz-private-agent-skills --fail reconcile` for a visible error instead of the normal non-blocking warning.
+
+## host configuration
+
 these maintain a generic ssh config scaffold, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.
 
 ## setup

@@ -92,7 +92,7 @@
 {{-   if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "remote") .private_agent_skills.remote -}}
 {{-     $private_agent_skills_remote = .private_agent_skills.remote -}}
 {{-   else if stdinIsATTY -}}
-{{-     $private_agent_skills_remote = promptStringOnce . "private_agent_skills_remote" "Private agent skills SSH remote (blank to skip)" -}}
+{{-     $private_agent_skills_remote = promptStringOnce . "private_agent_skills_remote" "Private agent skills SSH remote (git@host:owner/repo.git, blank to skip)" -}}
 {{-   end -}}
 {{-   if $private_agent_skills_remote -}}
 {{-     if and (hasKey . "private_agent_skills") (hasKey .private_agent_skills "checkout") .private_agent_skills.checkout -}}
@@ -122,6 +122,18 @@
 # global vars / data
 # ------------------------------------------
 
+{{- $github_token := env "GITHUB_TOKEN" -}}
+{{- if and (not $github_token) (hasKey . "github_token") -}}
+{{-   $github_token = .github_token -}}
+{{- end -}}
+{{- $bw_github := dict -}}
+{{- if and $personal (lookPath "bw") -}}
+{{-   $bw_github = bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" -}}
+{{-   if not (env "GITHUB_TOKEN") -}}
+{{-     $github_token = $bw_github.read_only_token.value -}}
+{{-   end -}}
+{{- end }}
+
 [data]
 
 # --- feature flags ---
@@ -130,6 +142,9 @@
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
+{{- if $github_token }}
+  github_token = {{ $github_token | quote }}
+{{- end }}
 
 # --- git ---
 {{- if and (not $personal) $work }}
@@ -148,13 +163,11 @@
 
 {{- if and $personal (lookPath "bw") }}
 {{- $bw_info   := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" }}
-{{- $bw_github := bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" }}
 {{- $bw_huggingface  := bitwardenFields "item" "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" }}
   hf_token = {{ $bw_huggingface.read_only_token.value | quote }}
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
 {{- $bw_ha_mcp := bitwardenFields "item" "afa4395b-8044-46b1-86c9-b48d007e82ac" }}
 {{- $bw_executor_work := bitwardenFields "item" "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" }}
-  github_token = {{ $bw_github.read_only_token.value | quote }}
 
 [data.bw_info]
 {{- range $k, $v := $bw_info }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
