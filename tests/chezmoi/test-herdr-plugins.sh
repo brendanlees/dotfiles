@@ -125,7 +125,6 @@ grep -Fxq "third774.last-workspace|third774/herdr-last-workspace|$last_workspace
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "worktrunk|devashish2203/herdr-worktrunk|$worktrunk_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
-"$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "herdr-navigator|thanhdat77/herdr-navigator|$navigator_ref" \
   "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq "crabbox|openclaw/crabbox/plugins/herdr|$crabbox_ref" \
