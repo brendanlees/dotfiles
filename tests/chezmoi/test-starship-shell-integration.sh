@@ -12,6 +12,7 @@ from pathlib import Path
 import pty
 import subprocess
 import sys
+import tarfile
 import tomllib
 
 repo, tmp, zsh = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
@@ -23,6 +24,46 @@ def render(name, data):
         "chezmoi", "execute-template", "--source", str(repo),
         "--override-data", json.dumps(data), "--file", str(repo / "home" / name),
     ], text=True)
+
+def check_external_install(plugin):
+    # Exercise chezmoi's real archive handling. The manual trial's Python
+    # extraction creates parents itself and cannot catch excluded directories.
+    fixture = tmp / "external-install"
+    source = fixture / "source"
+    home = fixture / "home"
+    archive_tree = fixture / "upstream"
+    source.mkdir(parents=True)
+    home.mkdir()
+    (archive_tree / "themes").mkdir(parents=True)
+    for name in ("ftl-prompt.zsh", "ftl-cache.zsh", "ftl-starship.zsh", "LICENSE",
+                 "themes/prompt_starship_setup"):
+        (archive_tree / name).write_text(f"# fixture {name}\n")
+    archive = fixture / "starship-ftl.tar.gz"
+    with tarfile.open(archive, "w:gz") as tar:
+        tar.add(archive_tree, arcname="starship-ftl-fixture")
+
+    target = ".local/share/zsh/plugins/starship-ftl"
+    spec = dict(plugin, url=archive.as_uri())
+    (source / ".chezmoiexternal.toml").write_text(
+        f"[{json.dumps(target)}]\n" +
+        "\n".join(f"{key} = {json.dumps(value)}" for key, value in spec.items()) + "\n"
+    )
+    config = fixture / "chezmoi.toml"
+    config.touch()
+    command = ["chezmoi", "--source", str(source), "--destination", str(home),
+               "--config", str(config), "--cache", str(fixture / "cache"),
+               "--persistent-state", str(fixture / "state.boltdb"),
+               "--no-tty", "apply", "--force"]
+    env = dict(os.environ, HOME=str(home))
+    for state in ("fresh", "partially-applied"):
+        if state == "partially-applied":
+            # Match the reported live state: top-level files, but no themes dir.
+            (home / target / "themes/prompt_starship_setup").unlink()
+            (home / target / "themes").rmdir()
+        result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=15)
+        assert result.returncode == 0, f"{state} FTL external apply failed:\n{result.stderr}"
+        theme = home / target / "themes/prompt_starship_setup"
+        assert theme.read_text() == "# fixture themes/prompt_starship_setup\n"
 
 # The download and activation scopes must agree. Out-of-scope shells use native
 # Starship even when a previous personal-Mac plugin directory remains on disk.
@@ -42,6 +83,7 @@ for name, data in variants.items():
         assert plugin is not None, "personal Mac must provision FTL"
         assert plugin["url"].endswith("/56bea62528c1419ed47b0cda5afaac579bf4739a.tar.gz")
         assert plugin["type"] == "archive" and plugin["stripComponents"] == 1
+        check_external_install(plugin)
     else:
         assert plugin is None, f"FTL must not be provisioned for {name}"
 
@@ -119,5 +161,5 @@ for name, role, tty, optout, missing, failure, term in [
         assert ftl == [f"ftl:-p %F{{{accent}}}❯%f  starship:config={home}/.config/starship/starship.toml"], ftl
     assert not any("transient" in line for line in lines), lines
 
-print("Starship FTL scope, early Mise PATH, palette, opt-out, fallback and submodule policy ok")
+print("Starship FTL external installation, scope, early Mise PATH, palette, opt-out, fallback and submodule policy ok")
 PY

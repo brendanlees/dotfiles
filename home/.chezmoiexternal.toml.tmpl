@@ -7,7 +7,8 @@ type = "archive"
 url = "https://github.com/mattmc3/starship-ftl/archive/56bea62528c1419ed47b0cda5afaac579bf4739a.tar.gz"
 exact = true
 stripComponents = 1
-include = ["*/ftl-prompt.zsh", "*/ftl-cache.zsh", "*/ftl-starship.zsh", "*/themes/prompt_starship_setup", "*/LICENSE"]
+# Preserve the themes directory entry as well as its autoloaded setup file.
+include = ["*/ftl-prompt.zsh", "*/ftl-cache.zsh", "*/ftl-starship.zsh", "*/themes/**", "*/LICENSE"]
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
