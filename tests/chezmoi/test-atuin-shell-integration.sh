@@ -49,6 +49,8 @@ if config.get("theme") != {"name": "chezmoi"}:
     raise SystemExit(f"Atuin config does not select chezmoi theme: {config.get('theme')!r}")
 if "name" in config.get("daemon", {}):
     raise SystemExit("Atuin theme name must not be nested under daemon")
+if config.get("daemon", {}).get("socket_path") != "~/.local/share/atuin/atuin.sock":
+    raise SystemExit("Atuin needs a fixed per-user daemon socket independent of TMPDIR")
 PY
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
