@@ -45,6 +45,8 @@ if theme["theme"] != {"name": "chezmoi", "parent": "autumn"}:
 expected_colors = {key: palette[value] for key, value in expected_mapping.items()}
 if theme.get("colors") != expected_colors:
     raise SystemExit(f"Atuin palette mapping mismatch: {theme.get('colors')!r}")
+if config.get("tmux", {}).get("enabled") is not False:
+    raise SystemExit("Atuin search must stay inline rather than opening a tmux popup")
 if config.get("theme") != {"name": "chezmoi"}:
     raise SystemExit(f"Atuin config does not select chezmoi theme: {config.get('theme')!r}")
 if "name" in config.get("daemon", {}):
@@ -93,10 +95,12 @@ cat >"$tmpdir/bin/atuin" <<'EOF'
 #!/bin/sh
 if [ "${1:-}" = "init" ] && [ "${2:-}" = "zsh" ]; then
   cat <<'ZSH'
+ZSH_AUTOSUGGEST_STRATEGY=(atuin history)
 _atuin_history_widget() { :; }
 zle -N atuin-search-viins _atuin_history_widget
 bindkey -M emacs '^R' atuin-search
 bindkey -M viins '^R' atuin-search-viins
+bindkey -M viins '^[[A' atuin-up-search-viins
 ZSH
 fi
 EOF
@@ -108,9 +112,11 @@ binding=$(HOME="$tmpdir/home" \
   XDG_STATE_HOME="$tmpdir/home/.local/state" \
   XDG_CACHE_HOME="$tmpdir/home/.cache" \
   PATH="$tmpdir/bin:/usr/bin:/bin" \
-  zsh -dfic 'source "$1"; bindkey -M viins "^R"' zsh "$tmpdir/zshrc")
+  zsh -dfic 'source "$1"; bindkey -M viins "^R"; bindkey -M viins "^[[A"; print -r -- "strategies=${(j: :)ZSH_AUTOSUGGEST_STRATEGY}"' zsh "$tmpdir/zshrc")
 [[ $binding == *atuin-search-viins* ]]
+[[ $binding == *atuin-up-search-viins* ]]
 [[ $binding != *fzf-history-widget* ]]
+grep -Fxq 'strategies=history atuin' <<<"$binding"
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   <"$source_root/Documents/PowerShell/profile.ps1.tmpl" >"$tmpdir/profile.ps1"
@@ -118,4 +124,4 @@ psfzf_line=$(grep -nF "Set-PsFzfOption -PSReadlineChordProvider" "$tmpdir/profil
 atuin_ps_line=$(grep -nF 'atuin init powershell | Out-String | Invoke-Expression' "$tmpdir/profile.ps1" | cut -d: -f1)
 ((atuin_ps_line > psfzf_line))
 
-echo 'Atuin shell integration and Ctrl-R ownership ok'
+echo 'Atuin inline search, history-first suggestions, Ctrl-R and Up ownership ok'

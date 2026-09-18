@@ -104,6 +104,21 @@ setopt hist_find_no_dups
 export PATH=$HOME/.local/bin:$PATH
 _cached_eval mise mise mise activate zsh
 
+# FTL must run after Mise exposes the real Starship binary, but before the
+# remaining startup work. Keep the experiment on personal, non-headless Macs.
+export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
+{{- if and .personal (not .headless) (eq .chezmoi.os "darwin") }}
+_starship_ftl_active=0
+if [[ ${STARSHIP_FTL:-1} == 1 && -o interactive && -o zle && -t 1 && $TERM != dumb ]] &&
+   (( $+commands[starship] )) &&
+   [[ -r "$XDG_DATA_HOME/zsh/plugins/starship-ftl/ftl-prompt.zsh" ]]; then
+  if source "$XDG_DATA_HOME/zsh/plugins/starship-ftl/ftl-prompt.zsh" &&
+     ftl-prompt -p '%F{ {{- (index .themes .theme).palette.accent -}} }❯%f ' starship; then
+    _starship_ftl_active=1
+  fi
+fi
+{{- end }}
+
 # ------------------------------------------
 # api tokens
 # ------------------------------------------
@@ -134,9 +149,12 @@ fi
 # starship
 # ------------------------------------------
 
-# start starship prompt
-export STARSHIP_CONFIG=~/.config/starship/starship.toml
-_cached_eval starship starship starship init zsh
+# FTL owns initialization when active. Opt-out, missing-plugin, non-TTY and
+# out-of-scope shells retain the ordinary prompt without a second initializer.
+if [[ ${_starship_ftl_active:-0} != 1 ]]; then
+  _cached_eval starship starship starship init zsh
+fi
+unset _starship_ftl_active
 
 # ------------------------------------------
 # fzf 
@@ -164,6 +182,9 @@ source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 
 # Load after fzf so Atuin owns Ctrl-R and the Up Arrow history search.
 _cached_eval atuin atuin atuin init zsh
+# Prefer in-memory local history; query Atuin only when it has no suggestion.
+# Set this after init, which otherwise prepends the Atuin strategy.
+ZSH_AUTOSUGGEST_STRATEGY=(history atuin)
 
 # ------------------------------------------
 # carapace 
