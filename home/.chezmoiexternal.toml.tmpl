@@ -1,5 +1,15 @@
 {{- /* plugins */ -}}
 
+{{- if and .personal (not .headless) (eq .chezmoi.os "darwin") }}
+# Experimental startup-only prompt. Pin updates for explicit review/testing.
+[".local/share/zsh/plugins/starship-ftl"]
+type = "archive"
+url = "https://github.com/mattmc3/starship-ftl/archive/56bea62528c1419ed47b0cda5afaac579bf4739a.tar.gz"
+exact = true
+stripComponents = 1
+include = ["*/ftl-prompt.zsh", "*/ftl-cache.zsh", "*/ftl-starship.zsh", "*/themes/prompt_starship_setup", "*/LICENSE"]
+{{- end }}
+
 {{- if ne .chezmoi.os "windows" }}
 [".local/share/zsh/plugins/zsh-autosuggestions"]
 type = "archive"
