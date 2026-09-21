@@ -58,6 +58,8 @@ sys.exit(0 if windows else 1)
 '
 }
 
+# Keep front_app_switched on the center item only. Refreshing every workspace
+# item would invoke AeroSpace once per item on each app switch.
 while IFS= read -r workspace; do
     [ -n "$workspace" ] || continue
 
@@ -104,7 +106,7 @@ while IFS= read -r workspace; do
         update_freq=60 \
         script="$PLUGIN_DIR/aerospace.sh $workspace" \
         click_script="aerospace workspace $workspace" \
-        --subscribe space."$workspace" aerospace_workspace_change display_change front_app_switched system_woke
+        --subscribe space."$workspace" aerospace_workspace_change display_change system_woke
 done <<<"$WORKSPACES"
 
 # consolidate spaces into a single shared pill
@@ -168,7 +170,7 @@ while IFS= read -r workspace; do
         update_freq=60 \
         script="$PLUGIN_DIR/aerospace.sh secondary $workspace" \
         click_script="aerospace workspace $workspace" \
-        --subscribe "$item_name" aerospace_workspace_change display_change front_app_switched system_woke
+        --subscribe "$item_name" aerospace_workspace_change display_change system_woke
 done <<<"$WORKSPACES"
 
 sketchybar --add bracket secondary_spaces '/^secondary_space\..*$/' \

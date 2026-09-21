@@ -260,6 +260,10 @@ grep -F "display=\"\$SECONDARY_DISPLAY\"" "$SPACES" >/dev/null
 grep -F 'secondary_space.' "$SPACES" >/dev/null
 grep -F 'secondary_spaces' "$SPACES" >/dev/null
 grep -F -- "--format '%{monitor-is-main}%{tab}%{workspace}'" "$SPACES" >/dev/null
-grep -F 'display_change' "$SPACES" >/dev/null
+grep -F -- "--subscribe space.\"\$workspace\" aerospace_workspace_change display_change system_woke" "$SPACES" >/dev/null
+grep -F -- "--subscribe \"\$item_name\" aerospace_workspace_change display_change system_woke" "$SPACES" >/dev/null
+if grep -F -- '--subscribe' "$SPACES" | grep -F 'front_app_switched' >/dev/null; then
+  exit 1
+fi
 grep -F 'display=active' "$SPACES" >/dev/null && exit 1
 grep -F 'FOCUSED_WORKSPACE' "$NOTIFY" >/dev/null
