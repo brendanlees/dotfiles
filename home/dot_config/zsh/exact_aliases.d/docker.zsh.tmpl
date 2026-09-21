@@ -126,8 +126,10 @@ _infi_auth_login() {
     echo "infi-auth: access token cached for this shell"
 }
 
-# Prompt for Universal Auth credentials and exchange them for a short-lived
-# access token. The secret is hidden and neither value enters shell history.
+# Prompt for the Universal Auth client secret and exchange it for a short-lived
+# access token. Managed Docker nodes supply the nonsecret client ID through
+# ~/.config/infisical/client-id, so neither value enters shell history. A
+# missing file retains the interactive client-ID fallback for local machines.
 infi-auth() {
     if (( $# > 1 )); then
         echo "usage: infi-auth [domain]" >&2
@@ -135,9 +137,20 @@ infi-auth() {
     fi
 
     local client_id client_secret
+    local client_id_path="${INFISICAL_CLIENT_ID_FILE:-$HOME/.config/infisical/client-id}"
     local domain="${1:-https://infisical.lab.brendans.cloud}"
 
-    read -r "client_id?Client ID: " || return 1
+    if [[ -r "$client_id_path" ]]; then
+        client_id="$(<"$client_id_path")"
+        if [[ -z "$client_id" || "$client_id" == *$'\n'* ]]; then
+            echo "infi-auth: client ID file must contain one nonempty line: $client_id_path" >&2
+            client_id=""
+            return 1
+        fi
+    else
+        read -r "client_id?Client ID: " || return 1
+    fi
+
     if ! read -rs "client_secret?Client secret: "; then
         print >&2
         client_id=""

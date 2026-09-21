@@ -13,8 +13,9 @@ LOG="$TEST_ROOT/commands.log"
 ZSH_BIN="$(command -v zsh)"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 
-mkdir -p "$COMPOSE_DIR/infisical/proxy" "$BIN_DIR"
+mkdir -p "$COMPOSE_DIR/infisical/proxy" "$BIN_DIR" "$TEST_ROOT/home/.config/infisical"
 touch "$COMPOSE_DIR/compose.proxy.yml" "$COMPOSE_DIR/.env" "$COMPOSE_DIR/.env-proxy"
+printf '%s\n' client-id >"$TEST_ROOT/home/.config/infisical/client-id"
 cat >"$TEST_ROOT/chezmoi.toml" <<'TOML'
 [data]
 personal = false
@@ -121,10 +122,11 @@ printf '\n' >>"$INFI_ALIAS_TEST_LOG"
 SH
 chmod +x "$BIN_DIR/infisical" "$BIN_DIR/bw" "$BIN_DIR/sudo" "$BIN_DIR/docker"
 
-# The default flow prompts once, preserves the cached access token when the
-# aliases are re-sourced, and prompts again only after an explicit clear.
+# The managed-node flow reads the client ID from the user config, prompts
+# only for the secret, preserves the cached access token when the aliases are
+# re-sourced, and prompts again only after an explicit clear.
 : >"$LOG"
-printf '%s\n' client-id client-secret client-id client-secret | \
+printf '%s\n' client-secret client-secret | \
   HOME="$TEST_ROOT/home" \
   PATH="$BIN_DIR:$PATH" \
   INFI_ALIAS_TEST_LOG="$LOG" \
@@ -165,6 +167,22 @@ cat >"$COMPOSE_DIR/infisical/proxy/.infisical.json" <<'JSON'
   "defaultSecretPath": "/nodes/test-node"
 }
 JSON
+: >"$LOG"
+printf '%s\n' client-secret | \
+  HOME="$TEST_ROOT/home" \
+  PATH="$BIN_DIR:$PATH" \
+  INFI_ALIAS_TEST_LOG="$LOG" \
+  "$ZSH_BIN" -fc "
+    cd '$COMPOSE_DIR'
+    setopt aliases
+    source '$ALIASES'
+    eval 'idcrec.proxy'
+  "
+grep -Fq 'infisical login <login> <--domain=https://infisical.lab.brendans.cloud>' "$LOG"
+grep -Fq 'infisical run <run> <--domain=https://infisical.lab.brendans.cloud>' "$LOG"
+
+# Unmanaged local shells retain the old client-ID fallback.
+rm -f "$TEST_ROOT/home/.config/infisical/client-id"
 : >"$LOG"
 printf '%s\n' client-id client-secret | \
   HOME="$TEST_ROOT/home" \
