@@ -194,7 +194,7 @@ refreshPeriod = "168h"
 {{/* agent harness configs */}}
 [".claude"]
 type = "git-repo"
-url = "https://gitea.lab.brendans.cloud/xbxd/claude-config.git"
+url = "ssh://git@gitea.lab.brendans.cloud/xbxd/claude-config.git"
 refreshPeriod = "168h"
 exclude = [
   "*/.editorconfig",
@@ -207,7 +207,7 @@ args = ["--autostash", "--rebase"]
 
 [".pi"]
 type = "git-repo"
-url = "https://gitea.lab.brendans.cloud/xbxd/pi-config.git"
+url = "ssh://git@gitea.lab.brendans.cloud/xbxd/pi-config.git"
 refreshPeriod = "168h"
 exclude = [
   "*/.editorconfig",
