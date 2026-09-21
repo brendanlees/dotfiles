@@ -9,7 +9,6 @@ uv:
   base: []
   personal:
     - esphome
-    - jcodemunch-mcp
   work: []
 
 npm:
@@ -143,7 +142,6 @@ casks:
     - arc
     - boltai
     - flacon
-    - plex
     - plexamp
     - spotify
     - vlc
@@ -166,9 +164,7 @@ casks:
     - local
     - responsively
     - visual-studio-code
-    - vial
     - google-chrome
-    - xykong/tap/flux-markdown
     - zen-browser
     - font-monaspace-nerd-font
     - font-monaspice-nerd-font
@@ -187,6 +183,7 @@ casks:
     - macos-fuse-t/cask/fuse-t-sshfs
     - keyclu
     - codex
-    - codex-app
+    - codexbar
+    - chatgpt
     - hazeover
   work: []
