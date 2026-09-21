@@ -110,7 +110,7 @@ HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_CACHE_HOME="$home/.cache" \
   "$(command -v chezmoi)" apply --source "$fixture" --destination "$home" \
   --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" --force
 [[ $(wc -l <"$tmpdir/first-install.log") -eq 1 ]]
-[[ $(wc -l <"$tmpdir/uv.log") -eq 2 ]]
+[[ $(wc -l <"$tmpdir/uv.log") -eq 1 ]]
 if HOME="$home" PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" \
   UV_LOG="$tmpdir/uv.log" UV_STATUS=42 sh "$fixture/.chezmoiscripts/darwin/$(basename "$uv_template")"; then
   echo 'uv install failure must fail apply' >&2
