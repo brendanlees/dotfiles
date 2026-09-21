@@ -28,7 +28,7 @@ case "$*" in
     printf 'install\n' >>"$INSTALL_LOG"
     exit "${INSTALL_STATUS:-0}"
     ;;
-  'exec -- uv tool install esphome'|'exec -- uv tool install jcodemunch-mcp')
+  'exec -- uv tool install esphome')
     [[ -s "$INSTALL_LOG" ]] || exit 94
     printf '%s\n' "$*" >>"$UV_LOG"
     exit "${UV_STATUS:-0}"
@@ -108,7 +108,7 @@ HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_CACHE_HOME="$home/.cache" \
   PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" UV_LOG="$tmpdir/uv.log" \
   GITHUB_API_TOKEN='' GITHUB_TOKEN='' EXPECTED_TOKEN=fixture-cached-token \
   "$(command -v chezmoi)" apply --source "$fixture" --destination "$home" \
-    --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" --force
+  --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" --force
 [[ $(wc -l <"$tmpdir/first-install.log") -eq 1 ]]
 [[ $(wc -l <"$tmpdir/uv.log") -eq 2 ]]
 if HOME="$home" PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" \
