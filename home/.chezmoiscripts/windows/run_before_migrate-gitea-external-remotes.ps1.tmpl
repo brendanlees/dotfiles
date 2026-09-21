@@ -1,0 +1,26 @@
+$ErrorActionPreference = 'Stop'
+
+if ('{{ .personal }}' -ne 'true') { exit 0 }
+
+# Keep existing external checkouts from attempting one final HTTPS fetch before
+# chezmoi applies the SSH transport declared in .chezmoiexternal.toml.
+$specs = @(
+    @('.claude', 'claude-config'),
+    @('.pi', 'pi-config')
+)
+
+foreach ($spec in $specs) {
+    $checkout = Join-Path $HOME $spec[0]
+    if (-not (Test-Path (Join-Path $checkout '.git') -PathType Container)) { continue }
+
+    $current = (& git -C $checkout remote get-url origin 2>$null | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) { continue }
+
+    $expectedHttps = "https://gitea.lab.brendans.cloud/xbxd/$($spec[1]).git"
+    $expectedSsh = "ssh://git@gitea.lab.brendans.cloud/xbxd/$($spec[1]).git"
+    if ($current -eq $expectedHttps) {
+        & git -C $checkout remote set-url origin $expectedSsh
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Write-Output "migrated $($spec[0]) remote to SSH"
+    }
+}

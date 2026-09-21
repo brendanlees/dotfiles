@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+{{- if not .personal }}
+exit 0
+{{- else }}
+# Keep existing external checkouts from attempting one final HTTPS fetch before
+# chezmoi applies the SSH transport declared in .chezmoiexternal.toml.
+for spec in \
+  '.claude|claude-config' \
+  '.pi|pi-config'; do
+  target=${spec%%|*}
+  repository=${spec#*|}
+  checkout="$HOME/$target"
+  [ -d "$checkout/.git" ] || continue
+
+  if current=$(git -C "$checkout" remote get-url origin 2>/dev/null); then
+    expected_https="https://gitea.lab.brendans.cloud/xbxd/$repository.git"
+    expected_ssh="ssh://git@gitea.lab.brendans.cloud/xbxd/$repository.git"
+    if [ "$current" = "$expected_https" ]; then
+      git -C "$checkout" remote set-url origin "$expected_ssh"
+      printf 'migrated %s remote to SSH\n' "$target"
+    fi
+  fi
+done
+{{- end }}
