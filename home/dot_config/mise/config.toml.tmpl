@@ -1,4 +1,8 @@
 [settings]
+{{ if eq .chezmoi.os "linux" -}}
+# Prefer static Linux artifacts so managed tools run on older Ubuntu hosts.
+libc = "musl"
+{{ end -}}
 {{ if and (hasKey . "github_token") .github_token -}}
 github.credential_command = 'chezmoi execute-template "{{ "{{ .github_token }}" }}"'
 {{ end -}}
