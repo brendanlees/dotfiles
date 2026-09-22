@@ -24,7 +24,16 @@ _cached_eval() {
   [[ -n $binpath ]] || return
   if [[ ! -s $cache || $binpath -nt $cache ]]; then
     mkdir -p "${cache:h}"
-    "$@" > "$cache"
+    local tmp
+    tmp=$(mktemp "${cache}.XXXXXX") || return 1
+    if ! "$@" > "$tmp"; then
+      rm -f "$tmp"
+      return 1
+    fi
+    mv "$tmp" "$cache" || {
+      rm -f "$tmp"
+      return 1
+    }
   fi
   source "$cache"
 }
@@ -181,10 +190,17 @@ source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 # ------------------------------------------
 
 # Load after fzf so Atuin owns Ctrl-R and the Up Arrow history search.
-_cached_eval atuin atuin atuin init zsh
-# Prefer in-memory local history; query Atuin only when it has no suggestion.
-# Set this after init, which otherwise prepends the Atuin strategy.
-ZSH_AUTOSUGGEST_STRATEGY=(history atuin)
+# Do not register Atuin's strategy unless its init output defined the handler;
+# otherwise a broken binary makes zsh-autosuggestions report an error on every
+# keystroke.
+if _cached_eval atuin atuin atuin init zsh &&
+   (( $+functions[_zsh_autosuggest_strategy_atuin] )); then
+  # Prefer in-memory local history; query Atuin only when it has no suggestion.
+  # Set this after init, which otherwise prepends the Atuin strategy.
+  ZSH_AUTOSUGGEST_STRATEGY=(history atuin)
+else
+  ZSH_AUTOSUGGEST_STRATEGY=(history)
+fi
 
 # ------------------------------------------
 # carapace 

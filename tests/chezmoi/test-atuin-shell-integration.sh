@@ -7,6 +7,7 @@ tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"theme":"guts","chezmoi":{"os":"darwin","username":"test"}}'
+linux_data='{"personal":false,"work":false,"homelab":true,"headless":true,"ephemeral":false,"theme":"guts","chezmoi":{"os":"linux","username":"test"}}'
 
 atuin_theme_template="$source_root/dot_config/atuin/themes/chezmoi.toml.tmpl"
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
@@ -58,6 +59,9 @@ PY
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   <"$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise.toml"
 grep -Fxq 'atuin = "latest"' "$tmpdir/mise.toml"
+chezmoi execute-template --source "$repo_root" --override-data "$linux_data" \
+  --file "$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-linux.toml"
+grep -Fxq 'libc = "musl"' "$tmpdir/mise-linux.toml"
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   --file "$source_root/dot_zshrc.tmpl" >"$tmpdir/zshrc"
@@ -94,8 +98,13 @@ EOF
 cat >"$tmpdir/bin/atuin" <<'EOF'
 #!/bin/sh
 if [ "${1:-}" = "init" ] && [ "${2:-}" = "zsh" ]; then
+  if [ "${ATUIN_TEST_FAIL:-0}" = 1 ]; then
+    echo 'simulated atuin failure' >&2
+    exit 127
+  fi
   cat <<'ZSH'
 ZSH_AUTOSUGGEST_STRATEGY=(atuin history)
+_zsh_autosuggest_strategy_atuin() { :; }
 _atuin_history_widget() { :; }
 zle -N atuin-search-viins _atuin_history_widget
 bindkey -M emacs '^R' atuin-search
@@ -117,6 +126,18 @@ binding=$(HOME="$tmpdir/home" \
 [[ $binding == *atuin-up-search-viins* ]]
 [[ $binding != *fzf-history-widget* ]]
 grep -Fxq 'strategies=history atuin' <<<"$binding"
+
+rm -f "$tmpdir/home/.cache/zsh/init/atuin.zsh"
+failed_binding=$(HOME="$tmpdir/home" \
+  XDG_CONFIG_HOME="$tmpdir/home/.config" \
+  XDG_DATA_HOME="$tmpdir/home/.local/share" \
+  XDG_STATE_HOME="$tmpdir/home/.local/state" \
+  XDG_CACHE_HOME="$tmpdir/home/.cache" \
+  PATH="$tmpdir/bin:/usr/bin:/bin" \
+  ATUIN_TEST_FAIL=1 \
+  zsh -dfic 'source "$1"; print -r -- "strategies=${(j: :)ZSH_AUTOSUGGEST_STRATEGY}"' zsh "$tmpdir/zshrc" 2>"$tmpdir/atuin-failure.stderr")
+grep -Fxq 'strategies=history' <<<"$failed_binding"
+[[ ! -e "$tmpdir/home/.cache/zsh/init/atuin.zsh" ]]
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   <"$source_root/Documents/PowerShell/profile.ps1.tmpl" >"$tmpdir/profile.ps1"
