@@ -75,7 +75,7 @@ from pathlib import Path
 root = Path(sys.argv[1])
 expected = {
     "personal-hass-config": ("hass-config", "~/Code/_homelab/home-assistant-config/", "agent", "claude --agent homelab:hass-config --dangerously-allow-permissions"),
-    "personal-homelab": ("homelab", "~/Code/_homelab/ansible-playbooks/homelab", "ansible", "ansible-playbook update-servers.yml"),
+    "personal-homelab": ("homelab", "~/Code/_homelab/ansible-playbooks/homelab", "ansible", "./update.sh"),
     "personal-pi-config": ("pi-config", "~/.pi", "agent", "pi"),
     "personal-claude-config": ("claude-config", "~/.claude", "agent", "claude"),
     "personal-hermes-config": ("hermes-config", "~/Code/_homelab/local-stdy01-docker", "shell", None),

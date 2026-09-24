@@ -7,15 +7,14 @@ vim_mode = true
 vim_filter_search = true
 preview = false
 detailed_rows = true
+agent_sort = "herdr"
 
 [theme]
 inherit_herdr = true
 
-# Navigator tracks successful local workspace transitions for Jump Back.
-# Keep the previous workspace pinned in the unfiltered picker.
 [jump_back]
-enabled = true
-pin_previous = true
+enabled = false
+pin_previous = false
 
 [sources]
 open_workspaces = true
