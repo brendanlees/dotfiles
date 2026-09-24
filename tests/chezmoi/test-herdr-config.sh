@@ -9,7 +9,7 @@ chezmoi data --source "$repo_root" --format json >"$tmpdir/data.json"
 chezmoi execute-template --source "$repo_root" --override-data '{"theme":"guts"}' \
   --file "$repo_root/home/dot_config/herdr/config.toml.tmpl" >"$tmpdir/config.toml"
 
-python3 - "$tmpdir/data.json" "$tmpdir/config.toml" "$repo_root/home/dot_config/herdr/executable_pi-navigation.sh" <<'PY'
+python3 - "$tmpdir/data.json" "$tmpdir/config.toml" "$repo_root/home/dot_config/herdr/executable_pi-navigation.sh" "$repo_root/home/dot_config/herdr/plugins/config/herdr-navigator/config.toml" <<'PY'
 import json
 import os
 import subprocess
@@ -66,6 +66,11 @@ for key, direction in [("ctrl+h", "left"), ("ctrl+l", "right")]:
 assert config["ui"]["accent"] == palette["accent"]
 assert config["theme"]["custom"]["panel_bg"] == palette["bg"]
 assert config["theme"]["custom"]["text"] == palette["fg"]
+
+# Navigator defaults: agents sorted by Herdr order, Jump Back left off.
+navigator = tomllib.loads(Path(sys.argv[4]).read_text())
+assert navigator["picker"]["agent_sort"] == "herdr"
+assert navigator["jump_back"] == {"enabled": False, "pin_previous": False}
 PY
 
 for os in windows darwin; do
