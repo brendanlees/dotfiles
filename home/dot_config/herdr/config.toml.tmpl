@@ -26,8 +26,8 @@ split_horizontal = "prefix+double_quote"
 close_pane = "prefix+x"
 zoom = ["prefix+z", "ctrl+f"]
 resize_mode = ""
-navigate_workspace_up = "ctrl+k"
-navigate_workspace_down = "ctrl+j"
+navigate_workspace_up = ""
+navigate_workspace_down = ""
 
 # --- resize ---
 
@@ -65,15 +65,15 @@ description = "navigate left (vim/herdr)"
 
 [[keys.command]]
 key = "ctrl+j"
-type = "plugin_action"
-command = "vim-herdr-navigation.down"
-description = "navigate down (vim/herdr)"
+type = "shell"
+command = 'exec "$HOME/.config/herdr/pi-navigation.sh" down'
+description = "navigate down (Pi autocomplete/vim/herdr)"
 
 [[keys.command]]
 key = "ctrl+k"
-type = "plugin_action"
-command = "vim-herdr-navigation.up"
-description = "navigate up (vim/herdr)"
+type = "shell"
+command = 'exec "$HOME/.config/herdr/pi-navigation.sh" up'
+description = "navigate up (Pi autocomplete/vim/herdr)"
 
 [[keys.command]]
 key = "ctrl+l"
