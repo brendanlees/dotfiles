@@ -21,6 +21,20 @@ done
 grep -Fxq '/agents/state/' "$repo_root/.gitignore"
 grep -Fxq '/agents/backups/' "$repo_root/.gitignore"
 
+# Harness-specific policy belongs in the native append file, not shared instructions.
+python3 - "$repo_root/agents" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+append = (root / 'pi/APPEND_SYSTEM.md').read_text()
+shared = (root / 'AGENTS.md').read_text()
+for topic in ('skillspector_scan', 'Pi documentation', 'Hindsight'):
+    assert topic in append, f'missing Pi policy: {topic}'
+    assert topic not in shared, f'Pi policy leaked into shared instructions: {topic}'
+assert not (root / 'pi/SYSTEM.md').exists(), 'native policy must append, not replace Pi defaults'
+PY
+
 personal_ignore="$tmpdir/personal-ignore"
 chezmoi execute-template \
   --source "$repo_root" \
