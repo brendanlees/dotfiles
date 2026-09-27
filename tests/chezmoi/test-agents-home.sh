@@ -29,7 +29,7 @@ from pathlib import Path
 root = Path(sys.argv[1])
 append = (root / 'pi/APPEND_SYSTEM.md').read_text()
 shared = (root / 'AGENTS.md').read_text()
-for topic in ('skillspector_scan', 'Pi documentation', 'Hindsight'):
+for topic in ('skillspector_scan', 'Pi documentation', 'Hindsight', 'Context7'):
     assert topic in append, f'missing Pi policy: {topic}'
     assert topic not in shared, f'Pi policy leaked into shared instructions: {topic}'
 assert not (root / 'pi/SYSTEM.md').exists(), 'native policy must append, not replace Pi defaults'
