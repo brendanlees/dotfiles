@@ -12,7 +12,6 @@ from pathlib import Path
 import pty
 import subprocess
 import sys
-import tarfile
 import tomllib
 
 repo, tmp, zsh = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
@@ -25,48 +24,6 @@ def render(name, data):
         "--override-data", json.dumps(data), "--file", str(repo / "home" / name),
     ], text=True)
 
-def check_external_install(plugin):
-    # Exercise chezmoi's real archive handling. The manual trial's Python
-    # extraction creates parents itself and cannot catch excluded directories.
-    fixture = tmp / "external-install"
-    source = fixture / "source"
-    home = fixture / "home"
-    archive_tree = fixture / "upstream"
-    source.mkdir(parents=True)
-    home.mkdir()
-    (archive_tree / "themes").mkdir(parents=True)
-    for name in ("ftl-prompt.zsh", "ftl-cache.zsh", "ftl-starship.zsh", "LICENSE",
-                 "themes/prompt_starship_setup"):
-        (archive_tree / name).write_text(f"# fixture {name}\n")
-    archive = fixture / "starship-ftl.tar.gz"
-    with tarfile.open(archive, "w:gz") as tar:
-        tar.add(archive_tree, arcname="starship-ftl-fixture")
-
-    target = ".local/share/zsh/plugins/starship-ftl"
-    spec = dict(plugin, url=archive.as_uri())
-    (source / ".chezmoiexternal.toml").write_text(
-        f"[{json.dumps(target)}]\n" +
-        "\n".join(f"{key} = {json.dumps(value)}" for key, value in spec.items()) + "\n"
-    )
-    config = fixture / "chezmoi.toml"
-    config.touch()
-    command = ["chezmoi", "--source", str(source), "--destination", str(home),
-               "--config", str(config), "--cache", str(fixture / "cache"),
-               "--persistent-state", str(fixture / "state.boltdb"),
-               "--no-tty", "apply", "--force"]
-    env = dict(os.environ, HOME=str(home))
-    for state in ("fresh", "partially-applied"):
-        if state == "partially-applied":
-            # Match the reported live state: top-level files, but no themes dir.
-            (home / target / "themes/prompt_starship_setup").unlink()
-            (home / target / "themes").rmdir()
-        result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=15)
-        assert result.returncode == 0, f"{state} FTL external apply failed:\n{result.stderr}"
-        theme = home / target / "themes/prompt_starship_setup"
-        assert theme.read_text() == "# fixture themes/prompt_starship_setup\n"
-
-# The download and activation scopes must agree. Out-of-scope shells use native
-# Starship even when a previous personal-Mac plugin directory remains on disk.
 variants = {
     "personal-mac": base,
     "work-mac": dict(base, personal=False, work=True),
@@ -78,14 +35,10 @@ rendered = {}
 for name, data in variants.items():
     rendered[name] = render("dot_zshrc.tmpl", data)
     external = tomllib.loads(render(".chezmoiexternal.toml.tmpl", data))
-    plugin = external.get(".local/share/zsh/plugins/starship-ftl")
-    if name == "personal-mac":
-        assert plugin is not None, "personal Mac must provision FTL"
-        assert plugin["url"].endswith("/56bea62528c1419ed47b0cda5afaac579bf4739a.tar.gz")
-        assert plugin["type"] == "archive" and plugin["stripComponents"] == 1
-        check_external_install(plugin)
-    else:
-        assert plugin is None, f"FTL must not be provisioned for {name}"
+    assert not any(path.startswith(".local/share/zsh/plugins/") for path in external), external
+    enabled = name == "personal-mac"
+    assert ("zinit light mattmc3/starship-ftl" in rendered[name]) == enabled
+    assert ('ver"56bea62528c1419ed47b0cda5afaac579bf4739a"' in rendered[name]) == enabled
 
 starship = tomllib.loads(render("dot_config/starship/private_starship.toml.tmpl", base))
 assert starship["git_status"]["ignore_submodules"] is True
@@ -95,6 +48,7 @@ for name, role, tty, optout, missing, failure, term in [
     ("enabled", "personal-mac", True, False, False, False, "xterm-256color"),
     ("optout", "personal-mac", True, True, False, False, "xterm-256color"),
     ("missing", "personal-mac", True, False, True, False, "xterm-256color"),
+    ("no-zinit", "personal-mac", True, False, False, False, "xterm-256color"),
     ("failure", "personal-mac", True, False, False, True, "xterm-256color"),
     ("pipe", "personal-mac", False, False, False, False, "xterm-256color"),
     ("dumb", "personal-mac", True, False, False, False, "dumb"),
@@ -102,28 +56,48 @@ for name, role, tty, optout, missing, failure, term in [
       for role in variants if role != "personal-mac"],
 ]:
     home = tmp / name
-    plugins = home / ".local/share/zsh/plugins"
-    for path in [home / ".config/zsh/aliases.zsh",
-                 plugins / "zsh-autosuggestions/zsh-autosuggestions.zsh",
-                 plugins / "fzf-tab/fzf-tab.plugin.zsh",
-                 plugins / "zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"]:
+    zinit_dir = home / ".local/share/zinit/zinit.git"
+    if name != "no-zinit":
+        zinit_dir.mkdir(parents=True)
+        manager = zinit_dir / "zinit.zsh"
+        manager.write_text('''typeset -g _zinit_test_ice=''
+zinit() {
+  if [[ $1 == ice ]]; then
+    shift
+    _zinit_test_ice="$*"
+  elif [[ $1 == light ]]; then
+    print -r -- "${_zinit_test_ice}|$2" >>"$ZINIT_LOG"
+    if [[ $2 == mattmc3/starship-ftl ]]; then
+      if [[ ${FTL_TEST_MISSING:-0} == 1 || ! -r $FTL_TEST_PLUGIN ]]; then
+        return 1
+      fi
+      source "$FTL_TEST_PLUGIN"
+    fi
+    _zinit_test_ice=''
+  fi
+}
+''')
+    for path in (home / ".config/zsh/aliases.zsh",):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch()
+
     tools = home / "tools"
     tools.mkdir()
-    # Starship is only made available by the Mise init, not inherited PATH.
     starship_bin = tools / "starship"
-    starship_bin.write_text("#!/bin/sh\nprintf '%s\\n' 'print -r -- native >>\"$TEST_CALLS\"'\n")
+    starship_bin.write_text('''#!/bin/sh
+printf '%s\\n' 'print -r -- native >>"$TEST_CALLS"'
+''')
     starship_bin.chmod(0o755)
     bin_dir = home / "bin"
     bin_dir.mkdir()
     mise = bin_dir / "mise"
-    mise.write_text(f"#!/bin/sh\nprintf '%s\\n' 'export PATH=\"{tools}:$PATH\"'\n")
+    mise.write_text(f'''#!/bin/sh
+printf '%s\\n' 'export PATH="{tools}:$PATH"'
+''')
     mise.chmod(0o755)
-    if not missing:
-        plugin = plugins / "starship-ftl/ftl-prompt.zsh"
-        plugin.parent.mkdir()
-        plugin.write_text('''ftl-prompt() {
+
+    ftl_plugin = home / "ftl-prompt.zsh"
+    ftl_plugin.write_text('''ftl-prompt() {
   print -r -- "ftl:${*}:config=$STARSHIP_CONFIG" >>"$TEST_CALLS"
   [[ ${FTL_TEST_FAIL:-0} != 1 ]]
 }
@@ -131,6 +105,7 @@ for name, role, tty, optout, missing, failure, term in [
     rc = home / "zshrc"
     rc.write_text(rendered[role])
     calls = home / "calls"
+    zinit_log = home / "zinit.log"
     env = {
         "HOME": str(home), "ZDOTDIR": str(home), "PATH": f"{bin_dir}:/usr/bin:/bin",
         "XDG_CONFIG_HOME": str(home / ".config"),
@@ -139,7 +114,10 @@ for name, role, tty, optout, missing, failure, term in [
         "XDG_CACHE_HOME": str(home / ".cache"),
         "GH_TOKEN_AUTOEXPORT": "0", "TERM": term,
         "STARSHIP_FTL": "0" if optout else "1",
-        "FTL_TEST_FAIL": "1" if failure else "0", "TEST_CALLS": str(calls),
+        "FTL_TEST_FAIL": "1" if failure else "0",
+        "FTL_TEST_MISSING": "1" if missing else "0",
+        "FTL_TEST_PLUGIN": str(ftl_plugin), "ZINIT_LOG": str(zinit_log),
+        "TEST_CALLS": str(calls),
     }
     master, slave = pty.openpty() if tty else (None, None)
     try:
@@ -152,6 +130,7 @@ for name, role, tty, optout, missing, failure, term in [
         if tty:
             os.close(slave)
             os.close(master)
+
     lines = calls.read_text().splitlines() if calls.exists() else []
     enabled = name == "enabled"
     assert lines.count("native") == (0 if enabled else 1), (name, lines)
@@ -159,7 +138,9 @@ for name, role, tty, optout, missing, failure, term in [
     assert len(ftl) == (1 if enabled or failure else 0), (name, lines)
     if enabled:
         assert ftl == [f"ftl:-p %F{{{accent}}}❯%f  starship:config={home}/.config/starship/starship.toml"], ftl
+        assert any("56bea62528c1419ed47b0cda5afaac579bf4739a" in line and
+                   "mattmc3/starship-ftl" in line for line in zinit_log.read_text().splitlines())
     assert not any("transient" in line for line in lines), lines
 
-print("Starship FTL external installation, scope, early Mise PATH, palette, opt-out, fallback and submodule policy ok")
+print("Zinit FTL pin, scope, early Mise PATH, opt-out, fallback and prompt policy ok")
 PY

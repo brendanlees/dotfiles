@@ -73,8 +73,13 @@ export PI_CACHE_RETENTION=long
 # zsh plugins
 # ------------------------------------------
 
-# load zsh-completions
-fpath=("$XDG_DATA_HOME/zsh/plugins/zsh-completions/" $fpath)
+ZINIT_HOME="$XDG_DATA_HOME/zinit/zinit.git"
+_zinit_available=0
+if [[ -r "$ZINIT_HOME/zinit.zsh" ]] && source "$ZINIT_HOME/zinit.zsh"; then
+  _zinit_available=1
+  zinit ice depth=1
+  zinit light zsh-users/zsh-completions
+fi
 
 # completion styling
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
@@ -89,10 +94,7 @@ zstyle ':fzf-tab:*' group-colors \
   $'\033[38;2;187;154;247m' \
   $'\033[38;2;158;206;106m'
 
-# load zsh-autosuggestions
-source "$XDG_DATA_HOME/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-# autosuggestions history config
+# history config
 export HISTSIZE=10000
 export HISTFILE="$XDG_STATE_HOME/zsh/history"
 export SAVEHIST=$HISTSIZE
@@ -119,9 +121,10 @@ export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
 {{- if and .personal (not .headless) (eq .chezmoi.os "darwin") }}
 _starship_ftl_active=0
 if [[ ${STARSHIP_FTL:-1} == 1 && -o interactive && -o zle && -t 1 && $TERM != dumb ]] &&
-   (( $+commands[starship] )) &&
-   [[ -r "$XDG_DATA_HOME/zsh/plugins/starship-ftl/ftl-prompt.zsh" ]]; then
-  if source "$XDG_DATA_HOME/zsh/plugins/starship-ftl/ftl-prompt.zsh" &&
+   (( _zinit_available && $+commands[starship] )); then
+  zinit ice ver"56bea62528c1419ed47b0cda5afaac579bf4739a"
+  if zinit light mattmc3/starship-ftl &&
+     (( $+functions[ftl-prompt] )) &&
      ftl-prompt -p '%F{ {{- (index .themes .theme).palette.accent -}} }❯%f ' starship; then
     _starship_ftl_active=1
   fi
@@ -172,7 +175,6 @@ unset _starship_ftl_active
 # set up fzf key bindings and fuzzy completion
 _cached_eval fzf fzf fzf --zsh
 
-# load fzf-tab script
 mkdir -p "$XDG_CACHE_HOME/zsh" 2>/dev/null
 autoload -U compinit
 zcompdump="$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
@@ -183,23 +185,21 @@ else
   compinit -u -d "$zcompdump"
 fi
 unset zcompdump
-source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+if (( _zinit_available )); then
+  zinit ice depth=1
+  zinit light Aloxaf/fzf-tab
+fi
 
 # ------------------------------------------
 # atuin
 # ------------------------------------------
 
-# Load after fzf so Atuin owns Ctrl-R and the Up Arrow history search.
-# Do not register Atuin's strategy unless its init output defined the handler;
-# otherwise a broken binary makes zsh-autosuggestions report an error on every
-# keystroke.
-if _cached_eval atuin atuin atuin init zsh &&
-   (( $+functions[_zsh_autosuggest_strategy_atuin] )); then
-  # Prefer in-memory local history; query Atuin only when it has no suggestion.
-  # Set this after init, which otherwise prepends the Atuin strategy.
-  ZSH_AUTOSUGGEST_STRATEGY=(history atuin)
-else
-  ZSH_AUTOSUGGEST_STRATEGY=(history)
+# Keep Atuin for Ctrl-R and Up history search; Deja handles inline suggestions.
+_cached_eval atuin atuin atuin init zsh
+
+if (( _zinit_available )) && (( $+commands[deja] )); then
+  zinit ice wait"0" lucid depth=1 pick"deja.plugin.zsh"
+  zinit light Giammarco-Ferranti/deja
 fi
 
 # ------------------------------------------
@@ -451,6 +451,10 @@ fi
 # ------------------------------------------
 # syntax highlighting
 # ------------------------------------------
-# !NOTE must be last: both highlighters hook widgets after all other plugins.
+# !NOTE must be last: highlighters hook widgets after all other plugins.
 
-source "$XDG_DATA_HOME/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+if (( _zinit_available )); then
+  zinit ice wait lucid depth=1
+  zinit light zsh-users/zsh-syntax-highlighting
+fi
+unset _zinit_available ZINIT_HOME

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Prepare and exercise this worktree without applying dotfiles or using live history."""
 import argparse
-import fnmatch
-import io
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import pty
 import select
 import shutil
@@ -14,16 +12,14 @@ import statistics
 import struct
 import subprocess
 import sys
-import tarfile
 import tempfile
 import termios
 import time
 import tomllib
-import urllib.request
 import fcntl
 
 REPO = Path(__file__).resolve().parents[2]
-MODES = ("baseline", "off", "ftl")
+MODES = ("off", "ftl")
 MARKER = b"\x1b]777;ftl-trial-ready\x07"
 
 
@@ -62,19 +58,34 @@ def stop_daemon(root, mode):
                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True, timeout=15)
 
 
-def prepare(baseline_ref):
-    for tool in ("chezmoi", "zsh", "starship", "atuin", "mise", "git", "fzf", "carapace", "wt", "zoxide"):
+def stop_deja_daemon(root, mode):
+    env = environment(root, mode)
+    data_dir = root / mode / ".local/share/deja"
+    sock, pidfile = data_dir / "sock", data_dir / "daemon.pid"
+    if not sock.is_file() or not pidfile.is_file():
+        return
+    if subprocess.run(["deja", "ping"], env=env, stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL, timeout=2).returncode != 0:
+        return
+    os.kill(int(pidfile.read_text()), signal.SIGTERM)
+    deadline = time.monotonic() + 2
+    while sock.exists() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    if sock.exists():
+        raise RuntimeError(f"Deja daemon did not release {sock}")
+
+
+def prepare():
+    for tool in ("chezmoi", "zsh", "starship", "atuin", "deja", "mise", "git", "fzf", "carapace", "wt", "zoxide"):
         if not shutil.which(tool):
             raise SystemExit(f"Required installed tool missing: {tool}")
     root = Path(tempfile.mkdtemp(prefix="starship-ftl-trial-", dir="/tmp")).resolve()
-    base_sha = run(["git", "rev-parse", baseline_ref], cwd=REPO)
     theme = run(["chezmoi", "execute-template", "{{ .theme }}"])
     data = dict(personal=True, work=False, homelab=False, headless=False,
                 ephemeral=False, theme=theme, chezmoi={"os": "darwin"})
     meta = dict(path=os.environ["PATH"], user=os.environ.get("USER", "trial"),
-                baseline=base_sha, worktree=str(REPO), theme=theme,
-                zsh=shutil.which("zsh"), versions={})
-    for tool in ("starship", "atuin", "mise", "zsh"):
+                worktree=str(REPO), theme=theme, zsh=shutil.which("zsh"), versions={})
+    for tool in ("starship", "atuin", "deja", "mise", "zsh"):
         meta["versions"][tool] = run([tool, "--version"]).splitlines()[0]
     (root / "trial.json").write_text(json.dumps(meta, indent=2))
 
@@ -84,40 +95,32 @@ def prepare(baseline_ref):
             "--override-data", json.dumps(data),
         ], input=text, text=True)
 
-    external = tomllib.loads(render((REPO / "home/.chezmoiexternal.toml.tmpl").read_text()))
-    spec = external[".local/share/zsh/plugins/starship-ftl"]
-    print(f"Downloading the pinned FTL archive: {spec['url']}", flush=True)
-    with urllib.request.urlopen(spec["url"], timeout=45) as response:
-        archive = response.read()
-    plugin_files = {}
-    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as tar:
-        for member in tar.getmembers():
-            if member.isfile() and any(fnmatch.fnmatchcase(member.name, pat) for pat in spec["include"]):
-                relative = PurePosixPath(*PurePosixPath(member.name).parts[spec["stripComponents"]:])
-                if relative.is_absolute() or ".." in relative.parts:
-                    raise RuntimeError("Unsafe archive member")
-                plugin_files[str(relative)] = tar.extractfile(member).read()
-    if "ftl-prompt.zsh" not in plugin_files:
-        raise RuntimeError("Archive did not contain the expected FTL entrypoint")
-
-    real_plugins = Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))) / "zsh/plugins"
+    real_zinit = Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))) / "zinit"
+    if not (real_zinit / "zinit.git/zinit.zsh").is_file():
+        raise SystemExit(f"Zinit is not installed under {real_zinit}")
+    plugin_repos = (
+        "zsh-users---zsh-completions",
+        "Aloxaf---fzf-tab",
+        "zsh-users---zsh-syntax-highlighting",
+        "Giammarco-Ferranti---deja",
+        "mattmc3---starship-ftl",
+    )
     for mode in MODES:
         home = root / mode
         for directory in (".config/zsh", ".config/starship", ".config/atuin/themes", ".local/state/zsh",
                           ".local/share/atuin", ".cache", "tmp"):
             (home / directory).mkdir(parents=True)
         (home / ".config/zsh/aliases.zsh").write_text("# Trial: user aliases intentionally omitted.\n")
-        for plugin in ("zsh-autosuggestions", "zsh-syntax-highlighting", "zsh-completions", "fzf-tab"):
-            shutil.copytree(real_plugins / plugin, home / ".local/share/zsh/plugins" / plugin,
-                            ignore=shutil.ignore_patterns(".git", "*.zwc", "tests", "test", "spec"))
-        for relative, content in plugin_files.items():
-            path = home / ".local/share/zsh/plugins/starship-ftl" / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(content)
+        shutil.copytree(real_zinit / "zinit.git", home / ".local/share/zinit/zinit.git")
+        for plugin in plugin_repos:
+            source_plugin = real_zinit / "plugins" / plugin
+            if not source_plugin.is_dir():
+                raise SystemExit(f"Zinit plugin is not installed: {source_plugin}")
+            destination = home / ".local/share/zinit/plugins" / plugin
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(source_plugin, destination)
 
         def source(name):
-            if mode == "baseline":
-                return subprocess.check_output(["git", "show", f"{base_sha}:home/{name}"], cwd=REPO, text=True)
             return (REPO / "home" / name).read_text()
 
         rc = render(source("dot_zshrc.tmpl"))
@@ -129,6 +132,8 @@ if [[ ${FTL_TRIAL_BENCH:-0} == 1 ]]; then
   _trial_ready() { print -rn -- $'\\e]777;ftl-trial-ready\\a'; }
   add-zle-hook-widget zle-line-init _trial_ready
 fi
+# Keep the disposable shell from querying the real chezmoi config for tokens.
+gh-token() { return 1 }
 '''
         (home / ".zshrc").write_text(rc)
         (home / ".config/starship/starship.toml").write_text(render(source("dot_config/starship/private_starship.toml.tmpl")))
@@ -148,7 +153,11 @@ fi
         (home / ".config/atuin/config.toml").write_text(config)
         theme_text = render((REPO / "home/dot_config/atuin/themes/chezmoi.toml.tmpl").read_text())
         (home / ".config/atuin/themes/chezmoi.toml").write_text(theme_text)
-        (home / ".local/state/zsh/history").write_text("echo trial-local-history\n")
+        history = home / ".local/state/zsh/history"
+        history.write_text(": 1700000000:0;echo trial-local-history\n")
+        subprocess.run(["deja", "import", "--file", str(history)],
+                       env=environment(root, mode), cwd=REPO, check=True,
+                       stdout=subprocess.DEVNULL)
 
     env = environment(root, "ftl")
     fixture = root / "repo"
@@ -169,7 +178,7 @@ fi
                            env=env, cwd=fixture, check=True, stdout=subprocess.DEVNULL)
         finally:
             stop_daemon(root, mode)
-    print(f"Prepared: {root}\nBaseline commit: {base_sha}\nNo live dotfiles or history modified.")
+    print(f"Prepared: {root}\nCopied Zinit plugins and seeded synthetic history; no live data modified.")
 
 
 def sample(root, mode):
@@ -250,13 +259,13 @@ def benchmark(root, count):
     finally:
         for mode in MODES:
             stop_daemon(root, mode)
+            stop_deja_daemon(root, mode)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    prepare_cmd = commands.add_parser("prepare", help="Download pinned FTL and create disposable fixtures")
-    prepare_cmd.add_argument("--baseline-ref", default="main")
+    commands.add_parser("prepare", help="Create disposable Zinit/FTL fixtures")
     for command in ("shell", "benchmark"):
         p = commands.add_parser(command)
         p.add_argument("directory", type=Path)
@@ -266,7 +275,7 @@ def main():
             p.add_argument("--runs", type=int, default=12)
     args = parser.parse_args()
     if args.command == "prepare":
-        prepare(args.baseline_ref)
+        prepare()
         return
     root = args.directory.resolve(strict=True)
     if args.command == "benchmark":
@@ -280,6 +289,7 @@ def main():
             subprocess.run([meta["zsh"], "-di"], env=environment(root, args.mode), cwd=root / "repo", check=False)
         finally:
             stop_daemon(root, args.mode)
+            stop_deja_daemon(root, args.mode)
 
 
 if __name__ == "__main__":
