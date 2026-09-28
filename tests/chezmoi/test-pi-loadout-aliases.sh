@@ -16,12 +16,11 @@ printf '%s\n' "$*" >>"$PI_ALIAS_TEST_LOG"
 SH
 chmod +x "$TMPDIR/bin/pi"
 
-PI_ALIAS_TEST_LOG="$TMPDIR/pi.log" PATH="$TMPDIR/bin:$PATH" zsh -fc \
+PI_ALIAS_TEST_LOG="$TMPDIR/pi.log" HOME="$TMPDIR/home" PATH="$TMPDIR/bin:$PATH" zsh -fc \
   "setopt aliases; source '$ALIASES'; eval pipo; eval pisp; eval pice"
 
-cat >"$TMPDIR/expected.log" <<'EOF'
-/loadout use pocock
-/loadout use superpowers
-/loadout use ce
-EOF
+printf '%s\n' \
+  "/loadout use pocock" \
+  "--skill $TMPDIR/home/.pi/agent/git/github.com/obra/superpowers/skills /loadout use superpowers" \
+  "/loadout use ce" >"$TMPDIR/expected.log"
 cmp "$TMPDIR/expected.log" "$TMPDIR/pi.log"
