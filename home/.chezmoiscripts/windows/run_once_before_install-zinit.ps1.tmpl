@@ -1,0 +1,9 @@
+$ErrorActionPreference = 'Stop'
+
+$dataHome = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $HOME '.local/share' }
+$zinitDir = Join-Path $dataHome 'zinit/zinit.git'
+if (-not (Test-Path (Join-Path $zinitDir 'zinit.zsh'))) {
+    New-Item -ItemType Directory -Force -Path (Split-Path $zinitDir) | Out-Null
+    git clone --depth 1 https://github.com/zdharma-continuum/zinit.git $zinitDir
+    if ($LASTEXITCODE -ne 0) { throw "Zinit clone failed ($LASTEXITCODE)" }
+}

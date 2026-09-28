@@ -8,7 +8,8 @@
 | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `_cached_eval` helper          | caches `tool init zsh` output to disk; reruns only when binary is newer                   |
 | daily-only `compinit -u`       | full `$fpath` security scan once per 24h, `-C` fast path otherwise                        |
-| `zsh-syntax-highlighting` last | must be sourced after all other widget-defining plugins or it silently fails to hook them |
+| Zinit Turbo for Deja/highlighting | defers ghost-text and syntax-highlighting setup until after the prompt; completions stay ordered |
+| `zsh-syntax-highlighting` last | must load after all other widget-defining plugins or it silently fails to hook them |
 | opt-in `zprof` profiler        | `ZPROF=1 zsh -ic exit` enables timing without polluting normal sessions                   |
 
 ## `_cached_eval`
@@ -48,10 +49,10 @@ For Brendan testing the prompt without applying this branch. The trial is limite
 From this worktree, prepare a disposable environment:
 
 ```sh
-python3 tests/manual/starship-ftl-trial.py prepare --baseline-ref main
+python3 tests/manual/starship-ftl-trial.py prepare
 ```
 
-Requires the existing installed Zsh/tools and Zsh plugins. It downloads only the pinned FTL archive, renders baseline and trial configs, copies the installed plugins, and creates a 500-file Git fixture plus synthetic Atuin/Zsh history. Copy the printed `Prepared:` path:
+Requires the existing installed Zsh/tools, Deja, Zinit, and its managed plugin checkouts. It copies the Zinit manager and plugin caches into disposable homes, seeds synthetic Zsh/Atuin history, and creates a 500-file Git fixture. Copy the printed `Prepared:` path:
 
 ```sh
 trial=/private/tmp/starship-ftl-trial-REPLACE_WITH_PRINTED_SUFFIX
@@ -62,14 +63,12 @@ Use `exit` to return. To compare:
 
 ```sh
 python3 tests/manual/starship-ftl-trial.py shell "$trial" --mode off
-python3 tests/manual/starship-ftl-trial.py shell "$trial" --mode baseline
 ```
 
-- `baseline`: templates/config from the captured baseline commit.
-- `off`: this worktree's three tuning changes, FTL disabled.
-- `ftl`: this worktree with FTL and all three tuning changes.
+- `off`: this worktree with FTL disabled.
+- `ftl`: this worktree with FTL enabled.
 
-Each has its own HOME, init caches, history databases and daemon socket. Atuin sync/update checks are disabled and its sandbox daemon is stopped on normal launcher exit. User aliases, credentials/token lookup, login files, inherited tool-manager state, TMUX and terminal-specific integration are deliberately omitted. Do not run sensitive commands, import real history, use `chezmoi apply`, or source the live `.zshrc` for this trial. Preparation snapshots the templates; prepare again after editing them.
+Each has its own HOME, init caches, history databases and daemon sockets. Atuin sync/update checks are disabled; Atuin and Deja sandbox daemons stop on normal launcher exit. User aliases, credentials/token lookup, login files, inherited tool-manager state, TMUX and terminal-specific integration are deliberately omitted. Do not run sensitive commands, import real history, use `chezmoi apply`, or source the live `.zshrc` for this trial. Preparation snapshots the templates; prepare again after editing them.
 
 ### Personal checks
 
@@ -77,15 +76,15 @@ In the `ftl` shell:
 
 1. Watch the early `❯`, then the right prompt. Type a short command immediately on launch: input should be retained, not executed before the shell is ready.
 2. Run `false`, then `echo $?`: expect the error character and status `1`. Press Escape / `i` to check the vi command/insert characters; try Ctrl-C and a multiline command.
-3. Type `echo trial-local` for a local-history suggestion; clear it and type `echo trial-atuin` for the seeded Atuin fallback. Ctrl-R and Up should open Atuin inline; cancel and check the prompt/buffer.
-4. Check the effective choices and bindings:
+3. Type `echo trial-local` to see Deja suggest the seeded `echo trial-local-history`; Ctrl-R and Up should still open Atuin history search.
+4. Check the active integrations:
    ```zsh
-   print -rl -- $ZSH_AUTOSUGGEST_STRATEGY
+   deja ping
    print -r -- "popup=${ATUIN_TMUX_POPUP:-default}"
    bindkey -M viins '^R'
    bindkey -M viins '^[[A'
    ```
-   Expect `history` then `atuin`, `popup=false`, and Atuin widgets.
+   Expect `pong`, `popup=false`, and Atuin widgets.
 5. Check Tab/fzf-tab, suggestions and syntax highlighting. Resize a narrow window; try a long wrapped command, a cancelled search and fast Enter/Ctrl-C sequences. Repeat the launcher in Ghostty and Herdr. No actual tmux-popup transport is exercised because the launcher does not inherit TMUX.
 6. Compare with `off`. If flicker, lost input, duplicate prompts or broken widgets appear only with FTL, retain the tuning changes but leave FTL disabled. Do not merely judge the time until the right prompt fills in.
 
@@ -108,11 +107,11 @@ bash tests/chezmoi/test-starship-shell-integration.sh
 bash tests/chezmoi/test-atuin-shell-integration.sh
 ```
 
-The Starship owner covers provisioning/activation scope, the early Mise PATH dependency, theme colour, native fallback and submodule policy. The Atuin owner covers inline configuration, post-init strategy order and retained Ctrl-R/Up ownership. Their controlled fixtures do not replace real-terminal checks.
+The Starship owner covers the Zinit FTL pin/scope, early Mise PATH dependency, theme colour and native fallback. The Atuin owner covers Zinit loading, Deja seeding and retained Ctrl-R/Up ownership. Their controlled fixtures do not replace real-terminal checks.
 
 ## Not done intentionally
 
-- Broad deferred loading: introduces partially ready widgets and plugin initialization-order risks.
+- Deferring completion setup: a late first `Tab` can race plugin loading, so completions stay initialized before the prompt.
 - Replacing Mise activation with shims: changes environment-injection semantics.
 - Blanket `.zshrc` compilation: adds cache invalidation work without an evidenced need.
 - Generic init-cache refactoring: outside this pilot; the invalidation limits above still apply.

@@ -103,7 +103,8 @@ fi
 
 # Retirement must work on macOS despite the broad .local/bin ignore rule.
 cleanup_source="$tmpdir/cleanup"
-mkdir -p "$cleanup_source" "$fixture_home/.local/bin"
+mkdir -p "$cleanup_source" "$fixture_home/.local/bin" \
+  "$fixture_home/.local/share/zsh/plugins/fzf-tab" "$fixture_home/.local/state/zsh"
 role='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"darwin"}}'
 chezmoi execute-template --source "$repo_root" --override-data "$role" \
   --file "$ignore_file" >"$cleanup_source/.chezmoiignore"
@@ -112,9 +113,13 @@ chezmoi execute-template --source "$repo_root" --override-data "$role" \
 for name in chezmoi-apply-library chezmoi-readd-library unrelated; do
   printf 'old binary\n' >"$fixture_home/.local/bin/$name"
 done
+printf 'old plugin\n' >"$fixture_home/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+printf 'history\n' >"$fixture_home/.local/state/zsh/history"
 HOME="$fixture_home" "$chezmoi_bin" apply --source "$cleanup_source" \
   --destination "$fixture_home" --config "$config_file" --no-tty --force
 [[ ! -e "$fixture_home/.local/bin/chezmoi-apply-library" ]]
 [[ ! -e "$fixture_home/.local/bin/chezmoi-readd-library" ]]
 [[ -f "$fixture_home/.local/bin/unrelated" ]]
+[[ ! -e "$fixture_home/.local/share/zsh/plugins" ]]
+grep -Fxq 'history' "$fixture_home/.local/state/zsh/history"
 echo 'native Library operations and helper retirement ok'

@@ -18,29 +18,37 @@ chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
 cat >"$home/.local/bin/mise" <<'MISE'
 #!/usr/bin/env bash
 set -euo pipefail
-# Applying config installs missing global tools, never upgrades or prunes.
-[[ $1 == --cd && $2 == "$HOME" ]] || exit 91
-shift 2
 case "$*" in
-  install)
+  '--cd '*"$HOME"' install')
     [[ $MISE_USE_VERSIONS_HOST == 0 && $MISE_CACHE_DIR == "$HOME/.cache/mise-direct" ]] || exit 92
     [[ $GITHUB_TOKEN == "$EXPECTED_TOKEN" && $GITHUB_API_TOKEN == "$EXPECTED_TOKEN" ]] || exit 93
     printf 'install\n' >>"$INSTALL_LOG"
     exit "${INSTALL_STATUS:-0}"
     ;;
-  'exec -- uv tool install esphome')
-    [[ -s "$INSTALL_LOG" ]] || exit 94
+  'exec -- deja import --file '* )
+    history_file=${*: -1}
+    [[ -s "$history_file" ]] || exit 94
+    printf '%s\n' "$*" >>"$DEJA_LOG"
+    mkdir -p "$HOME/.local/share/deja"
+    : >"$HOME/.local/share/deja/deja.db"
+    ;;
+  '--cd '*"$HOME"' exec -- uv tool install esphome')
+    [[ -s "$INSTALL_LOG" ]] || exit 95
     printf '%s\n' "$*" >>"$UV_LOG"
     exit "${UV_STATUS:-0}"
     ;;
-  *) exit 95 ;;
+  *) exit 96 ;;
 esac
 MISE
 chmod +x "$home/.local/bin/mise"
+mkdir -p "$home/.local/state/zsh"
+printf 'echo from old history\n' >"$home/.local/state/zsh/history"
 
 run_install() {
   (cd "$tmpdir/project" && HOME="$home" XDG_CONFIG_HOME="$home/.config" \
+    XDG_DATA_HOME="$home/custom-data" XDG_STATE_HOME="$home/.local/state" \
     XDG_CACHE_HOME="$home/.cache" PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/install.log" \
+    DEJA_LOG="$tmpdir/deja-import.log" \
     GITHUB_API_TOKEN='' GITHUB_TOKEN="$1" EXPECTED_TOKEN="$2" \
     INSTALL_STATUS="${3:-0}" bash "$tmpdir/install.sh")
 }
@@ -52,6 +60,23 @@ if run_install '' fixture-cached-token 42; then
 fi
 grep -Fxq 'keep this generated lockfile' "$home/.config/mise/mise.lock"
 [[ $(wc -l <"$tmpdir/install.log") -eq 3 ]]
+[[ $(wc -l <"$tmpdir/deja-import.log") -eq 1 ]]
+grep -Fq -- '--file /' "$tmpdir/deja-import.log"
+
+chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux"}}' \
+  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-linux.toml"
+chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"windows"}}' \
+  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-windows.toml"
+python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" <<'PY'
+import sys
+import tomllib
+from pathlib import Path
+linux, windows = (tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:])
+assert linux['github:Giammarco-Ferranti/deja'] == 'latest'
+assert 'github:Giammarco-Ferranti/deja' not in windows
+PY
 
 # Root skips other users' project configs instead of granting blanket trust.
 for username in root ordinary-user; do
@@ -105,7 +130,9 @@ chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
   --file "$uv_template" >"$fixture/.chezmoiscripts/darwin/$(basename "$uv_template")"
 : >"$tmpdir/first-install.log"
 HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_CACHE_HOME="$home/.cache" \
+  XDG_DATA_HOME="$home/custom-data" XDG_STATE_HOME="$home/.local/state" \
   PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" UV_LOG="$tmpdir/uv.log" \
+  DEJA_LOG="$tmpdir/deja-import.log" \
   GITHUB_API_TOKEN='' GITHUB_TOKEN='' EXPECTED_TOKEN=fixture-cached-token \
   "$(command -v chezmoi)" apply --source "$fixture" --destination "$home" \
   --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" --force
@@ -180,4 +207,4 @@ printf '[data]\n' >"$tmpdir/config.toml"
 run_shell '' '' '' fixture-gh-token
 [[ $(wc -l <"$tmpdir/gh.log") -eq 1 ]]
 
-echo 'mise install, bootstrap ordering and shared GitHub credentials ok'
+echo 'mise install, Deja history seeding, bootstrap ordering and shared credentials ok'

@@ -68,20 +68,63 @@ chezmoi execute-template --source "$repo_root" --override-data "$data" \
 fzf_line=$(grep -nF '_cached_eval fzf fzf fzf --zsh' "$tmpdir/zshrc" | cut -d: -f1)
 atuin_line=$(grep -nF '_cached_eval atuin atuin atuin init zsh' "$tmpdir/zshrc" | cut -d: -f1)
 ((atuin_line > fzf_line))
+if grep -Fq 'XDG_DATA_HOME/zsh/plugins/' "$tmpdir/zshrc"; then
+  echo 'Zsh plugins must no longer load from chezmoi-managed directories' >&2
+  exit 1
+fi
+for plugin in 'zsh-users/zsh-completions' 'Aloxaf/fzf-tab' 'zsh-users/zsh-syntax-highlighting' 'Giammarco-Ferranti/deja'; do
+  grep -Fq "zinit light $plugin" "$tmpdir/zshrc"
+done
+grep -Fq 'wait"0" lucid depth=1 pick"deja.plugin.zsh"' "$tmpdir/zshrc"
+grep -Fq 'zinit ice wait lucid depth=1' "$tmpdir/zshrc"
+python3 - "$tmpdir/zshrc" <<'PY'
+import sys
+from pathlib import Path
+text = Path(sys.argv[1]).read_text()
+assert text.index('zinit light zsh-users/zsh-completions') < text.index('autoload -U compinit')
+assert text.index('autoload -U compinit') < text.index('zinit light Aloxaf/fzf-tab')
+assert text.rindex('zinit light zsh-users/zsh-syntax-highlighting') > text.index('bindkey \'^X^E\' edit-command-line')
+PY
 
 # Exercise the binding order with small fake init commands. fzf claims Ctrl-R
 # first; the later Atuin init must replace that widget in vi insert mode.
-mkdir -p \
-  "$tmpdir/home/.config/zsh" \
-  "$tmpdir/home/.local/share/zsh/plugins/zsh-autosuggestions" \
-  "$tmpdir/home/.local/share/zsh/plugins/fzf-tab" \
-  "$tmpdir/home/.local/share/zsh/plugins/zsh-syntax-highlighting" \
-  "$tmpdir/home/.cache"
+mkdir -p "$tmpdir/home/.config/zsh" "$tmpdir/home/.cache" "$tmpdir/bin"
 : >"$tmpdir/home/.config/zsh/aliases.zsh"
-: >"$tmpdir/home/.local/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-: >"$tmpdir/home/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
-: >"$tmpdir/home/.local/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-mkdir -p "$tmpdir/bin"
+cat >"$tmpdir/zinit-stub.zsh" <<'ZSH'
+typeset -g _zinit_test_ice=''
+zinit() {
+  if [[ $1 == ice ]]; then
+    shift
+    _zinit_test_ice="$*"
+  elif [[ $1 == light ]]; then
+    print -r -- "${_zinit_test_ice}|$2" >>"$ZINIT_LOG"
+    _zinit_test_ice=''
+  fi
+}
+ZSH
+cat >"$tmpdir/bin/git" <<'GIT'
+#!/bin/sh
+[ "$1" = clone ] && [ "$2" = --depth ] && [ "$3" = 1 ] &&
+  [ "$4" = https://github.com/zdharma-continuum/zinit.git ] || exit 91
+printf '%s\n' "$5" >>"$ZINIT_CLONE_LOG"
+mkdir -p "$5"
+cp "$ZINIT_STUB" "$5/zinit.zsh"
+GIT
+chmod +x "$tmpdir/bin/git"
+chezmoi execute-template --source "$repo_root" --override-data "$linux_data" \
+  --file "$source_root/.chezmoiscripts/run_once_before_install-zinit.sh.tmpl" \
+  >"$tmpdir/install-zinit.sh"
+for _ in 1 2; do
+  HOME="$tmpdir/home" XDG_DATA_HOME="$tmpdir/home/.local/share" \
+    PATH="$tmpdir/bin:/usr/bin:/bin" ZINIT_STUB="$tmpdir/zinit-stub.zsh" \
+    ZINIT_CLONE_LOG="$tmpdir/zinit-clone.log" bash "$tmpdir/install-zinit.sh"
+done
+[[ $(wc -l <"$tmpdir/zinit-clone.log") -eq 1 ]]
+cat >"$tmpdir/bin/deja" <<'DEJA'
+#!/bin/sh
+exit 0
+DEJA
+chmod +x "$tmpdir/bin/deja"
 
 cat >"$tmpdir/bin/fzf" <<'EOF'
 #!/bin/sh
@@ -103,8 +146,6 @@ if [ "${1:-}" = "init" ] && [ "${2:-}" = "zsh" ]; then
     exit 127
   fi
   cat <<'ZSH'
-ZSH_AUTOSUGGEST_STRATEGY=(atuin history)
-_zsh_autosuggest_strategy_atuin() { :; }
 _atuin_history_widget() { :; }
 zle -N atuin-search-viins _atuin_history_widget
 bindkey -M emacs '^R' atuin-search
@@ -120,12 +161,15 @@ binding=$(HOME="$tmpdir/home" \
   XDG_DATA_HOME="$tmpdir/home/.local/share" \
   XDG_STATE_HOME="$tmpdir/home/.local/state" \
   XDG_CACHE_HOME="$tmpdir/home/.cache" \
+  ZINIT_LOG="$tmpdir/zinit.log" \
   PATH="$tmpdir/bin:/usr/bin:/bin" \
-  zsh -dfic 'source "$1"; bindkey -M viins "^R"; bindkey -M viins "^[[A"; print -r -- "strategies=${(j: :)ZSH_AUTOSUGGEST_STRATEGY}"' zsh "$tmpdir/zshrc")
+  zsh -dfic 'source "$1"; bindkey -M viins "^R"; bindkey -M viins "^[[A"' zsh "$tmpdir/zshrc")
 [[ $binding == *atuin-search-viins* ]]
 [[ $binding == *atuin-up-search-viins* ]]
 [[ $binding != *fzf-history-widget* ]]
-grep -Fxq 'strategies=history atuin' <<<"$binding"
+grep -Fq '|zsh-users/zsh-completions' "$tmpdir/zinit.log"
+grep -Fq '|Aloxaf/fzf-tab' "$tmpdir/zinit.log"
+grep -Fq '|Giammarco-Ferranti/deja' "$tmpdir/zinit.log"
 
 rm -f "$tmpdir/home/.cache/zsh/init/atuin.zsh"
 failed_binding=$(HOME="$tmpdir/home" \
@@ -133,10 +177,12 @@ failed_binding=$(HOME="$tmpdir/home" \
   XDG_DATA_HOME="$tmpdir/home/.local/share" \
   XDG_STATE_HOME="$tmpdir/home/.local/state" \
   XDG_CACHE_HOME="$tmpdir/home/.cache" \
+  ZINIT_LOG="$tmpdir/zinit-failure.log" \
   PATH="$tmpdir/bin:/usr/bin:/bin" \
   ATUIN_TEST_FAIL=1 \
-  zsh -dfic 'source "$1"; print -r -- "strategies=${(j: :)ZSH_AUTOSUGGEST_STRATEGY}"' zsh "$tmpdir/zshrc" 2>"$tmpdir/atuin-failure.stderr")
-grep -Fxq 'strategies=history' <<<"$failed_binding"
+  zsh -dfic 'source "$1"; bindkey -M viins "^R"' zsh "$tmpdir/zshrc" 2>"$tmpdir/atuin-failure.stderr")
+[[ $failed_binding == *fzf-history-widget* ]]
+[[ $failed_binding != *atuin-search* ]]
 [[ ! -e "$tmpdir/home/.cache/zsh/init/atuin.zsh" ]]
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
@@ -145,4 +191,4 @@ psfzf_line=$(grep -nF "Set-PsFzfOption -PSReadlineChordProvider" "$tmpdir/profil
 atuin_ps_line=$(grep -nF 'atuin init powershell | Out-String | Invoke-Expression' "$tmpdir/profile.ps1" | cut -d: -f1)
 ((atuin_ps_line > psfzf_line))
 
-echo 'Atuin inline search, history-first suggestions, Ctrl-R and Up ownership ok'
+echo 'Zinit plugin loading, Deja/Atuin integration, Ctrl-R and Up ownership ok'
