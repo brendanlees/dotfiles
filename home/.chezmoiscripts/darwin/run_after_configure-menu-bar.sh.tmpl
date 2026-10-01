@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -euo pipefail
+
+{{ if and (eq .chezmoi.os "darwin") .personal -}}
+# Hide the native menu bar on desktop and in fullscreen; hovering still reveals it.
+# ponytail: reconcile preferences only, without restarting desktop processes.
+if [[ $(defaults read -g _HIHideMenuBar 2>/dev/null || true) != 1 ]]; then
+  defaults write -g _HIHideMenuBar -bool true
+fi
+if [[ $(defaults read -g AppleMenuBarVisibleInFullscreen 2>/dev/null || true) != 0 ]]; then
+  defaults write -g AppleMenuBarVisibleInFullscreen -bool false
+fi
+{{ end -}}
