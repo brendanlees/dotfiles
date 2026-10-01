@@ -1,5 +1,5 @@
 [commit.generation]
-command = "codex exec -m gpt-5.6-luna -c model_reasoning_effort='low' -c system_prompt='' --sandbox=read-only --json - | jq -sr '[.[] | select(.item.type? == \"agent_message\")] | last.item.text'"
+command = "codex exec -m gpt-6-luna -c model_reasoning_effort='low' -c system_prompt='' --sandbox=read-only --json - | jq -sr '[.[] | select(.item.type? == \"agent_message\")] | last.item.text'"
 
 template = """
 <task>Write a conventional commit message for the staged changes below.</task>
@@ -74,13 +74,28 @@ squash-template = """
 exclude = [".mise/"]
 
 [post-switch]
-tmux-rename = 'if [ -n "$TMUX" ]; then tmux rename-window -t "$TMUX_PANE" {{ branch | sanitize }}; fi'
+multiplexer-rename = '''
+set -eu
+if [ "${HERDR_ENV:-}" = 1 ]; then
+  herdr tab rename "$HERDR_TAB_ID" {{ branch | sanitize }}
+elif [ -n "${TMUX:-}" ] && [ -n "${TMUX_PANE:-}" ]; then
+  tmux rename-window -t "$TMUX_PANE" {{ branch | sanitize }}
+fi
+'''
 
 [post-start]
-tmux-split = '''
-if [ -n "$TMUX_PANE" ]; then
-  PANE_COUNT=$(tmux list-panes -t "$TMUX_PANE" -F x | wc -l | tr -d ' ')
-  [ "$PANE_COUNT" -eq 2 ]
+multiplexer-split = '''
+set -eu
+if [ "${HERDR_ENV:-}" = 1 ]; then
+  PANE_COUNT=$(herdr tab get "$HERDR_TAB_ID" | jq -er '.result.tab.pane_count')
+  if [ "$PANE_COUNT" -eq 1 ]; then
+    herdr pane split --pane "$HERDR_PANE_ID" --direction right --cwd {{ worktree_path }} --no-focus
+  fi
+elif [ -n "${TMUX:-}" ] && [ -n "${TMUX_PANE:-}" ]; then
+  PANE_COUNT=$(tmux display-message -p -t "$TMUX_PANE" '#{window_panes}')
+  if [ "$PANE_COUNT" -eq 1 ]; then
+    tmux split-window -h -d -t "$TMUX_PANE" -c {{ worktree_path }}
+  fi
 fi
 '''
 
