@@ -588,4 +588,46 @@ if BW_MODE=missing-session run_refresh "$fail_home" personal --fail >/tmp/cz-ssh
   exit 1
 fi
 
-echo "ssh bitwarden refresh ok"
+# Automatic provisioning retries skips, but a successful unchanged apply must
+# not access Bitwarden or rewrite SSH files. Manual refresh stays unconditional.
+auto_home=$(new_home automatic)
+run_automatic() {
+  XDG_STATE_HOME="$auto_home/.local/state" \
+    run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal --if-changed
+}
+BW_MODE=locked run_automatic
+assert_not_exists "$auto_home/.ssh/config.d/personal.conf"
+run_automatic
+assert_contains "$auto_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
+: >"$bw_log"
+BW_MODE=locked BW_SESSION=fixture-new-session run_automatic
+[[ ! -s "$bw_log" ]]
+
+# Changed helper/config inputs are not marked successful while the vault is locked.
+printf '\n# fixture: changed provisioning inputs\n' >>"$rendered_linux_refresh_cmd"
+BW_MODE=locked run_automatic
+assert_contains "$bw_log" 'status --raw'
+: >"$bw_log"
+run_automatic
+assert_contains "$bw_log" 'get item manifest'
+: >"$bw_log"
+run_automatic
+[[ ! -s "$bw_log" ]]
+
+# Missing generated config must be repaired despite an otherwise current receipt.
+rm "$auto_home/.ssh/config.d/personal.conf"
+run_automatic
+assert_contains "$bw_log" 'get item manifest'
+assert_contains "$auto_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
+: >"$bw_log"
+run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal
+assert_contains "$bw_log" 'get item manifest'
+
+# Role and agent-socket overrides are inputs; vault session tokens are not.
+: >"$bw_log"
+XDG_STATE_HOME="$auto_home/.local/state" SSH_BW_AGENT_SOCK_ENV=FIXTURE_AGENT_SOCK FIXTURE_AGENT_SOCK=/fixture/agent.sock \
+  run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal,work --if-changed
+assert_contains "$auto_home/.ssh/config.d/work.conf" 'IdentityAgent /fixture/agent.sock'
+assert_contains "$bw_log" 'get item manifest'
+
+echo "ssh bitwarden refresh and change-driven provisioning ok"

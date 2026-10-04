@@ -196,3 +196,5 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           pwsh -NoProfile -File tests/chezmoi/test-tool-installation-windows.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pwsh -NoProfile -File tests/chezmoi/test-ssh-bitwarden-refresh-windows.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

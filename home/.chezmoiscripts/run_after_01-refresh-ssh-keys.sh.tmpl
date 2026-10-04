@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Retry after an unavailable/locked vault, after tools and before private skills.
+# Check after tools and before private skills; the helper skips unchanged success
+# and retries an unavailable/locked vault without marking it provisioned.
 export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:$PATH"
 
 # shellcheck disable=SC2050
@@ -15,4 +16,4 @@ if [[ ! -x "$helper" ]]; then
   exit 0
 fi
 
-"$helper" || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2
+"$helper" --if-changed || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2

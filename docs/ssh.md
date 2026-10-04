@@ -17,7 +17,7 @@ For an existing checkout, its `git remote get-url origin` must exactly match the
 
 ## first apply
 
-When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. SSH refresh runs on every apply, after tools and before private skills, so unlocking the vault does not require resetting chezmoi's script state.
+When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. The SSH provisioning check runs after tools and before private skills. It skips unchanged successful setups but retries locked or failed attempts, so unlocking the vault does not require resetting chezmoi's script state.
 
 After the first successful SSH refresh, run `chezmoi apply` again to clone the Gitea configs. If Bitwarden was locked, unlock it and run `chezmoi apply` to provision SSH, then apply once more. Existing SSH setups without a configured manifest keep their normal external behavior.
 
@@ -84,6 +84,10 @@ hosts may omit `key` when openssh defaults, tailscale ssh, or dns should decide 
 to migrate to `bitwarden_agent`, import the key into bitwarden, change the manifest mode, keep `public_key`, then remove any old local private key manually.
 
 ## refresh behavior
+
+Apply uses `cz-ssh-refresh --if-changed`. A successful refresh records a checksum of the helper and its configuration inputs under `${XDG_STATE_HOME:-~/.local/state}/chezmoi/ssh-refresh`. Unchanged inputs with all enabled scope configs present skip Bitwarden access and SSH writes. Helper/configuration changes or a missing generated scope config trigger a refresh; failed or skipped attempts do not update the receipt. No vault credentials are stored in it.
+
+The first apply after introducing this receipt refreshes once. Run `cz-ssh-refresh` manually after editing keys or the manifest inside Bitwarden, or to restore a deleted key file: direct invocations always refresh, even when the automatic check would skip.
 
 `cz-ssh-refresh` is non-blocking during `chezmoi apply`: missing bitwarden, missing `jq` on posix, lock state, or manifest config prints `warn:` and exits 0. use `cz-ssh-refresh --fail` when refresh errors should be fatal. On windows the managed helper is `~/.local/bin/cz-ssh-refresh.ps1`; the powershell profile prepends `~/.local/bin` to `PATH`, so a new shell can run `cz-ssh-refresh` directly.
 

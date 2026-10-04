@@ -2,15 +2,17 @@
 $ErrorActionPreference = 'Stop'
 
 $FailHard = $false
+$IfChanged = $false
 $RunningOnWindows = ($env:OS -eq 'Windows_NT')
 if ($args.Count -gt 0) {
     switch ($args[0]) {
         '--fail' { $FailHard = $true }
-        '-h' { Write-Host 'Usage: cz-ssh-refresh [--fail]'; exit 0 }
-        '--help' { Write-Host 'Usage: cz-ssh-refresh [--fail]'; exit 0 }
-        default { Write-Error 'Usage: cz-ssh-refresh [--fail]'; exit 2 }
+        '--if-changed' { $IfChanged = $true }
+        '-h' { Write-Host 'Usage: cz-ssh-refresh [--fail|--if-changed]'; exit 0 }
+        '--help' { Write-Host 'Usage: cz-ssh-refresh [--fail|--if-changed]'; exit 0 }
+        default { Write-Error 'Usage: cz-ssh-refresh [--fail|--if-changed]'; exit 2 }
     }
-    if ($args.Count -gt 1) { Write-Error 'Usage: cz-ssh-refresh [--fail]'; exit 2 }
+    if ($args.Count -gt 1) { Write-Error 'Usage: cz-ssh-refresh [--fail|--if-changed]'; exit 2 }
 }
 
 function Write-Warn([string]$Message) { Write-Warning $Message }
@@ -143,6 +145,22 @@ if ($AgentSockEnv -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') { Stop-OrSkip "invalid S
 $AgentSockValue = [Environment]::GetEnvironmentVariable($AgentSockEnv)
 if ([string]::IsNullOrWhiteSpace($AgentSockValue)) { $AgentSockValue = '$' + $AgentSockEnv }
 
+# Cache only successful automatic provisioning, never vault/session state.
+if ($IfChanged) {
+    $stateRoot = if ($env:XDG_STATE_HOME) { $env:XDG_STATE_HOME } else { Join-Path $HOME '.local/state' }
+    $StateFile = Join-Path $stateRoot 'chezmoi/ssh-refresh'
+    $inputs = @((Get-FileHash -LiteralPath $PSCommandPath).Hash, $ManifestItem, $AgentSockEnv, $AgentSockValue, $env:CHEZMOI_ROLE) | ConvertTo-Json -Compress
+    $stream = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($inputs))
+    try { $Fingerprint = (Get-FileHash -InputStream $stream).Hash }
+    finally { $stream.Dispose() }
+    if ((Test-Path -LiteralPath $StateFile -PathType Leaf) -and (Get-Content -Raw -LiteralPath $StateFile).Trim() -eq $Fingerprint) {
+        $missingConfig = @('personal','work','homelab') | Where-Object {
+            (Test-ScopeEnabled $_) -and -not (Test-Path -LiteralPath (Join-Path $HOME ".ssh/config.d/$_.conf") -PathType Leaf)
+        }
+        if (-not $missingConfig) { exit 0 }
+    }
+}
+
 Require-Command bw
 Write-Info 'checking Bitwarden status'
 $bwStatusText = Invoke-ExternalText bw @('status','--raw')
@@ -259,6 +277,12 @@ try {
     foreach ($scope in @('personal','work','homelab')) {
         $sourceConfig = Join-Path $TmpDir "$scope.conf"
         if (Test-Path -LiteralPath $sourceConfig) { Move-Item -Force -Path $sourceConfig -Destination (Join-Path $ConfigDir "$scope.conf") }
+    }
+    if ($IfChanged) {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $StateFile) | Out-Null
+        $receipt = Join-Path $TmpDir 'fingerprint'
+        [IO.File]::WriteAllText($receipt, $Fingerprint)
+        Move-Item -LiteralPath $receipt -Destination $StateFile -Force
     }
     Write-Info "SSH refresh complete: $hostCount hosts ($localKeyCount local-file, $agentKeyCount Bitwarden Agent, $keylessCount keyless)"
 } finally { Remove-Item -Recurse -Force -Path $TmpDir -ErrorAction SilentlyContinue }

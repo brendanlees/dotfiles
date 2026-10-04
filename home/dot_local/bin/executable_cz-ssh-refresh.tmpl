@@ -2,19 +2,24 @@
 set -euo pipefail
 
 FAIL_HARD=false
+IF_CHANGED=false
 case "${1:-}" in
   --fail)
     FAIL_HARD=true
     shift
     ;;
+  --if-changed)
+    IF_CHANGED=true
+    shift
+    ;;
   -h|--help)
-    echo "Usage: cz-ssh-refresh [--fail]"
+    echo "Usage: cz-ssh-refresh [--fail|--if-changed]"
     exit 0
     ;;
   "")
     ;;
   *)
-    echo "Usage: cz-ssh-refresh [--fail]" >&2
+    echo "Usage: cz-ssh-refresh [--fail|--if-changed]" >&2
     exit 2
     ;;
 esac
@@ -244,6 +249,25 @@ esac
 validate_agent_sock_env "$agent_sock_env"
 agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
 
+# Cache only successful automatic provisioning, never vault/session state.
+# The rendered helper includes the configured manifest, roles and OS.
+if [[ "$IF_CHANGED" == true ]]; then
+  state_file="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi/ssh-refresh"
+  fingerprint=$({
+    cksum "$0"
+    printf '%s\n' "$manifest_item" "$agent_sock_env" "$agent_sock_value" "${CHEZMOI_ROLE:-}"
+  } | cksum)
+  if [[ -f "$state_file" && $(<"$state_file") == "$fingerprint" ]]; then
+    missing_config=false
+    for scope in personal work homelab; do
+      if scope_enabled "$scope" && [[ ! -f "$HOME/.ssh/config.d/$scope.conf" ]]; then
+        missing_config=true
+      fi
+    done
+    [[ "$missing_config" == true ]] || exit 0
+  fi
+fi
+
 require_command bw
 require_command jq
 
@@ -424,4 +448,9 @@ for scope in personal work homelab; do
     chmod 600 "$config_dir/$scope.conf"
   fi
 done
+if [[ "$IF_CHANGED" == true ]]; then
+  mkdir -p "${state_file%/*}"
+  printf '%s\n' "$fingerprint" > "$tmpdir/fingerprint"
+  mv "$tmpdir/fingerprint" "$state_file"
+fi
 info "SSH refresh complete: $host_count hosts ($local_key_count local-file, $agent_key_count Bitwarden Agent, $keyless_count keyless)"
