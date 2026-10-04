@@ -68,6 +68,7 @@ operation=${1:-}
 [[ $operation != -C ]] || operation=${3:-}
 printf '%s\n' "$operation" >>"$FIXTURE_GIT_LOG"
 if [[ ${1:-} == clone ]]; then
+  [[ $GIT_SSH_COMMAND == 'ssh -o BatchMode=yes -o ConnectTimeout=10' ]] || exit 97
   if [[ ${FIXTURE_FAIL_CLONE:-false} == true ]]; then exit 1; fi
   destination=${!#}
   remote_index=$(($# - 1))
@@ -83,6 +84,7 @@ export REAL_GIT="$real_git"
 export FIXTURE_PRIVATE_SEED="$private_seed"
 export FIXTURE_GIT_LOG="$tmpdir/git-operations.log"
 export PATH="$fake_bin:$PATH"
+unset GIT_SSH_COMMAND
 
 state_file="$public_root/agents/state/private-agent-skills.json"
 exclude_file="$public_root/.git/info/exclude"

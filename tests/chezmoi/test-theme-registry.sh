@@ -166,7 +166,8 @@ SCRIPT
 chmod +x "$home/.config/chezmoi-theme/obsidian-sync"
 cp "$source_root/.chezmoidata/themes.yml" "$fixture/.chezmoidata/themes.yml"
 cp "$source_root/.chezmoidata/defaults.yml" "$fixture/.chezmoidata/defaults.yml"
-cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" "$fixture/.chezmoitemplates/"
+cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" \
+  "$source_root/.chezmoitemplates/private-harness-ready.tmpl" "$fixture/.chezmoitemplates/"
 cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" "$fixture/.chezmoiscripts/"
 printf '{{ .theme }}\n' >"$fixture/dot_config/active-theme.tmpl"
 cat >"$fixture/.chezmoiscripts/run_after_00-install-tools.sh" <<'SCRIPT'

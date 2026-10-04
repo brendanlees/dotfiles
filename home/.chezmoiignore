@@ -118,8 +118,8 @@ AppData
 .config/alacritty
 # POSIX-only scripts are not executable on Windows.
 .chezmoiscripts/migrate-gitea-external-remotes.sh
-.chezmoiscripts/refresh-ssh-keys.sh
-.chezmoiscripts/run_onchange_after_refresh-ssh-keys.sh.tmpl
+.chezmoiscripts/01-refresh-ssh-keys.sh
+.chezmoiscripts/run_after_01-refresh-ssh-keys.sh.tmpl
 .chezmoiscripts/remove-out-of-scope-sketchybar.sh
 .chezmoiscripts/run_onchange_before_remove-out-of-scope-sketchybar.sh.tmpl
 .chezmoiscripts/migrate-source-root-local-data.sh

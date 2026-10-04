@@ -108,6 +108,10 @@ refreshPeriod = "168h"
 
 {{- if .personal }}
 
+{{/* Externals are applied before ~/.ssh and the tool/SSH after-hooks. */}}
+{{- if eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "false" }}
+{{- warnf "Private Gitea configs deferred until Bitwarden SSH is provisioned. After SSH refresh succeeds, run chezmoi apply again." }}
+{{- else }}
 {{/* agent harness configs */}}
 [".claude"]
 type = "git-repo"
@@ -134,5 +138,6 @@ exclude = [
 ]
 [".pi".pull]
 args = ["--autostash", "--rebase"]
+{{- end }}
 {{- end }}
 

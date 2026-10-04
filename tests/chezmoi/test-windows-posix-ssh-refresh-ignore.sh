@@ -34,8 +34,8 @@ assert_not_ignored() {
   fi
 }
 
-posix_runner=".chezmoiscripts/refresh-ssh-keys.sh"
-windows_runner=".chezmoiscripts/windows/refresh-ssh-keys.ps1"
+posix_runner=".chezmoiscripts/01-refresh-ssh-keys.sh"
+windows_runner=".chezmoiscripts/windows/01-refresh-ssh-keys.ps1"
 posix_helper=".local/bin/cz-ssh-refresh"
 windows_helper=".local/bin/cz-ssh-refresh.ps1"
 posix_migration=".chezmoiscripts/migrate-source-root-local-data.sh"

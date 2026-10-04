@@ -139,7 +139,9 @@ clone_checkout_if_missing() {
   base=${CHECKOUT##*/}
   temporary="$parent/.${base}.cz-private-agent-skills.$$.tmp"
   [[ ! -e $temporary && ! -L $temporary ]] || fatal 'a private checkout temporary sibling already exists'
-  if ! git clone --quiet -- "$CONFIGURED_REMOTE" "$temporary" >/dev/null 2>&1; then
+  # Do not hang an unattended apply on a password or unknown-host prompt.
+  if ! GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -o BatchMode=yes -o ConnectTimeout=10}" \
+    git clone --quiet -- "$CONFIGURED_REMOTE" "$temporary" >/dev/null 2>&1; then
     rm -rf -- "$temporary"
     fatal 'SSH clone failed; unlock Bitwarden, verify its SSH agent and configured alias, refresh SSH keys, then apply again'
   fi
