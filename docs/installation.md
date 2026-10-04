@@ -49,6 +49,12 @@ darwin | windows | linux
 
 see [scoping](docs/scoping.md) for non-interactive options via env vars, ansible.
 
+## macOS Finder and input preferences
+
+The defaults hook applies the captured Finder, mouse, trackpad and keyboard preferences to non-headless personal and work Macs. System shortcuts, Kanata and OpenLogi retain their existing configuration owners.
+
+Column view is the default for Finder windows and searches. Finder can still remember a different view in an existing folder's `.DS_Store`; provisioning does not erase those files, sidebar bookmarks or recent-folder history. Log out and back in if keyboard layout or input changes do not take effect immediately.
+
 ## maintenance
 
 `chezmoi apply` updates configuration and installs missing global tools before the other after-hooks. It does not upgrade mise, upgrade installed tools or prune old versions. Theme switching also skips package scripts and external repository updates.
