@@ -100,6 +100,7 @@ SH
 cat >"$fixture/dot_local/bin/executable_cz-ssh-refresh" <<'SH'
 #!/bin/sh
 set -eu
+test "${1:-}" = --if-changed
 test -f "$HOME/tools-installed"
 test "$(command -v jq)" = "$HOME/.local/share/mise/shims/jq"
 # A skipped refresh must be retried on the next apply after unlocking.

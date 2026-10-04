@@ -1,5 +1,5 @@
 # managed by chezmoi - refresh Bitwarden-backed SSH config/keys on Windows
-# Retry after an unavailable/locked vault, after tools and before private skills.
+# Skip unchanged successful provisioning; retry a locked/unavailable vault.
 
 $ErrorActionPreference = 'Stop'
 
@@ -11,5 +11,5 @@ if (-not (Test-Path $helper)) {
     exit 0
 }
 
-& $helper
+& $helper --if-changed
 if ($LASTEXITCODE -ne 0) { Write-Warning 'SSH refresh failed; continuing chezmoi apply' }
