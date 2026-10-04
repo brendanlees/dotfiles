@@ -15,6 +15,14 @@ The values are cached in chezmoi's config under `[data.private_agent_skills]` as
 
 For an existing checkout, its `git remote get-url origin` must exactly match the configured URL, including SSH syntax and the `.git` suffix. The helper does not rewrite remotes, pull, reset or delete your checkout. Verify any mismatch before manually correcting the URL, then run `cz-private-agent-skills --fail reconcile` for a visible error instead of the normal non-blocking warning.
 
+## first apply
+
+When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. SSH refresh runs on every apply, after tools and before private skills, so unlocking the vault does not require resetting chezmoi's script state.
+
+After the first successful SSH refresh, run `chezmoi apply` again to clone the Gitea configs. If Bitwarden was locked, unlock it and run `chezmoi apply` to provision SSH, then apply once more. Existing SSH setups without a configured manifest keep their normal external behavior.
+
+The macOS private-skills clone defaults to non-interactive SSH with a connection timeout. For a new Git host, verify and accept its host key with SSH yourself before retrying; the helper does not bypass host verification.
+
 ## host configuration
 
 these maintain a generic ssh config scaffold, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
+# Use freshly installed jq without requiring a new interactive shell.
+export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:$PATH"
+
 helper="$HOME/.local/bin/cz-private-agent-skills"
 if [[ ! -x $helper ]]; then
   printf 'warn: private agent skills: helper is unavailable; unrelated Chezmoi work can continue\n' >&2

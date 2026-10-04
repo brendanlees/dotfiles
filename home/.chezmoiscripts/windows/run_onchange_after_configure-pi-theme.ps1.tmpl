@@ -1,4 +1,4 @@
-{{- if and .personal (eq .chezmoi.os "windows") -}}
+{{- if and .personal (eq .chezmoi.os "windows") (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true") -}}
 $ErrorActionPreference = "Stop"
 
 $themeJson = @'

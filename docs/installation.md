@@ -2,9 +2,25 @@
 
 **macos**
 
+Run the repository's bootstrap script:
+
 ```sh
-brew install chezmoi && chezmoi init --apply brendanlees
+sh install.sh
 ```
+
+Without a checkout, download it first so Git/Command Line Tools are not a prerequisite:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/brendanlees/dotfiles/main/install.sh -o /tmp/dotfiles-install.sh
+less /tmp/dotfiles-install.sh
+sh /tmp/dotfiles-install.sh
+```
+
+The script checks Apple's Command Line Tools (or an active Xcode installation), installs Homebrew and mise when missing, activates Homebrew in the current process, then installs/reuses chezmoi and applies the dotfiles. Existing package-manager mise installs are linked at `~/.local/bin/mise`, which the apply hooks expect. Persistent shell setup and declared mise tools remain owned by chezmoi.
+
+If developer tools are missing, complete the Apple installer and rerun the script. It does not accept Xcode licences or switch developer directories for you. Remote Homebrew/mise installers require confirmation; automation can opt in with `CHEZMOI_ALLOW_REMOTE_SCRIPTS=1`.
+
+For Bitwarden-backed private repos, unlock the CLI before init and configure the SSH manifest. The first apply provisions SSH; a second apply fetches the Gitea configs. See [SSH bootstrap](ssh.md#first-apply) and [secrets](secrets.md).
 
 **linux**
 

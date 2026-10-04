@@ -1,0 +1,7 @@
+{{- /* Keep externals and hooks that populate their directories on the same bootstrap phase. */ -}}
+{{- $manifest := and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") .ssh.bw_manifest_item -}}
+{{- if and $manifest (not (stat (joinPath .chezmoi.homeDir ".ssh/config.d/personal.conf"))) -}}
+false
+{{- else -}}
+true
+{{- end -}}

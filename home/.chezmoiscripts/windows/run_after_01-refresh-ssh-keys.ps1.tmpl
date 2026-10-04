@@ -1,6 +1,5 @@
 # managed by chezmoi - refresh Bitwarden-backed SSH config/keys on Windows
-# helper-sha256: {{ includeTemplate "dot_local/bin/executable_cz-ssh-refresh.ps1.tmpl" . | sha256sum }}
-# manifest-item: {{ if and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") }}{{ .ssh.bw_manifest_item | sha256sum }}{{ else }}{{ "" | sha256sum }}{{ end }}
+# Retry after an unavailable/locked vault, after tools and before private skills.
 
 $ErrorActionPreference = 'Stop'
 

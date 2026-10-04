@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Retry after an unavailable/locked vault, after tools and before private skills.
+export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:$PATH"
+
+# shellcheck disable=SC2050
+if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work .homelab }}" != "true" ]]; then
+  exit 0
+fi
+
+helper="$HOME/.local/bin/cz-ssh-refresh"
+if [[ ! -x "$helper" ]]; then
+  echo "warn: cz-ssh-refresh is not installed; skipping SSH refresh" >&2
+  exit 0
+fi
+
+"$helper" || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2
