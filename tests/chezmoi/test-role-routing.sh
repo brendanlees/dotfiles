@@ -52,6 +52,13 @@ assert_lacks personal "$posix_private_apply"
 assert_has personal "$windows_private_helper"
 assert_has personal "$windows_private_apply"
 
+for plugin in docker-compose docker-buildx; do
+  assert_lacks personal ".docker/cli-plugins/$plugin"
+  for scope in work homelab ephemeral windows; do
+    assert_has "$scope" ".docker/cli-plugins/$plugin"
+  done
+done
+
 assert_lacks windows "$windows_private_helper"
 assert_lacks windows "$windows_private_apply"
 assert_has windows "$posix_private_helper"

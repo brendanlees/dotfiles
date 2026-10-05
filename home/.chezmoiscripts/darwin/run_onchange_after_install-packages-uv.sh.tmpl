@@ -8,6 +8,10 @@ set -eu
 # The early after-hook installs uv; do not depend on interactive shell PATH.
 MISE="$HOME/.local/bin/mise"
 {{ range $tools -}}
+{{ if kindIs "map" . -}}
+"$MISE" --cd "$HOME" exec -- uv tool install -p {{ .python | quote }} {{ .name | quote }}
+{{ else -}}
 "$MISE" --cd "$HOME" exec -- uv tool install {{ . }}
+{{ end -}}
 {{ end -}}
 {{- end }}

@@ -1,0 +1,3 @@
+{{- if and (eq .chezmoi.os "darwin") .personal -}}
+{{ output "brew" "--prefix" | trim }}/opt/docker-compose/bin/docker-compose
+{{- end -}}

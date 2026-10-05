@@ -14,7 +14,18 @@ cat > "$fake_bin/curl" <<'CURL'
 #!/usr/bin/env bash
 set -euo pipefail
 echo "curl-called $*" >> "${REMOTE_LOG:?}"
-printf '#!/usr/bin/env sh\necho remote-script-body\n'
+[ "${REMOTE_DOWNLOAD_FAIL:-0}" = 0 ] || exit 22
+if [[ "$*" == *herdr.dev/install.sh* ]]; then
+  [[ "$3" == -o ]]
+  cat >"$4" <<'HERDR'
+#!/bin/sh
+mkdir -p "$HERDR_INSTALL_DIR"
+printf '#!/bin/sh\nexit 0\n' >"$HERDR_INSTALL_DIR/herdr"
+chmod +x "$HERDR_INSTALL_DIR/herdr"
+HERDR
+else
+  printf '#!/usr/bin/env sh\necho remote-script-body\n'
+fi
 CURL
 chmod +x "$fake_bin/curl"
 
@@ -42,7 +53,11 @@ cat > "$fake_bin/sh" <<'SH'
 set -euo pipefail
 echo "sh-called $*" >> "${REMOTE_LOG:?}"
 echo "mise-install-arch ${MISE_INSTALL_ARCH:-}" >> "${REMOTE_LOG:?}"
-cat >/dev/null
+if (( $# )); then
+  /bin/sh "$@"
+else
+  cat >/dev/null
+fi
 SH
 chmod +x "$fake_bin/sh"
 
@@ -82,6 +97,54 @@ grep -Fq "CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 set; allowing mise installer." "$allow_
 grep -Fq "curl-called https://mise.run" "$allow_log"
 grep -Fq "sh-called" "$allow_log"
 grep -Fq "mise-install-arch arm64-musl" "$allow_log"
+
+# Herdr uses the same consent boundary, installs once, and precedes its plugins.
+herdr_template="$source_root/.chezmoiscripts/darwin/run_after_02-install-herdr.sh.tmpl"
+herdr_script="$tmp/herdr.sh"
+chezmoi execute-template --source "$repo_root" \
+  --override-data '{"personal":true,"chezmoi":{"os":"darwin"}}' \
+  <"$herdr_template" >"$herdr_script"
+run_herdr_installer() {
+  REMOTE_LOG="$tmp/herdr.log" PATH="$fake_bin:/usr/bin:/bin" HOME="$fake_home" \
+    bash "$herdr_script" </dev/null
+}
+: >"$tmp/herdr.log"
+if run_herdr_installer >"$tmp/herdr-refused.out" 2>&1; then
+  echo 'Herdr must refuse without consent' >&2
+  exit 1
+fi
+[[ ! -s "$tmp/herdr.log" ]]
+grep -Fq 'https://herdr.dev/install.sh' "$tmp/herdr-refused.out"
+if REMOTE_DOWNLOAD_FAIL=1 CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 run_herdr_installer; then
+  echo 'Herdr must fail on download errors' >&2
+  exit 1
+fi
+[[ ! -e "$fake_home/.local/bin/herdr" ]]
+CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 run_herdr_installer
+[[ -x "$fake_home/.local/bin/herdr" ]]
+: >"$tmp/herdr.log"
+run_herdr_installer
+[[ ! -s "$tmp/herdr.log" ]]
+for data in '{"personal":false,"chezmoi":{"os":"darwin"}}' \
+  '{"personal":true,"chezmoi":{"os":"linux"}}' \
+  '{"personal":true,"chezmoi":{"os":"windows"}}'; do
+  [[ -z $(chezmoi execute-template --source "$repo_root" --override-data "$data" <"$herdr_template") ]]
+done
+
+# Exercise real chezmoi ordering without downloading or reconciling real plugins.
+fixture="$tmp/herdr-source"
+mkdir -p "$fixture/.chezmoiscripts"
+cp "$herdr_template" "$fixture/.chezmoiscripts/"
+cat >"$fixture/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh" <<'SH'
+#!/bin/sh
+[ -x "$HOME/.local/bin/herdr" ]
+SH
+printf '[data]\npersonal=true\n' >"$tmp/herdr-config.toml"
+rm "$fake_home/.local/bin/herdr"
+REMOTE_LOG="$tmp/herdr.log" PATH="$fake_bin:$PATH" HOME="$fake_home" \
+  CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 chezmoi apply --source "$fixture" \
+  --destination "$fake_home" --config "$tmp/herdr-config.toml" \
+  --persistent-state "$tmp/herdr-state.boltdb" --override-data '{"chezmoi":{"os":"darwin"}}' --no-tty
 
 # The entrypoint must bootstrap macOS prerequisites before chezmoi. Redirect
 # fixed system prefixes in a test copy so this never touches the real Homebrew.

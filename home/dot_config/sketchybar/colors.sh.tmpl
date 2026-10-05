@@ -29,10 +29,11 @@ export LABEL_COLOR=$WHITE
 export POPUP_BACKGROUND_COLOR=0xcc{{ trimPrefix "#" $p.bg | lower }}
 export POPUP_BORDER_COLOR=0xff{{ trimPrefix "#" $p.surface | lower }}
 
-# section accent colors (semantic palette keys, theme-driven)
+# Section colors from the active semantic palette.
 export SPACES_COLOR=$BLUE        # primary
 export FRONT_APP_COLOR=$MAGENTA  # secondary
-export CALENDAR_COLOR=$CYAN      # info
+# More subdued than inactive workspace numbers; keep date/time text bright.
+export CALENDAR_COLOR=0x80{{ trimPrefix "#" $p.muted | lower }}
 export SPOTIFY_COLOR=$ACCENT     # accent
 
 # Fixed safety signal: intentionally remains unmistakably red across themes.

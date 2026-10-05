@@ -5,6 +5,9 @@ lazy-lock.json
 .local/bin/chezmoi-apply-library
 .local/bin/chezmoi-readd-library
 .config/zsh-patina
+{{ if and (eq .chezmoi.os "darwin") .personal }}
+.config/sketchybar/plugins/calendar_dots.sh
+{{ end }}
 {{ if or (ne .chezmoi.os "darwin") (not .personal) }}
 .config/sketchybar
 {{ end }}
