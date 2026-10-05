@@ -122,11 +122,8 @@ alt-shift-equal = 'resize smart +50'
 # ------------------------------------------
 # See:  https://nikitabobko.github.io/AeroSpace/commands#workspace, aerospace list-apps
 
-alt-1 = [
-  'workspace 1-browser',
-  'exec-and-forget "$HOME/.config/aerospace/activate-arc-if-present.sh"',
-]
-alt-b = ['workspace 1-browser', 'exec-and-forget open -a Arc']
+alt-1 = ['workspace 1-browser']
+alt-b = ['workspace 1-browser', 'exec-and-forget open -a Dia']
 
 alt-2 = 'workspace 2-code'
 #raycast:
@@ -205,72 +202,72 @@ alt-shift-l = ['join-with right', 'mode main']
 # --- 1. browser ---
 [[on-window-detected]]
 if.app-id = 'company.thebrowser.Browser'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" company.thebrowser.Browser 1-browser'
+run = 'exec-and-forget company.thebrowser.Browser 1-browser'
 
 [[on-window-detected]]
-if.app-id = 'app.zen-browser.zen'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" app.zen-browser.zen 1-browser'
+if.app-id = 'company.thebrowser.dia'
+run = 'exec-and-forget company.thebrowser.dia 1-browser'
 
 # --- 2. code ---
 [[on-window-detected]]
 if.app-id = 'com.microsoft.VSCode'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.microsoft.VSCode 2-code'
+run = 'exec-and-forget com.microsoft.VSCode 2-code'
 
 [[on-window-detected]]
 if.app-id = 'dev.zed.Zed'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" dev.zed.Zed 2-code'
+run = 'exec-and-forget dev.zed.Zed 2-code'
 
 # --- 3. email / work ---
 [[on-window-detected]]
 if.app-id = 'com.mimestream.Mimestream'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.mimestream.Mimestream 3-email'
+run = 'exec-and-forget com.mimestream.Mimestream 3-email'
 
 [[on-window-detected]]
 if.app-id = 'notion.id'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" notion.id 3-email'
+run = 'exec-and-forget notion.id 3-email'
 
 [[on-window-detected]]
 if.app-id = 'com.invoiceninja.app'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.invoiceninja.app 3-email'
+run = 'exec-and-forget com.invoiceninja.app 3-email'
 
 # --- 4. files ---
 [[on-window-detected]]
 if.app-id = 'com.apple.finder'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.apple.finder 4-files'
+run = 'exec-and-forget com.apple.finder 4-files'
 
 # --- 5. docs ---
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.figma.Desktop 5-docs'
+run = 'exec-and-forget com.figma.Desktop 5-docs'
 
 [[on-window-detected]]
 if.app-id = 'asc.onlyoffice.ONLYOFFICE'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" asc.onlyoffice.ONLYOFFICE 5-docs'
+run = 'exec-and-forget asc.onlyoffice.ONLYOFFICE 5-docs'
 
 # --- 6/7. misc ---
 [[on-window-detected]]
 if.app-id = 'com.hnc.Discord'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.hnc.Discord 6-misc1'
+run = 'exec-and-forget com.hnc.Discord 6-misc1'
 
 [[on-window-detected]]
 if.app-id = 'com.nousresearch.hermes'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.nousresearch.hermes 6-misc1'
+run = 'exec-and-forget com.nousresearch.hermes 6-misc1'
 
 # --- 8. notes ---
 [[on-window-detected]]
 if.app-id = 'md.obsidian'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" md.obsidian 8-notes'
+run = 'exec-and-forget md.obsidian 8-notes'
 
 [[on-window-detected]]
 if.app-id = 'com.todoist.mac.Todoist'
 if.window-title-regex-substring = '^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$'
-run = 'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.todoist.mac.Todoist 8-notes'
+run = 'exec-and-forget com.todoist.mac.Todoist 8-notes'
 
 # --- 9. music ---
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
 run = [
-  'exec-and-forget "$HOME/.config/aerospace/move-window-if-first.sh" com.spotify.client 9-music',
+  'exec-and-forget com.spotify.client 9-music',
   'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
 ]
 
