@@ -13,6 +13,10 @@ import tomllib
 config = pathlib.Path(sys.argv[1]).read_text()
 parsed = tomllib.loads(config)
 assert parsed['config-version'] == 2
+assert parsed['after-startup-command'] == [
+    'exec-and-forget borders',
+    'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/start-sketchybar.sh"',
+]
 assert parsed['persistent-workspaces'] == [
     '1-browser',
     '2-code',
