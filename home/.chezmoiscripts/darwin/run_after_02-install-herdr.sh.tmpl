@@ -1,0 +1,28 @@
+{{- if and (eq .chezmoi.os "darwin") .personal -}}
+#!/bin/bash
+set -euo pipefail
+
+# Install before the Herdr plugin reconciler; leave updates to `herdr update`.
+if [[ -x "$HOME/.local/bin/herdr" ]]; then
+  exit 0
+fi
+
+url="https://herdr.dev/install.sh"
+if [[ "${CHEZMOI_ALLOW_REMOTE_SCRIPTS:-}" != "1" ]]; then
+  printf 'About to run Herdr installer: %s\nInspect first: curl -fsSL "%s" | less\n' "$url" "$url"
+  if [[ ! -t 0 ]]; then
+    echo 'Refusing to run Herdr installer without confirmation; set CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 to approve.' >&2
+    exit 1
+  fi
+  read -r -p 'Continue running Herdr installer? [y/N] ' answer
+  case "$answer" in
+    [Yy]|[Yy][Ee][Ss]) ;;
+    *) echo 'Skipped Herdr installer.'; exit 1 ;;
+  esac
+fi
+
+installer=$(mktemp)
+trap 'rm -f "$installer"' EXIT
+curl -fsSL "$url" -o "$installer"
+HERDR_INSTALL_DIR="$HOME/.local/bin" sh "$installer"
+{{- end }}

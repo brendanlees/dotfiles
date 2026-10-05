@@ -19,7 +19,6 @@ export ICON_BATTERY_CHARGING=󰂄
 
 # calendar
 export ICON_CALENDAR=󰃭
-export ICON_CLOCK=󰥔
 
 # volume
 export ICON_VOLUME=󰕾

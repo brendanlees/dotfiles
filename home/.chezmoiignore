@@ -17,6 +17,8 @@ Library
 
 {{- if or (ne .chezmoi.os "darwin") (not .personal) }}
 .config/sketchybar
+.docker/cli-plugins/docker-compose
+.docker/cli-plugins/docker-buildx
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
