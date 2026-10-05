@@ -157,7 +157,7 @@ done
 fixture="$tmpdir/source"
 home="$tmpdir/home"
 mkdir -p "$fixture/.chezmoidata" "$fixture/.chezmoitemplates" \
-  "$fixture/.chezmoiscripts/darwin" "$fixture/dot_config" "$tmpdir/bin" "$home"
+  "$fixture/.chezmoiscripts/darwin" "$fixture/dot_config/borders" "$tmpdir/bin" "$home"
 mkdir -p "$home/.config/chezmoi-theme"
 cat >"$home/.config/chezmoi-theme/obsidian-sync" <<'SCRIPT'
 #!/bin/sh
@@ -166,6 +166,7 @@ SCRIPT
 chmod +x "$home/.config/chezmoi-theme/obsidian-sync"
 cp "$source_root/.chezmoidata/themes.yml" "$fixture/.chezmoidata/themes.yml"
 cp "$source_root/.chezmoidata/defaults.yml" "$fixture/.chezmoidata/defaults.yml"
+cp "$source_root/dot_config/borders/executable_bordersrc.tmpl" "$fixture/dot_config/borders/"
 cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" \
   "$source_root/.chezmoitemplates/private-harness-ready.tmpl" "$fixture/.chezmoitemplates/"
 cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" "$fixture/.chezmoiscripts/"
@@ -201,12 +202,27 @@ exec "$REAL_CHEZMOI" --config "$TEST_CONFIG" --destination "$HOME" \
   --override-data '{"chezmoi":{"os":"darwin"}}' "$@"
 WRAPPER
 printf '#!/bin/sh\nexit 1\n' >"$tmpdir/bin/pgrep"
-chmod +x "$tmpdir/bin/chezmoi" "$tmpdir/bin/pgrep"
+cat >"$tmpdir/bin/borders" <<'BORDERS'
+#!/bin/sh
+printf '%s\n' "$@" >"$HOME/borders-args"
+BORDERS
+chmod +x "$tmpdir/bin/chezmoi" "$tmpdir/bin/pgrep" "$tmpdir/bin/borders"
 run_theme() {
   HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
     PI_AGENT_DIR="$home/.pi/agent" CHEZMOI_SOURCE_DIR="$fixture" \
     REAL_CHEZMOI="$chezmoi_bin" TEST_CONFIG="$tmpdir/config.toml" \
     "$bash_bin" "$source_root/dot_local/bin/executable_theme" "$@"
+}
+
+check_borders() {
+  local expected
+  expected=$(jq -r --arg theme "$1" \
+    '.themes[$theme].palette.primary | "active_color=0xff" + (ltrimstr("#") | ascii_downcase)' \
+    "$tmpdir/data.json")
+  HOME="$home" PATH="$tmpdir/bin:/usr/bin:/bin" \
+    "$bash_bin" "$home/.config/borders/bordersrc"
+  grep -Fxq "$expected" "$home/borders-args"
+  grep -Fxq 'inactive_color=0x00000000' "$home/borders-args"
 }
 
 [[ $(run_theme --current) == moonfly ]]
@@ -217,6 +233,7 @@ run_theme guts >"$tmpdir/switch.log" 2>&1 || {
   }
 
 grep -Fxq guts "$home/.config/active-theme"
+check_borders guts
 grep -Fxq guts "$home/spicetify-theme"
 grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "guts"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
@@ -244,6 +261,7 @@ grep -Fxq guts "$home/picker-input"
 grep -Fxq 'Select theme (current: guts)' "$home/picker-args"
 [[ $(run_theme --current) == moonfly ]]
 grep -Fxq moonfly "$home/.config/active-theme"
+check_borders moonfly
 grep -Fxq 'unrelated: preserved' "$fixture/.chezmoidata/local.yml"
 cmp "$source_root/.chezmoidata/defaults.yml" "$fixture/.chezmoidata/defaults.yml"
 [[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
