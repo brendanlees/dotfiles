@@ -64,18 +64,27 @@ grep -Fxq 'keep this generated lockfile' "$home/.config/mise/mise.lock"
 grep -Fq -- '--file /' "$tmpdir/deja-import.log"
 
 chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux"}}' \
+  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux","osRelease":{"id":"ubuntu"}}}' \
   --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-linux.toml"
 chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
   --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"windows"}}' \
   --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-windows.toml"
-python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" <<'PY'
+chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}' \
+  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-alpine.toml"
+chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"darwin"}}' \
+  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-darwin.toml"
+python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" "$tmpdir/mise-alpine.toml" "$tmpdir/mise-darwin.toml" <<'PY'
 import sys
 import tomllib
 from pathlib import Path
-linux, windows = (tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:])
+linux, windows, alpine, darwin = (tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:])
 assert linux['github:Giammarco-Ferranti/deja'] == 'latest'
 assert 'github:Giammarco-Ferranti/deja' not in windows
+assert alpine == {tool: version for tool, version in linux.items() if tool != 'rust'}
+for tools in (linux, windows, darwin):
+    assert tools['rust'] == 'latest'
 PY
 
 # Root skips other users' project configs instead of granting blanket trust.
