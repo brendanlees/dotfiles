@@ -38,6 +38,7 @@ posix_runner=".chezmoiscripts/01-refresh-ssh-keys.sh"
 windows_runner=".chezmoiscripts/windows/01-refresh-ssh-keys.ps1"
 posix_helper=".local/bin/cz-ssh-refresh"
 windows_helper=".local/bin/cz-ssh-refresh.ps1"
+hindsight_helper=".local/bin/pi-hindsight"
 posix_migration=".chezmoiscripts/migrate-source-root-local-data.sh"
 windows_migration=".chezmoiscripts/windows/migrate-source-root-local-data.ps1"
 posix_gitea_migration=".chezmoiscripts/migrate-gitea-external-remotes.sh"
@@ -46,6 +47,7 @@ windows_gitea_migration=".chezmoiscripts/windows/migrate-gitea-external-remotes.
 windows_ignored=$(ignored_for_os windows)
 assert_ignored "$windows_ignored" "$posix_runner" windows
 assert_ignored "$windows_ignored" "$posix_helper" windows
+assert_ignored "$windows_ignored" "$hindsight_helper" windows
 assert_ignored "$windows_ignored" "$posix_migration" windows
 assert_ignored "$windows_ignored" "$posix_gitea_migration" windows
 assert_not_ignored "$windows_ignored" "$windows_runner" windows
@@ -55,6 +57,11 @@ assert_not_ignored "$windows_ignored" "$windows_gitea_migration" windows
 
 for os in darwin linux; do
   ignored=$(ignored_for_os "$os")
+  if [[ $os == darwin ]]; then
+    assert_not_ignored "$ignored" "$hindsight_helper" "$os"
+  else
+    assert_ignored "$ignored" "$hindsight_helper" "$os"
+  fi
   assert_not_ignored "$ignored" "$posix_runner" "$os"
   assert_not_ignored "$ignored" "$posix_helper" "$os"
   assert_not_ignored "$ignored" "$posix_migration" "$os"

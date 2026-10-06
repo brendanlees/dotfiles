@@ -96,12 +96,14 @@ Library/Logs/Syncthing
 {{- if eq .chezmoi.os "darwin" }}
 !.local/bin/cz-private-agent-skills
 !.local/bin/obsidian
+!.local/bin/pi-hindsight
 {{- end }}
 {{- end }}
 .local/share/fonts
 {{- end }}
 {{- if ne .chezmoi.os "darwin" }}
 .local/bin/obsidian
+.local/bin/pi-hindsight
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
