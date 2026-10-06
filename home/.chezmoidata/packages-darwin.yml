@@ -133,7 +133,6 @@ casks:
     - cryptomator
     - onlyoffice
     - home-assistant
-    - imageoptim
     - karabiner-elements
     - ledger-live
     - openlogi
@@ -143,15 +142,12 @@ casks:
     - upscayl
     - veracrypt
     - windows-app
-    - arc
     - boltai
-    - flacon
     - plexamp
     - spotify
     - iina
     - brave-browser
     - bitwarden
-    - daisydisk
     - discord
     - espanso
     - mimestream
@@ -164,6 +160,7 @@ casks:
     - db-browser-for-sqlite
     - figma
     - firefox
+    - finicky
     - local
     - responsively
     - visual-studio-code
