@@ -59,6 +59,13 @@ for plugin in docker-compose docker-buildx; do
   done
 done
 
+assert_lacks personal '.finicky.js'
+for scope in work homelab ephemeral windows; do
+  assert_has "$scope" '.finicky.js'
+done
+render_ignore personal-headless '{"personal":true,"work":false,"homelab":false,"headless":true,"chezmoi":{"os":"darwin"}}'
+assert_has personal-headless '.finicky.js'
+
 assert_lacks windows "$windows_private_helper"
 assert_lacks windows "$windows_private_apply"
 assert_has windows "$posix_private_helper"
