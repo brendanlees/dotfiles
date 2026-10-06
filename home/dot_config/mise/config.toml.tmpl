@@ -23,7 +23,10 @@ gum = "latest"
 fd = "latest"
 fzf = "latest"
 atuin = "latest"
+# Skip Rust on Alpine because installing it crashes the Home Assistant SSH container.
+{{ if not (and (eq .chezmoi.os "linux") (eq (dig "osRelease" "id" "" .chezmoi) "alpine")) -}}
 rust = "latest"
+{{ end -}}
 chezmoi = "latest"
 hunk = "latest"
 {{ if or .personal .homelab -}}
