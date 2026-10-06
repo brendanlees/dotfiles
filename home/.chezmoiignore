@@ -22,6 +22,7 @@ Library
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
+.finicky.js
 .config/spicetify
 .config/chezmoi-theme/obsidian.css
 {{- end }}
