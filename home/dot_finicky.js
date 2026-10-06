@@ -1,10 +1,12 @@
 export default {
   defaultBrowser: "Dia",
   handlers: [
-    {
-      match: (url) => url.protocol === "mailto:",
-      browser: "Mimestream",
-    },
+    // macOS sends mailto links directly to its default email app.
+    // Uncomment only for mailto URLs explicitly passed to Finicky.
+    // {
+    //   match: (url) => url.protocol === "mailto:",
+    //   browser: "Mimestream",
+    // },
     {
       match: (url) => url.hostname === "open.spotify.com",
       browser: "Spotify",
