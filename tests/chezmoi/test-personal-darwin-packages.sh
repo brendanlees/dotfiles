@@ -23,7 +23,7 @@ expected = {
     'brews': ['colima', 'incus', 'kubectl', 'docker', 'docker-compose',
               'docker-buildx', 'openclaw/tap/crabbox'],
     'casks': ['iina', 'thebrowsercompany-dia', 'ente-auth', 'homerow',
-              'flux-app', 'typewhisper'],
+              'flux-app', 'typewhisper', 'finicky'],
     'npm': ['@pen.dev/cli'],
     'taps': ['openclaw/tap'],
 }
@@ -38,7 +38,7 @@ assert {'id': 1470584107, 'name': 'Dato'} in packages['mas']['personal']
 assert {'name': 'serena-agent', 'python': '3.13'} in packages['uv']['personal']
 removed = {'itsycal', 'sleeve', 'textsniper', 'cloudmounter', 'orbstack', 'onyx',
            'betterzip', 'vlc', 'lanscan', 'zen-browser', 'helium', 'helium-browser',
-           'keka', 'transmit', 'dbngin'}
+           'keka', 'transmit', 'dbngin', 'imageoptim', 'arc', 'flacon', 'daisydisk'}
 for roles in packages.values():
     for role in ['base', 'personal', 'work']:
         for package in roles[role]:
@@ -62,7 +62,7 @@ for data in \
   '{"personal":false,"work":false,"homelab":true,"chezmoi":{"os":"darwin"}}'; do
   for template in "$source_root"/.chezmoiscripts/darwin/*install-packages-*.tmpl; do
     render "$template" >"$tmp/nonpersonal.sh"
-    if grep -Eq 'colima|incus|docker|crabbox|iina|thebrowsercompany-dia|ente-auth|homerow|flux-app|typewhisper|1470584107|@pen.dev/cli|serena-agent' "$tmp/nonpersonal.sh"; then
+    if grep -Eq 'colima|incus|docker|crabbox|iina|thebrowsercompany-dia|ente-auth|homerow|flux-app|typewhisper|finicky|1470584107|@pen.dev/cli|serena-agent' "$tmp/nonpersonal.sh"; then
       echo "personal packages leaked into another role: $template" >&2
       exit 1
     fi
