@@ -1,0 +1,101 @@
+#!/bin/sh
+# Launch Pi with the shared self-hosted Hindsight coding bank.
+
+set -eu
+
+KEYCHAIN_SERVICE=${HINDSIGHT_KEYCHAIN_SERVICE:-hindsight-coding-agent}
+HINDSIGHT_PORT=${HINDSIGHT_LOCAL_PORT:-18888}
+HINDSIGHT_SSH_TARGET=${HINDSIGHT_SSH_TARGET:-hermes-prod}
+HINDSIGHT_HEALTH_URL="http://127.0.0.1:${HINDSIGHT_PORT}/health"
+
+ensure_tunnel() {
+    if curl -fsS --max-time 2 "$HINDSIGHT_HEALTH_URL" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    ssh \
+        -o BatchMode=yes \
+        -o ConnectTimeout=8 \
+        -o ExitOnForwardFailure=yes \
+        -o ServerAliveInterval=60 \
+        -o ServerAliveCountMax=3 \
+        -fN \
+        -L "${HINDSIGHT_PORT}:127.0.0.1:8888" \
+        "$HINDSIGHT_SSH_TARGET"
+
+    ready=0
+    i=0
+    while [ "$i" -lt 10 ]; do
+        if curl -fsS --max-time 2 "$HINDSIGHT_HEALTH_URL" >/dev/null 2>&1; then
+            ready=1
+            break
+        fi
+        i=$((i + 1))
+        sleep 1
+    done
+    if [ "$ready" -ne 1 ]; then
+        printf 'Hindsight tunnel did not become healthy: %s\n' "$HINDSIGHT_HEALTH_URL" >&2
+        exit 1
+    fi
+}
+
+require_key() {
+    if ! token=$(security find-generic-password \
+        -a "${USER:?USER is required}" \
+        -s "$KEYCHAIN_SERVICE" \
+        -w 2>/dev/null); then
+        printf 'No Hindsight key found in the macOS Keychain. Run: %s --setup-key\n' "$0" >&2
+        exit 1
+    fi
+    if [ -z "$token" ]; then
+        printf 'The macOS Keychain Hindsight key is empty. Run: %s --setup-key\n' "$0" >&2
+        exit 1
+    fi
+    unset token
+}
+
+if [ "${1:-}" = "--setup-key" ]; then
+    shift
+    if [ "$#" -ne 0 ]; then
+        printf '%s\n' 'usage: pi-hindsight --setup-key' >&2
+        exit 2
+    fi
+    printf 'Enter the existing Hindsight API key. It will not be displayed.\n' >&2
+    exec security add-generic-password \
+        -a "${USER:?USER is required}" \
+        -s "$KEYCHAIN_SERVICE" \
+        -U \
+        -w
+fi
+
+if [ "${1:-}" = "--connect" ]; then
+    shift
+    if [ "$#" -ne 0 ]; then
+        printf '%s\n' 'usage: pi-hindsight --connect' >&2
+        exit 2
+    fi
+    ensure_tunnel
+    require_key
+    printf '%s\n' 'Hindsight connection ready.'
+    exit 0
+fi
+
+ensure_tunnel
+
+if ! token=$(security find-generic-password \
+    -a "${USER:?USER is required}" \
+    -s "$KEYCHAIN_SERVICE" \
+    -w 2>/dev/null); then
+    printf 'No Hindsight key found in the macOS Keychain. Run: %s --setup-key\n' "$0" >&2
+    exit 1
+fi
+if [ -z "$token" ]; then
+    printf 'The macOS Keychain Hindsight key is empty. Run: %s --setup-key\n' "$0" >&2
+    exit 1
+fi
+
+# Keep the token in the child environment rather than in its command arguments.
+export HINDSIGHT_API_TOKEN="$token"
+unset token
+exec pi "$@"
+
