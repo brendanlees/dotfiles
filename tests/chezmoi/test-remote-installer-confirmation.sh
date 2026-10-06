@@ -109,6 +109,12 @@ run_herdr_installer() {
     bash "$herdr_script" </dev/null
 }
 : >"$tmp/herdr.log"
+# Reuse Herdr installed elsewhere on PATH without prompting or downloading.
+printf '#!/bin/sh\nexit 0\n' >"$fake_bin/herdr"
+chmod +x "$fake_bin/herdr"
+run_herdr_installer
+[[ ! -s "$tmp/herdr.log" && ! -e "$fake_home/.local/bin/herdr" ]]
+rm "$fake_bin/herdr"
 if run_herdr_installer >"$tmp/herdr-refused.out" 2>&1; then
   echo 'Herdr must refuse without consent' >&2
   exit 1
@@ -141,8 +147,8 @@ cat >"$fixture/.chezmoiscripts/run_onchange_after_install-herdr-plugins.sh" <<'S
 SH
 printf '[data]\npersonal=true\n' >"$tmp/herdr-config.toml"
 rm "$fake_home/.local/bin/herdr"
-REMOTE_LOG="$tmp/herdr.log" PATH="$fake_bin:$PATH" HOME="$fake_home" \
-  CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 chezmoi apply --source "$fixture" \
+REMOTE_LOG="$tmp/herdr.log" PATH="$fake_bin:/usr/bin:/bin" HOME="$fake_home" \
+  CHEZMOI_ALLOW_REMOTE_SCRIPTS=1 "$(command -v chezmoi)" apply --source "$fixture" \
   --destination "$fake_home" --config "$tmp/herdr-config.toml" \
   --persistent-state "$tmp/herdr-state.boltdb" --override-data '{"chezmoi":{"os":"darwin"}}' --no-tty
 
