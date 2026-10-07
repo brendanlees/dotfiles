@@ -6,6 +6,7 @@ CONFIG="$ROOT/home/dot_config/aerospace/aerospace.toml"
 
 python3 - "$CONFIG" <<'PY'
 import pathlib
+import re
 import sys
 import tomllib
 
@@ -30,11 +31,27 @@ expected = {
     'md.obsidian': '8-notes',
     'com.todoist.mac.Todoist': '8-notes',
 }
-rules = {rule['if']['app-id']: rule['run'] for rule in parsed['on-window-detected']}
+rules = {}
+for rule in parsed['on-window-detected']:
+    condition = rule['if']
+    assert isinstance(condition, str), (
+        f'window rule should use the non-deprecated app-bundle-id test syntax: {condition}'
+    )
+    match = re.match(r'^test %\{app-bundle-id\} = ([^\s&]+)', condition)
+    assert match is not None, (
+        f'window rule should use the non-deprecated app-bundle-id test syntax: {condition}'
+    )
+    rules[match.group(1)] = rule['run']
 for app, workspace in expected.items():
     assert rules[app] == f'move-node-to-workspace {workspace}', (
         f'{app} should route every matching window to {workspace} without a helper'
     )
+todoist_condition = next(
+    rule['if'] for rule in parsed['on-window-detected']
+    if rule['if'].startswith('test %{app-bundle-id} = com.todoist.mac.Todoist')
+)
+assert 'test %{window-title} ~= ' in todoist_condition
+assert r'^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$' in todoist_condition
 assert 'app.zen-browser.zen' not in rules, 'Dia replaces Zen'
 for app in ('com.nickustinov.itsyhome', 'dev.kdrag0n.MacVirt'):
     assert rules[app] == ['layout floating']
