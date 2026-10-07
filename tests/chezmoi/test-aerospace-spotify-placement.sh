@@ -12,7 +12,7 @@ import tomllib
 
 parsed = tomllib.loads(pathlib.Path(sys.argv[1]).read_text())
 rule = next(rule for rule in parsed['on-window-detected']
-            if rule['if']['app-id'] == 'com.spotify.client')
+            if rule['if'] == 'test %{app-bundle-id} = com.spotify.client')
 assert rule['run'] == [
     'move-node-to-workspace 9-music',
     'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
