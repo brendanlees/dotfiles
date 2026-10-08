@@ -13,8 +13,8 @@
     </dict>
     <key>ProgramArguments</key>
     <array>
-        <string>/Applications/Espanso.app/Contents/MacOS/espanso</string>
-        <string>launcher</string>
+        <string>/bin/sh</string>
+        <string>{{ .chezmoi.homeDir }}/.config/espanso/start.sh</string>
     </array>
     <!-- Start Espanso automatically when the user logs in. -->
     <key>RunAtLoad</key>

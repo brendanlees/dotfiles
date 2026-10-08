@@ -13,6 +13,7 @@ Library
 .config/borders
 .config/zed
 .config/espanso
+Library/LaunchAgents/com.federicoterzi.espanso.plist
 {{- end }}
 
 {{- if or (ne .chezmoi.os "darwin") (not .personal) }}
