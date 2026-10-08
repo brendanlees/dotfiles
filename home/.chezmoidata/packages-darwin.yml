@@ -27,12 +27,12 @@ taps:
     - macos-fuse-t/cask
     - nikitabobko/tap
     - qmk/qmk
-    - rtk-ai/tap
     - xykong/tap
     - oven-sh/bun
     - openclaw/tap
     - yt-dlp/taps
     - mutagen-io/mutagen
+    - bskaplou/tap
   work:
     - ddev/ddev
     - discoteq/discoteq
@@ -67,7 +67,6 @@ brews:
     - pandoc
     - ente-cli
     - ffmpeg
-    - antigravity-cli
     - kanata
     - localsend
     - little-snitch
@@ -86,7 +85,6 @@ brews:
     - felixkratz/formulae/sketchybar
     - qmk/qmk/qmk
     - icm
-    - rtk
     - gromgit/brewtils/taproom
   work:
     - awscli
@@ -141,6 +139,8 @@ casks:
     - upscayl
     - veracrypt
     - windows-app
+    - helium-browser
+    - vitaly
     - boltai
     - plexamp
     - spotify

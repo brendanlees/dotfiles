@@ -75,16 +75,37 @@ chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
 chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
   --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"darwin"}}' \
   --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-darwin.toml"
-python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" "$tmpdir/mise-alpine.toml" "$tmpdir/mise-darwin.toml" <<'PY'
+for platform in linux windows alpine darwin; do
+  case "$platform" in
+    linux) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"linux","osRelease":{"id":"ubuntu"}}}' ;;
+    windows) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"windows"}}' ;;
+    alpine) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}' ;;
+    darwin) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"darwin"}}' ;;
+  esac
+  chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+    --override-data "$data" --file "$repo_root/home/dot_config/mise/config.toml.tmpl" \
+    >"$tmpdir/mise-personal-$platform.toml"
+done
+python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" \
+  "$tmpdir/mise-alpine.toml" "$tmpdir/mise-darwin.toml" \
+  "$tmpdir/mise-personal-linux.toml" "$tmpdir/mise-personal-windows.toml" \
+  "$tmpdir/mise-personal-alpine.toml" "$tmpdir/mise-personal-darwin.toml" <<'PY'
 import sys
 import tomllib
 from pathlib import Path
-linux, windows, alpine, darwin = (tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:])
+linux, windows, alpine, darwin, personal_linux, personal_windows, personal_alpine, personal_darwin = (
+    tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:]
+)
 assert linux['github:Giammarco-Ferranti/deja'] == 'latest'
 assert 'github:Giammarco-Ferranti/deja' not in windows
 assert alpine == {tool: version for tool, version in linux.items() if tool != 'rust'}
 for tools in (linux, windows, darwin):
     assert tools['rust'] == 'latest'
+
+personal_tools = {'actionlint', 'jq', 'shellcheck', 'shfmt', 'taplo', 'yamllint', 'yq'}
+for tools in (personal_linux, personal_windows, personal_alpine, personal_darwin):
+    assert personal_tools <= tools.keys()
+assert all((personal_tools - {'jq'}).isdisjoint(tools) for tools in (linux, windows, alpine, darwin))
 PY
 
 # Root skips other users' project configs instead of granting blanket trust.
