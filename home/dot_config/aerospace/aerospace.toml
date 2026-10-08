@@ -18,7 +18,6 @@ persistent-workspaces = [
 
 # Start AeroSpace at login
 start-at-login = true
-after-login-command = []
 after-startup-command = [
   'exec-and-forget borders',
   'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/start-sketchybar.sh"',
@@ -201,71 +200,70 @@ alt-shift-l = ['join-with right', 'mode main']
 
 # --- 1. browser ---
 [[on-window-detected]]
-if.app-id = 'company.thebrowser.Browser'
+if = 'test %{app-bundle-id} = company.thebrowser.Browser'
 run = 'move-node-to-workspace 1-browser'
 
 [[on-window-detected]]
-if.app-id = 'company.thebrowser.dia'
+if = 'test %{app-bundle-id} = company.thebrowser.dia'
 run = 'move-node-to-workspace 1-browser'
 
 # --- 2. code ---
 [[on-window-detected]]
-if.app-id = 'com.microsoft.VSCode'
+if = 'test %{app-bundle-id} = com.microsoft.VSCode'
 run = 'move-node-to-workspace 2-code'
 
 [[on-window-detected]]
-if.app-id = 'dev.zed.Zed'
+if = 'test %{app-bundle-id} = dev.zed.Zed'
 run = 'move-node-to-workspace 2-code'
 
 # --- 3. email / work ---
 [[on-window-detected]]
-if.app-id = 'com.mimestream.Mimestream'
+if = 'test %{app-bundle-id} = com.mimestream.Mimestream'
 run = 'move-node-to-workspace 3-email'
 
 [[on-window-detected]]
-if.app-id = 'notion.id'
+if = 'test %{app-bundle-id} = notion.id'
 run = 'move-node-to-workspace 3-email'
 
 [[on-window-detected]]
-if.app-id = 'com.invoiceninja.app'
+if = 'test %{app-bundle-id} = com.invoiceninja.app'
 run = 'move-node-to-workspace 3-email'
 
 # --- 4. files ---
 [[on-window-detected]]
-if.app-id = 'com.apple.finder'
+if = 'test %{app-bundle-id} = com.apple.finder'
 run = 'move-node-to-workspace 4-files'
 
 # --- 5. docs ---
 [[on-window-detected]]
-if.app-id = 'com.figma.Desktop'
+if = 'test %{app-bundle-id} = com.figma.Desktop'
 run = 'move-node-to-workspace 5-docs'
 
 [[on-window-detected]]
-if.app-id = 'asc.onlyoffice.ONLYOFFICE'
+if = 'test %{app-bundle-id} = asc.onlyoffice.ONLYOFFICE'
 run = 'move-node-to-workspace 5-docs'
 
 # --- 6/7. misc ---
 [[on-window-detected]]
-if.app-id = 'com.hnc.Discord'
+if = 'test %{app-bundle-id} = com.hnc.Discord'
 run = 'move-node-to-workspace 6-misc1'
 
 [[on-window-detected]]
-if.app-id = 'com.nousresearch.hermes'
+if = 'test %{app-bundle-id} = com.nousresearch.hermes'
 run = 'move-node-to-workspace 6-misc1'
 
 # --- 8. notes ---
 [[on-window-detected]]
-if.app-id = 'md.obsidian'
+if = 'test %{app-bundle-id} = md.obsidian'
 run = 'move-node-to-workspace 8-notes'
 
 [[on-window-detected]]
-if.app-id = 'com.todoist.mac.Todoist'
-if.window-title-regex-substring = '^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$'
+if = 'test %{app-bundle-id} = com.todoist.mac.Todoist && test %{window-title} ~= "^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$"'
 run = 'move-node-to-workspace 8-notes'
 
 # --- 9. music ---
 [[on-window-detected]]
-if.app-id = 'com.spotify.client'
+if = 'test %{app-bundle-id} = com.spotify.client'
 run = [
   'move-node-to-workspace 9-music',
   'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
@@ -275,10 +273,10 @@ run = [
 
 # itsyhome
 [[on-window-detected]]
-if.app-id = 'com.nickustinov.itsyhome'
+if = 'test %{app-bundle-id} = com.nickustinov.itsyhome'
 run = ['layout floating']
 
 # orbstack
 [[on-window-detected]]
-if.app-id = 'dev.kdrag0n.MacVirt'
+if = 'test %{app-bundle-id} = dev.kdrag0n.MacVirt'
 run = ['layout floating']
