@@ -128,7 +128,6 @@ casks:
     - ableton-live-suite
     - affinity-photo
     - airbuddy
-    - arq
     - betterdisplay
     - cryptomator
     - onlyoffice
@@ -162,9 +161,7 @@ casks:
     - figma
     - firefox
     - finicky
-    - local
     - responsively
-    - visual-studio-code
     - google-chrome
     - thebrowsercompany-dia
     - ente-auth
