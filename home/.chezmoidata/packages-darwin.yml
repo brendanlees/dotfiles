@@ -87,6 +87,8 @@ brews:
     - qmk/qmk/qmk
     - icm
     - gromgit/brewtils/taproom
+    - bskaplou/tap/vitaly
+
   work:
     - awscli
     - ddev/ddev/ddev
@@ -141,7 +143,6 @@ casks:
     - veracrypt
     - windows-app
     - helium-browser
-    - vitaly
     - boltai
     - plexamp
     - spotify
@@ -188,5 +189,4 @@ casks:
     - codexbar
     - chatgpt
     - hazeover
-    - rustdesk
   work: []
