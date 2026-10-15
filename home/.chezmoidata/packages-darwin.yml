@@ -188,4 +188,5 @@ casks:
     - codexbar
     - chatgpt
     - hazeover
+    - rustdesk
   work: []
