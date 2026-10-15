@@ -1,6 +1,6 @@
 [[session]]
 name = "homelab"
-path = "~/{{ .code_dir }}/_homelab/ansible-playbooks/homelab"
+path = "~/{{ .code_dir }}/homelab/ansible/homelab"
 startup_command = "ansible-playbook update-servers.yml"
 
 [[session]]
@@ -15,11 +15,11 @@ startup_command = "claude"
 
 [[session]]
 name = "hermes-config"
-path = "~/{{ .code_dir }}/_homelab/local-stdy01-docker"
+path = "~/{{ .code_dir }}/homelab/local-stdy01-docker"
 
 [[session]]
 name = "hermes-folder"
-path = "~/Documents/Sync/hermes-agent/"
+path = "~/Agents/hermes/"
 
 [[wildcard]]
 pattern = "~/{{ .code_dir }}/*"
