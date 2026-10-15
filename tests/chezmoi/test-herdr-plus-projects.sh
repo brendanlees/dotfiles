@@ -48,7 +48,6 @@ assert load("base-tmux-config") == {
 PY
 
 role_projects=(
-  personal-hass-config
   personal-homelab
   personal-pi-config
   personal-claude-config
@@ -74,13 +73,12 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 expected = {
-    "personal-hass-config": ("hass-config", "~/Code/_homelab/home-assistant-config/", "agent", "claude --agent homelab:hass-config --dangerously-allow-permissions"),
-    "personal-homelab": ("homelab", "~/Code/_homelab/ansible-playbooks/homelab", "ansible", "./update.sh"),
+    "personal-homelab": ("homelab", "~/Code/homelab/ansible/homelab", "ansible", "./update.sh"),
     "personal-pi-config": ("pi-config", "~/.pi", "agent", "pi"),
     "personal-claude-config": ("claude-config", "~/.claude", "agent", "claude"),
-    "personal-hermes-config": ("hermes-config", "~/Code/_homelab/local-stdy01-docker", "shell", None),
-    "personal-hermes-folder": ("hermes-folder", "~/Documents/Sync/hermes-agent/", "shell", None),
-    "work-steady-servers": ("steady-servers", "~/Code/_work/ansible-playbooks/steady-servers", "ansible", "tailscale switch steadydigital.co && tailscale up && ansible-playbook update-servers.yml && tailscale down"),
+    "personal-hermes-config": ("hermes-config", "~/Code/homelab/local-stdy01-docker", "shell", None),
+    "personal-hermes-folder": ("hermes-folder", "~/Agents/hermes/", "shell", None),
+    "work-steady-servers": ("steady-servers", "~/Code/work/ansible/steady-servers", "ansible", "tailscale switch steadydigital.co && tailscale up && ansible-playbook update-servers.yml && tailscale down"),
     "homelab-home": ("home", "~", "shell", None),
     "homelab-opt": ("opt", "/opt", "shell", None),
 }
