@@ -130,6 +130,7 @@ casks:
     - airbuddy
     - betterdisplay
     - cryptomator
+    - claude
     - onlyoffice
     - home-assistant
     - karabiner-elements
