@@ -102,11 +102,11 @@ STATE
 : >"$tmpdir/herdr.log"
 run_reconciler "$rendered"
 
-nav_ref='53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244'
-plus_ref='f32b0825f12543c1d03e54fb10d1741c40d66cdc'
+nav_ref='742db891e7d1f9a550b16c01dc8a6763f2b1493a'
+plus_ref='f38df3570bea8f7ca71dc1ba11bce3b123d14402'
 last_workspace_ref='8b55ebf15deaa52b49ff1c2500aab0c19c729420'
-worktrunk_ref='37605f0cde8037a58560ef87ce428e1a095fa3e2'
-navigator_ref='03b803a00341d58382b6cda70a7cd618af5b8806'
+worktrunk_ref='f9df9ba700b8a4f4d97ddfe3ea3eb345e80b880b'
+navigator_ref='313b753b1f98f802b7d861430a13cb95a86e8dd3'
 crabbox_ref='70aaebd1083615eadeddb920b1f344822a2f013b'
 grep -Fxq "plugin install paulbkim-dev/vim-herdr-navigation --ref $nav_ref --yes" "$tmpdir/herdr.log"
 grep -Fxq "plugin install cloudmanic/herdr-plus --ref $plus_ref --yes" "$tmpdir/herdr.log"
