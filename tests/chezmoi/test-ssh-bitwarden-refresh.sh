@@ -630,4 +630,39 @@ XDG_STATE_HOME="$auto_home/.local/state" SSH_BW_AGENT_SOCK_ENV=FIXTURE_AGENT_SOC
 assert_contains "$auto_home/.ssh/config.d/work.conf" 'IdentityAgent /fixture/agent.sock'
 assert_contains "$bw_log" 'get item manifest'
 
+# The managed GitHub override takes precedence over generated host settings,
+# while identity selection and unrelated hosts remain unchanged.
+routing_home=$(new_home github-routing)
+routing_dir="$routing_home/.ssh/config.d"
+mkdir -p "$routing_dir"
+cp "$source_root/private_dot_ssh/config.d/00-github.conf" "$routing_dir/00-github.conf"
+cat > "$routing_dir/personal.conf" <<'SSH'
+Host github.com
+  HostName github.com
+  Port 22
+  IdentityFile ~/.ssh/keys/github/id_gh
+
+Host example-personal-host
+  HostName 192.0.2.10
+  Port 2222
+SSH
+chezmoi execute-template < "$source_root/private_dot_ssh/config.tmpl" |
+  awk -v config_dir="$routing_dir" '$1 == "Include" {$2 = config_dir "/*.conf"} {print}' \
+    > "$routing_home/.ssh/config"
+ssh -G -F "$routing_home/.ssh/config" git@github.com > "$tmpdir/github-effective.conf" 2>/dev/null
+assert_contains "$tmpdir/github-effective.conf" 'hostname ssh.github.com'
+assert_contains "$tmpdir/github-effective.conf" 'port 443'
+assert_contains "$tmpdir/github-effective.conf" 'hostkeyalias github.com'
+assert_contains "$tmpdir/github-effective.conf" 'identityfile ~/.ssh/keys/github/id_gh'
+ssh -G -F "$routing_home/.ssh/config" example-personal-host > "$tmpdir/other-effective.conf" 2>/dev/null
+assert_contains "$tmpdir/other-effective.conf" 'hostname 192.0.2.10'
+assert_contains "$tmpdir/other-effective.conf" 'port 2222'
+assert_not_contains "$tmpdir/other-effective.conf" 'hostkeyalias github.com'
+
+# Refresh replaces only generated scope files, leaving the managed override intact.
+run_refresh "$routing_home" personal
+ssh -G -F "$routing_home/.ssh/config" git@github.com > "$tmpdir/github-refreshed.conf" 2>/dev/null
+assert_contains "$tmpdir/github-refreshed.conf" 'hostname ssh.github.com'
+assert_contains "$tmpdir/github-refreshed.conf" 'port 443'
+
 echo "ssh bitwarden refresh and change-driven provisioning ok"
