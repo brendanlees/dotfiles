@@ -44,6 +44,8 @@ if "<no value>" in text or "{{" in text or "}}" in text:
     raise SystemExit(f"{theme_name}: unresolved template output")
 
 doc = json.loads(text)
+if doc.get("$schema") != "https://pi.dev/schemas/theme.schema.json":
+    raise SystemExit(f"{theme_name}: $schema must point at Pi's published theme schema")
 palette = data["themes"][theme_name]["palette"]
 hex_color = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -139,7 +141,7 @@ if [[ -n "${PI_THEME_SCHEMA:-}" ]]; then
     echo "missing PI_THEME_SCHEMA: $PI_THEME_SCHEMA" >&2
     exit 1
   fi
-  npx --yes ajv-cli@5.0.0 validate --spec=draft7 -s "$PI_THEME_SCHEMA" -d "$rendered_dir/*.json"
+  npx --yes ajv-cli@5.0.0 validate --spec=draft2020 -s "$PI_THEME_SCHEMA" -d "$rendered_dir/*.json"
 fi
 
 echo "Pi theme template and writers ok ($theme_count themes)"
