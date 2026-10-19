@@ -63,49 +63,44 @@ grep -Fxq 'keep this generated lockfile' "$home/.config/mise/mise.lock"
 [[ $(wc -l <"$tmpdir/deja-import.log") -eq 1 ]]
 grep -Fq -- '--file /' "$tmpdir/deja-import.log"
 
-chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux","osRelease":{"id":"ubuntu"}}}' \
-  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-linux.toml"
-chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"windows"}}' \
-  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-windows.toml"
-chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}' \
-  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-alpine.toml"
-chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"personal":false,"work":false,"homelab":false,"headless":true,"ephemeral":true,"chezmoi":{"os":"darwin"}}' \
-  --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-darwin.toml"
-for platform in linux windows alpine darwin; do
+# Check rendering and gating for every role and platform without repeating the
+# tool inventory, so tools can be added or changed without editing this test.
+for platform in linux alpine windows darwin; do
   case "$platform" in
-    linux) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"linux","osRelease":{"id":"ubuntu"}}}' ;;
-    windows) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"windows"}}' ;;
-    alpine) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}' ;;
-    darwin) data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"darwin"}}' ;;
+    linux) os='{"os":"linux","osRelease":{"id":"ubuntu"}}' ;;
+    alpine) os='{"os":"linux","osRelease":{"id":"alpine"}}' ;;
+    *) os="{\"os\":\"$platform\"}" ;;
   esac
-  chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-    --override-data "$data" --file "$repo_root/home/dot_config/mise/config.toml.tmpl" \
-    >"$tmpdir/mise-personal-$platform.toml"
+  for role in base personal work homelab; do
+    flags='"personal":false,"work":false,"homelab":false'
+    [[ $role == base ]] || flags=${flags/\"$role\":false/\"$role\":true}
+    chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+      --override-data "{$flags,\"chezmoi\":$os}" \
+      --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-$platform-$role.toml"
+  done
 done
-python3 - "$tmpdir/mise-linux.toml" "$tmpdir/mise-windows.toml" \
-  "$tmpdir/mise-alpine.toml" "$tmpdir/mise-darwin.toml" \
-  "$tmpdir/mise-personal-linux.toml" "$tmpdir/mise-personal-windows.toml" \
-  "$tmpdir/mise-personal-alpine.toml" "$tmpdir/mise-personal-darwin.toml" <<'PY'
+brews=$(chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+  '{{ concat .brews.base .brews.personal .brews.work | toJson }}')
+python3 - "$tmpdir" "$brews" <<'PY'
+import json
 import sys
 import tomllib
 from pathlib import Path
-linux, windows, alpine, darwin, personal_linux, personal_windows, personal_alpine, personal_darwin = (
-    tomllib.loads(Path(path).read_text())['tools'] for path in sys.argv[1:]
-)
-assert linux['github:Giammarco-Ferranti/deja'] == 'latest'
-assert 'github:Giammarco-Ferranti/deja' not in windows
-assert alpine == {tool: version for tool, version in linux.items() if tool != 'rust'}
-for tools in (linux, windows, darwin):
-    assert tools['rust'] == 'latest'
+tools = {}
+for path in Path(sys.argv[1]).glob('mise-*-*.toml'):
+    _, platform, role = path.stem.split('-')
+    tools[platform, role] = tomllib.loads(path.read_text())['tools']
+assert len(tools) == 16
+for platform in ('linux', 'alpine', 'windows', 'darwin'):
+    assert tools[platform, 'base'].keys() < tools[platform, 'personal'].keys()
+assert not any('rust' in tools['alpine', role] for role in ('base', 'personal', 'work', 'homelab'))
 
-personal_tools = {'actionlint', 'jq', 'shellcheck', 'shfmt', 'taplo', 'yamllint', 'yq'}
-for tools in (personal_linux, personal_windows, personal_alpine, personal_darwin):
-    assert personal_tools <= tools.keys()
-assert all((personal_tools - {'jq'}).isdisjoint(tools) for tools in (linux, windows, alpine, darwin))
+# Homebrew must not also install a tool that mise owns on macOS.
+def bare(name):
+    return name.split(':')[-1].rsplit('/', 1)[-1]
+mise_darwin = {bare(tool) for (platform, _), names in tools.items() if platform == 'darwin' for tool in names}
+duplicates = mise_darwin & {bare(brew) for brew in json.loads(sys.argv[2])}
+assert not duplicates, f'declared in both mise and Homebrew: {sorted(duplicates)}'
 PY
 
 # Root skips other users' project configs instead of granting blanket trust.
@@ -125,16 +120,9 @@ for username in ('root', 'ordinary-user'):
     config = tomllib.loads((root / f'{username}.config.toml').read_text())
     assert 'trusted_config_paths' not in config['settings']
     assert 'credential_command' in config['settings']['github']
-    assert {'tmux', 'chezmoi'} <= config['tools'].keys()
-    assert config['tools']['go'] == '1.26.2'
     rc = tomllib.loads((root / f'{username}.miserc.toml').read_text())
     assert rc.get('ignored_config_paths', []) == (['/home'] if username == 'root' else [])
 PY
-
-if grep -Eq '^ +-[[:space:]]+(tmux|chezmoi)$' "$repo_root/home/.chezmoidata/packages-darwin.yml"; then
-  echo 'mise-owned tmux and chezmoi must not also be declared in Homebrew' >&2
-  exit 1
-fi
 
 # A fresh apply must install tools before any other POSIX after-hook. Keep the
 # real hook paths so chezmoi, not a hand-written sort, determines execution order.

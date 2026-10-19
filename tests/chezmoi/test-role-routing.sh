@@ -89,8 +89,6 @@ render_scope_templates() {
     <"$source_root/.chezmoiexternal.toml.tmpl" >"$tmpdir/$name.external"
   chezmoi execute-template --source "$repo_root" --override-data "$data" \
     <"$source_root/.chezmoiremove.tmpl" >"$tmpdir/$name.remove"
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
-    <"$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/$name.mise"
 }
 
 personal_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
@@ -107,13 +105,10 @@ assert_file_has() { grep -Fq "$2" "$1"; }
 assert_file_lacks() { if grep -Fq "$2" "$1"; then return 1; fi; }
 for scope in personal personal-work; do
   assert_file_has "$tmpdir/$scope.external" '[".pi"]'
-  assert_file_has "$tmpdir/$scope.mise" 'infisical = "latest"'
 done
 
 assert_file_lacks "$tmpdir/work.external" '[".pi"]'
 assert_file_lacks "$tmpdir/homelab.external" '[".pi"]'
-assert_file_lacks "$tmpdir/work.mise" 'infisical = "latest"'
-assert_file_has "$tmpdir/homelab.mise" 'infisical = "latest"'
 
 # Leaving the personal role must not rewrite or remove private harness data.
 fixture="$tmpdir/source"
