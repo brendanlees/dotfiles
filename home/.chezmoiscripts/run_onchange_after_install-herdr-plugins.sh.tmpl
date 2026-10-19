@@ -32,7 +32,7 @@ fi
 # Herdr Plus is managed in every non-Windows role. Its pinned build mistakes a
 # Go shim for a compiler and otherwise falls back to an unpinned release download.
 # The global mise Go pin must satisfy the pinned plugin's go.mod (Go 1.26.2):
-# https://github.com/cloudmanic/herdr-plus/blob/f32b0825f12543c1d03e54fb10d1741c40d66cdc/go.mod
+# https://github.com/cloudmanic/herdr-plus/blob/f38df3570bea8f7ca71dc1ba11bce3b123d14402/go.mod
 if ! "$mise_bin" --cd "$HOME" exec -- go version; then
   echo "Go is not usable; install managed tools before reconciling Herdr plugins" >&2
   exit 1

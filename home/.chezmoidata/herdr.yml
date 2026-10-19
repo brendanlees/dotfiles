@@ -2,21 +2,21 @@ herdr:
   plugins:
     - id: vim-herdr-navigation
       source: paulbkim-dev/vim-herdr-navigation
-      ref: 53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244
+      ref: 742db891e7d1f9a550b16c01dc8a6763f2b1493a
     - id: cloudmanic.herdr-plus
       source: cloudmanic/herdr-plus
-      ref: f32b0825f12543c1d03e54fb10d1741c40d66cdc
+      ref: f38df3570bea8f7ca71dc1ba11bce3b123d14402
     - id: third774.last-workspace
       source: third774/herdr-last-workspace
       ref: 8b55ebf15deaa52b49ff1c2500aab0c19c729420
     - id: worktrunk
       source: devashish2203/herdr-worktrunk
-      ref: 37605f0cde8037a58560ef87ce428e1a095fa3e2
+      ref: f9df9ba700b8a4f4d97ddfe3ea3eb345e80b880b
       config:
         open_mode: workspace
     - id: herdr-navigator
       source: thanhdat77/herdr-navigator
-      ref: 03b803a00341d58382b6cda70a7cd618af5b8806
+      ref: 313b753b1f98f802b7d861430a13cb95a86e8dd3
     - id: crabbox
       source: openclaw/crabbox/plugins/herdr
       ref: 70aaebd1083615eadeddb920b1f344822a2f013b
