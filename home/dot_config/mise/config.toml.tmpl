@@ -61,7 +61,8 @@ actionlint = "latest"
 pi = "latest"
 shellcheck = "latest"
 shfmt = "latest"
-"aqua:gitea.com/gitea/tea" = "latest"
+# Aqua cannot list gitea.com releases; the Forgejo backend speaks the Gitea API.
+"forgejo:gitea/tea" = { version = "latest", api_url = "https://gitea.com/api/v1" }
 taplo = "latest"
 yamllint = "latest"
 yq = "latest"
