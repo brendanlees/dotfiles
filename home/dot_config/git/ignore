@@ -1,0 +1,6 @@
+# Global ignores for every repository (git reads ~/.config/git/ignore by default).
+.DS_Store
+# Serena MCP writes its project config into each checkout it opens.
+.serena/
+# Pi observational memory keeps per-session state under the project.
+.memory/
