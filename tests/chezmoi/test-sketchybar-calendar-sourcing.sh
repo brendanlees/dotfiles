@@ -40,7 +40,7 @@ source "$TMP/colors.sh"
 [[ $CALENDAR_COLOR == "0x80${MUTED#0xff}" ]]
 
 export PATH="$BIN:$PATH" SKETCHYBAR_STUB_LOG="$LOG"
-FONT="JetBrainsMono Nerd Font Mono" ICON_CALENDAR=CAL \
+FONT="JetBrainsMono Nerd Font Mono" ICON_CALENDAR=CAL ICON_CLOCK=CLOCK \
   PILL_HEIGHT=36 BORDER_RADIUS=8 ITEM_PADDING=8 PLUGIN_DIR=/tmp/plugins \
   bash "$SOURCE_ROOT/dot_config/sketchybar/items/calendar.sh"
 
@@ -49,7 +49,7 @@ from pathlib import Path
 import sys
 
 lines = Path(sys.argv[1]).read_text().splitlines()
-for name in ['calendar', 'calendar_time']:
+for name in ['calendar', 'calendar_clock', 'calendar_time']:
     assert any(line.startswith(f'--add item {name} right ') for line in lines)
 for old in ['cal_dot_fam', 'cal_dot_work', 'cal_dot_per', 'cal_dot_neutral', 'calendar_event_clock']:
     assert f'--remove {old}' in lines
@@ -60,7 +60,10 @@ assert f'icon.color={sys.argv[2]}' in calendar
 assert f'label.color={sys.argv[3]}' in calendar
 assert 'icon=CAL' in calendar and 'script=/tmp/plugins/calendar.sh' in calendar
 assert 'update_freq=15' in calendar and '--subscribe calendar system_woke' in calendar
-assert any(line.startswith('--add bracket calendar_group /calendar$/ /calendar_time$/ ') for line in lines)
+clock = next(line for line in lines if line.startswith('--add item calendar_clock right '))
+assert 'icon=CLOCK' in clock and f'icon.color={sys.argv[2]}' in clock
+assert 'calendar_dots.sh' not in clock and 'click_script=' in clock
+assert any(line.startswith('--add bracket calendar_group /calendar$/ /calendar_clock$/ /calendar_time$/ ') for line in lines)
 click = calendar.split('click_script=', 1)[1].split(' --subscribe', 1)[0]
 assert 'Itsycal' not in click
 Path(sys.argv[1] + '.click').write_text(click)

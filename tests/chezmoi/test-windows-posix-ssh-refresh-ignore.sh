@@ -5,12 +5,17 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
+# Path selection must not download unrelated external archives.
+fixture_source="$tmpdir/source"
+cp -R "$repo_root/home" "$fixture_source"
+rm "$fixture_source/.chezmoiexternal.toml.tmpl"
+
 ignored_for_os() {
   local os=$1
   local dest="$tmpdir/dest-$os"
   mkdir -p "$dest"
   chezmoi ignored \
-    --source "$repo_root" \
+    --source "$fixture_source" \
     --destination "$dest" \
     --override-data '{"chezmoi":{"os":"'"$os"'"},"headless":false,"personal":true,"work":false,"homelab":false,"ephemeral":false}' \
     --no-tty

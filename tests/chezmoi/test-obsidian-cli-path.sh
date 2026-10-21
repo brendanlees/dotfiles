@@ -6,6 +6,11 @@ source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
+# Path selection must not download unrelated external archives.
+fixture_source="$tmpdir/source"
+cp -R "$repo_root/home" "$fixture_source"
+rm "$fixture_source/.chezmoiexternal.toml.tmpl"
+
 darwin_data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"chezmoi":{"os":"darwin","username":"test"}}'
 linux_data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"chezmoi":{"os":"linux","username":"test"}}'
 
@@ -26,9 +31,9 @@ chezmoi execute-template --source "$repo_root" --override-data "$linux_data" \
   <"$source_root/.chezmoiignore" >"$tmpdir/linux.ignore"
 grep -Fqx '.local/bin/obsidian' "$tmpdir/linux.ignore"
 
-managed_darwin=$(chezmoi managed --source "$repo_root" --override-data "$darwin_data")
+managed_darwin=$(chezmoi managed --source "$fixture_source" --override-data "$darwin_data")
 grep -Fxq '.local/bin/obsidian' <<<"$managed_darwin"
-managed_linux=$(chezmoi managed --source "$repo_root" --override-data "$linux_data")
+managed_linux=$(chezmoi managed --source "$fixture_source" --override-data "$linux_data")
 if grep -Fxq '.local/bin/obsidian' <<<"$managed_linux"; then
   echo 'Obsidian CLI link must be macOS-only' >&2
   exit 1

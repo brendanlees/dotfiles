@@ -6,15 +6,21 @@ source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
+# Render only with fixture inputs; the developer's config must not fill missing fields.
+config_file="$tmpdir/chezmoi.toml"
+: >"$config_file"
+
 render_scope() {
   local name=$1
   local data=$2
 
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  chezmoi execute-template --config "$config_file" --source "$repo_root" --override-data "$data" \
     <"$source_root/.chezmoiignore" >"$tmpdir/$name.ignore"
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  chezmoi execute-template --config "$config_file" --source "$repo_root" --override-data "$data" \
     <"$source_root/.chezmoiremove.tmpl" >"$tmpdir/$name.remove"
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  chezmoi execute-template --config "$config_file" --source "$repo_root" --override-data "$data" \
+    <"$source_root/.chezmoiexternal.toml.tmpl" >"$tmpdir/$name.external"
+  chezmoi execute-template --config "$config_file" --source "$repo_root" --override-data "$data" \
     <"$source_root/.chezmoiscripts/darwin/run_after_configure-menu-bar.sh.tmpl" \
     >"$tmpdir/$name.menu-bar"
 }
@@ -30,6 +36,26 @@ render_scope personal-darwin "$personal_darwin"
 render_scope work-darwin "$work_darwin"
 render_scope personal-linux "$personal_linux"
 
+# The native renderer follows the bar's scope and the Mac's architecture.
+for arch in arm64 amd64; do
+  data=$(jq --arg arch "$arch" '.chezmoi.arch = $arch' <<<"$personal_darwin")
+  chezmoi execute-template --config "$config_file" --source "$repo_root" \
+    --override-data "$data" \
+    <"$source_root/.chezmoiexternal.toml.tmpl" >"$tmpdir/$arch.external"
+done
+python3 - "$tmpdir" <<'PYTEST'
+import pathlib, sys, tomllib
+root = pathlib.Path(sys.argv[1])
+for scope in ['work-darwin', 'personal-linux']:
+    assert '.config/sketchybar/vendor/showy-quota' not in tomllib.loads((root / f'{scope}.external').read_text())
+for arch, asset_arch in [('arm64', 'arm64'), ('amd64', 'x86_64')]:
+    external = tomllib.loads((root / f'{arch}.external').read_text())['.config/sketchybar/vendor/showy-quota']
+    assert external['url'].endswith(f'-macos-{asset_arch}.tar.gz')
+    assert '/releases/download/v' in external['url'] and 'latest' not in external['url']
+    assert len(external['checksum']['sha256']) == 64
+    assert external['stripComponents'] == 1
+PYTEST
+
 assert_lacks personal-darwin '.config/sketchybar' ignore
 assert_lacks personal-darwin '.config/sketchybar' remove
 assert_has work-darwin '.config/sketchybar' ignore
@@ -44,7 +70,6 @@ done
 
 minimal_source="$tmpdir/source"
 home_dir="$tmpdir/home"
-config_file="$tmpdir/chezmoi.toml"
 override=$(printf '{"chezmoi":{"os":"darwin","homeDir":"%s"}}' "$home_dir")
 mkdir -p \
   "$minimal_source/home/.chezmoiscripts/darwin" \

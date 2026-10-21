@@ -9,7 +9,7 @@ for old_item in cal_dot_neutral cal_dot_per cal_dot_work cal_dot_fam calendar_ev
     fi
 done
 
-# Right-side items render right-to-left. Add time first for date, then time.
+# Right-side items render right-to-left: date, clock icon, then time.
 sketchybar --add item calendar_time right \
     --set calendar_time \
     icon.font="$FONT:Regular:13.0" \
@@ -21,6 +21,19 @@ sketchybar --add item calendar_time right \
     padding_left="$ITEM_PADDING" \
     padding_right="$ITEM_PADDING" \
     update_freq=0 \
+    click_script="$DATO_CLICK"
+
+sketchybar --add item calendar_clock right \
+    --set calendar_clock \
+    icon="$ICON_CLOCK" \
+    icon.font="$FONT:Regular:18.0" \
+    icon.color="$CALENDAR_COLOR" \
+    icon.padding_left=4 \
+    icon.padding_right=2 \
+    label.drawing=off \
+    background.drawing=off \
+    padding_left=-2 \
+    padding_right=-2 \
     click_script="$DATO_CLICK"
 
 sketchybar --add item calendar right \
@@ -42,7 +55,7 @@ sketchybar --add item calendar right \
     click_script="$DATO_CLICK" \
     --subscribe calendar system_woke
 
-sketchybar --add bracket calendar_group '/calendar$/' '/calendar_time$/' \
+sketchybar --add bracket calendar_group '/calendar$/' '/calendar_clock$/' '/calendar_time$/' \
     --set calendar_group \
     background.drawing=on \
     background.color="$PILL_BG" \
