@@ -135,27 +135,16 @@ fi
 # api tokens
 # ------------------------------------------
 
-# Reuse chezmoi's private cache, not a second token in this shell config.
-# Resolve after mise activation so its chezmoi/gh tools are on PATH.
-gh-token() {
-  local token="${GITHUB_TOKEN:-${GITHUB_PERSONAL_ACCESS_TOKEN:-}}"
-  if [[ -z "$token" ]] && command -v chezmoi >/dev/null 2>&1; then
+# Download credentials are opt-in. Never export them over gh's own login.
+# Resolve the private cache only when called, after mise has exposed chezmoi.
+gh-download-token() {
+  local token=''
+  if command -v chezmoi >/dev/null 2>&1; then
     token=$(command chezmoi execute-template '{{ "{{ if hasKey . \"github_token\" }}{{ .github_token }}{{ end }}" }}' 2>/dev/null) || token=''
-  fi
-  if [[ -z "$token" ]] && command -v gh >/dev/null 2>&1; then
-    token=$(command gh auth token 2>/dev/null) || token=''
   fi
   [[ -n "$token" ]] || return 1
   printf '%s\n' "$token"
 }
-
-# Set GH_TOKEN_AUTOEXPORT=0 before startup to keep the accessor-only behavior.
-if [[ "${GH_TOKEN_AUTOEXPORT:-1}" != 0 ]]; then
-  if _github_token=$(gh-token); then
-    export GITHUB_TOKEN="$_github_token"
-  fi
-  unset _github_token
-fi
 
 # ------------------------------------------
 # starship
