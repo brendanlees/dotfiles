@@ -110,8 +110,14 @@ assert (codex["icon"], codex["label"], codex["slider.percentage"]) == ("7d", "77
 assert codex["y_offset"] == "7"
 assert (claude["icon"], claude["label"], claude["y_offset"]) == ("5h", "96% left", "7")
 assert state["showy_quota.claude.secondary"]["label"] == "81% left"
+assert state["showy_quota.claude.icon"]["y_offset"] == claude["y_offset"]
+assert (state["showy_quota.claude.icon"]["icon.font"]
+        == state["showy_quota.codex.icon"]["icon.font"]
+        == state["showy_quota.openrouter.icon"]["icon.font"])
+assert claude["slider.background.color"] == state["showy_quota_bracket"]["background.border_color"]
 balance = state["showy_quota.openrouter.balance"]
-assert balance["label"] == "$11.14 left" and balance["y_offset"] == "-7"
+assert balance["label"] == "$11.14" and balance["y_offset"] == "-7"
+assert balance["icon.drawing"] == "off", "the dollar amount needs no redundant USD label"
 assert "slider.percentage" not in balance, "credit balance must not become a fabricated quota"
 assert state["showy_quota.openrouter.icon"]["y_offset"] == "-7"
 assert state["showy_quota.openrouter.icon"]["icon"] == ":openrouter:"
@@ -172,7 +178,7 @@ import json, pathlib, sys
 state = json.loads(pathlib.Path(sys.argv[1]).read_text())
 labels = [v.get("label", "") for v in state.values()]
 assert any("Fable only" in label and "72% left" in label and "1h 30m" in label for label in labels), labels
-assert "Credits  ·  $11.14 left" in labels, labels
+assert "Credits  ·  $11.14" in labels, labels
 assert state["quota_detail.mode"]["label"] == "Show used instead"
 PYTEST
 
@@ -185,16 +191,35 @@ python3 - "$TMP/bar.json" <<'PYTEST'
 import json, pathlib, sys
 state = json.loads(pathlib.Path(sys.argv[1]).read_text())
 row = state["showy_quota.codex.primary"]
-assert (row["label"], row["slider.percentage"]) == ("23% used", "23")
+assert (row["label"], row["slider.percentage"]) == ("23%", "23")
 assert "slider.percentage=23" in row["click_script"]
-assert state["showy_quota.openrouter.balance"]["label"] == "$11.14 left"
+assert int(row["label.width"]) < 60
+assert int(state["showy_quota.codex.slot"]["width"]) < 132
+assert int(state["showy_quota.claude.slot"]["width"]) < 132
+# A dim, full-width track makes the used portion readable against total capacity.
+for name in ["codex.primary", "claude.primary", "claude.secondary"]:
+    bar = state["showy_quota." + name]
+    assert bar["label"] == bar["slider.percentage"] + "%"
+    track = bar["slider.background.color"]
+    assert track[4:] == bar["label.color"][4:], "track follows the theme's muted colour"
+    assert 0 < int(track[2:4], 16) < 128, "track stays visible but dimmer than usage"
+    assert int(bar["slider.width"]) == 40 and int(bar["slider.background.height"]) > 0
+assert state["showy_quota.openrouter.balance"]["label"] == "$11.14"
 labels = [v.get("label", "") for v in state.values()]
 assert any("Fable only" in label and "28% used" in label for label in labels), labels
-assert "Credits  ·  $11.14 left" in labels, labels
+assert "Credits  ·  $11.14" in labels, labels
 assert not any("$78.86" in label for label in labels), labels
 assert state["quota_detail.mode"]["label"] == "Show remaining instead"
 PYTEST
 "$CONFIG_DIR/plugins/quota.sh" mode
+python3 - "$TMP/bar.json" <<'PYTEST'
+import json, pathlib, sys
+state = json.loads(pathlib.Path(sys.argv[1]).read_text())
+row = state["showy_quota.codex.primary"]
+assert row["label"] == "77% left"
+assert state["showy_quota.codex.slot"]["width"] == "132"
+assert row["slider.background.color"] == state["showy_quota_bracket"]["background.border_color"]
+PYTEST
 
 # Removing OpenRouter restores a centred Codex row. Errors/unknown data never show a healthy 0%.
 printf '{"schema":1,"providers":[]}\n' >"$XDG_CACHE_HOME/showy-quota/usage.json"
