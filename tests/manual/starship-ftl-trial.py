@@ -41,7 +41,7 @@ def environment(root, mode):
         "XDG_DATA_HOME": str(home / ".local/share"),
         "XDG_STATE_HOME": str(home / ".local/state"),
         "ATUIN_CONFIG_DIR": str(home / ".config/atuin"),
-        "GH_TOKEN_AUTOEXPORT": "0", "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_OPTIONAL_LOCKS": "0",
         "STARSHIP_FTL": "0" if mode == "off" else "1",
         "TMPDIR": str(home / "tmp"),
     }
@@ -133,7 +133,7 @@ if [[ ${FTL_TRIAL_BENCH:-0} == 1 ]]; then
   add-zle-hook-widget zle-line-init _trial_ready
 fi
 # Keep the disposable shell from querying the real chezmoi config for tokens.
-gh-token() { return 1 }
+gh-download-token() { return 1 }
 '''
         (home / ".zshrc").write_text(rc)
         (home / ".config/starship/starship.toml").write_text(render(source("dot_config/starship/private_starship.toml.tmpl")))

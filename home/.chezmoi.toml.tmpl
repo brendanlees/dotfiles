@@ -122,14 +122,15 @@
 # global vars / data
 # ------------------------------------------
 
-{{- $github_token := env "GITHUB_TOKEN" -}}
+{{/* Never cache ambient project/agent credentials as the download token. */}}
+{{- $github_token := env "GITHUB_DOWNLOAD_TOKEN" -}}
 {{- if and (not $github_token) (hasKey . "github_token") -}}
 {{-   $github_token = .github_token -}}
 {{- end -}}
 {{- $bw_github := dict -}}
 {{- if and $personal (lookPath "bw") -}}
 {{-   $bw_github = bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" -}}
-{{-   if not (env "GITHUB_TOKEN") -}}
+{{-   if not (env "GITHUB_DOWNLOAD_TOKEN") -}}
 {{-     $github_token = $bw_github.read_only_token.value -}}
 {{-   end -}}
 {{- end }}

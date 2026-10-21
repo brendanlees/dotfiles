@@ -112,7 +112,7 @@ printf '%s\\n' 'export PATH="{tools}:$PATH"'
         "XDG_DATA_HOME": str(home / ".local/share"),
         "XDG_STATE_HOME": str(home / ".local/state"),
         "XDG_CACHE_HOME": str(home / ".cache"),
-        "GH_TOKEN_AUTOEXPORT": "0", "TERM": term,
+        "TERM": term,
         "STARSHIP_FTL": "0" if optout else "1",
         "FTL_TEST_FAIL": "1" if failure else "0",
         "FTL_TEST_MISSING": "1" if missing else "0",

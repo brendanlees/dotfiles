@@ -82,12 +82,15 @@ render_role() {
   cat > "$config_file" <<'TOML'
 [data]
   headless = false
+  github_token = "fixture-old-download-token"
   git_name = "Test User"
   git_email = "test@example.com"
 TOML
   : > "$bw_log"
 
-  if ! CHEZMOI_ROLE="$role" GITHUB_TOKEN="${INIT_TOKEN:-}" BW_LOG="$bw_log" PATH="$fake_bin:$PATH" \
+  if ! CHEZMOI_ROLE="$role" GITHUB_DOWNLOAD_TOKEN="${INIT_TOKEN:-}" \
+    GH_TOKEN=fixture-agent-token GITHUB_TOKEN=fixture-project-token \
+    BW_LOG="$bw_log" PATH="$fake_bin:$PATH" \
     chezmoi init \
       --source "$repo_root" \
       --config "$config_file" \
@@ -166,4 +169,32 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
   "0b9286df-9ffc-4ab8-996e-b42d014e44d4"
 
-echo "bitwarden role gating ok"
+# Execute the rendered bootstrap expansion with a stub installer. It must pass
+# the download input to init without replacing a project's GitHub credential.
+PATH="$fake_bin:$PATH" chezmoi execute-template --source "$repo_root" \
+  --config "$tmpdir/config-personal_work.toml" \
+  --file "$repo_root/home/dot_config/espanso/match/cli.yml.tmpl" >"$tmpdir/cli.yml"
+cat >"$fake_bin/curl" <<'CURL'
+#!/bin/sh
+exit 0
+CURL
+cat >"$fake_bin/sh" <<'SH'
+#!/usr/bin/env bash
+set -eu
+[[ $GITHUB_DOWNLOAD_TOKEN == github-token && $GITHUB_TOKEN == fixture-project-token ]]
+SH
+chmod +x "$fake_bin/curl" "$fake_bin/sh"
+python3 - "$tmpdir/cli.yml" "$fake_bin" <<'CHECK'
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+snippet = re.search(r'trigger: "==cz-init-gh"\s+replace: \'(.*)\'', Path(sys.argv[1]).read_text()).group(1)
+subprocess.run(['bash', '-c', snippet], check=True, env={
+    **os.environ, 'PATH': sys.argv[2] + os.pathsep + os.environ['PATH'],
+    'GITHUB_DOWNLOAD_TOKEN': '', 'GITHUB_TOKEN': 'fixture-project-token',
+})
+CHECK
+
+echo "bitwarden role gating and download bootstrap input ok"

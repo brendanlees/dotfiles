@@ -162,22 +162,27 @@ if HOME="$home" PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" \
   exit 1
 fi
 
-# Init must retain an injected bootstrap token for future commands, including a
-# re-init with neither the original environment nor Bitwarden available.
-for injected in fixture-init-token ''; do
-  CHEZMOI_ROLE=ephemeral,headless GITHUB_TOKEN="$injected" chezmoi init \
+# Init accepts only the dedicated download input, retains its cache on re-init,
+# and allows deliberate rotation. Project/agent credentials must never be cached.
+expected=''
+for injected in '' fixture-init-token '' fixture-rotated-token; do
+  [[ -z $injected ]] || expected=$injected
+  CHEZMOI_ROLE=ephemeral,headless GITHUB_DOWNLOAD_TOKEN="$injected" \
+    GH_TOKEN=fixture-agent-token GITHUB_TOKEN=fixture-project-token \
+    GITHUB_PERSONAL_ACCESS_TOKEN=fixture-legacy-token chezmoi init \
     --source "$repo_root" --destination "$home" --config "$tmpdir/init.toml" \
     --config-path "$tmpdir/init.toml" --cache "$tmpdir/init-cache" \
     --persistent-state "$tmpdir/init-state.boltdb" --no-tty --force
-  python3 - "$tmpdir/init.toml" <<'PY'
+  python3 - "$tmpdir/init.toml" "$expected" <<'CHECK'
 import sys
 import tomllib
 from pathlib import Path
-assert tomllib.loads(Path(sys.argv[1]).read_text())['data']['github_token'] == 'fixture-init-token'
-PY
+assert tomllib.loads(Path(sys.argv[1]).read_text())['data'].get('github_token', '') == sys.argv[2]
+CHECK
 done
 
-# Shells resolve the same cache without writing a token into the shell profile.
+# Shell startup leaves gh credentials alone; the explicit download accessor
+# reads only the cache, never a project token or the stored gh login.
 # Execute only the auth section, avoiding plugins and interactive startup work.
 chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
   --override-data '{"personal":false,"homelab":false,"chezmoi":{"os":"linux"}}' \
@@ -207,22 +212,29 @@ run_shell() {
   # shellcheck disable=SC2016 # Expanded by the isolated zsh process, not bash.
   HOME="$home" XDG_CONFIG_HOME="$home/.config" \
     PATH="$tmpdir/bin:/usr/bin:/bin" GH_LOG="$tmpdir/gh.log" \
-    GITHUB_TOKEN="$1" GITHUB_PERSONAL_ACCESS_TOKEN="$2" GH_TOKEN_AUTOEXPORT="$3" \
-    EXPECTED_TOKEN="$4" "$zsh_bin" -f -c '
+    GH_TOKEN="$1" GITHUB_TOKEN="$2" GITHUB_PERSONAL_ACCESS_TOKEN="$3" \
+    EXPECTED_DOWNLOAD="$4" "$zsh_bin" -f -c '
+      before_gh=$GH_TOKEN before_github=$GITHUB_TOKEN before_legacy=$GITHUB_PERSONAL_ACCESS_TOKEN
       source "$1"
-      [[ ${GITHUB_TOKEN:-} == "$EXPECTED_TOKEN" ]] || exit 1
-      if [[ ${GH_TOKEN_AUTOEXPORT:-} == 0 ]]; then
-        [[ $(gh-token) == fixture-cached-token ]] || exit 1
+      [[ $GH_TOKEN == "$before_gh" && $GITHUB_TOKEN == "$before_github" &&
+         $GITHUB_PERSONAL_ACCESS_TOKEN == "$before_legacy" ]] || exit 1
+      token=$(gh-download-token)
+      result=$?
+      [[ $token == "$EXPECTED_DOWNLOAD" ]] || exit 1
+      if [[ -n $EXPECTED_DOWNLOAD ]]; then
+        (( result == 0 )) || exit 1
+      else
+        (( result != 0 )) || exit 1
       fi
+      [[ $GH_TOKEN == "$before_gh" && $GITHUB_TOKEN == "$before_github" ]] || exit 1
     ' zsh "$tmpdir/auth.zsh"
 }
 run_shell '' '' '' fixture-cached-token
-run_shell fixture-injected '' '' fixture-injected
-run_shell '' fixture-legacy '' fixture-legacy
-run_shell '' '' 0 ''
-[[ ! -e "$tmpdir/gh.log" ]]
+run_shell '' fixture-project-token '' fixture-cached-token
+run_shell fixture-agent-token fixture-project-token fixture-legacy-token fixture-cached-token
 printf '[data]\n' >"$tmpdir/config.toml"
-run_shell '' '' '' fixture-gh-token
-[[ $(wc -l <"$tmpdir/gh.log") -eq 1 ]]
+run_shell '' '' '' ''
+run_shell fixture-agent-token fixture-project-token fixture-legacy-token ''
+[[ ! -e "$tmpdir/gh.log" ]]
 
-echo 'mise install, Deja history seeding, bootstrap ordering and shared credentials ok'
+echo 'mise install, Deja history seeding, bootstrap ordering and isolated download credentials ok'
