@@ -20,6 +20,22 @@ exclude = [
 ]
 {{- end }}
 
+{{/* Pinned SketchyBar quota renderer; no build toolchain required. */}}
+{{- if and (eq .chezmoi.os "darwin") .personal }}
+{{- $arch := "arm64" }}
+{{- $sha := "c46e6d6c4ef8c76655617c871fd3f8f2bc6ea64e6eac456ad74ed29449b0b668" }}
+{{- if eq .chezmoi.arch "amd64" }}
+{{- $arch = "x86_64" }}
+{{- $sha = "843a3b4c05925563169de553290b1411f9122db2fc74c765de1821ae5a431a74" }}
+{{- end }}
+[".config/sketchybar/vendor/showy-quota"]
+type = "archive"
+url = "https://github.com/enieuwy/showy-quota/releases/download/v0.9.0/showy-quota-0.9.0-macos-{{ $arch }}.tar.gz"
+checksum.sha256 = "{{ $sha }}"
+stripComponents = 1
+exact = true
+{{- end }}
+
 {{/* fonts */}}
 
 {{- if and .personal (not .headless) (or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux")) }}

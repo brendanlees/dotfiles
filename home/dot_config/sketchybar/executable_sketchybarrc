@@ -119,6 +119,7 @@ source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/tailscale.sh"
 add_spacer status_spotify right "$MEDIA_GAP"
 source "$ITEM_DIR/spotify.sh"
+source "$ITEM_DIR/quota.sh"
 
 # ------------------------------------------
 # finalise

@@ -154,6 +154,8 @@ alt-9 = 'workspace 9-music'
 
 ctrl-alt-left = 'workspace prev'
 ctrl-alt-right = 'workspace next'
+# Expand cached AI quotas without opening the native menu bar.
+ctrl-alt-q = 'exec-and-forget sketchybar --trigger quota_toggle'
 
 alt-tab = 'workspace-back-and-forth'
 
