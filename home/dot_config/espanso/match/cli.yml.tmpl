@@ -6,9 +6,9 @@ matches:
     replace: 'sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
 {{- if and .personal (lookPath "bw") }}
 
-  # chezmoi > bootstrap install with github token (cached from bitwarden at init time)
+  # chezmoi > bootstrap install with download token (cached from bitwarden at init time)
   - trigger: "==cz-init-gh"
-    replace: 'GITHUB_TOKEN={{ .bw_github.read_only_token }} sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
+    replace: 'GITHUB_DOWNLOAD_TOKEN={{ .bw_github.read_only_token }} sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply brendanlees'
 {{- end }}
 
   # brew > update

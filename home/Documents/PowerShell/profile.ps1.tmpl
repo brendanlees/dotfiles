@@ -73,26 +73,15 @@ if (Get-Command mise -ErrorAction SilentlyContinue) {
 # ------------------------------------------
 # github token
 # ------------------------------------------
-# Reuse the private chezmoi cache after mise has put its tools on PATH.
-function gh-token {
-    if ($env:GITHUB_TOKEN) { return $env:GITHUB_TOKEN }
-    if ($env:GITHUB_PERSONAL_ACCESS_TOKEN) { return $env:GITHUB_PERSONAL_ACCESS_TOKEN }
+# Download credentials are opt-in. Never export them over gh's own login.
+# Resolve the private cache only when called, after mise has exposed chezmoi.
+function gh-download-token {
     $token = $null
     if (Get-Command chezmoi -ErrorAction SilentlyContinue) {
         $token = chezmoi execute-template '{{ "{{ if hasKey . \"github_token\" }}{{ .github_token }}{{ end }}" }}' 2>$null
         if ($LASTEXITCODE -ne 0) { $token = $null }
     }
-    if (-not $token -and (Get-Command gh -ErrorAction SilentlyContinue)) {
-        $token = gh auth token 2>$null
-        if ($LASTEXITCODE -ne 0) { $token = $null }
-    }
     return $token
-}
-# Process-only export. Set GH_TOKEN_AUTOEXPORT=0 for accessor-only behavior.
-if ($env:GH_TOKEN_AUTOEXPORT -ne '0') {
-    $githubToken = gh-token
-    if ($githubToken) { $env:GITHUB_TOKEN = $githubToken }
-    Remove-Variable githubToken
 }
 
 # ------------------------------------------

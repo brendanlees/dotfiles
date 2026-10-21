@@ -4,7 +4,7 @@ $temp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString())
 [IO.Directory]::CreateDirectory($temp) | Out-Null
 $originalToken = $env:GITHUB_TOKEN
 $originalLegacyToken = $env:GITHUB_PERSONAL_ACCESS_TOKEN
-$originalAutoexport = $env:GH_TOKEN_AUTOEXPORT
+$originalGhToken = $env:GH_TOKEN
 $originalXdgDataHome = $env:XDG_DATA_HOME
 $userToken = [Environment]::GetEnvironmentVariable('GITHUB_TOKEN', 'User')
 
@@ -79,32 +79,37 @@ try {
         $global:LASTEXITCODE = 0
         return $global:cachedToken
     }
-    function gh { $global:LASTEXITCODE = 0; return 'fixture-gh-token' }
+    function gh { throw 'download accessor must never read the gh login' }
     $global:cachedToken = 'fixture-cached-token'
     foreach ($case in @(
-        @('', '', '', 'fixture-cached-token'),
-        @('fixture-injected-token', '', '', 'fixture-injected-token'),
-        @('', 'fixture-legacy-token', '', 'fixture-legacy-token'),
-        @('', '', '0', '')
+        @('', '', ''),
+        @('', 'fixture-project-token', ''),
+        @('fixture-agent-token', 'fixture-project-token', 'fixture-legacy-token')
     )) {
-        $env:GITHUB_TOKEN, $env:GITHUB_PERSONAL_ACCESS_TOKEN, $env:GH_TOKEN_AUTOEXPORT = $case[0..2]
+        $env:GH_TOKEN, $env:GITHUB_TOKEN, $env:GITHUB_PERSONAL_ACCESS_TOKEN = $case
         . $auth
-        if ([string]$env:GITHUB_TOKEN -ne $case[3]) { throw 'shell token precedence changed' }
-        if ($case[2] -eq '0' -and (gh-token) -ne 'fixture-cached-token') { throw 'accessor must remain available' }
+        if ([string]$env:GH_TOKEN -ne $case[0] -or [string]$env:GITHUB_TOKEN -ne $case[1] -or
+            [string]$env:GITHUB_PERSONAL_ACCESS_TOKEN -ne $case[2]) {
+            throw 'shell startup must preserve explicit gh credentials without exporting a download token'
+        }
+        if ((gh-download-token) -ne 'fixture-cached-token') { throw 'accessor must return only the download cache' }
     }
+    # No cache must not promote the project token or the stored gh login.
     $global:cachedToken = $null
-    $env:GITHUB_TOKEN = $null
-    $env:GH_TOKEN_AUTOEXPORT = $null
+    if (gh-download-token) { throw 'missing download cache must return no token' }
+    $env:GH_TOKEN, $env:GITHUB_TOKEN, $env:GITHUB_PERSONAL_ACCESS_TOKEN = $null, $null, $null
     . $auth
-    if ($env:GITHUB_TOKEN -ne 'fixture-gh-token') { throw 'gh auth fallback failed' }
+    if ($env:GITHUB_TOKEN -or $env:GH_TOKEN -or (gh-download-token)) {
+        throw 'shell must not fall back to the stored gh login'
+    }
     if ([Environment]::GetEnvironmentVariable('GITHUB_TOKEN', 'User') -ne $userToken) {
         throw 'shell must not change the persistent User environment'
     }
-    Write-Output 'Windows tool install and process-only shell token contract ok'
+    Write-Output 'Windows tool install and isolated download credential contract ok'
 } finally {
     $env:GITHUB_TOKEN = $originalToken
     $env:GITHUB_PERSONAL_ACCESS_TOKEN = $originalLegacyToken
-    $env:GH_TOKEN_AUTOEXPORT = $originalAutoexport
+    $env:GH_TOKEN = $originalGhToken
     $env:XDG_DATA_HOME = $originalXdgDataHome
     Remove-Item -LiteralPath $temp -Recurse -Force
 }
