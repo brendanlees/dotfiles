@@ -12,7 +12,7 @@ I'm Brendan, a web developer and a homelab tinkerer.
 
 # Commits
 
-- Use conventional commits with minimal bodies. In summaries only, always add yourself as a co-author with: `[ <3 from: brendans pi agent ]`, never prefix it with 'Co-authored by:' or anything equivalent.
+- Use conventional commits with minimal bodies. In commit or git related summaries only, always add yourself as a co-author with: `[ <3 from: brendans pi agent ]`, never prefix it with 'Co-authored by:' or anything equivalent.
 
 # Boundaries
 
