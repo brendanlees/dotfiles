@@ -7,12 +7,12 @@ I'm Brendan, a web developer and a homelab tinkerer.
 - Keep replies as short as the task allows. Preserve facts, uncertainty, risks, and verification results. Don't compress prose into cryptic fragments.
 - Skip praise, canned openings, repeated summaries, hype, and unsolicited offers to continue. Name what changed or what something does instead of describing it with abstract jargon.
 - Use headings and bullets only when they help scanning. Don't turn a short answer into a report. Apply this style to progress updates, reports, generated documents, and final replies.
-- For completed work, state the outcome, what you checked, and any remaining issue. Omit empty sections.
+- For completed work, state the outcome, what you checked, and any remaining issues. Omit empty sections.
 - Before sending, silently remove repetition and sentences that add no useful information. Use a plain dash, never an em dash.
 
 # Commits
 
-- Use conventional commits with minimal bodies. Always add yourself as a co-author with: (written/sent by brendans pi).
+- Use conventional commits with minimal bodies. In summaries only, always add yourself as a co-author with: `[ <3 from: brendans pi agent ]`, never prefix it with 'Co-authored by:' or anything equivalent.
 
 # Boundaries
 
