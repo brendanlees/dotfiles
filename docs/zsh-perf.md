@@ -8,7 +8,7 @@
 | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `_cached_eval` helper          | caches `tool init zsh` output to disk; reruns only when binary is newer                   |
 | daily-only `compinit -u`       | full `$fpath` security scan once per 24h, `-C` fast path otherwise                        |
-| Zinit Turbo for Deja/highlighting | defers ghost-text and syntax-highlighting setup until after the prompt; completions stay ordered |
+| Zinit Turbo for highlighting | defers syntax-highlighting setup until after the prompt; completions stay ordered |
 | `zsh-syntax-highlighting` last | must load after all other widget-defining plugins or it silently fails to hook them |
 | opt-in `zprof` profiler        | `ZPROF=1 zsh -ic exit` enables timing without polluting normal sessions                   |
 
@@ -52,7 +52,7 @@ From this worktree, prepare a disposable environment:
 python3 tests/manual/starship-ftl-trial.py prepare
 ```
 
-Requires the existing installed Zsh/tools, Deja, Zinit, and its managed plugin checkouts. It copies the Zinit manager and plugin caches into disposable homes, seeds synthetic Zsh/Atuin history, and creates a 500-file Git fixture. Copy the printed `Prepared:` path:
+Requires the existing installed Zsh/tools, Zinit, and its managed plugin checkouts. It copies the Zinit manager and plugin caches into disposable homes, seeds synthetic Zsh/Atuin history, and creates a 500-file Git fixture. Copy the printed `Prepared:` path:
 
 ```sh
 trial=/private/tmp/starship-ftl-trial-REPLACE_WITH_PRINTED_SUFFIX
@@ -68,7 +68,7 @@ python3 tests/manual/starship-ftl-trial.py shell "$trial" --mode off
 - `off`: this worktree with FTL disabled.
 - `ftl`: this worktree with FTL enabled.
 
-Each has its own HOME, init caches, history databases and daemon sockets. Atuin sync/update checks are disabled; Atuin and Deja sandbox daemons stop on normal launcher exit. User aliases, credentials/token lookup, login files, inherited tool-manager state, TMUX and terminal-specific integration are deliberately omitted. Do not run sensitive commands, import real history, use `chezmoi apply`, or source the live `.zshrc` for this trial. Preparation snapshots the templates; prepare again after editing them.
+Each has its own HOME, init caches, history databases and daemon sockets. Atuin sync/update checks are disabled; Atuin sandbox daemons stop on normal launcher exit. User aliases, credentials/token lookup, login files, inherited tool-manager state, TMUX and terminal-specific integration are deliberately omitted. Do not run sensitive commands, import real history, use `chezmoi apply`, or source the live `.zshrc` for this trial. Preparation snapshots the templates; prepare again after editing them.
 
 ### Personal checks
 
@@ -76,16 +76,15 @@ In the `ftl` shell:
 
 1. Watch the early `❯`, then the right prompt. Type a short command immediately on launch: input should be retained, not executed before the shell is ready.
 2. Run `false`, then `echo $?`: expect the error character and status `1`. Press Escape / `i` to check the vi command/insert characters; try Ctrl-C and a multiline command.
-3. Type `echo trial-local` to see Deja suggest the seeded `echo trial-local-history`; Ctrl-R and Up should still open Atuin history search.
+3. Check that Ctrl-R and Up open Atuin history search and find the synthetic `echo trial-atuin-only` entry.
 4. Check the active integrations:
    ```zsh
-   deja ping
    print -r -- "popup=${ATUIN_TMUX_POPUP:-default}"
    bindkey -M viins '^R'
    bindkey -M viins '^[[A'
    ```
-   Expect `pong`, `popup=false`, and Atuin widgets.
-5. Check Tab/fzf-tab, suggestions and syntax highlighting. Resize a narrow window; try a long wrapped command, a cancelled search and fast Enter/Ctrl-C sequences. Repeat the launcher in Ghostty and Herdr. No actual tmux-popup transport is exercised because the launcher does not inherit TMUX.
+   Expect `popup=false` and Atuin widgets.
+5. Check Tab/fzf-tab and syntax highlighting. Resize a narrow window; try a long wrapped command, a cancelled search and fast Enter/Ctrl-C sequences. Repeat the launcher in Ghostty and Herdr. No actual tmux-popup transport is exercised because the launcher does not inherit TMUX.
 6. Compare with `off`. If flicker, lost input, duplicate prompts or broken widgets appear only with FTL, retain the tuning changes but leave FTL disabled. Do not merely judge the time until the right prompt fills in.
 
 ### Reproducible warm benchmark
@@ -107,7 +106,7 @@ bash tests/chezmoi/test-starship-shell-integration.sh
 bash tests/chezmoi/test-atuin-shell-integration.sh
 ```
 
-The Starship owner covers the Zinit FTL pin/scope, early Mise PATH dependency, theme colour and native fallback. The Atuin owner covers Zinit loading, Deja seeding and retained Ctrl-R/Up ownership. Their controlled fixtures do not replace real-terminal checks.
+The Starship owner covers the Zinit FTL pin/scope, early Mise PATH dependency, theme colour and native fallback. The Atuin owner covers Zinit loading and retained Ctrl-R/Up ownership. Their controlled fixtures do not replace real-terminal checks.
 
 ## Not done intentionally
 

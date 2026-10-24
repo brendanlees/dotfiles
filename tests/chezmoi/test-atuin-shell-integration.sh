@@ -72,10 +72,9 @@ if grep -Fq 'XDG_DATA_HOME/zsh/plugins/' "$tmpdir/zshrc"; then
   echo 'Zsh plugins must no longer load from chezmoi-managed directories' >&2
   exit 1
 fi
-for plugin in 'zsh-users/zsh-completions' 'Aloxaf/fzf-tab' 'zsh-users/zsh-syntax-highlighting' 'Giammarco-Ferranti/deja'; do
+for plugin in 'zsh-users/zsh-completions' 'Aloxaf/fzf-tab' 'zsh-users/zsh-syntax-highlighting'; do
   grep -Fq "zinit light $plugin" "$tmpdir/zshrc"
 done
-grep -Fq 'wait"0" lucid depth=1 pick"deja.plugin.zsh"' "$tmpdir/zshrc"
 grep -Fq 'zinit ice wait lucid depth=1' "$tmpdir/zshrc"
 python3 - "$tmpdir/zshrc" <<'PY'
 import sys
@@ -120,6 +119,7 @@ for _ in 1 2; do
     ZINIT_CLONE_LOG="$tmpdir/zinit-clone.log" bash "$tmpdir/install-zinit.sh"
 done
 [[ $(wc -l <"$tmpdir/zinit-clone.log") -eq 1 ]]
+# A leftover Deja executable must not cause Zsh to reload the retired plugin.
 cat >"$tmpdir/bin/deja" <<'DEJA'
 #!/bin/sh
 exit 0
@@ -169,7 +169,10 @@ binding=$(HOME="$tmpdir/home" \
 [[ $binding != *fzf-history-widget* ]]
 grep -Fq '|zsh-users/zsh-completions' "$tmpdir/zinit.log"
 grep -Fq '|Aloxaf/fzf-tab' "$tmpdir/zinit.log"
-grep -Fq '|Giammarco-Ferranti/deja' "$tmpdir/zinit.log"
+if grep -Fq '|Giammarco-Ferranti/deja' "$tmpdir/zinit.log"; then
+  echo 'Zsh must not load the retired Deja plugin' >&2
+  exit 1
+fi
 
 rm -f "$tmpdir/home/.cache/zsh/init/atuin.zsh"
 failed_binding=$(HOME="$tmpdir/home" \
@@ -191,4 +194,4 @@ psfzf_line=$(grep -nF "Set-PsFzfOption -PSReadlineChordProvider" "$tmpdir/profil
 atuin_ps_line=$(grep -nF 'atuin init powershell | Out-String | Invoke-Expression' "$tmpdir/profile.ps1" | cut -d: -f1)
 ((atuin_ps_line > psfzf_line))
 
-echo 'Zinit plugin loading, Deja/Atuin integration, Ctrl-R and Up ownership ok'
+echo 'Zinit plugin loading, Atuin integration, Ctrl-R and Up ownership ok'

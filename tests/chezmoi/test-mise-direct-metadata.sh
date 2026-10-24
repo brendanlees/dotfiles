@@ -12,7 +12,7 @@ printf 'keep this generated lockfile\n' >"$home/.config/mise/mise.lock"
 install_templates=("$repo_root"/home/.chezmoiscripts/run_after_*install*tools.sh.tmpl)
 install_template=${install_templates[0]}
 chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  --override-data '{"chezmoi":{"os":"linux"}}' \
+  --override-data '{"headless":true,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}' \
   --file "$install_template" >"$tmpdir/install.sh"
 
 cat >"$home/.local/bin/mise" <<'MISE'
@@ -25,13 +25,6 @@ case "$*" in
     printf 'install\n' >>"$INSTALL_LOG"
     exit "${INSTALL_STATUS:-0}"
     ;;
-  'exec -- deja import --file '* )
-    history_file=${*: -1}
-    [[ -s "$history_file" ]] || exit 94
-    printf '%s\n' "$*" >>"$DEJA_LOG"
-    mkdir -p "$HOME/.local/share/deja"
-    : >"$HOME/.local/share/deja/deja.db"
-    ;;
   '--cd '*"$HOME"' exec -- uv tool install '*)
     [[ -s "$INSTALL_LOG" ]] || exit 95
     printf '%s\n' "$*" >>"$UV_LOG"
@@ -41,6 +34,7 @@ case "$*" in
 esac
 MISE
 chmod +x "$home/.local/bin/mise"
+# Existing Zsh history must not trigger an import into the retired Deja binary.
 mkdir -p "$home/.local/state/zsh"
 printf 'echo from old history\n' >"$home/.local/state/zsh/history"
 
@@ -48,7 +42,6 @@ run_install() {
   (cd "$tmpdir/project" && HOME="$home" XDG_CONFIG_HOME="$home/.config" \
     XDG_DATA_HOME="$home/custom-data" XDG_STATE_HOME="$home/.local/state" \
     XDG_CACHE_HOME="$home/.cache" PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/install.log" \
-    DEJA_LOG="$tmpdir/deja-import.log" \
     GITHUB_API_TOKEN='' GITHUB_TOKEN="$1" EXPECTED_TOKEN="$2" \
     INSTALL_STATUS="${3:-0}" bash "$tmpdir/install.sh")
 }
@@ -60,8 +53,6 @@ if run_install '' fixture-cached-token 42; then
 fi
 grep -Fxq 'keep this generated lockfile' "$home/.config/mise/mise.lock"
 [[ $(wc -l <"$tmpdir/install.log") -eq 3 ]]
-[[ $(wc -l <"$tmpdir/deja-import.log") -eq 1 ]]
-grep -Fq -- '--file /' "$tmpdir/deja-import.log"
 
 # Check rendering and gating for every role and platform without repeating the
 # tool inventory, so tools can be added or changed without editing this test.
@@ -91,6 +82,7 @@ for path in Path(sys.argv[1]).glob('mise-*-*.toml'):
     _, platform, role = path.stem.split('-')
     tools[platform, role] = tomllib.loads(path.read_text())['tools']
 assert len(tools) == 16
+assert all('github:Giammarco-Ferranti/deja' not in names for names in tools.values())
 for platform in ('linux', 'alpine', 'windows', 'darwin'):
     assert tools[platform, 'base'].keys() < tools[platform, 'personal'].keys()
 assert not any('rust' in tools['alpine', role] for role in ('base', 'personal', 'work', 'homelab'))
@@ -102,6 +94,58 @@ mise_darwin = {bare(tool) for (platform, _), names in tools.items() if platform 
 duplicates = mise_darwin & {bare(brew) for brew in json.loads(sys.argv[2])}
 assert not duplicates, f'declared in both mise and Homebrew: {sorted(duplicates)}'
 PY
+
+# Retire only Deja on both a desktop and the headless Alpine SSH app. Use real
+# apply semantics so ignore rules cannot silently prevent removal.
+retired=(
+  .local/share/deja/config
+  .local/share/deja/deja.db
+  .local/share/mise/installs/github-giammarco-ferranti-deja/0.4.2/deja
+  .local/share/mise/downloads/github-giammarco-ferranti-deja/archive
+  .local/share/mise/shims/deja
+  .cache/mise/github-giammarco-ferranti-deja/metadata
+  .cache/mise-direct/github-giammarco-ferranti-deja/metadata
+  .local/share/zinit/plugins/Giammarco-Ferranti---deja/deja.plugin.zsh
+)
+retained=(
+  .local/share/atuin/history.db
+  .local/state/zsh/history
+  .local/share/mise/installs/atuin/keep
+  .local/share/mise/shims/atuin
+  .config/mise/mise.lock
+  .local/share/zinit/plugins/zsh-users---zsh-syntax-highlighting/keep
+)
+cleanup_source="$tmpdir/cleanup-source"
+mkdir -p "$cleanup_source"
+for platform in darwin alpine; do
+  if [[ $platform == darwin ]]; then
+    data='{"personal":true,"work":false,"homelab":false,"headless":false,"chezmoi":{"os":"darwin"}}'
+  else
+    data='{"personal":false,"work":false,"homelab":true,"headless":true,"chezmoi":{"os":"linux","osRelease":{"id":"alpine"}}}'
+  fi
+  for template in .chezmoiignore .chezmoiremove.tmpl; do
+    chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
+      --override-data "$data" --file "$repo_root/home/$template" \
+      >"$cleanup_source/${template%.tmpl}"
+  done
+  cleanup_home="$tmpdir/cleanup-$platform"
+  for file in "${retired[@]}" "${retained[@]}"; do
+    mkdir -p "$cleanup_home/$(dirname "$file")"
+    printf 'fixture content\n' >"$cleanup_home/$file"
+  done
+  HOME="$cleanup_home" chezmoi apply --source "$cleanup_source" \
+    --destination "$cleanup_home" --config "$tmpdir/config.toml" \
+    --persistent-state "$tmpdir/cleanup-$platform.boltdb" --no-tty --force
+  for file in "${retired[@]}"; do
+    if [[ -e "$cleanup_home/$file" ]]; then
+      echo "Deja file survived apply on $platform: $file" >&2
+      exit 1
+    fi
+  done
+  for file in "${retained[@]}"; do
+    grep -Fxq 'fixture content' "$cleanup_home/$file"
+  done
+done
 
 # Root skips other users' project configs instead of granting blanket trust.
 for username in root ordinary-user; do
@@ -150,7 +194,6 @@ chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
 HOME="$home" XDG_CONFIG_HOME="$home/.config" XDG_CACHE_HOME="$home/.cache" \
   XDG_DATA_HOME="$home/custom-data" XDG_STATE_HOME="$home/.local/state" \
   PATH=/usr/bin:/bin INSTALL_LOG="$tmpdir/first-install.log" UV_LOG="$tmpdir/uv.log" \
-  DEJA_LOG="$tmpdir/deja-import.log" \
   GITHUB_API_TOKEN='' GITHUB_TOKEN='' EXPECTED_TOKEN=fixture-cached-token \
   "$(command -v chezmoi)" apply --source "$fixture" --destination "$home" \
   --config "$tmpdir/config.toml" --persistent-state "$tmpdir/state.boltdb" --force
@@ -237,4 +280,4 @@ run_shell '' '' '' ''
 run_shell fixture-agent-token fixture-project-token fixture-legacy-token ''
 [[ ! -e "$tmpdir/gh.log" ]]
 
-echo 'mise install, Deja history seeding, bootstrap ordering and isolated download credentials ok'
+echo 'mise install, Deja retirement, bootstrap ordering and isolated download credentials ok'
