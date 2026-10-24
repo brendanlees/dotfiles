@@ -433,11 +433,16 @@ fi
 [[ -n "$ZPROF" ]] && zprof | head -40
 
 # ------------------------------------------
-# syntax highlighting
+# autosuggestions and syntax highlighting
 # ------------------------------------------
 # !NOTE must be last: highlighters hook widgets after all other plugins.
 
 if (( _zinit_available )); then
+  # Atuin init selects its own strategy; use native Zsh history for suggestions.
+  ZSH_AUTOSUGGEST_STRATEGY=(history)
+  zinit ice depth=1
+  zinit light zsh-users/zsh-autosuggestions
+
   zinit ice wait lucid depth=1
   zinit light zsh-users/zsh-syntax-highlighting
 fi

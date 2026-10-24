@@ -146,6 +146,8 @@ if [ "${1:-}" = "init" ] && [ "${2:-}" = "zsh" ]; then
     exit 127
   fi
   cat <<'ZSH'
+# Atuin init selects its own strategy even before autosuggestions loads.
+ZSH_AUTOSUGGEST_STRATEGY=(atuin)
 _atuin_history_widget() { :; }
 zle -N atuin-search-viins _atuin_history_widget
 bindkey -M emacs '^R' atuin-search
@@ -163,12 +165,27 @@ binding=$(HOME="$tmpdir/home" \
   XDG_CACHE_HOME="$tmpdir/home/.cache" \
   ZINIT_LOG="$tmpdir/zinit.log" \
   PATH="$tmpdir/bin:/usr/bin:/bin" \
-  zsh -dfic 'source "$1"; bindkey -M viins "^R"; bindkey -M viins "^[[A"' zsh "$tmpdir/zshrc")
+  zsh -dfic 'source "$1"; bindkey -M viins "^R"; bindkey -M viins "^[[A"; print -r -- "autosuggestion-strategy:${ZSH_AUTOSUGGEST_STRATEGY[*]}"' zsh "$tmpdir/zshrc")
 [[ $binding == *atuin-search-viins* ]]
 [[ $binding == *atuin-up-search-viins* ]]
 [[ $binding != *fzf-history-widget* ]]
+if [[ $binding != *autosuggestion-strategy:history* ]]; then
+  echo 'Inline suggestions must use native Zsh history, not Atuin search' >&2
+  exit 1
+fi
 grep -Fq '|zsh-users/zsh-completions' "$tmpdir/zinit.log"
 grep -Fq '|Aloxaf/fzf-tab' "$tmpdir/zinit.log"
+# Retiring a suggestion provider must not leave inline suggestions disabled.
+python3 - "$tmpdir/zinit.log" <<'PYTEST'
+import sys
+from pathlib import Path
+
+plugins = [line.split("|", 1)[1] for line in Path(sys.argv[1]).read_text().splitlines()]
+suggestions = "zsh-users/zsh-autosuggestions"
+assert suggestions in plugins, "Zsh must load an inline autosuggestion provider"
+assert plugins.index(suggestions) < plugins.index("zsh-users/zsh-syntax-highlighting"), \
+    "Autosuggestions must load before syntax highlighting"
+PYTEST
 if grep -Fq '|Giammarco-Ferranti/deja' "$tmpdir/zinit.log"; then
   echo 'Zsh must not load the retired Deja plugin' >&2
   exit 1
@@ -194,4 +211,4 @@ psfzf_line=$(grep -nF "Set-PsFzfOption -PSReadlineChordProvider" "$tmpdir/profil
 atuin_ps_line=$(grep -nF 'atuin init powershell | Out-String | Invoke-Expression' "$tmpdir/profile.ps1" | cut -d: -f1)
 ((atuin_ps_line > psfzf_line))
 
-echo 'Zinit plugin loading, Atuin integration, Ctrl-R and Up ownership ok'
+echo 'Zinit plugin loading, autosuggestions, Atuin integration, Ctrl-R and Up ownership ok'
