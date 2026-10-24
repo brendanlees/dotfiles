@@ -183,13 +183,8 @@ fi
 # atuin
 # ------------------------------------------
 
-# Keep Atuin for Ctrl-R and Up history search; Deja handles inline suggestions.
+# Atuin owns Ctrl-R and Up history search.
 _cached_eval atuin atuin atuin init zsh
-
-if (( _zinit_available )) && (( $+commands[deja] )); then
-  zinit ice wait"0" lucid depth=1 pick"deja.plugin.zsh"
-  zinit light Giammarco-Ferranti/deja
-fi
 
 # ------------------------------------------
 # carapace 

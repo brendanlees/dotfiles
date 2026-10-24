@@ -5,6 +5,14 @@ lazy-lock.json
 .local/bin/chezmoi-apply-library
 .local/bin/chezmoi-readd-library
 .config/zsh-patina
+# Retired Deja config/history, Mise artifacts and Zinit plugin.
+.local/share/deja
+.local/share/mise/installs/github-giammarco-ferranti-deja
+.local/share/mise/downloads/github-giammarco-ferranti-deja
+.local/share/mise/shims/deja
+.cache/mise/github-giammarco-ferranti-deja
+.cache/mise-direct/github-giammarco-ferranti-deja
+.local/share/zinit/plugins/Giammarco-Ferranti---deja
 {{ if and (eq .chezmoi.os "darwin") .personal }}
 .config/sketchybar/plugins/calendar_dots.sh
 {{ end }}

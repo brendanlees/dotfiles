@@ -58,25 +58,8 @@ def stop_daemon(root, mode):
                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True, timeout=15)
 
 
-def stop_deja_daemon(root, mode):
-    env = environment(root, mode)
-    data_dir = root / mode / ".local/share/deja"
-    sock, pidfile = data_dir / "sock", data_dir / "daemon.pid"
-    if not sock.is_file() or not pidfile.is_file():
-        return
-    if subprocess.run(["deja", "ping"], env=env, stdout=subprocess.DEVNULL,
-                      stderr=subprocess.DEVNULL, timeout=2).returncode != 0:
-        return
-    os.kill(int(pidfile.read_text()), signal.SIGTERM)
-    deadline = time.monotonic() + 2
-    while sock.exists() and time.monotonic() < deadline:
-        time.sleep(0.01)
-    if sock.exists():
-        raise RuntimeError(f"Deja daemon did not release {sock}")
-
-
 def prepare():
-    for tool in ("chezmoi", "zsh", "starship", "atuin", "deja", "mise", "git", "fzf", "carapace", "wt", "zoxide"):
+    for tool in ("chezmoi", "zsh", "starship", "atuin", "mise", "git", "fzf", "carapace", "wt", "zoxide"):
         if not shutil.which(tool):
             raise SystemExit(f"Required installed tool missing: {tool}")
     root = Path(tempfile.mkdtemp(prefix="starship-ftl-trial-", dir="/tmp")).resolve()
@@ -85,7 +68,7 @@ def prepare():
                 ephemeral=False, theme=theme, chezmoi={"os": "darwin"})
     meta = dict(path=os.environ["PATH"], user=os.environ.get("USER", "trial"),
                 worktree=str(REPO), theme=theme, zsh=shutil.which("zsh"), versions={})
-    for tool in ("starship", "atuin", "deja", "mise", "zsh"):
+    for tool in ("starship", "atuin", "mise", "zsh"):
         meta["versions"][tool] = run([tool, "--version"]).splitlines()[0]
     (root / "trial.json").write_text(json.dumps(meta, indent=2))
 
@@ -102,7 +85,6 @@ def prepare():
         "zsh-users---zsh-completions",
         "Aloxaf---fzf-tab",
         "zsh-users---zsh-syntax-highlighting",
-        "Giammarco-Ferranti---deja",
         "mattmc3---starship-ftl",
     )
     for mode in MODES:
@@ -155,9 +137,6 @@ gh-download-token() { return 1 }
         (home / ".config/atuin/themes/chezmoi.toml").write_text(theme_text)
         history = home / ".local/state/zsh/history"
         history.write_text(": 1700000000:0;echo trial-local-history\n")
-        subprocess.run(["deja", "import", "--file", str(history)],
-                       env=environment(root, mode), cwd=REPO, check=True,
-                       stdout=subprocess.DEVNULL)
 
     env = environment(root, "ftl")
     fixture = root / "repo"
@@ -259,7 +238,6 @@ def benchmark(root, count):
     finally:
         for mode in MODES:
             stop_daemon(root, mode)
-            stop_deja_daemon(root, mode)
 
 
 def main():
@@ -289,7 +267,6 @@ def main():
             subprocess.run([meta["zsh"], "-di"], env=environment(root, args.mode), cwd=root / "repo", check=False)
         finally:
             stop_daemon(root, args.mode)
-            stop_deja_daemon(root, args.mode)
 
 
 if __name__ == "__main__":
