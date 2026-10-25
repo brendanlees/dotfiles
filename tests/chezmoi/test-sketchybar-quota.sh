@@ -88,8 +88,11 @@ cat >"$TMP/metrics.json" <<'JSON'
 ]
 JSON
 cat >"$XDG_CACHE_HOME/showy-quota/usage.json" <<'JSON'
-{"schema":1,"providers":[{"provider":"openrouter","usage":{"providerCost":{"balance":11.14,"currencyCode":"USD"},"details":[{"title":"Credits","rows":[{"label":"Remaining","value":"$11.14"},{"label":"Used","value":"$78.86"}]}]}}]}
+{"schema":1,"providers":[{"provider":"codex","usage":{"loginMethod":"prolite"}},{"provider":"openrouter","usage":{"providerCost":{"balance":11.14,"currencyCode":"USD"},"details":[{"title":"Credits","rows":[{"label":"Remaining","value":"$11.14"},{"label":"Used","value":"$78.86"}]}]}}]}
 JSON
+cp "$XDG_CACHE_HOME/showy-quota/usage.json" "$TMP/subscribed-usage.json"
+# A warm upgrade removes the former OpenRouter row and the separate Codex column.
+printf '%s\n' '{"spotify":{},"showy_quota.trigger":{},"showy_quota.codex.slot":{},"showy_quota.openrouter.icon":{},"showy_quota.openrouter.balance":{},"showy_quota_bracket":{}}' >"$TMP/bar.json"
 : >"$TMP/calls"
 printf 'Dia\n' >"$TMP/front"
 
@@ -107,25 +110,24 @@ root = pathlib.Path(sys.argv[1])
 state = json.loads((root / "bar.json").read_text())
 codex, claude = state["showy_quota.codex.primary"], state["showy_quota.claude.primary"]
 assert (codex["icon"], codex["label"], codex["slider.percentage"]) == ("7d", "77% left", "77")
-assert codex["y_offset"] == "7"
-assert (claude["icon"], claude["label"], claude["y_offset"]) == ("5h", "96% left", "7")
-assert state["showy_quota.claude.secondary"]["label"] == "81% left"
-assert state["showy_quota.claude.icon"]["y_offset"] == claude["y_offset"]
+assert (claude["icon"], claude["label"]) == ("5h", "96% left")
+weekly = state["showy_quota.claude.secondary"]
+assert weekly["label"] == "81% left"
+assert [claude["y_offset"], weekly["y_offset"], codex["y_offset"]] == ["11", "0", "-11"]
+assert state["showy_quota.claude.icon"]["y_offset"] == "6", "Claude's icon centres on its two rows"
+assert state["showy_quota.codex.icon"]["y_offset"] == codex["y_offset"]
+assert state["showy_quota.codex.icon"]["width"] == "0", "provider icons share the same column"
 assert (state["showy_quota.claude.icon"]["icon.font"]
-        == state["showy_quota.codex.icon"]["icon.font"]
-        == state["showy_quota.openrouter.icon"]["icon.font"])
+        == state["showy_quota.codex.icon"]["icon.font"])
+assert float(claude["label.font"].rsplit(":", 1)[1]) < 10
+assert claude["slider.background.height"] == "4"
 assert claude["slider.background.color"] == state["showy_quota_bracket"]["background.border_color"]
-balance = state["showy_quota.openrouter.balance"]
-assert balance["label"] == "$11.14" and balance["y_offset"] == "-7"
-assert balance["icon.drawing"] == "off", "the dollar amount needs no redundant USD label"
-assert "slider.percentage" not in balance, "credit balance must not become a fabricated quota"
-assert state["showy_quota.openrouter.icon"]["y_offset"] == "-7"
-assert state["showy_quota.openrouter.icon"]["icon"] == ":openrouter:"
-assert state["showy_quota.openrouter.icon"]["icon.font"].startswith("sketchybar-app-font:")
-assert "showy_quota.openrouter.slot" not in state, "OpenRouter must share Codex's column"
+assert state["showy_quota_bracket"]["background.height"] == "36"
+assert not any(name.startswith("showy_quota.openrouter.") for name in state)
+assert [name for name in state if name.endswith(".slot")] == ["showy_quota.claude.slot"]
 order = list(state)
-assert order.index("showy_quota.openrouter.balance") < order.index("showy_quota.codex.slot")
-assert order.index("showy_quota.openrouter.icon") < order.index("showy_quota.codex.icon")
+assert order.index("showy_quota.codex.primary") < order.index("showy_quota.claude.slot")
+assert order.index("showy_quota.codex.icon") < order.index("showy_quota.claude.icon")
 PYTEST
 
 # Warm refreshes publish just one final layout, without remove/recreate or a competing renderer.
@@ -141,7 +143,7 @@ writes = [c for c in calls if c and c[0] != "--query"]
 assert len(writes) == 1, writes
 assert not any(arg in ("--add", "--remove", "--reorder") for arg in writes[0]), writes
 assert "y_offset=4" not in writes[0], writes
-assert "y_offset=7" in writes[0], writes
+assert "y_offset=-11" in writes[0], writes
 PYTEST
 
 # A refresh during a reload must wait for quota's anchor, or it lands ahead of the other widgets.
@@ -182,7 +184,7 @@ assert "Credits  ·  $11.14" in labels, labels
 assert state["quota_detail.mode"]["label"] == "Show used instead"
 PYTEST
 
-# Mode switches change quota fill and text, but OpenRouter always shows its current balance.
+# Mode switches change quota fill and text; OpenRouter keeps its current balance in the menu.
 "$CONFIG_DIR/plugins/quota.sh" mode
 [[ $(<"$XDG_CACHE_HOME/sketchybar/quota-mode") == used ]]
 "$CONFIG_DIR/plugins/quota.sh"
@@ -194,7 +196,6 @@ row = state["showy_quota.codex.primary"]
 assert (row["label"], row["slider.percentage"]) == ("23%", "23")
 assert "slider.percentage=23" in row["click_script"]
 assert int(row["label.width"]) < 60
-assert int(state["showy_quota.codex.slot"]["width"]) < 132
 assert int(state["showy_quota.claude.slot"]["width"]) < 132
 # A dim, full-width track makes the used portion readable against total capacity.
 for name in ["codex.primary", "claude.primary", "claude.secondary"]:
@@ -204,7 +205,7 @@ for name in ["codex.primary", "claude.primary", "claude.secondary"]:
     assert track[4:] == bar["label.color"][4:], "track follows the theme's muted colour"
     assert 0 < int(track[2:4], 16) < 128, "track stays visible but dimmer than usage"
     assert int(bar["slider.width"]) == 40 and int(bar["slider.background.height"]) > 0
-assert state["showy_quota.openrouter.balance"]["label"] == "$11.14"
+assert not any(name.startswith("showy_quota.openrouter.") for name in state)
 labels = [v.get("label", "") for v in state.values()]
 assert any("Fable only" in label and "28% used" in label for label in labels), labels
 assert "Credits  ·  $11.14" in labels, labels
@@ -217,11 +218,94 @@ import json, pathlib, sys
 state = json.loads(pathlib.Path(sys.argv[1]).read_text())
 row = state["showy_quota.codex.primary"]
 assert row["label"] == "77% left"
-assert state["showy_quota.codex.slot"]["width"] == "132"
+assert state["showy_quota.claude.slot"]["width"] == "126"
 assert row["slider.background.color"] == state["showy_quota_bracket"]["background.border_color"]
 PYTEST
 
-# Removing OpenRouter restores a centred Codex row. Errors/unknown data never show a healthy 0%.
+# A free account is not a subscription, even if CodexBar still supplies free-tier quotas.
+python3 - "$XDG_CACHE_HOME/showy-quota/usage.json" <<'PYTEST'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["providers"][0]["usage"] = {"identity": {"loginMethod": "Free"}}
+path.write_text(json.dumps(data))
+PYTEST
+"$CONFIG_DIR/plugins/quota.sh"
+python3 - "$TMP/bar.json" <<'PYTEST'
+import json, pathlib, sys
+state = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert not any(name.startswith("showy_quota.codex.") for name in state)
+assert state["showy_quota.claude.primary"]["y_offset"] == "7"
+assert state["showy_quota.claude.secondary"]["y_offset"] == "-7"
+assert state["showy_quota.claude.icon"]["y_offset"] == "0"
+assert state["showy_quota.claude.primary"]["label.font"].endswith(":10.0")
+assert state["showy_quota.claude.primary"]["slider.background.height"] == "6"
+assert state["showy_quota.claude.slot"]["width"] == "132"
+assert state["showy_quota_bracket"]["background.height"] == "36"
+PYTEST
+
+# Resubscribing shrinks Claude again. An unused Codex quota stays visible without its app running.
+cp "$TMP/subscribed-usage.json" "$XDG_CACHE_HOME/showy-quota/usage.json"
+python3 - "$TMP/metrics.json" <<'PYTEST'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data[0]["windows"]["primary"] = {"usedPercent": 0, "remainingPercent": 100, "windowMinutes": 300}
+data[0]["windows"]["secondary"].update(usedPercent=0, remainingPercent=100)
+path.write_text(json.dumps(data))
+PYTEST
+"$CONFIG_DIR/plugins/quota.sh"
+"$CONFIG_DIR/plugins/quota.sh" toggle
+python3 - "$TMP/bar.json" <<'PYTEST'
+import json, pathlib, sys
+state = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert state["showy_quota.codex.primary"]["label"] == "100% left"
+assert state["showy_quota.codex.primary"]["icon"] == "7d", "prefer Codex's weekly quota in the bar"
+assert state["showy_quota.codex.primary"]["y_offset"] == "-11"
+assert "showy_quota.codex.secondary" not in state, "Codex gets one bar row, not a fourth lane"
+assert state["showy_quota.claude.primary"]["slider.background.height"] == "4"
+labels = [v.get("label", "") for k, v in state.items() if k.startswith("quota_detail.")]
+assert any(label.startswith("5h  ·  100% left") for label in labels), labels
+assert any(label.startswith("7d  ·  100% left") for label in labels), labels
+assert "Credits  ·  $11.14" in labels
+PYTEST
+"$CONFIG_DIR/plugins/quota.sh" toggle
+
+# Removing the provider altogether also gives Claude the full-height, two-row layout.
+printf '{"schema":1,"providers":[]}\n' >"$XDG_CACHE_HOME/showy-quota/usage.json"
+python3 - "$TMP/metrics.json" <<'PYTEST'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+path.write_text(json.dumps([p for p in json.loads(path.read_text()) if p["provider"] != "codex"]))
+PYTEST
+"$CONFIG_DIR/plugins/quota.sh"
+python3 - "$TMP/bar.json" <<'PYTEST'
+import json, pathlib, sys
+state = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert not any(name.startswith("showy_quota.codex.") for name in state)
+assert state["showy_quota.claude.primary"]["y_offset"] == "7"
+assert state["showy_quota.claude.secondary"]["y_offset"] == "-7"
+PYTEST
+
+# An auth/network error or missing plan is unknown, not an expired subscription.
+cp "$TMP/subscribed-usage.json" "$XDG_CACHE_HOME/showy-quota/usage.json"
+python3 - "$XDG_CACHE_HOME/showy-quota/usage.json" <<'PYTEST'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["providers"][0] = {"provider": "codex", "error": {"message": "Login required"}}
+path.write_text(json.dumps(data))
+PYTEST
+"$CONFIG_DIR/plugins/quota.sh"
+python3 - "$TMP/bar.json" <<'PYTEST'
+import json, pathlib, sys
+state = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert state["showy_quota.codex.primary"]["label"] == "no data"
+assert state["showy_quota.codex.primary"]["y_offset"] == "-11"
+assert state["showy_quota.codex.icon"]["drawing"] == "on"
+PYTEST
+
+# Errors/unknown data never show a healthy 0%.
 printf '{"schema":1,"providers":[]}\n' >"$XDG_CACHE_HOME/showy-quota/usage.json"
 cat >"$TMP/metrics.json" <<'JSON'
 [
@@ -235,7 +319,7 @@ python3 - "$TMP/bar.json" <<'PYTEST'
 import json, pathlib, sys
 state = json.loads(pathlib.Path(sys.argv[1]).read_text())
 assert not any(name.startswith("showy_quota.openrouter.") for name in state)
-assert state["showy_quota.codex.primary"]["y_offset"] == "0"
+assert int(state["showy_quota.codex.primary"]["y_offset"]) < int(state["showy_quota.claude.primary"]["y_offset"])
 assert state["showy_quota.codex.primary"]["label"] == "unknown"
 assert state["showy_quota.claude.primary"]["label"] == "no data"
 assert state["showy_quota.claude.primary"]["slider.highlight_color"] == "0x00000000"
@@ -257,4 +341,4 @@ assert bar.index('source "$ITEM_DIR/spotify.sh"') < bar.index('source "$ITEM_DIR
 calls = [json.loads(line) for line in pathlib.Path(sys.argv[2]).read_text().splitlines()]
 assert any("--subscribe" in call and "front_app_switched" in call and "quota_toggle" in call for call in calls)
 PYTEST
-echo 'quota grouping, single-pass refresh, Fable details, modes, errors and visibility ok'
+echo 'stacked quotas, subscription transitions, single-pass refresh, menu details, modes, errors and visibility ok'
