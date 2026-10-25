@@ -71,16 +71,28 @@ def read_metrics(config):
     except json.JSONDecodeError:
         metrics = []
 
-    # showy-quota omits balance-only providers from its quota metrics. Keep
-    # OpenRouter's monetary units instead of inventing a timed quota or limit.
+    # The renderer omits plan identity and balance-only providers. Retain just
+    # the Codex subscription signal and OpenRouter's monetary units from cache.
     try:
         raw = json.loads((cache_dir() / "showy-quota/usage.json").read_text())
     except (FileNotFoundError, json.JSONDecodeError):
         return metrics
     for provider in raw.get("providers", []):
+        usage = provider.get("usage") or {}
+        if provider.get("provider") == "codex":
+            codex = next((p for p in metrics if p["provider"] == "codex"), None)
+            if codex is None:
+                codex = {"provider": "codex", "windows": {}, "error": provider.get("error")}
+                metrics.append(codex)
+            # CodexBar publishes the plan as loginMethod. Missing identity or a
+            # fetch error is not evidence of cancellation; hide only known free plans.
+            plan = (usage.get("identity") or {}).get("loginMethod") or usage.get("loginMethod") or ""
+            codex["unsubscribed"] = plan.strip().lower().replace("_", " ") in (
+                "free", "guest", "free workspace",
+            )
+            continue
         if provider.get("provider") != "openrouter":
             continue
-        usage = provider.get("usage") or {}
         credits = {
             row["label"]: row["value"]
             for section in usage.get("details", []) if section.get("title") == "Credits"
@@ -132,6 +144,16 @@ def standard_windows(provider):
     ][:2]
 
 
+def strip_windows(provider):
+    windows = standard_windows(provider)
+    if provider["provider"] == "codex" and windows:
+        # One Codex lane keeps the shared column at three rows. The menu still
+        # exposes every window; prefer the weekly cap over its session quota.
+        weekly = next((w for w in windows if w.get("windowMinutes") == 10080), windows[0])
+        return [weekly]
+    return windows
+
+
 def window_color(window):
     remaining = percentage(window, "remaining")
     if remaining is None:
@@ -156,19 +178,14 @@ def cache_notice(config):
 
 
 def render_strip(config, metrics, items, mode, close_popup=False):
-    groups = [[p] for p in metrics if p["provider"] != "openrouter"]
-    router = next((p for p in metrics if p["provider"] == "openrouter"), None)
-    if router:
-        codex = next((g for g in groups if g[0]["provider"] == "codex"), None)
-        if codex and len(standard_windows(codex[0])) <= 1:
-            codex.append(router)
-        else:
-            groups.append([router])
+    providers = [p for p in metrics if p["provider"] != "openrouter" and not p.get("unsubscribed")]
+    claude = next((p for p in providers if p["provider"] == "claude"), None)
+    codex = next((p for p in providers if p["provider"] == "codex"), None)
+    groups = [[p] for p in providers if p["provider"] not in ("claude", "codex")]
+    if claude or codex:
+        groups.insert(0, [p for p in (claude, codex) if p is not None])
 
     font = "JetBrainsMono Nerd Font Mono:Regular:10.0"
-    # Leave room for unknown/error labels, but reclaim the removed "used" suffix.
-    label_width = 42 if mode == "used" else 60
-    slot_width = int(os.environ["SHOWY_QUOTA_SKETCHYBAR_BAR_WIDTH"]) - (60 - label_width)
     # Keep total capacity visible behind the used portion without competing with it.
     track_color = "0x40" + os.environ["MUTED"][-6:] if mode == "used" else os.environ["SURFACE"]
     click = shlex.quote(str(config / "plugins/quota.sh")) + " toggle"
@@ -187,57 +204,50 @@ def render_strip(config, metrics, items, mode, close_popup=False):
         "label.color=" + os.environ["YELLOW"], "label.font=" + font,
         "drawing=" + ("on" if notice and groups else "off"),
     ])
-    # Right-side, zero-width rows extend left; reserve their shared slot next.
+    # Right-side, zero-width rows extend left; reserve one slot for each column.
     for group in reversed(groups):
-        paired = len(group) == 2
-        for provider in reversed(group):
+        rows = [
+            (provider, index, window)
+            for provider in group
+            for index, window in enumerate(strip_windows(provider) or [{}])
+        ]
+        offsets = {1: [0], 2: [7, -7], 3: [11, 0, -11]}[len(rows)]
+        compact = len(rows) == 3
+        row_font = "JetBrainsMono Nerd Font Mono:Regular:" + ("9.0" if compact else "10.0")
+        label_width = (38 if compact else 42) if mode == "used" else (54 if compact else 60)
+        slot_width = int(os.environ["SHOWY_QUOTA_SKETCHYBAR_BAR_WIDTH"]) - (60 - label_width)
+        for (provider, index, window), y in reversed(list(zip(rows, offsets))):
             prefix = "showy_quota." + provider["provider"]
-            if "credits" in provider:
-                item(prefix + ".balance", "item", [
-                    "width=0", "y_offset=" + ("-7" if paired else "0"),
-                    "icon=", "icon.width=0",
-                    "label=" + credit_label(provider), "label.drawing=on",
-                    "label.font=" + font,
-                    "label.width=" + str(20 + int(os.environ["SHOWY_QUOTA_PNG_BAR_W"]) + label_width),
-                    "label.align=left", "label.padding_left=0", "label.padding_right=0",
-                    "label.color=" + os.environ["MUTED"],
-                ])
-                continue
-            windows = standard_windows(provider) or [{}]
-            for index in reversed(range(len(windows))):
-                window = windows[index]
-                name = prefix + (".primary" if index == 0 else ".secondary")
-                value = percentage(window, mode)
-                fill = 0 if value is None else round(value)
-                y = 7 if paired or len(windows) == 2 and index == 0 else -7 if len(windows) == 2 else 0
-                label = "no data" if provider.get("error") else percent_label(window, mode).removesuffix(" used")
-                item(name, "slider", [
-                    "width=0", f"y_offset={y}",
-                    "icon=" + (duration(window["windowMinutes"]) if window.get("windowMinutes") else "?"),
-                    "icon.drawing=on", "icon.font=" + font, "icon.color=" + os.environ["MUTED"],
-                    "icon.width=20", "icon.align=left", "icon.padding_left=0", "icon.padding_right=4",
-                    "label=" + label, "label.drawing=on", "label.font=" + font,
-                    "label.color=" + os.environ["MUTED"], f"label.width={label_width}", "label.align=left",
-                    "label.padding_left=4", "label.padding_right=0",
-                    "slider.width=" + os.environ["SHOWY_QUOTA_PNG_BAR_W"],
-                    f"slider.percentage={fill}", "slider.highlight_color=" + window_color(window),
-                    "slider.background.color=" + track_color,
-                    "slider.background.height=6", "slider.background.corner_radius=3",
-                    "slider.knob.drawing=off",
-                    f'click_script=sketchybar --set "$NAME" slider.percentage={fill}; {click}',
-                ])
+            name = prefix + (".primary" if index == 0 else ".secondary")
+            value = percentage(window, mode)
+            fill = 0 if value is None else round(value)
+            label = "no data" if provider.get("error") else percent_label(window, mode).removesuffix(" used")
+            item(name, "slider", [
+                "width=0", f"y_offset={y}",
+                "icon=" + (duration(window["windowMinutes"]) if window.get("windowMinutes") else "?"),
+                "icon.drawing=on", "icon.font=" + row_font, "icon.color=" + os.environ["MUTED"],
+                "icon.width=20", "icon.align=left", "icon.padding_left=0", "icon.padding_right=4",
+                "label=" + label, "label.drawing=on", "label.font=" + row_font,
+                "label.color=" + os.environ["MUTED"], f"label.width={label_width}", "label.align=left",
+                "label.padding_left=4", "label.padding_right=0",
+                "slider.width=" + os.environ["SHOWY_QUOTA_PNG_BAR_W"],
+                f"slider.percentage={fill}", "slider.highlight_color=" + window_color(window),
+                "slider.background.color=" + track_color,
+                "slider.background.height=" + ("4" if compact else "6"),
+                "slider.background.corner_radius=" + ("2" if compact else "3"),
+                "slider.knob.drawing=off",
+                f'click_script=sketchybar --set "$NAME" slider.percentage={fill}; {click}',
+            ])
         item("showy_quota." + group[0]["provider"] + ".slot", "item", [
             f"width={slot_width}",
         ])
         for index in reversed(range(len(group))):
             provider = group[index]
             name = provider["provider"]
-            glyph = {"codex": ":codex:", "claude": ":claude:", "opencode": ":opencode:", "opencodego": ":opencode:", "openrouter": ":openrouter:"}.get(name)
-            icon_font = "sketchybar-app-font:Regular:11.0" if glyph else font
-            if paired:
-                icon_y = 7 if index == 0 else -7
-            else:
-                icon_y = 7 if len(standard_windows(provider)) == 2 else 0
+            glyph = {"codex": ":codex:", "claude": ":claude:", "opencode": ":opencode:", "opencodego": ":opencode:"}.get(name)
+            icon_font = "sketchybar-app-font:Regular:" + ("9.0" if compact else "11.0") if glyph else row_font
+            provider_offsets = [y for (p, _, _), y in zip(rows, offsets) if p is provider]
+            icon_y = round(sum(provider_offsets) / len(provider_offsets))
             item("showy_quota." + name + ".icon", "item", [
                 "width=" + ("0" if index else "24"),
                 f"y_offset={icon_y}",
