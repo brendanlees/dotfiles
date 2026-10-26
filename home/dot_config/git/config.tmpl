@@ -47,3 +47,11 @@
 [credential]
   helper = manager
 {{- end }}
+{{- if and (ne .chezmoi.os "windows") (lookPath "gh") }}
+
+# Use the gh login for GitHub over HTTPS. The empty helper drops earlier ones,
+# so git never falls back to a keychain entry or a password prompt.
+[credential "https://github.com"]
+  helper =
+  helper = !{{ lookPath "gh" }} auth git-credential
+{{- end }}
