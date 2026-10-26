@@ -78,4 +78,6 @@ The upstream CLI update checker makes unauthenticated GitHub requests and does n
 
 ## bitwarden cache refresh
 
+Normal `chezmoi update` and `chezmoi apply` use cached init data. SSH provisioning uses Bitwarden only until its first successful setup; later refreshes are explicit (see [SSH refresh behavior](ssh.md#refresh-behavior)). Reinitialization, including `chezmoi update --init`, can still query Bitwarden.
+
 After changing Bitwarden-backed init data, re-run `chezmoi init --apply brendanlees`; `chezmoi apply` alone does not refresh cached init data. Unset `GITHUB_DOWNLOAD_TOKEN` first if Bitwarden should supply its replacement. Ambient `GITHUB_TOKEN` and `GH_TOKEN` no longer affect what init caches.

@@ -1,9 +1,12 @@
-# managed by chezmoi - refresh Bitwarden-backed SSH config/keys on Windows
-# Skip unchanged successful provisioning; retry a locked/unavailable vault.
+# managed by chezmoi - first-time Bitwarden-backed SSH setup on Windows
 
 $ErrorActionPreference = 'Stop'
 
 if ('{{ .ephemeral }}' -eq 'true' -or '{{ or .personal .work .homelab }}' -ne 'true') { exit 0 }
+
+# Honor existing checksum receipts too. Later refreshes and repairs are manual.
+$stateRoot = if ($env:XDG_STATE_HOME) { $env:XDG_STATE_HOME } else { Join-Path $HOME '.local/state' }
+if (Test-Path -LiteralPath (Join-Path $stateRoot 'chezmoi/ssh-refresh') -PathType Leaf) { exit 0 }
 
 $helper = Join-Path $HOME '.local\bin\cz-ssh-refresh.ps1'
 if (-not (Test-Path $helper)) {
@@ -11,5 +14,5 @@ if (-not (Test-Path $helper)) {
     exit 0
 }
 
-& $helper --if-changed
+& $helper
 if ($LASTEXITCODE -ne 0) { Write-Warning 'SSH refresh failed; continuing chezmoi apply' }
