@@ -1,0 +1,2676 @@
+{
+  "$schema": "https://vicinae.com/schemas/config.json",
+  "global_shortcuts": {
+    "toggle": "super+SPACE"
+  },
+  "launcher_window": {
+    "compact_mode": {
+      "enabled": true
+    }
+  },
+  "providers": {
+    "apple-shortcuts": {
+      "entrypoints": {
+        "38C86DCC-1E1B-49BF-AA5D-8EC23B7FC33E": {
+          "enabled": true
+        },
+        "44B60F1A-6A0A-4D70-82D7-E31F626DE850": {
+          "enabled": true
+        },
+        "71FFAFD7-1CA0-41C3-A197-ACA0E5187D3B": {
+          "enabled": true
+        },
+        "7319A8E0-A7ED-4E8E-B686-7B5149982122": {
+          "enabled": true
+        },
+        "8B2553CA-E287-4E7F-8853-98ADC667190A": {
+          "enabled": true
+        },
+        "A12B14F9-7728-461B-BE3A-A300AD238888": {
+          "enabled": true
+        },
+        "A3F9534F-3A2C-4031-8700-AC25588B6845": {
+          "enabled": false
+        },
+        "B2A0D107-4DB2-4B54-A014-8007AAB15630": {
+          "enabled": true
+        },
+        "C5AE7984-3C7A-4DD7-8FE2-D5C6310206DE": {
+          "enabled": true
+        },
+        "CD335D3C-A3CB-4DA8-B6A5-2574233103A8": {
+          "enabled": true
+        },
+        "E610F57A-68E7-4F75-A678-D01F09ACAE1F": {
+          "enabled": true
+        }
+      }
+    },
+    "applications": {
+      "entrypoints": {
+        "Qisda.DDPM": {
+          "enabled": true
+        },
+        "app.responsively": {
+          "enabled": true
+        },
+        "asc.onlyoffice.ONLYOFFICE": {
+          "enabled": true
+        },
+        "at.obdev.MicroSnitch": {
+          "enabled": true
+        },
+        "at.obdev.littlesnitch": {
+          "alias": "lsnitch",
+          "enabled": true
+        },
+        "bobko.aerospace": {
+          "alias": "aer",
+          "enabled": true
+        },
+        "br.com.marcosatanaka.music-harbor": {
+          "alias": "mharb",
+          "enabled": true
+        },
+        "br.com.marcosatanaka.musicbox": {
+          "alias": "mbox",
+          "enabled": true
+        },
+        "co.podzim.boltai-mobile": {
+          "enabled": true
+        },
+        "codes.rambo.AirBuddy": {
+          "enabled": true
+        },
+        "com.0804Team.KeyClu": {
+          "enabled": true
+        },
+        "com.Tweaking4all.ConnectMeNow4": {
+          "alias": "cmn",
+          "enabled": true
+        },
+        "com.ableton.live": {
+          "enabled": true
+        },
+        "com.alienator88.Pearcleaner": {
+          "enabled": true
+        },
+        "com.amazon.Lassen": {
+          "enabled": true
+        },
+        "com.ameba.SwiftBar": {
+          "enabled": true
+        },
+        "com.ameba.TRex": {
+          "enabled": true
+        },
+        "com.anthropic.claude-code-url-handler": {
+          "enabled": true
+        },
+        "com.anthropic.claudefordesktop": {
+          "alias": "cld",
+          "enabled": true
+        },
+        "com.aone.keka": {
+          "alias": "keka",
+          "enabled": true
+        },
+        "com.apple.AboutThisMacLauncher": {
+          "enabled": false
+        },
+        "com.apple.ActivityMonitor": {
+          "alias": "am",
+          "enabled": true
+        },
+        "com.apple.AddressBook": {
+          "alias": "ctx",
+          "enabled": true
+        },
+        "com.apple.AppStore": {
+          "enabled": true
+        },
+        "com.apple.Automator": {
+          "enabled": false
+        },
+        "com.apple.BluetoothFileExchange": {
+          "enabled": false
+        },
+        "com.apple.Chess": {
+          "enabled": false
+        },
+        "com.apple.ColorSyncUtility": {
+          "enabled": false
+        },
+        "com.apple.Console": {
+          "enabled": true
+        },
+        "com.apple.DVDPlayer": {
+          "enabled": false
+        },
+        "com.apple.DeskCam": {
+          "enabled": false
+        },
+        "com.apple.Dictionary": {
+          "enabled": false
+        },
+        "com.apple.DigitalColorMeter": {
+          "enabled": false
+        },
+        "com.apple.DirectoryUtility": {
+          "enabled": true
+        },
+        "com.apple.DiskUtility": {
+          "enabled": true
+        },
+        "com.apple.ExpansionSlotUtility": {
+          "enabled": false
+        },
+        "com.apple.FaceTime": {
+          "alias": "ft",
+          "enabled": true
+        },
+        "com.apple.FolderActionsSetup": {
+          "enabled": true
+        },
+        "com.apple.FontBook": {
+          "alias": "font",
+          "enabled": true
+        },
+        "com.apple.GenerativePlaygroundApp": {
+          "enabled": false
+        },
+        "com.apple.Home": {
+          "alias": "homekit",
+          "enabled": false
+        },
+        "com.apple.IPAInstaller": {
+          "enabled": false
+        },
+        "com.apple.Image_Capture": {
+          "enabled": false
+        },
+        "com.apple.Magnifier": {
+          "enabled": true
+        },
+        "com.apple.Maps": {
+          "enabled": false
+        },
+        "com.apple.MigrateAssistant": {
+          "alias": "mig",
+          "enabled": true
+        },
+        "com.apple.MobileSMS": {
+          "alias": "txt",
+          "enabled": true
+        },
+        "com.apple.Music": {
+          "alias": "amusic",
+          "enabled": true
+        },
+        "com.apple.Notes": {
+          "enabled": true
+        },
+        "com.apple.Pages": {
+          "enabled": true
+        },
+        "com.apple.Passwords": {
+          "enabled": true
+        },
+        "com.apple.PhotoBooth": {
+          "enabled": false
+        },
+        "com.apple.Photos": {
+          "alias": "photos",
+          "enabled": true
+        },
+        "com.apple.Preview": {
+          "alias": "prev",
+          "enabled": true
+        },
+        "com.apple.QuickTimePlayerX": {
+          "alias": "qt",
+          "enabled": true
+        },
+        "com.apple.Safari": {
+          "alias": "saf",
+          "enabled": true
+        },
+        "com.apple.ScreenContinuity": {
+          "enabled": true
+        },
+        "com.apple.ScreenSharing": {
+          "enabled": true
+        },
+        "com.apple.ScriptEditor2": {
+          "alias": "sh",
+          "enabled": true
+        },
+        "com.apple.Stickies": {
+          "enabled": false
+        },
+        "com.apple.SystemProfiler": {
+          "enabled": false
+        },
+        "com.apple.TV": {
+          "alias": "atv",
+          "enabled": true
+        },
+        "com.apple.Terminal": {
+          "enabled": false
+        },
+        "com.apple.TestFlight": {
+          "enabled": true
+        },
+        "com.apple.TextEdit": {
+          "enabled": false
+        },
+        "com.apple.Ticket-Viewer": {
+          "enabled": false
+        },
+        "com.apple.VoiceMemos": {
+          "alias": "voice",
+          "enabled": true
+        },
+        "com.apple.VoiceOverUtility": {
+          "enabled": false
+        },
+        "com.apple.airport.airportutility": {
+          "enabled": false
+        },
+        "com.apple.appleseed.FeedbackAssistant": {
+          "enabled": false
+        },
+        "com.apple.apps.launcher": {
+          "enabled": false
+        },
+        "com.apple.archiveutility": {
+          "enabled": false
+        },
+        "com.apple.audio.AudioMIDISetup": {
+          "alias": "audio",
+          "enabled": true
+        },
+        "com.apple.backup.launcher": {
+          "alias": "tm",
+          "enabled": true
+        },
+        "com.apple.calculator": {
+          "enabled": false
+        },
+        "com.apple.clock": {
+          "alias": "clock",
+          "enabled": false
+        },
+        "com.apple.exposelauncher": {
+          "alias": "mission",
+          "enabled": true
+        },
+        "com.apple.finder": {
+          "alias": "f",
+          "enabled": true,
+          "shortcut": "control+alt+F"
+        },
+        "com.apple.finder.Open-AirDrop": {
+          "alias": "air",
+          "enabled": true
+        },
+        "com.apple.finder.Open-Computer": {
+          "enabled": false
+        },
+        "com.apple.finder.Open-Network": {
+          "enabled": false
+        },
+        "com.apple.finder.Open-iCloudDrive": {
+          "alias": "cdrive",
+          "enabled": true
+        },
+        "com.apple.findmy": {
+          "enabled": true
+        },
+        "com.apple.freeform": {
+          "enabled": false
+        },
+        "com.apple.games": {
+          "enabled": false
+        },
+        "com.apple.grapher": {
+          "enabled": false
+        },
+        "com.apple.helpviewer": {
+          "enabled": true
+        },
+        "com.apple.iBooksX": {
+          "alias": "books",
+          "enabled": true
+        },
+        "com.apple.iCal": {
+          "alias": "cal",
+          "enabled": true
+        },
+        "com.apple.journal": {
+          "enabled": false
+        },
+        "com.apple.keychainaccess": {
+          "alias": "key",
+          "enabled": true
+        },
+        "com.apple.logic10": {
+          "alias": "log",
+          "enabled": true
+        },
+        "com.apple.mail": {
+          "enabled": false
+        },
+        "com.apple.mobilephone": {
+          "enabled": true
+        },
+        "com.apple.news": {
+          "enabled": false
+        },
+        "com.apple.podcasts": {
+          "enabled": false
+        },
+        "com.apple.printcenter": {
+          "enabled": true
+        },
+        "com.apple.reminders": {
+          "alias": "rem o",
+          "enabled": true
+        },
+        "com.apple.screenshot.launcher": {
+          "enabled": false
+        },
+        "com.apple.shortcuts": {
+          "alias": "sc",
+          "enabled": true
+        },
+        "com.apple.stocks": {
+          "enabled": false
+        },
+        "com.apple.systempreferences": {
+          "alias": ",",
+          "enabled": true
+        },
+        "com.apple.weather": {
+          "enabled": false
+        },
+        "com.apple.wifi.diagnostics": {
+          "enabled": false
+        },
+        "com.bitwarden": {
+          "enabled": true
+        },
+        "com.brave.Browser": {
+          "alias": "brave",
+          "enabled": true
+        },
+        "com.carriez.rustdesk": {
+          "enabled": true
+        },
+        "com.colliderli.iina": {
+          "enabled": true
+        },
+        "com.eltima.photobulk": {
+          "alias": "phblk",
+          "enabled": true
+        },
+        "com.federicoterzi.espanso": {
+          "enabled": true
+        },
+        "com.figma.Desktop": {
+          "alias": "fig",
+          "enabled": true
+        },
+        "com.getflywheel.lightning.local": {
+          "alias": "lcl",
+          "enabled": true
+        },
+        "com.goodsnooze.MacWhisper": {
+          "enabled": true
+        },
+        "com.google.Chrome": {
+          "alias": "chrome",
+          "enabled": true
+        },
+        "com.haystacksoftware.Arq": {
+          "enabled": true
+        },
+        "com.hnc.Discord": {
+          "alias": "disc",
+          "enabled": true
+        },
+        "com.if.Amphetamine": {
+          "alias": "amp",
+          "enabled": true
+        },
+        "com.invoiceninja.admin": {
+          "enabled": true
+        },
+        "com.invoiceninja.app": {
+          "alias": "inv",
+          "enabled": true,
+          "shortcut": "alt+shift+I"
+        },
+        "com.ledger.live": {
+          "alias": "ledger",
+          "enabled": true
+        },
+        "com.microsoft.VSCode": {
+          "alias": "vs",
+          "enabled": true
+        },
+        "com.microsoft.rdc.macos": {
+          "alias": "rd",
+          "enabled": true
+        },
+        "com.mimestream.Mimestream": {
+          "alias": "em",
+          "enabled": true,
+          "shortcut": "alt+M"
+        },
+        "com.mitchellh.ghostty": {
+          "enabled": true,
+          "shortcut": "alt+T"
+        },
+        "com.mr-brightside.myParcel": {
+          "enabled": true
+        },
+        "com.nickustinov.itsyhome": {
+          "enabled": true
+        },
+        "com.onmyway133.PastePal": {
+          "alias": "pstpal",
+          "enabled": true
+        },
+        "com.openai.codex": {
+          "enabled": true
+        },
+        "com.pointum.hazeover": {
+          "enabled": true
+        },
+        "com.rogueamoeba.soundsource": {
+          "alias": "soundsource",
+          "enabled": true
+        },
+        "com.sequel-ace.sequel-ace": {
+          "alias": "sql",
+          "enabled": true
+        },
+        "com.seriflabs.affinityphoto2": {
+          "alias": "aff",
+          "enabled": true
+        },
+        "com.sindresorhus.Dato": {
+          "enabled": true
+        },
+        "com.sindresorhus.Supercharge": {
+          "enabled": true
+        },
+        "com.spotify.client": {
+          "enabled": true,
+          "shortcut": "alt+Y"
+        },
+        "com.steipete.codexbar": {
+          "enabled": true
+        },
+        "com.stonerl.Thaw": {
+          "enabled": true
+        },
+        "com.superultra.Homerow": {
+          "enabled": true
+        },
+        "com.termius-dmg.mac": {
+          "alias": "trm",
+          "enabled": true
+        },
+        "com.todoist.mac.Todoist": {
+          "enabled": true,
+          "shortcut": "alt+shift+T"
+        },
+        "com.typewhisper.mac": {
+          "enabled": true
+        },
+        "com.vicinaehq.Vicinae": {
+          "enabled": true
+        },
+        "com.wireguard.macos": {
+          "alias": "wg",
+          "enabled": true
+        },
+        "com.zzd.Xnip": {
+          "alias": "xn",
+          "enabled": true
+        },
+        "company.thebrowser.dia": {
+          "enabled": true
+        },
+        "dev.pencil": {
+          "enabled": true
+        },
+        "dev.zed.Zed": {
+          "enabled": true,
+          "shortcut": "alt+C"
+        },
+        "io.balena.etcher": {
+          "enabled": true
+        },
+        "io.ente.auth.mac": {
+          "enabled": true
+        },
+        "io.esphome.builder": {
+          "enabled": true
+        },
+        "io.open-design": {
+          "enabled": true
+        },
+        "io.robbie.HomeAssistant": {
+          "alias": "hass",
+          "enabled": true,
+          "shortcut": "super+alt+H"
+        },
+        "io.tailscale.ipn.macsys": {
+          "enabled": true
+        },
+        "md.obsidian": {
+          "enabled": true,
+          "shortcut": "alt+N"
+        },
+        "me.damir.dropover-mac": {
+          "enabled": true
+        },
+        "net.imput.helium": {
+          "enabled": true
+        },
+        "net.mullvad.vpn": {
+          "alias": "mull",
+          "enabled": true
+        },
+        "net.sourceforge.sqlitebrowser": {
+          "enabled": true
+        },
+        "notion.id": {
+          "alias": "nt",
+          "enabled": true,
+          "shortcut": "control+alt+N"
+        },
+        "org.cryptomator": {
+          "alias": "cryptom",
+          "enabled": true
+        },
+        "org.fuset.fskit-srv": {
+          "enabled": true
+        },
+        "org.herf.Flux": {
+          "alias": "flux",
+          "enabled": true
+        },
+        "org.idrix.VeraCrypt": {
+          "alias": "vcrypt",
+          "enabled": true
+        },
+        "org.localsend.localsendApp": {
+          "enabled": true
+        },
+        "org.mozilla.firefox": {
+          "alias": "ff",
+          "enabled": true
+        },
+        "org.openlogi.openlogi": {
+          "enabled": true
+        },
+        "org.pqrs.Karabiner-Elements.Settings": {
+          "enabled": true
+        },
+        "org.pqrs.Karabiner-EventViewer": {
+          "enabled": true
+        },
+        "org.upscayl.Upscayl": {
+          "enabled": true
+        },
+        "pro.betterdisplay.BetterDisplay": {
+          "enabled": true
+        },
+        "se.johnste.finicky": {
+          "enabled": true
+        },
+        "tv.plex.plexamp": {
+          "enabled": true
+        },
+        "us.zoom.xos": {
+          "alias": "zoom",
+          "enabled": true
+        }
+      }
+    },
+    "core": {
+      "entrypoints": {
+        "reload-scripts": {
+          "alias": "r reload-sh",
+          "enabled": true
+        },
+        "search-emojis": {
+          "alias": "e",
+          "enabled": true,
+          "shortcut": "super+alt+SPACE"
+        },
+        "search-menu-bar": {
+          "enabled": true,
+          "shortcut": "super+control+alt+shift+D"
+        },
+        "settings": {
+          "alias": "r,",
+          "enabled": true
+        }
+      }
+    },
+    "files": {
+      "entrypoints": {
+        "search": {
+          "enabled": true
+        }
+      }
+    },
+    "macos-settings": {
+      "entrypoints": {
+        "com.apple.Accessibility-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.AirDrop-Handoff-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Appearance-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.BluetoothSettings": {
+          "enabled": true
+        },
+        "com.apple.CD-DVD-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.ClassKit-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Classroom-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.ControlCenter-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Coverage-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Date-Time-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Desktop-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Displays-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Family-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Focus-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Game-Center-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Game-Controller-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Internet-Accounts-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Keyboard-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Localization-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Lock-Screen-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.LoginItems-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Mouse-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Network-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.NetworkExtensionSettingsUI.NESettingsUIExtension": {
+          "enabled": true
+        },
+        "com.apple.Notifications-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Print-Scan-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Profiles-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Screen-Time-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.SecurityImprovements-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Sharing-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Siri-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Software-Update-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Sound-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Spotlight-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Startup-Disk-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.SystemProfiler.AboutExtension": {
+          "enabled": true
+        },
+        "com.apple.Time-Machine-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Touch-ID-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Trackpad-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Transfer-Reset-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.Users-Groups-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.WalletSettingsExtension": {
+          "enabled": true
+        },
+        "com.apple.Wallpaper-Settings.extension": {
+          "enabled": true
+        },
+        "com.apple.settings.PrivacySecurity.extension": {
+          "enabled": true
+        },
+        "com.apple.settings.Storage": {
+          "enabled": true
+        },
+        "com.apple.systempreferences.AppleIDSettings": {
+          "enabled": true
+        },
+        "com.apple.systempreferences.GeneralSettings": {
+          "enabled": true
+        },
+        "com.apple.wifi-settings-extension": {
+          "enabled": true
+        }
+      }
+    },
+    "manage-shortcuts": {
+      "entrypoints": {
+        "create": {
+          "alias": "qck n",
+          "enabled": true
+        },
+        "manage": {
+          "alias": "qck s",
+          "enabled": true
+        }
+      }
+    },
+    "media": {
+      "entrypoints": {
+        "toggle-mute": {
+          "enabled": true
+        },
+        "volume-up": {
+          "enabled": true
+        }
+      }
+    },
+    "power": {
+      "entrypoints": {
+        "lock": {
+          "enabled": true
+        },
+        "logout": {
+          "enabled": true
+        },
+        "power-off": {
+          "alias": ",x",
+          "enabled": true
+        },
+        "reboot": {
+          "alias": ",r",
+          "enabled": true
+        },
+        "sleep": {
+          "alias": ",s",
+          "enabled": true
+        }
+      }
+    },
+    "raycast-compat": {
+      "entrypoints": {
+        "store": {
+          "alias": "ext",
+          "enabled": true
+        }
+      }
+    },
+    "screenshots": {
+      "entrypoints": {
+        "browse": {
+          "alias": "ss",
+          "enabled": true
+        },
+        "paste-last": {
+          "alias": "ss p",
+          "enabled": false
+        }
+      }
+    },
+    "snippets": {
+      "entrypoints": {
+        "create": {
+          "alias": "sn n",
+          "enabled": false
+        },
+        "manage": {
+          "alias": "sn s",
+          "enabled": false,
+          "shortcut": "super+control+alt+shift+S"
+        }
+      }
+    },
+    "store.raycast.ableton-live": {
+      "entrypoints": {
+        "search-ableton-live-projects.command": {
+          "alias": "abl s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.aerospace": {
+      "entrypoints": {
+        "goToWorkspace": {
+          "enabled": true
+        },
+        "showConfig": {
+          "enabled": false
+        },
+        "showShortcuts": {
+          "alias": "aer s",
+          "enabled": true
+        },
+        "switchApps": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.amphetamine": {
+      "entrypoints": {
+        "amp-duration": {
+          "enabled": false
+        },
+        "amp-end": {
+          "alias": "amp e",
+          "enabled": true,
+          "shortcut": "super+shift+Z"
+        },
+        "amp-start": {
+          "alias": "amp n",
+          "enabled": true,
+          "shortcut": "super+shift+A"
+        },
+        "quick-start": {
+          "enabled": true
+        },
+        "remaining": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.appcleaner": {
+      "entrypoints": {
+        "uninstall": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.apple-reminders": {
+      "entrypoints": {
+        "create-reminder": {
+          "alias": "rem n",
+          "enabled": false
+        },
+        "create-reminder-from-current-tab": {
+          "enabled": true
+        },
+        "create-reminder-from-selected-email": {
+          "enabled": true
+        },
+        "customize-create-reminder-form": {
+          "enabled": true
+        },
+        "manage-create-actions": {
+          "enabled": true
+        },
+        "manage-locations": {
+          "enabled": false
+        },
+        "my-reminders": {
+          "alias": "rem ls",
+          "enabled": false
+        },
+        "next-reminder": {
+          "enabled": true
+        },
+        "quick-add-reminder": {
+          "alias": "rem a",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.audio-device": {
+      "entrypoints": {
+        "auto-switch-input": {
+          "enabled": true
+        },
+        "auto-switch-output": {
+          "enabled": true
+        },
+        "customize-order": {
+          "enabled": false
+        },
+        "favourite": {
+          "alias": "audio fav-sv",
+          "enabled": false
+        },
+        "set-input-device": {
+          "alias": "audio in",
+          "enabled": true
+        },
+        "set-input-volume": {
+          "enabled": true
+        },
+        "set-output-device": {
+          "alias": "audio out",
+          "enabled": true
+        },
+        "set-volume": {
+          "enabled": true
+        },
+        "toggle-favourites": {
+          "alias": "audio fav",
+          "enabled": false
+        },
+        "use-combo1": {
+          "enabled": false
+        },
+        "use-combo2": {
+          "enabled": false
+        },
+        "use-combo3": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.beat-per-minute": {
+      "entrypoints": {
+        "calculate-bpm": {
+          "alias": "bpm",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.bitwarden": {
+      "entrypoints": {
+        "authenticator": {
+          "enabled": true
+        },
+        "create-folder": {
+          "enabled": true
+        },
+        "create-login": {
+          "enabled": true
+        },
+        "create-send": {
+          "alias": "bw ns",
+          "enabled": true
+        },
+        "generate-password": {
+          "alias": "bw p",
+          "enabled": true
+        },
+        "generate-password-quick": {
+          "alias": "bw qp",
+          "enabled": true
+        },
+        "lock-vault": {
+          "alias": "bw l",
+          "enabled": true
+        },
+        "logout-vault": {
+          "alias": "bw x",
+          "enabled": true
+        },
+        "receive-send": {
+          "enabled": true
+        },
+        "search": {
+          "alias": "bw",
+          "enabled": true
+        },
+        "search-sends": {
+          "alias": "bw s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.brew": {
+      "entrypoints": {
+        "adopt-apps": {
+          "enabled": true
+        },
+        "clean-up": {
+          "enabled": false
+        },
+        "clear-cache": {
+          "enabled": false
+        },
+        "installed": {
+          "alias": "brew ls",
+          "enabled": false
+        },
+        "manage-services": {
+          "enabled": true
+        },
+        "manage-taps": {
+          "enabled": true
+        },
+        "outdated": {
+          "alias": "brew out",
+          "enabled": false
+        },
+        "run-doctor": {
+          "enabled": true
+        },
+        "search": {
+          "alias": "brew s",
+          "enabled": false
+        },
+        "show-vulnerabilities": {
+          "enabled": true
+        },
+        "upgrade": {
+          "alias": "brew up",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.browser-bookmarks": {
+      "entrypoints": {
+        "index": {
+          "alias": "ff bk",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.can-i-use": {
+      "entrypoints": {
+        "index": {
+          "alias": "cani",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.change-case": {
+      "entrypoints": {
+        "change-case": {
+          "alias": "cc",
+          "enabled": true
+        },
+        "convert-alternating-case": {
+          "enabled": false
+        },
+        "convert-camel-case": {
+          "enabled": false
+        },
+        "convert-capital-case": {
+          "enabled": false
+        },
+        "convert-constant-case": {
+          "enabled": false
+        },
+        "convert-dot-case": {
+          "enabled": false
+        },
+        "convert-header-case": {
+          "enabled": false
+        },
+        "convert-kebab-case": {
+          "enabled": false
+        },
+        "convert-kebab-upper-case": {
+          "enabled": false
+        },
+        "convert-lower-case": {
+          "enabled": false
+        },
+        "convert-lower-first": {
+          "enabled": false
+        },
+        "convert-no-case": {
+          "enabled": false
+        },
+        "convert-pascal-case": {
+          "enabled": false
+        },
+        "convert-pascal-snake-case": {
+          "enabled": false
+        },
+        "convert-path-case": {
+          "enabled": false
+        },
+        "convert-random-case": {
+          "enabled": false
+        },
+        "convert-sentence-case": {
+          "enabled": false
+        },
+        "convert-snake-case": {
+          "enabled": false
+        },
+        "convert-swap-case": {
+          "enabled": false
+        },
+        "convert-title-case": {
+          "enabled": false
+        },
+        "convert-upper-case": {
+          "enabled": false
+        },
+        "convert-upper-first": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.chatgpt": {
+      "entrypoints": {
+        "ask": {
+          "alias": "gpt q",
+          "enabled": true,
+          "shortcut": "alt+shift+A"
+        },
+        "ask-clipboard-image": {
+          "enabled": true
+        },
+        "ask-selected-image": {
+          "enabled": true
+        },
+        "conversation": {
+          "alias": "gpt c",
+          "enabled": true
+        },
+        "history": {
+          "alias": "gpt h",
+          "enabled": true
+        },
+        "model": {
+          "alias": "gpt m",
+          "enabled": true
+        },
+        "saved": {
+          "alias": "gpt s",
+          "enabled": true
+        },
+        "search-ai-command": {
+          "enabled": true
+        },
+        "summarize": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.cheatsheets": {
+      "entrypoints": {
+        "show-cheatsheets": {
+          "alias": "cheat ls",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.claude": {
+      "entrypoints": {
+        "ask": {
+          "alias": "cld q",
+          "enabled": true,
+          "shortcut": "alt+A"
+        },
+        "conversation": {
+          "alias": "cld c",
+          "enabled": true
+        },
+        "history": {
+          "alias": "cld h",
+          "enabled": true
+        },
+        "model": {
+          "alias": "cld m",
+          "enabled": true
+        },
+        "saved": {
+          "alias": "cld s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.cloudflare": {
+      "entrypoints": {
+        "dns-toolkit": {
+          "enabled": true
+        },
+        "purge-cache": {
+          "enabled": true
+        },
+        "quick-create-dns-record": {
+          "enabled": true
+        },
+        "search-dns-records": {
+          "enabled": true
+        },
+        "view-audit-logs": {
+          "enabled": true
+        },
+        "view-deployments": {
+          "enabled": true
+        },
+        "view-members": {
+          "enabled": false
+        },
+        "view-pages": {
+          "enabled": false
+        },
+        "view-sites": {
+          "enabled": false
+        },
+        "view-ssl-certificates": {
+          "enabled": true
+        },
+        "view-worker-routes": {
+          "enabled": true
+        },
+        "view-workers": {
+          "enabled": false
+        },
+        "view-zone-analytics": {
+          "enabled": true
+        },
+        "view-zone-settings": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.codesnap": {
+      "entrypoints": {
+        "index": {
+          "alias": "codesnap",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.coingecko": {
+      "entrypoints": {
+        "calculate": {
+          "alias": "coin calc",
+          "enabled": false
+        },
+        "index": {
+          "alias": "coin s",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.color-picker": {
+      "entrypoints": {
+        "color-names": {
+          "enabled": true
+        },
+        "color-wheel": {
+          "enabled": true
+        },
+        "convert-color": {
+          "enabled": true
+        },
+        "extract-color": {
+          "enabled": true
+        },
+        "favorite-colors": {
+          "enabled": true
+        },
+        "generate-colors": {
+          "enabled": true
+        },
+        "organize-colors": {
+          "enabled": false
+        },
+        "pick-color": {
+          "alias": "clr",
+          "enabled": true,
+          "shortcut": "alt+P"
+        }
+      }
+    },
+    "store.raycast.common-directory": {
+      "entrypoints": {
+        "add-common-directory": {
+          "alias": "dir-a",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.copy-path": {
+      "entrypoints": {
+        "copy-path": {
+          "alias": "path cp",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.cron-description": {
+      "entrypoints": {
+        "index": {
+          "alias": "cron",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.date-format-converter": {
+      "entrypoints": {
+        "index": {
+          "enabled": false
+        },
+        "insert-natural-language-date": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.devutils": {
+      "entrypoints": {
+        "auto": {
+          "enabled": false
+        },
+        "backslash": {
+          "enabled": false
+        },
+        "base64encode": {
+          "enabled": false
+        },
+        "base64image": {
+          "enabled": false
+        },
+        "colortools": {
+          "enabled": false
+        },
+        "cronparser": {
+          "enabled": false
+        },
+        "cssformatter": {
+          "enabled": false
+        },
+        "csv2json": {
+          "enabled": false
+        },
+        "erbformatter": {
+          "enabled": false
+        },
+        "hashing": {
+          "enabled": false
+        },
+        "html2jsx": {
+          "enabled": false
+        },
+        "htmlencode": {
+          "enabled": false
+        },
+        "htmlformatter": {
+          "enabled": false
+        },
+        "htmlpreview": {
+          "enabled": false
+        },
+        "jsformatter": {
+          "enabled": false
+        },
+        "json2csv": {
+          "enabled": false
+        },
+        "json2php": {
+          "enabled": false
+        },
+        "json2yaml": {
+          "enabled": false
+        },
+        "jsonformatter": {
+          "enabled": false
+        },
+        "jwt": {
+          "enabled": false
+        },
+        "lessformatter": {
+          "enabled": false
+        },
+        "loremipsum": {
+          "enabled": false
+        },
+        "markdownpreview": {
+          "enabled": false
+        },
+        "numberbase": {
+          "enabled": false
+        },
+        "php2json": {
+          "enabled": false
+        },
+        "phpserializer": {
+          "enabled": false
+        },
+        "phpunserializer": {
+          "enabled": false
+        },
+        "qrcode": {
+          "enabled": false
+        },
+        "querystringparser": {
+          "enabled": false
+        },
+        "randomstringgenerator": {
+          "enabled": false
+        },
+        "regextester": {
+          "enabled": false
+        },
+        "scssformatter": {
+          "enabled": false
+        },
+        "sqlformatter": {
+          "enabled": false
+        },
+        "stringcaseconverter": {
+          "enabled": false
+        },
+        "stringinspect": {
+          "enabled": false
+        },
+        "textdiff": {
+          "enabled": false
+        },
+        "unixtime": {
+          "enabled": false
+        },
+        "urlencode": {
+          "enabled": false
+        },
+        "uuidtool": {
+          "enabled": false
+        },
+        "xmlformatter": {
+          "enabled": false
+        },
+        "yaml2json": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.dig": {
+      "entrypoints": {
+        "index": {
+          "alias": "dns s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.dockerhub": {
+      "entrypoints": {
+        "manage-access-token": {
+          "enabled": false
+        },
+        "search-extension": {
+          "enabled": false
+        },
+        "search-image": {
+          "alias": "dckr s",
+          "enabled": false
+        },
+        "search-plugin": {
+          "enabled": false
+        },
+        "search-repository": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.downloads-manager": {
+      "entrypoints": {
+        "copy-latest-download": {
+          "enabled": true
+        },
+        "delete-latest-download": {
+          "enabled": true
+        },
+        "manage-downloads": {
+          "enabled": true
+        },
+        "open-latest-download": {
+          "enabled": true
+        },
+        "paste-latest-download": {
+          "enabled": true
+        },
+        "show-latest-download": {
+          "enabled": true
+        },
+        "toggle-deletion-behavior": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.dropover": {
+      "entrypoints": {
+        "add-from-clipboard": {
+          "enabled": false
+        },
+        "index": {
+          "alias": "drp",
+          "enabled": true,
+          "shortcut": "super+control+alt+shift+C"
+        }
+      }
+    },
+    "store.raycast.ente-auth": {
+      "entrypoints": {
+        "delete": {
+          "enabled": false
+        },
+        "export": {
+          "enabled": false
+        },
+        "import": {
+          "enabled": true
+        },
+        "index": {
+          "enabled": true,
+          "shortcut": "super+control+alt+O"
+        }
+      }
+    },
+    "store.raycast.figma-files-raycast-extension": {
+      "entrypoints": {
+        "index": {
+          "enabled": false
+        },
+        "open-file-url-from-clipboard": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.flush-dns": {
+      "entrypoints": {
+        "index": {
+          "alias": "dns clr",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.font-awesome": {
+      "entrypoints": {
+        "index": {
+          "alias": "fa",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.get-ssh-key": {
+      "entrypoints": {
+        "index": {
+          "alias": "ssh cp",
+          "enabled": true
+        },
+        "list": {
+          "alias": "ssh ls",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.github": {
+      "entrypoints": {
+        "create-branch": {
+          "enabled": false
+        },
+        "create-issue": {
+          "enabled": true
+        },
+        "create-pull-request": {
+          "enabled": true
+        },
+        "download-repository": {
+          "enabled": true
+        },
+        "my-discussions": {
+          "enabled": false
+        },
+        "my-issues": {
+          "enabled": true
+        },
+        "my-latest-repositories": {
+          "enabled": true
+        },
+        "my-packages": {
+          "enabled": true
+        },
+        "my-projects": {
+          "enabled": true
+        },
+        "my-pull-requests": {
+          "enabled": true
+        },
+        "my-starred-repositories": {
+          "enabled": true
+        },
+        "notifications": {
+          "enabled": true
+        },
+        "search-discussions": {
+          "enabled": false
+        },
+        "search-issues": {
+          "enabled": true
+        },
+        "search-pull-requests": {
+          "enabled": true
+        },
+        "search-repositories": {
+          "alias": "ghr",
+          "enabled": true
+        },
+        "workflow-runs": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.github-gist": {
+      "entrypoints": {
+        "create-gist": {
+          "alias": "gi n",
+          "enabled": true
+        },
+        "search-gists": {
+          "alias": "gi s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.google-fonts": {
+      "entrypoints": {
+        "search-fonts": {
+          "alias": "gfonts",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.google-workspace": {
+      "entrypoints": {
+        "create-google-document": {
+          "enabled": true
+        },
+        "create-google-form": {
+          "enabled": true
+        },
+        "create-google-presentation": {
+          "enabled": true
+        },
+        "create-google-spreadsheet": {
+          "enabled": true
+        },
+        "download-google-drive-file": {
+          "enabled": true
+        },
+        "open-google-drive-home": {
+          "enabled": true
+        },
+        "search-google-drive-files": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.homeassistant": {
+      "entrypoints": {
+        "assist": {
+          "alias": "ha ass",
+          "enabled": true
+        },
+        "attributes": {
+          "enabled": false
+        },
+        "automations": {
+          "alias": "ha auto",
+          "enabled": true
+        },
+        "batteries": {
+          "alias": "ha bat",
+          "enabled": true
+        },
+        "binarysensors": {
+          "enabled": false
+        },
+        "buttons": {
+          "enabled": false
+        },
+        "calendar": {
+          "enabled": true
+        },
+        "cameras": {
+          "alias": "ha cam",
+          "enabled": true
+        },
+        "climate": {
+          "enabled": false
+        },
+        "connection": {
+          "enabled": false
+        },
+        "covers": {
+          "enabled": false
+        },
+        "customentities": {
+          "enabled": true
+        },
+        "dashboard": {
+          "alias": "ha",
+          "enabled": true
+        },
+        "doors": {
+          "enabled": false
+        },
+        "entity-settings": {
+          "enabled": true
+        },
+        "fans": {
+          "enabled": false
+        },
+        "helpers": {
+          "enabled": false
+        },
+        "index": {
+          "alias": "ha ent",
+          "enabled": true,
+          "shortcut": "super+control+alt+shift+H"
+        },
+        "lights": {
+          "alias": "ha l",
+          "enabled": true
+        },
+        "mediaplayers": {
+          "enabled": false
+        },
+        "motions": {
+          "enabled": false
+        },
+        "persons": {
+          "enabled": false
+        },
+        "runService": {
+          "enabled": true
+        },
+        "scenes": {
+          "alias": "ha sc",
+          "enabled": true
+        },
+        "scripts": {
+          "alias": "ha scp",
+          "enabled": true
+        },
+        "sensors": {
+          "alias": "ha sen",
+          "enabled": false
+        },
+        "services": {
+          "enabled": true
+        },
+        "switches": {
+          "alias": "ha sw",
+          "enabled": true
+        },
+        "toggle-ac-menu": {
+          "enabled": true
+        },
+        "updates": {
+          "alias": "ha up",
+          "enabled": true
+        },
+        "vacuums": {
+          "enabled": false
+        },
+        "weather": {
+          "enabled": false
+        },
+        "windows": {
+          "enabled": false
+        },
+        "zones": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.http-status-codes": {
+      "entrypoints": {
+        "index": {
+          "alias": "http s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.iconify": {
+      "entrypoints": {
+        "search-icons": {
+          "enabled": false
+        },
+        "view-icons": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.imessage-2fa": {
+      "entrypoints": {
+        "index": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.karakeep": {
+      "entrypoints": {
+        "backups": {
+          "enabled": true
+        },
+        "bookmarks": {
+          "enabled": true
+        },
+        "createBookmark": {
+          "enabled": true
+        },
+        "createList": {
+          "enabled": true
+        },
+        "createNote": {
+          "enabled": true
+        },
+        "highlights": {
+          "enabled": true
+        },
+        "lists": {
+          "enabled": true
+        },
+        "notes": {
+          "enabled": true
+        },
+        "quickBookmark": {
+          "enabled": true
+        },
+        "stats": {
+          "enabled": true
+        },
+        "tags": {
+          "enabled": true
+        },
+        "updateKarakeep": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.kill-process": {
+      "entrypoints": {
+        "index": {
+          "alias": "kill",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.media-converter": {
+      "entrypoints": {
+        "convert": {
+          "enabled": true
+        },
+        "edit": {
+          "enabled": true
+        },
+        "history": {
+          "enabled": true
+        },
+        "inspect": {
+          "enabled": true
+        },
+        "merge": {
+          "enabled": true
+        },
+        "presets": {
+          "enabled": true
+        },
+        "queue": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.models-dev": {
+      "entrypoints": {
+        "search-models": {
+          "enabled": true
+        },
+        "search-providers": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.mullvad": {
+      "entrypoints": {
+        "connect": {
+          "enabled": true
+        },
+        "disconnect": {
+          "enabled": true
+        },
+        "mullvad": {
+          "alias": "mull ami",
+          "enabled": true
+        },
+        "reconnect": {
+          "enabled": true
+        },
+        "selectLocation": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.myip": {
+      "entrypoints": {
+        "index": {
+          "alias": "ip",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.obsidian": {
+      "entrypoints": {
+        "appendTaskCommand": {
+          "enabled": false
+        },
+        "createNoteCommand": {
+          "enabled": false
+        },
+        "dailyNoteAppendCommand": {
+          "alias": "ob ad",
+          "enabled": false
+        },
+        "dailyNoteCommand": {
+          "alias": "ob dn",
+          "enabled": false
+        },
+        "openVaultCommand": {
+          "enabled": false
+        },
+        "openWorkspaceCommand": {
+          "enabled": false
+        },
+        "quickCaptureCommand": {
+          "enabled": true
+        },
+        "randomNoteCommand": {
+          "enabled": false
+        },
+        "runActionCommand": {
+          "enabled": false
+        },
+        "searchMedia": {
+          "enabled": false
+        },
+        "searchNoteCommand": {
+          "alias": "ob s",
+          "enabled": false
+        },
+        "starredNotesCommand": {
+          "alias": "ob bk",
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.paperless-ngx": {
+      "entrypoints": {
+        "documentForm": {
+          "enabled": false
+        },
+        "index": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.parcel": {
+      "entrypoints": {
+        "add-delivery": {
+          "alias": "pcla",
+          "enabled": true
+        },
+        "my-deliveries": {
+          "alias": "pcl",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.pick-your-wallpaper": {
+      "entrypoints": {
+        "choose-wallpaper": {
+          "alias": "wp",
+          "enabled": true
+        },
+        "set-as-wallpaper": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.prettier": {
+      "entrypoints": {
+        "formatCSS": {
+          "alias": "prtr css",
+          "enabled": true
+        },
+        "formatHTML": {
+          "alias": "prtr html",
+          "enabled": true
+        },
+        "formatJSON": {
+          "alias": "prtr json",
+          "enabled": true
+        },
+        "formatJavaScript": {
+          "alias": "prtr js",
+          "enabled": true
+        },
+        "formatTypeScript": {
+          "alias": "prtr ts",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.raycast-timezone-converter": {
+      "entrypoints": {
+        "index": {
+          "alias": "time",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.readwise": {
+      "entrypoints": {
+        "books": {
+          "enabled": false
+        },
+        "dailyreview": {
+          "alias": "rw d",
+          "enabled": true
+        },
+        "highlights": {
+          "alias": "rw h",
+          "enabled": true
+        },
+        "library": {
+          "alias": "rw s",
+          "enabled": true
+        },
+        "tags": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.readwise-reader": {
+      "entrypoints": {
+        "list-documents": {
+          "enabled": true
+        },
+        "open-archive": {
+          "enabled": false
+        },
+        "open-home": {
+          "alias": "rwr h",
+          "enabled": true
+        },
+        "open-inbox": {
+          "alias": "rwr f",
+          "enabled": true
+        },
+        "open-later": {
+          "alias": "rwr l",
+          "enabled": true
+        },
+        "open-shortlist": {
+          "alias": "rwr s",
+          "enabled": true
+        },
+        "save-clipboard": {
+          "enabled": false
+        },
+        "save-link": {
+          "alias": "rwr sv",
+          "enabled": true
+        },
+        "save-links": {
+          "enabled": true
+        },
+        "save-selection": {
+          "enabled": false
+        },
+        "search": {
+          "alias": "rwr search",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.reclaim-ai": {
+      "entrypoints": {
+        "list-tasks": {
+          "enabled": false
+        },
+        "my-calendar": {
+          "enabled": false
+        },
+        "quick-task": {
+          "enabled": false
+        },
+        "scheduling-links": {
+          "enabled": false
+        },
+        "task-form": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.regex-tester": {
+      "entrypoints": {
+        "index": {
+          "alias": "regex",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.ruler": {
+      "entrypoints": {
+        "ruler": {
+          "alias": "ruler",
+          "enabled": true,
+          "shortcut": "super+control+alt+R"
+        }
+      }
+    },
+    "store.raycast.script-commands": {
+      "entrypoints": {
+        "list": {
+          "alias": "sh s",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.sesh": {
+      "entrypoints": {
+        "cmd-connect": {
+          "enabled": true
+        },
+        "cmd-connect-browser-worktree": {
+          "enabled": true
+        },
+        "cmd-connect-window": {
+          "enabled": true
+        },
+        "cmd-search": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.single-disk-eject": {
+      "entrypoints": {
+        "index": {
+          "alias": "eject",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.spotify-player": {
+      "entrypoints": {
+        "addPlayingSongToPlaylist": {
+          "enabled": false
+        },
+        "back15": {
+          "enabled": false
+        },
+        "copyArtistAndTitle": {
+          "enabled": false
+        },
+        "copyEmbed": {
+          "enabled": false
+        },
+        "copyUrl": {
+          "enabled": false
+        },
+        "current-track": {
+          "enabled": false
+        },
+        "cycleRepeat": {
+          "enabled": false
+        },
+        "devices": {
+          "enabled": false
+        },
+        "dislike": {
+          "alias": "sp k",
+          "enabled": true,
+          "shortcut": "super+shift+B"
+        },
+        "findLyrics": {
+          "enabled": true
+        },
+        "generatePlaylist": {
+          "enabled": false
+        },
+        "justPlay": {
+          "enabled": false
+        },
+        "like": {
+          "alias": "sp l",
+          "enabled": true,
+          "shortcut": "alt+shift+B"
+        },
+        "next": {
+          "enabled": false
+        },
+        "nowPlaying": {
+          "alias": "sp now",
+          "enabled": true,
+          "shortcut": "control+alt+Y"
+        },
+        "previous": {
+          "enabled": false
+        },
+        "queue": {
+          "enabled": false
+        },
+        "removeSongFromPlaylist": {
+          "enabled": false
+        },
+        "replay": {
+          "enabled": false
+        },
+        "search": {
+          "enabled": true,
+          "shortcut": "control+shift+Y"
+        },
+        "skip15": {
+          "enabled": false
+        },
+        "startDJ": {
+          "enabled": false
+        },
+        "startRadio": {
+          "enabled": false
+        },
+        "togglePlayPause": {
+          "enabled": false
+        },
+        "toggleShuffle": {
+          "alias": "sp sh",
+          "enabled": false
+        },
+        "volume": {
+          "enabled": false
+        },
+        "volume0": {
+          "enabled": false
+        },
+        "volume100": {
+          "enabled": false
+        },
+        "volume25": {
+          "enabled": false
+        },
+        "volume50": {
+          "enabled": false
+        },
+        "volume75": {
+          "enabled": false
+        },
+        "volumeDown": {
+          "enabled": false
+        },
+        "volumeUp": {
+          "enabled": false
+        },
+        "yourLibrary": {
+          "alias": "sp lib",
+          "enabled": true,
+          "shortcut": "alt+shift+Y"
+        }
+      }
+    },
+    "store.raycast.tailscale": {
+      "entrypoints": {
+        "account-switcher": {
+          "alias": "ts sw",
+          "enabled": true
+        },
+        "admin": {
+          "alias": "ts ,",
+          "enabled": true
+        },
+        "connect": {
+          "alias": "tsu",
+          "enabled": true
+        },
+        "devices": {
+          "alias": "ts ls",
+          "enabled": true
+        },
+        "disconnect": {
+          "alias": "tsd",
+          "enabled": true
+        },
+        "exit": {
+          "alias": "ts x",
+          "enabled": true
+        },
+        "my-devices": {
+          "alias": "ts n",
+          "enabled": true
+        },
+        "netcheck": {
+          "enabled": true
+        },
+        "services": {
+          "enabled": true
+        },
+        "status": {
+          "alias": "tss",
+          "enabled": true
+        },
+        "toggle": {
+          "enabled": true
+        },
+        "toggle-dns": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.timers": {
+      "entrypoints": {
+        "configureMenubarPresets": {
+          "enabled": false
+        },
+        "dismissTimerAlert": {
+          "enabled": true
+        },
+        "manageStopwatches": {
+          "enabled": false
+        },
+        "manageTimers": {
+          "alias": "tmm",
+          "enabled": true
+        },
+        "previewAlertSounds": {
+          "alias": "tma",
+          "enabled": true
+        },
+        "start10MinuteTimer": {
+          "alias": "tm10",
+          "enabled": false
+        },
+        "start15MinuteTimer": {
+          "alias": "tm15",
+          "enabled": false
+        },
+        "start25MinuteTimer": {
+          "alias": "tm25",
+          "enabled": false
+        },
+        "start2MinuteTimer": {
+          "alias": "tm2",
+          "enabled": false
+        },
+        "start30MinuteTimer": {
+          "enabled": false
+        },
+        "start45MinuteTimer": {
+          "alias": "tm45",
+          "enabled": false
+        },
+        "start5MinuteTimer": {
+          "alias": "tm5",
+          "enabled": false
+        },
+        "start60MinuteTimer": {
+          "enabled": false
+        },
+        "start90MinuteTimer": {
+          "alias": "tm60",
+          "enabled": false
+        },
+        "startCustomTimer": {
+          "alias": "tmc",
+          "enabled": true
+        },
+        "startStopwatch": {
+          "enabled": false
+        },
+        "stopRunningTimer": {
+          "alias": "tms",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.tldr": {
+      "entrypoints": {
+        "search": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.tmux-cheatsheet": {
+      "entrypoints": {
+        "tmux-cheatsheet": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.toothpick": {
+      "entrypoints": {
+        "connect-device": {
+          "enabled": false
+        },
+        "connect-favorite-device-1": {
+          "enabled": false
+        },
+        "connect-favorite-device-2": {
+          "enabled": false
+        },
+        "connect-favorite-device-3": {
+          "enabled": false
+        },
+        "disconnect-device": {
+          "enabled": false
+        },
+        "disconnect-favorite-device-1": {
+          "enabled": false
+        },
+        "disconnect-favorite-device-2": {
+          "enabled": false
+        },
+        "disconnect-favorite-device-3": {
+          "enabled": false
+        },
+        "manage-bluetooth-connections": {
+          "alias": "bt",
+          "enabled": true
+        },
+        "refresh-all": {
+          "enabled": false
+        },
+        "refresh-device": {
+          "enabled": false
+        },
+        "refresh-favorite-device-1": {
+          "enabled": false
+        },
+        "refresh-favorite-device-2": {
+          "enabled": false
+        },
+        "refresh-favorite-device-3": {
+          "enabled": false
+        },
+        "toggle-device": {
+          "enabled": false
+        },
+        "toggle-favorite-device-1": {
+          "enabled": false
+        },
+        "toggle-favorite-device-2": {
+          "enabled": false
+        },
+        "toggle-favorite-device-3": {
+          "enabled": false
+        },
+        "view-mapped-devices": {
+          "enabled": false
+        }
+      }
+    },
+    "store.raycast.translate": {
+      "entrypoints": {
+        "instant-translate-copy": {
+          "enabled": true
+        },
+        "instant-translate-paste": {
+          "enabled": true
+        },
+        "instant-translate-view": {
+          "enabled": true
+        },
+        "quick-translate": {
+          "enabled": true
+        },
+        "quick-translate-view": {
+          "enabled": true
+        },
+        "translate": {
+          "alias": "translate",
+          "enabled": true
+        },
+        "translate-form": {
+          "alias": "translate f",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.typewhisper": {
+      "entrypoints": {
+        "add-dictionary-term": {
+          "enabled": true
+        },
+        "dictate-with-workflow": {
+          "enabled": true
+        },
+        "manage-dictionary": {
+          "enabled": true
+        },
+        "search-history": {
+          "enabled": true
+        },
+        "show-last-recording": {
+          "enabled": true
+        },
+        "show-last-transcription": {
+          "enabled": true
+        },
+        "start-dictation": {
+          "enabled": true
+        },
+        "switch-model": {
+          "enabled": true
+        },
+        "switch-profile": {
+          "enabled": true
+        },
+        "toggle-recording": {
+          "enabled": true
+        },
+        "transcribe-file": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.video-downloader": {
+      "entrypoints": {
+        "index": {
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.vim-bro": {
+      "entrypoints": {
+        "index": {
+          "alias": "vim",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.wallhaven": {
+      "entrypoints": {
+        "my-collections": {
+          "alias": "wh c",
+          "enabled": true
+        },
+        "random-wallpaper": {
+          "enabled": false
+        },
+        "search-wallpapers": {
+          "alias": "wh s",
+          "enabled": true
+        },
+        "top-wallpapers": {
+          "alias": "wh t",
+          "enabled": true
+        }
+      }
+    },
+    "store.raycast.web-converter": {
+      "entrypoints": {
+        "convert": {
+          "alias": "con",
+          "enabled": true
+        }
+      }
+    },
+    "wm": {
+      "entrypoints": {
+        "switch-windows": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}
