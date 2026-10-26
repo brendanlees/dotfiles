@@ -44,7 +44,7 @@ function Get-Prop($Object, [string]$Name, $Default = '') {
     return $prop.Value
 }
 function Convert-JsonOrSkip([string]$Json, [string]$Message) {
-    try { return ($Json | ConvertFrom-Json -ErrorAction Stop) }
+    try { return ,($Json | ConvertFrom-Json -NoEnumerate -ErrorAction Stop) }
     catch { Stop-OrSkip $Message }
 }
 function Invoke-ExternalText([string]$Command, [string[]]$Arguments) {
@@ -194,10 +194,34 @@ try {
     $manifestItemJson = Invoke-ExternalText bw @('get','item',$ManifestItem)
     if ($null -eq $manifestItemJson) { Stop-OrSkip "unable to read SSH Bitwarden manifest item '$ManifestItem'" }
     $manifestItemObject = Convert-JsonOrSkip $manifestItemJson "unable to parse SSH Bitwarden manifest item '$ManifestItem'"
-    $manifestNotes = [string](Get-Prop $manifestItemObject 'notes' '')
-    if ([string]::IsNullOrWhiteSpace($manifestNotes)) { Stop-OrSkip 'SSH Bitwarden manifest item notes must contain manifest JSON' }
-    $manifest = Convert-JsonOrSkip $manifestNotes 'SSH Bitwarden manifest item notes must contain manifest JSON'
-    if ($null -eq (Get-Prop $manifest 'keys' $null) -or $null -eq (Get-Prop $manifest 'hosts' $null)) { Stop-OrSkip 'SSH Bitwarden manifest must contain object keys and hosts' }
+    # Prefer the named attachment, but never hide attachment failures with stale Notes.
+    $manifestAttachmentName = 'bw-ssh-config.json'
+    $manifestAttachments = @((Get-Prop $manifestItemObject 'attachments' @()) | Where-Object {
+        (Get-Prop $_ 'fileName' '') -ceq $manifestAttachmentName
+    })
+    if ($manifestAttachments.Count -gt 1) { Stop-OrSkip "multiple '$manifestAttachmentName' attachments found; keep exactly one" }
+    if ($manifestAttachments.Count -eq 1) {
+        $manifestId = [string](Get-Prop $manifestItemObject 'id' '')
+        $attachmentId = [string](Get-Prop $manifestAttachments[0] 'id' '')
+        if ([string]::IsNullOrWhiteSpace($manifestId) -or [string]::IsNullOrWhiteSpace($attachmentId)) {
+            Stop-OrSkip 'SSH Bitwarden manifest attachment requires item and attachment IDs'
+        }
+        Write-Info "reading SSH manifest attachment '$manifestAttachmentName'"
+        $manifestJson = Invoke-ExternalText bw @('get','attachment',$attachmentId,'--itemid',$manifestId,'--raw')
+        if ($null -eq $manifestJson) { Stop-OrSkip "unable to read SSH manifest attachment '$manifestAttachmentName'" }
+        $manifest = Convert-JsonOrSkip $manifestJson "SSH manifest attachment '$manifestAttachmentName' must contain valid JSON"
+    } else {
+        $manifestNotes = [string](Get-Prop $manifestItemObject 'notes' '')
+        if ([string]::IsNullOrWhiteSpace($manifestNotes)) { Stop-OrSkip "SSH Bitwarden manifest item needs '$manifestAttachmentName' or manifest JSON in Notes" }
+        $manifest = Convert-JsonOrSkip $manifestNotes 'SSH Bitwarden manifest item notes must contain manifest JSON'
+    }
+    # The [pscustomobject] accelerator tests PSObject wrappers, not JSON objects.
+    # Inspect properties directly so function output cannot unwrap array values.
+    if ($manifest -isnot [System.Management.Automation.PSCustomObject] -or
+        $manifest.keys -isnot [System.Management.Automation.PSCustomObject] -or
+        $manifest.hosts -isnot [System.Management.Automation.PSCustomObject]) {
+        Stop-OrSkip 'SSH Bitwarden manifest must contain object keys and hosts'
+    }
 
     Write-Info 'processing SSH hosts'
     $hostCount = 0; $localKeyCount = 0; $agentKeyCount = 0; $keylessCount = 0

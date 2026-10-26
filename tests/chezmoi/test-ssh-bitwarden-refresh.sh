@@ -41,6 +41,25 @@ if [[ "${BW_MODE:-}" == "missing-session" ]]; then
   exit 1
 fi
 
+if [[ "${1:-}" == "get" && "${2:-}" == "attachment" ]]; then
+  if [[ "$*" != 'get attachment manifest-attachment-id --itemid manifest-record-id --raw' ]]; then
+    echo "unexpected attachment request: $*" >&2
+    exit 64
+  fi
+  case "${BW_ATTACHMENT_MODE:-}" in
+    download-failure) exit 1 ;;
+    invalid-json) printf 'ATTACHMENT_CONTENT_NOT_FOR_LOGS'; exit 0 ;;
+    invalid-shape) printf '{"keys": [], "hosts": {}}'; exit 0 ;;
+  esac
+  jq -n '{
+    description: ("ATTACHMENT_CONTENT_NOT_FOR_LOGS" + ("x" * 12000)),
+    keys: {attachment_key: {scope: "personal", mode: "bitwarden_agent",
+      public_key: "ssh-ed25519 AAAA-attachment fixture"}},
+    hosts: {"attachment-host": {scope: "personal", host: "attachment.invalid", key: "attachment_key"}}
+  }'
+  exit 0
+fi
+
 if [[ "${1:-}" != "get" || "${2:-}" != "item" ]]; then
   echo "unexpected bw command: $*" >&2
   exit 64
@@ -159,7 +178,19 @@ JSON
         exit 64
         ;;
     esac
-    jq -n --arg notes "$manifest_json" '{id:"manifest", notes:$notes}'
+    jq -n --arg notes "$manifest_json" --arg mode "${BW_ATTACHMENT_MODE:-none}" '{
+      id: "manifest-record-id", notes: $notes,
+      attachments: (
+        if $mode == "none" then []
+        elif $mode == "unrelated" then [{id: "other", fileName: "unrelated.json"}]
+        elif $mode == "duplicate" then [
+          {id: "first", fileName: "bw-ssh-config.json"},
+          {id: "second", fileName: "bw-ssh-config.json"}
+        ]
+        else [{id: "manifest-attachment-id", fileName: "bw-ssh-config.json"}]
+        end
+      )
+    }'
     ;;
   local-key)
     cat <<'JSON'
@@ -346,6 +377,41 @@ file_mode() {
     stat -c '%a' "$1"
   fi
 }
+
+# The named attachment wins over legacy Notes, accepts large JSON, and stays in memory.
+attachment_home=$(new_home attachment)
+: > "$bw_log"
+attachment_output=$(BW_ATTACHMENT_MODE=present run_rendered_refresh "$attachment_home" personal --fail 2>&1)
+assert_contains "$bw_log" 'get attachment manifest-attachment-id --itemid manifest-record-id --raw'
+assert_contains "$attachment_home/.ssh/config.d/personal.conf" 'Host attachment-host'
+assert_not_contains "$attachment_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
+assert_contains "$attachment_home/.ssh/public-keys/attachment_key.pub" 'ssh-ed25519 AAAA-attachment fixture'
+assert_not_contains "$bw_log" 'get item local-key'
+[[ "$attachment_output" != *ATTACHMENT_CONTENT_NOT_FOR_LOGS* ]]
+assert_not_exists "$attachment_home/bw-ssh-config.json"
+
+# Unrelated attachments do not replace legacy Notes.
+legacy_home=$(new_home unrelated-attachment)
+: > "$bw_log"
+BW_ATTACHMENT_MODE=unrelated run_refresh "$legacy_home" personal --fail
+assert_contains "$legacy_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
+assert_not_contains "$bw_log" 'get attachment'
+
+# A broken or ambiguous attachment must not fall back to stale Notes or replace config.
+for mode in download-failure invalid-json invalid-shape duplicate; do
+  broken_home=$(new_home "attachment-$mode")
+  mkdir -p "$broken_home/.ssh/config.d"
+  printf 'Host keep-existing\n' > "$broken_home/.ssh/config.d/personal.conf"
+  : > "$bw_log"
+  if broken_output=$(BW_ATTACHMENT_MODE="$mode" run_refresh "$broken_home" personal --fail 2>&1); then
+    echo "expected attachment mode $mode to fail instead of falling back to Notes" >&2
+    exit 1
+  fi
+  assert_contains "$broken_home/.ssh/config.d/personal.conf" 'Host keep-existing'
+  assert_not_contains "$broken_home/.ssh/config.d/personal.conf" 'example-personal-host'
+  assert_not_contains "$bw_log" 'get item local-key'
+  [[ "$broken_output" != *ATTACHMENT_CONTENT_NOT_FOR_LOGS* ]]
+done
 
 # Missing config skips by default and is strict with --fail.
 config_home=$(new_home config)
