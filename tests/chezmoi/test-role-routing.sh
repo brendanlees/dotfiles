@@ -66,6 +66,12 @@ done
 render_ignore personal-headless '{"personal":true,"work":false,"homelab":false,"headless":true,"chezmoi":{"os":"darwin"}}'
 assert_has personal-headless '.finicky.js'
 
+# This migration contains macOS application IDs and personal launcher shortcuts.
+assert_lacks personal '.config/vicinae'
+for scope in personal-headless work homelab ephemeral windows; do
+  assert_has "$scope" '.config/vicinae'
+done
+
 for target in '.config/espanso' 'Library/LaunchAgents/com.federicoterzi.espanso.plist'; do
   assert_lacks personal "$target"
   for scope in personal-headless work homelab ephemeral windows; do
