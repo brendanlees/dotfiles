@@ -1,0 +1,294 @@
+[
+  {
+    "author": "dch09",
+    "name": "ableton-live"
+  },
+  {
+    "author": "limonkufu",
+    "name": "aerospace"
+  },
+  {
+    "author": "gstvds",
+    "name": "amphetamine"
+  },
+  {
+    "author": "dziad",
+    "name": "appcleaner"
+  },
+  {
+    "author": "raycast",
+    "name": "apple-reminders"
+  },
+  {
+    "author": "benvp",
+    "name": "audio-device"
+  },
+  {
+    "author": "pernielsentikaer",
+    "name": "beat-per-minute"
+  },
+  {
+    "author": "jomifepe",
+    "name": "bitwarden"
+  },
+  {
+    "author": "nhojb",
+    "name": "brew"
+  },
+  {
+    "author": "raycast",
+    "name": "browser-bookmarks"
+  },
+  {
+    "author": "thomaslombart",
+    "name": "can-i-use"
+  },
+  {
+    "author": "erics118",
+    "name": "change-case"
+  },
+  {
+    "author": "abielzulio",
+    "name": "chatgpt"
+  },
+  {
+    "author": "destiner",
+    "name": "cheatsheets"
+  },
+  {
+    "author": "florisdobber",
+    "name": "claude"
+  },
+  {
+    "author": "destiner",
+    "name": "cloudflare"
+  },
+  {
+    "author": "Mokkapps",
+    "name": "codesnap"
+  },
+  {
+    "author": "destiner",
+    "name": "coingecko"
+  },
+  {
+    "author": "thomas",
+    "name": "color-picker"
+  },
+  {
+    "author": "koinzhang",
+    "name": "common-directory"
+  },
+  {
+    "author": "koinzhang",
+    "name": "copy-path"
+  },
+  {
+    "author": "niall-maloney",
+    "name": "cron-description"
+  },
+  {
+    "author": "yangxy",
+    "name": "date-format-converter"
+  },
+  {
+    "author": "devutils",
+    "name": "devutils"
+  },
+  {
+    "author": "danielbahl",
+    "name": "dig"
+  },
+  {
+    "author": "k8scat",
+    "name": "dockerhub"
+  },
+  {
+    "author": "thomas",
+    "name": "downloads-manager"
+  },
+  {
+    "author": "jag-k",
+    "name": "dropover"
+  },
+  {
+    "author": "chkpwd",
+    "name": "ente-auth"
+  },
+  {
+    "author": "michaelschultz",
+    "name": "figma-files-raycast-extension"
+  },
+  {
+    "author": "rasmusbe",
+    "name": "flush-dns"
+  },
+  {
+    "author": "dutzi",
+    "name": "font-awesome"
+  },
+  {
+    "author": "Theon",
+    "name": "get-ssh-key"
+  },
+  {
+    "author": "raycast",
+    "name": "github"
+  },
+  {
+    "author": "koinzhang",
+    "name": "github-gist"
+  },
+  {
+    "author": "GastroGeek",
+    "name": "google-fonts"
+  },
+  {
+    "author": "raycast",
+    "name": "google-workspace"
+  },
+  {
+    "author": "tonka3000",
+    "name": "homeassistant"
+  },
+  {
+    "author": "Alex_",
+    "name": "http-status-codes"
+  },
+  {
+    "author": "destiner",
+    "name": "iconify"
+  },
+  {
+    "author": "yuercl",
+    "name": "imessage-2fa"
+  },
+  {
+    "author": "luolei",
+    "name": "karakeep"
+  },
+  {
+    "author": "rolandleth",
+    "name": "kill-process"
+  },
+  {
+    "author": "leandro.maia",
+    "name": "media-converter"
+  },
+  {
+    "author": "carlesandres",
+    "name": "models-dev"
+  },
+  {
+    "author": "0x46616c6b",
+    "name": "mullvad"
+  },
+  {
+    "author": "Kang",
+    "name": "myip"
+  },
+  {
+    "author": "marcjulian",
+    "name": "obsidian"
+  },
+  {
+    "author": "damdam",
+    "name": "paperless-ngx"
+  },
+  {
+    "author": "marcmagn1",
+    "name": "parcel"
+  },
+  {
+    "author": "hugomarfani",
+    "name": "pick-your-wallpaper"
+  },
+  {
+    "author": "lin",
+    "name": "prettier"
+  },
+  {
+    "author": "joao.mainka",
+    "name": "raycast-timezone-converter"
+  },
+  {
+    "author": "natterstefan",
+    "name": "readwise"
+  },
+  {
+    "author": "zach",
+    "name": "readwise-reader"
+  },
+  {
+    "author": "reclaim-ai",
+    "name": "reclaim-ai"
+  },
+  {
+    "author": "allenan",
+    "name": "regex-tester"
+  },
+  {
+    "author": "anwarulislam",
+    "name": "ruler"
+  },
+  {
+    "author": "tholanda",
+    "name": "script-commands"
+  },
+  {
+    "author": "joshmedeski",
+    "name": "sesh"
+  },
+  {
+    "author": "johndturn",
+    "name": "single-disk-eject"
+  },
+  {
+    "author": "mattisssa",
+    "name": "spotify-player"
+  },
+  {
+    "author": "tailscale",
+    "name": "tailscale"
+  },
+  {
+    "author": "ThatNerd",
+    "name": "timers"
+  },
+  {
+    "author": "pomdtr",
+    "name": "tldr"
+  },
+  {
+    "author": "alikhatibak",
+    "name": "tmux-cheatsheet"
+  },
+  {
+    "author": "VladCuciureanu",
+    "name": "toothpick"
+  },
+  {
+    "author": "gebeto",
+    "name": "translate"
+  },
+  {
+    "author": "SeoFood",
+    "name": "typewhisper"
+  },
+  {
+    "author": "vimtor",
+    "name": "video-downloader"
+  },
+  {
+    "author": "ajaypremshankar",
+    "name": "vim-bro"
+  },
+  {
+    "author": "devadathanmb",
+    "name": "wallhaven"
+  },
+  {
+    "author": "nielsvanrijn",
+    "name": "web-converter"
+  }
+]
