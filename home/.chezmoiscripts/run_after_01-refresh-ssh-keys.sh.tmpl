@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check after tools and before private skills; the helper skips unchanged success
-# and retries an unavailable/locked vault without marking it provisioned.
-export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:$PATH"
-
 # shellcheck disable=SC2050
 if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work .homelab }}" != "true" ]]; then
   exit 0
 fi
 
+# A receipt (including the old checksum format) means setup already succeeded.
+# Do not invoke the helper or inspect SSH files again; later refreshes are manual.
+state_file="${XDG_STATE_HOME:-$HOME/.local/state}/chezmoi/ssh-refresh"
+[[ ! -f "$state_file" ]] || exit 0
+
+export PATH="$HOME/.local/bin:${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims:$PATH"
 helper="$HOME/.local/bin/cz-ssh-refresh"
 if [[ ! -x "$helper" ]]; then
   echo "warn: cz-ssh-refresh is not installed; skipping SSH refresh" >&2
   exit 0
 fi
 
-"$helper" --if-changed || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2
+"$helper" || echo "warn: SSH refresh failed; continuing chezmoi apply" >&2

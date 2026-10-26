@@ -17,7 +17,7 @@ For an existing checkout, its `git remote get-url origin` must exactly match the
 
 ## first apply
 
-When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. The SSH provisioning check runs after tools and before private skills. It skips unchanged successful setups but retries locked or failed attempts, so unlocking the vault does not require resetting chezmoi's script state.
+When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. Automatic SSH setup runs after tools and before private skills until its first successful refresh. Locked or failed attempts are retried on the next apply, so unlocking the vault does not require resetting chezmoi's script state. After success, update/apply skips the SSH helper entirely.
 
 After the first successful SSH refresh, run `chezmoi apply` again to clone the Gitea configs. If Bitwarden was locked, unlock it and run `chezmoi apply` to provision SSH, then apply once more. Existing SSH setups without a configured manifest keep their normal external behavior.
 
@@ -33,7 +33,7 @@ these maintain a generic ssh config scaffold, while private hostnames, aliases, 
 2. sign in and unlock bitwarden: `export BW_SESSION=$(bw unlock --raw)` on posix, or `$env:BW_SESSION = bw unlock --raw` in powershell.
 3. create a Bitwarden secure note (or reuse the existing manifest item) and attach the UTF-8 JSON file as `bw-ssh-config.json`. Keep exactly one attachment with that name. Smaller existing manifests can remain in Notes.
 4. re-run `chezmoi init --apply brendanlees` on an enabled machine and set `ssh_bw_manifest_item` to that item name or id.
-5. run `chezmoi apply`, or refresh manually with helper alias `cz-ssh-refresh`.
+5. the first apply provisions SSH automatically. For later changes or repairs, run `cz-ssh-refresh --fail` explicitly.
 
 leave `ssh_bw_manifest_item` blank to skip ssh generation.
 
@@ -45,8 +45,7 @@ refresh without replacing the generated SSH configs; it does not fall back to
 possibly stale Notes. The JSON shape below is the same for either source.
 
 After uploading or replacing the attachment, run `bw sync` and
-`cz-ssh-refresh --fail` in a terminal with the Bitwarden CLI unlocked. Attachment
-edits, like Notes edits, are not detected by the automatic `--if-changed` check.
+`cz-ssh-refresh --fail` in a terminal with the Bitwarden CLI unlocked. Later applies do not check for attachment, Notes, or key changes.
 
 ## manifest shape
 
@@ -96,9 +95,9 @@ to migrate to `bitwarden_agent`, import the key into bitwarden, change the manif
 
 ## refresh behavior
 
-Apply uses `cz-ssh-refresh --if-changed`. A successful refresh records a checksum of the helper and its configuration inputs under `${XDG_STATE_HOME:-~/.local/state}/chezmoi/ssh-refresh`. Unchanged inputs with all enabled scope configs present skip Bitwarden access and SSH writes. Helper/configuration changes or a missing generated scope config trigger a refresh; failed or skipped attempts do not update the receipt. No vault credentials are stored in it.
+A successful refresh, automatic or manual, records completion under `${XDG_STATE_HOME:-~/.local/state}/chezmoi/ssh-refresh`. On later `chezmoi apply` and `chezmoi update`, the SSH setup hook checks only for that receipt. It does not invoke the SSH helper, query Bitwarden, compare helper/configuration checksums, or inspect generated SSH files. Existing checksum receipts are accepted without another refresh. Failed or skipped first attempts do not create a receipt; it contains no vault credentials.
 
-The first apply after introducing this receipt refreshes once. Run `bw sync` and `cz-ssh-refresh` manually after editing keys or the manifest inside Bitwarden, or to restore a deleted key file: direct invocations always refresh, even when the automatic check would skip.
+After changing the manifest, keys, enabled roles, or agent socket configuration, run `bw sync` and `cz-ssh-refresh --fail` with the vault unlocked. Use the same helper to restore deleted generated configs or keys. Direct invocations always refresh, regardless of the receipt. The generic SSH scaffold and GitHub override remain chezmoi-managed.
 
 `cz-ssh-refresh` is non-blocking during `chezmoi apply`: missing bitwarden, missing `jq` on posix, lock state, or manifest config prints `warn:` and exits 0. use `cz-ssh-refresh --fail` when refresh errors should be fatal. On windows the managed helper is `~/.local/bin/cz-ssh-refresh.ps1`; the powershell profile prepends `~/.local/bin` to `PATH`, so a new shell can run `cz-ssh-refresh` directly.
 

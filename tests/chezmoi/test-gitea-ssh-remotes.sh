@@ -100,13 +100,16 @@ SH
 cat >"$fixture/dot_local/bin/executable_cz-ssh-refresh" <<'SH'
 #!/bin/sh
 set -eu
-test "${1:-}" = --if-changed
+test -z "${1:-}"
+printf 'called\n' >>"$HOME/ssh-refresh-calls"
 test -f "$HOME/tools-installed"
 test "$(command -v jq)" = "$HOME/.local/share/mise/shims/jq"
 # A skipped refresh must be retried on the next apply after unlocking.
 [ "${FIXTURE_BW_LOCKED:-0}" = 0 ] || exit 0
 mkdir -p "$HOME/.ssh/config.d"
 printf 'fixture\n' >"$HOME/.ssh/config.d/personal.conf"
+mkdir -p "$XDG_STATE_HOME/chezmoi"
+printf 'complete\n' >"$XDG_STATE_HOME/chezmoi/ssh-refresh"
 SH
 cat >"$fixture/dot_local/bin/executable_cz-private-agent-skills" <<'SH'
 #!/bin/sh
@@ -157,7 +160,7 @@ from pathlib import Path
 entries = tomllib.loads(Path(sys.argv[1]).read_text())
 Path(sys.argv[2]).write_text(json.dumps({k: v for k, v in entries.items() if k in ('.claude', '.pi')}))
 PY
-  HOME="$fresh_home" XDG_CONFIG_HOME="$fresh_home/.config" PI_AGENT_DIR='' \
+  HOME="$fresh_home" XDG_CONFIG_HOME="$fresh_home/.config" XDG_STATE_HOME="$fresh_home/.local/state" PI_AGENT_DIR='' \
     MISE_DATA_DIR="$fresh_home/.local/share/mise" PATH="$tmpdir/bin:/usr/bin:/bin" "$chezmoi_bin" apply \
     --source "$fixture" --destination "$fresh_home" --config "$tmpdir/fresh.toml" \
     --persistent-state "$tmpdir/fresh-state.boltdb" --force
@@ -170,6 +173,7 @@ apply_fresh
 apply_fresh
 [[ -d "$fresh_home/.claude/.git" && -d "$fresh_home/.pi/.git" ]]
 [[ $(wc -l <"$fresh_home/clones") -eq 2 ]]
+[[ $(wc -l <"$fresh_home/ssh-refresh-calls") -eq 2 ]]
 [[ -f "$fresh_home/.pi/agent/themes/chezmoi.json" && -f "$fresh_home/.claude/cli-installed" ]]
 
-echo 'Private repo bootstrap waits for SSH, retries after unlock and preserves base provisioning'
+echo 'Private repo bootstrap waits for SSH, retries after unlock and stops after success'

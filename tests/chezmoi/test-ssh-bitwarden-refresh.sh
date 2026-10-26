@@ -237,6 +237,7 @@ run_refresh() {
   local role=$2
   shift 2
   HOME="$home_dir" \
+    XDG_STATE_HOME="$home_dir/.local/state" \
     PATH="$fake_bin:$PATH" \
     BW_LOG="$bw_log" \
     SSH_BW_MANIFEST_ITEM="manifest" \
@@ -257,6 +258,7 @@ run_refresh_without_config() {
   local home_dir=$1
   shift
   HOME="$home_dir" \
+    XDG_STATE_HOME="$home_dir/.local/state" \
     PATH="$fake_bin:$PATH" \
     BW_LOG="$bw_log" \
     CHEZMOI_ROLE="personal" \
@@ -320,6 +322,7 @@ run_rendered_refresh() {
   local role=$2
   shift 2
   HOME="$home_dir" \
+    XDG_STATE_HOME="$home_dir/.local/state" \
     PATH="$fake_bin:$PATH" \
     BW_LOG="$bw_log" \
     CHEZMOI_ROLE="$role" \
@@ -333,6 +336,7 @@ run_specific_rendered_refresh() {
   local role=$3
   shift 3
   HOME="$home_dir" \
+    XDG_STATE_HOME="$home_dir/.local/state" \
     PATH="$fake_bin:$PATH" \
     BW_LOG="$bw_log" \
     CHEZMOI_ROLE="$role" \
@@ -654,47 +658,65 @@ if BW_MODE=missing-session run_refresh "$fail_home" personal --fail >/tmp/cz-ssh
   exit 1
 fi
 
-# Automatic provisioning retries skips, but a successful unchanged apply must
-# not access Bitwarden or rewrite SSH files. Manual refresh stays unconditional.
+# Bootstrap retries skipped/failed attempts, but stops invoking the helper after
+# any successful refresh. Helper/config changes and missing SSH files are manual.
 auto_home=$(new_home automatic)
+auto_helper="$auto_home/.local/bin/cz-ssh-refresh"
+auto_receipt="$auto_home/state/chezmoi/ssh-refresh"
+auto_runner="$tmpdir/ssh-bootstrap.sh"
+mkdir -p "${auto_helper%/*}"
+cp "$rendered_linux_refresh_cmd" "$auto_helper"
+chezmoi execute-template --override-data-file "$render_data_linux" \
+  < "$source_root/.chezmoiscripts/run_after_01-refresh-ssh-keys.sh.tmpl" > "$auto_runner"
 run_automatic() {
-  XDG_STATE_HOME="$auto_home/.local/state" \
-    run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal --if-changed
+  HOME="$auto_home" XDG_STATE_HOME="$auto_home/state" \
+    PATH="$fake_bin:$PATH" BW_LOG="$bw_log" CHEZMOI_ROLE=personal \
+    bash "$auto_runner"
 }
 BW_MODE=locked run_automatic
 assert_not_exists "$auto_home/.ssh/config.d/personal.conf"
+assert_not_exists "$auto_receipt"
+BW_MANIFEST_VARIANT=missing-host run_automatic
+assert_not_exists "$auto_receipt"
 run_automatic
 assert_contains "$auto_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
-: >"$bw_log"
+[[ -f "$auto_receipt" ]]
+cp "$auto_home/.ssh/config.d/personal.conf" "$tmpdir/provisioned.conf"
+cp "$auto_home/.ssh/keys/personal/id_ed25519_example" "$tmpdir/provisioned-key"
+: > "$bw_log"
 BW_MODE=locked BW_SESSION=fixture-new-session run_automatic
 [[ ! -s "$bw_log" ]]
+cmp "$tmpdir/provisioned.conf" "$auto_home/.ssh/config.d/personal.conf"
+cmp "$tmpdir/provisioned-key" "$auto_home/.ssh/keys/personal/id_ed25519_example"
 
-# Changed helper/config inputs are not marked successful while the vault is locked.
-printf '\n# fixture: changed provisioning inputs\n' >>"$rendered_linux_refresh_cmd"
-BW_MODE=locked run_automatic
-assert_contains "$bw_log" 'status --raw'
-: >"$bw_log"
+# Even a changed helper must not be called, and old checksum receipts still count.
+printf '#!/bin/sh\necho called >> "%s"\nexit 99\n' "$tmpdir/helper-calls" > "$auto_helper"
+printf '123456789 42\n' > "$auto_receipt"
+SSH_BW_MANIFEST_ITEM=changed SSH_BW_AGENT_SOCK_ENV=CHANGED_AGENT CHANGED_AGENT=/changed.sock run_automatic
+assert_not_exists "$tmpdir/helper-calls"
+rm "$auto_home/.ssh/config.d/personal.conf" "$auto_home/.ssh/keys/personal/id_ed25519_example"
 run_automatic
-assert_contains "$bw_log" 'get item manifest'
-: >"$bw_log"
-run_automatic
-[[ ! -s "$bw_log" ]]
+assert_not_exists "$tmpdir/helper-calls"
+assert_not_exists "$auto_home/.ssh/config.d/personal.conf"
+assert_not_exists "$auto_home/.ssh/keys/personal/id_ed25519_example"
 
-# Missing generated config must be repaired despite an otherwise current receipt.
-rm "$auto_home/.ssh/config.d/personal.conf"
-run_automatic
+# Manual refresh repairs missing files and still honors role/socket overrides.
+cp "$rendered_linux_refresh_cmd" "$auto_helper"
+HOME="$auto_home" XDG_STATE_HOME="$auto_home/state" PATH="$fake_bin:$PATH" \
+  BW_LOG="$bw_log" CHEZMOI_ROLE=personal,work \
+  SSH_BW_AGENT_SOCK_ENV=FIXTURE_AGENT_SOCK FIXTURE_AGENT_SOCK=/fixture/agent.sock \
+  "$auto_helper" --fail
 assert_contains "$bw_log" 'get item manifest'
 assert_contains "$auto_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
-: >"$bw_log"
-run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal
-assert_contains "$bw_log" 'get item manifest'
-
-# Role and agent-socket overrides are inputs; vault session tokens are not.
-: >"$bw_log"
-XDG_STATE_HOME="$auto_home/.local/state" SSH_BW_AGENT_SOCK_ENV=FIXTURE_AGENT_SOCK FIXTURE_AGENT_SOCK=/fixture/agent.sock \
-  run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal,work --if-changed
+assert_contains "$auto_home/.ssh/keys/personal/id_ed25519_example" 'fake-local-private-key'
 assert_contains "$auto_home/.ssh/config.d/work.conf" 'IdentityAgent /fixture/agent.sock'
-assert_contains "$bw_log" 'get item manifest'
+
+# A manual first refresh also completes bootstrap (using the default state path).
+[[ -f "$render_home/.local/state/chezmoi/ssh-refresh" ]]
+: > "$bw_log"
+env -u XDG_STATE_HOME HOME="$render_home" PATH="$fake_bin:$PATH" \
+  BW_LOG="$bw_log" bash "$auto_runner" > "$tmpdir/manual-bootstrap.out" 2>&1
+[[ ! -s "$bw_log" && ! -s "$tmpdir/manual-bootstrap.out" ]]
 
 # The managed GitHub override takes precedence over generated host settings,
 # while identity selection and unrelated hosts remain unchanged.
@@ -731,4 +753,4 @@ ssh -G -F "$routing_home/.ssh/config" git@github.com > "$tmpdir/github-refreshed
 assert_contains "$tmpdir/github-refreshed.conf" 'hostname ssh.github.com'
 assert_contains "$tmpdir/github-refreshed.conf" 'port 443'
 
-echo "ssh bitwarden refresh and change-driven provisioning ok"
+echo "ssh bitwarden refresh and one-time provisioning ok"
