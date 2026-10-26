@@ -274,7 +274,11 @@ def render_strip(config, metrics, items, mode, close_popup=False):
         if close_popup and name.endswith(".icon"):
             args += ["popup.drawing=off"]
     if rebuild:
-        args += ["--reorder", "showy_quota.trigger", *names,
+        # Right-side order is reversed; keep the robot just left of every quota row.
+        order = ["showy_quota.trigger", *names]
+        if "splashbar" in items:
+            order.append("splashbar")
+        args += ["--reorder", *order,
                  "--add", "bracket", "showy_quota_bracket", *names]
     args += [
         "--set", "showy_quota_bracket", "drawing=" + ("on" if groups else "off"),
