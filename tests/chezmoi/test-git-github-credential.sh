@@ -30,8 +30,13 @@ render() {
 }
 
 render "$fake_bin:/usr/bin:/bin" "$tmpdir/with-gh"
+# Version managers such as mise move gh on upgrade; the rendered config must
+# keep working without another chezmoi apply.
+moved_bin="$tmpdir/moved-bin"
+mkdir -p "$moved_bin"
+mv "$fake_bin/gh" "$moved_bin/gh"
 username=$(printf 'protocol=https\nhost=github.com\n\n' |
-  PATH="$fake_bin:/usr/bin:/bin" HOME="$tmpdir/home" GIT_CONFIG_GLOBAL="$tmpdir/with-gh" \
+  PATH="$moved_bin:/usr/bin:/bin" HOME="$tmpdir/home" GIT_CONFIG_GLOBAL="$tmpdir/with-gh" \
     GIT_CONFIG_NOSYSTEM=1 GIT_TERMINAL_PROMPT=0 git credential fill 2>/dev/null |
   sed -n 's/^username=//p') || true
 if [[ "$username" != fixture-user ]]; then
