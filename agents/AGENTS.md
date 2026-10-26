@@ -33,6 +33,8 @@ I'm Brendan, a web developer and a homelab tinkerer.
 - Choose the simplest solution that meets current requirements. Avoid speculative features, abstractions, and defensive code for hypothetical requirements. Surface substantially simpler alternatives.
 - Prefer quality and long-term maintainability over shortcuts; scale for evidenced needs.
 - Keep security measures proportional to the project's exposure and data.
-- Use focused tests for changed behaviour; avoid redundant coverage.
 - Comment non-obvious intent, not obvious code; update affected comments.
-- Run relevant, permitted verification before claiming completion. State what was checked and any gaps.
+
+## Verification
+
+Run relevant, permitted verification before claiming completion. Verification does not automatically require new tests. Add or update tests for meaningful changed behaviour or a regression, using the existing test setup. Do not introduce testing infrastructure without approval. Start with the smallest relevant checks; broaden them when the risk or project requirements justify it. Reuse successful results while the checked state remains unchanged. State exactly what was checked and any gaps.
