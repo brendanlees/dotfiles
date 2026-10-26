@@ -80,6 +80,12 @@ case "$item_id" in
       "path": "~/.ssh/keys/personal/id_ed25519_example",
       "public_key": "ssh-ed25519 AAAA-local example_personal_key"
     },
+    "example_homelab_key": {
+      "scope": "homelab",
+      "mode": "local_file",
+      "item": "homelab-key",
+      "path": "~/.ssh/keys/homelab/id_ed25519_example"
+    },
     "example_work_key": {
       "scope": "work",
       "mode": "bitwarden_agent",
@@ -96,6 +102,12 @@ case "$item_id" in
       "port": 22,
       "key": "example_personal_key",
       "options": {"IdentitiesOnly": "yes", "UseKeychain": "yes"}
+    },
+    "example-homelab-host": {
+      "scope": "homelab",
+      "host": "homelab.example.invalid",
+      "user": "example",
+      "key": "example_homelab_key"
     },
     "example-work-bastion": {
       "scope": "work",
@@ -199,6 +211,17 @@ JSON
   "sshKey": {
     "privateKey": "fake-local-private-key\n",
     "publicKey": "ssh-ed25519 AAAA-local example_personal_key"
+  }
+}
+JSON
+    ;;
+  homelab-key)
+    cat <<'JSON'
+{
+  "id": "homelab-key",
+  "sshKey": {
+    "privateKey": "fake-homelab-private-key\n",
+    "publicKey": "ssh-ed25519 AAAA-homelab example_homelab_key"
   }
 }
 JSON
@@ -433,10 +456,13 @@ fi
 # Rendered templates shell-quote config values containing single quotes and show concise progress.
 render_home=$(new_home rendered)
 : > "$bw_log"
-render_output=$(run_rendered_refresh "$render_home" personal 2>&1)
+render_output=$(run_rendered_refresh "$render_home" "" 2>&1)
 assert_contains "$bw_log" "get item manifest'quoted"
 assert_contains "$render_home/.ssh/config.d/personal.conf" "Host example-personal-host"
 assert_contains "$render_home/.ssh/keys/personal/id_ed25519_example" "fake-local-private-key"
+# Rendered personal=true is sufficient; no homelab flag or role override is needed.
+assert_contains "$render_home/.ssh/config.d/homelab.conf" "Host example-homelab-host"
+assert_contains "$render_home/.ssh/keys/homelab/id_ed25519_example" "fake-homelab-private-key"
 if [[ "$render_output" != *"info: checking Bitwarden status"* ]]; then
   echo "expected progress output for Bitwarden status, got: $render_output" >&2
   exit 1
@@ -453,7 +479,7 @@ if [[ "$render_output" != *"info: writing SSH config"* ]]; then
   echo "expected progress output for config write, got: $render_output" >&2
   exit 1
 fi
-if [[ "$render_output" != *"info: SSH refresh complete: 1 hosts (1 local-file, 0 Bitwarden Agent, 0 keyless)"* ]]; then
+if [[ "$render_output" != *"info: SSH refresh complete: 2 hosts (2 local-file, 0 Bitwarden Agent, 0 keyless)"* ]]; then
   echo "expected progress summary, got: $render_output" >&2
   exit 1
 fi
@@ -535,7 +561,7 @@ if grep -q -- "local-key\|work-key" "$bw_log"; then
   exit 1
 fi
 
-# local_file writes only scoped personal config and restrictive private key files.
+# The personal role includes homelab administration, but not work credentials.
 personal_home=$(new_home personal)
 : > "$bw_log"
 run_refresh "$personal_home" personal
@@ -552,11 +578,23 @@ if [[ "$(file_mode "$personal_key")" != "600" ]]; then
   exit 1
 fi
 assert_not_exists "$personal_home/.ssh/config.d/work.conf"
+assert_contains "$personal_home/.ssh/config.d/homelab.conf" "Host example-homelab-host"
+assert_contains "$personal_home/.ssh/keys/homelab/id_ed25519_example" "fake-homelab-private-key"
+[[ "$(file_mode "$personal_home/.ssh/keys/homelab/id_ed25519_example")" == "600" ]]
 if grep -q -- "work-key" "$bw_log"; then
   echo "did not expect work key fetch during personal refresh" >&2
   cat "$bw_log" >&2
   exit 1
 fi
+
+# Homelab servers still get only homelab-scoped entries.
+homelab_home=$(new_home homelab)
+run_refresh "$homelab_home" homelab --fail
+assert_contains "$homelab_home/.ssh/config.d/homelab.conf" "Host example-homelab-host"
+assert_contains "$homelab_home/.ssh/keys/homelab/id_ed25519_example" "fake-homelab-private-key"
+assert_not_exists "$homelab_home/.ssh/config.d/personal.conf"
+assert_not_exists "$homelab_home/.ssh/config.d/work.conf"
+assert_not_exists "$homelab_home/.ssh/keys/personal/id_ed25519_example"
 
 # Symlinked private-key path components under ~/.ssh are rejected before writing.
 symlink_home=$(new_home symlink)
@@ -629,6 +667,9 @@ if grep -q -- "work-key" "$bw_log"; then
   exit 1
 fi
 assert_not_exists "$work_home/.ssh/config.d/personal.conf"
+assert_not_exists "$work_home/.ssh/config.d/homelab.conf"
+assert_not_exists "$work_home/.ssh/keys/homelab/id_ed25519_example"
+assert_not_contains "$bw_log" "get item homelab-key"
 
 # A migration to bitwarden_agent warns if a stale local private key still exists.
 stale_home=$(new_home stale)
@@ -680,11 +721,11 @@ assert_contains "$bw_log" 'get item manifest'
 run_automatic
 [[ ! -s "$bw_log" ]]
 
-# Missing generated config must be repaired despite an otherwise current receipt.
-rm "$auto_home/.ssh/config.d/personal.conf"
+# Missing homelab config on a personal machine must invalidate the receipt.
+rm "$auto_home/.ssh/config.d/homelab.conf"
 run_automatic
 assert_contains "$bw_log" 'get item manifest'
-assert_contains "$auto_home/.ssh/config.d/personal.conf" 'Host example-personal-host'
+assert_contains "$auto_home/.ssh/config.d/homelab.conf" 'Host example-homelab-host'
 : >"$bw_log"
 run_specific_rendered_refresh "$rendered_linux_refresh_cmd" "$auto_home" personal
 assert_contains "$bw_log" 'get item manifest'

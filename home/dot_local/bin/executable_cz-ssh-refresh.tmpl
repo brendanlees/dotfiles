@@ -77,7 +77,8 @@ scope_enabled() {
       role_has work || template_bool_enabled "$template_work"
       ;;
     homelab)
-      role_has homelab || template_bool_enabled "$template_homelab"
+      # Personal machines are also homelab admin clients, not homelab servers.
+      scope_enabled personal || role_has homelab || template_bool_enabled "$template_homelab"
       ;;
     *)
       return 1

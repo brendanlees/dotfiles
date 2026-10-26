@@ -8,6 +8,7 @@ $OriginalManifest = $env:SSH_BW_MANIFEST_ITEM
 $OriginalSocketName = $env:SSH_BW_AGENT_SOCK_ENV
 $OriginalSession = $env:BW_SESSION
 $global:BWCalls = 0
+$global:BWKeyCalls = 0
 $global:BWLocked = $true
 $global:BWAttachmentMode = 'none'
 $global:BWAttachmentCalls = @()
@@ -40,8 +41,19 @@ function bw {
             hosts = @{ 'attachment-host' = @{ scope = 'personal'; host = 'attachment.invalid' } }
         } | ConvertTo-Json -Depth 5)
     }
+    if ($args[0] -eq 'get' -and $args[1] -eq 'item' -and $args[2] -eq 'fixture-homelab-key') {
+        $global:BWKeyCalls++
+        return (@{ sshKey = @{ privateKey = 'fake-homelab-private-key' } } | ConvertTo-Json -Compress)
+    }
     if ($args[0] -ne 'get' -or $args[1] -ne 'item' -or $args[2] -ne 'fixture-manifest') { throw 'unexpected Bitwarden command' }
-    $manifest = @{ keys = @{}; hosts = @{ fixture = @{ scope = 'personal'; host = 'fixture.invalid'; user = 'fixture' } } }
+    $manifest = @{
+        keys = @{ homelab_key = @{ scope = 'homelab'; mode = 'local_file'; item = 'fixture-homelab-key'; path = '~/.ssh/keys/homelab/id_fixture' } }
+        hosts = @{
+            fixture = @{ scope = 'personal'; host = 'fixture.invalid'; user = 'fixture' }
+            'fixture-homelab' = @{ scope = 'homelab'; host = 'homelab.invalid'; key = 'homelab_key' }
+            'fixture-work' = @{ scope = 'work'; host = 'work.invalid' }
+        }
+    }
     $attachments = @()
     if ($global:BWAttachmentMode -eq 'unrelated') {
         $attachments = @(@{ id = 'other'; fileName = 'unrelated.json' })
@@ -60,7 +72,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
 try {
     New-Item -ItemType Directory -Force -Path (Join-Path $Stage '.local/bin') | Out-Null
     Set-Variable -Name HOME -Value $Stage -Force
-    $env:CHEZMOI_ROLE = 'personal'
+    $env:CHEZMOI_ROLE = ''
     $env:XDG_STATE_HOME = Join-Path $Stage 'state'
     $env:SSH_BW_MANIFEST_ITEM = 'fixture-manifest'
     $env:SSH_BW_AGENT_SOCK_ENV = 'FIXTURE_UNUSED_AGENT'
@@ -78,11 +90,16 @@ try {
         [IO.File]::WriteAllText($pair[1], $rendered)
     }
     $config = Join-Path $Stage '.ssh/config.d/personal.conf'
+    $homelabConfig = Join-Path $Stage '.ssh/config.d/homelab.conf'
     & $runner
     Assert-True (-not (Test-Path $config)) 'locked vault unexpectedly provisioned SSH'
     $global:BWLocked = $false
     & $runner
     Assert-True (Test-Path $config) 'unlocked retry did not provision SSH'
+    Assert-True (Test-Path $homelabConfig) 'personal config did not enable homelab SSH'
+    Assert-True ((Get-Content -Raw $homelabConfig) -match 'Host fixture-homelab') 'homelab host was skipped'
+    Assert-True ((Get-Content -Raw (Join-Path $Stage '.ssh/keys/homelab/id_fixture')).Trim() -eq 'fake-homelab-private-key') 'homelab key was not provisioned'
+    Assert-True (-not (Test-Path (Join-Path $Stage '.ssh/config.d/work.conf'))) 'personal config enabled work SSH'
     $calls = $global:BWCalls
     $global:BWLocked = $true
     $env:BW_SESSION = 'fixture-new-session'
@@ -100,9 +117,9 @@ try {
     & $runner
     Assert-True ($global:BWCalls -eq $calls) 'successful changed inputs were not cached'
 
-    Remove-Item -LiteralPath $config
+    Remove-Item -LiteralPath $homelabConfig
     & $runner
-    Assert-True (Test-Path $config) 'missing config was not repaired'
+    Assert-True (Test-Path $homelabConfig) 'missing homelab config was not repaired'
     $calls = $global:BWCalls
     & $helper
     Assert-True ($global:BWCalls -gt $calls) 'manual refresh must remain unconditional'
@@ -132,7 +149,32 @@ try {
         Assert-True $failed "attachment mode $mode did not fail"
         Assert-True ((Get-Content -Raw $config).Trim() -eq 'Host keep-existing') "attachment mode $mode replaced existing config"
     }
-    Write-Host 'Windows SSH attachment loading and change-driven provisioning ok'
+    # Role overrides must grant personal admin access without crossing into work.
+    $global:BWAttachmentMode = 'none'
+    $data = '{"personal":false,"work":false,"homelab":false,"ephemeral":false,"chezmoi":{"os":"windows"}}'
+    $rendered = & chezmoi execute-template --source $RepoRoot --config $chezmoiConfig --override-data $data --file (Join-Path $RepoRoot 'home/dot_local/bin/executable_cz-ssh-refresh.ps1.tmpl') | Out-String
+    if ($LASTEXITCODE -ne 0) { throw 'scope template render failed' }
+    [IO.File]::WriteAllText($helper, $rendered)
+    foreach ($role in @('personal','homelab','work')) {
+        $scopeHome = Join-Path $Stage "scope-$role"
+        Set-Variable -Name HOME -Value $scopeHome -Force
+        $env:CHEZMOI_ROLE = $role
+        $keyCalls = $global:BWKeyCalls
+        & $helper --fail
+        $scopeConfig = Join-Path $scopeHome '.ssh/config.d/homelab.conf'
+        $scopeKey = Join-Path $scopeHome '.ssh/keys/homelab/id_fixture'
+        if ($role -eq 'work') {
+            Assert-True (-not (Test-Path $scopeConfig)) 'work-only role enabled homelab SSH'
+            Assert-True (-not (Test-Path $scopeKey)) 'work-only role wrote a homelab key'
+            Assert-True ($global:BWKeyCalls -eq $keyCalls) 'work-only role fetched a homelab key'
+        } else {
+            Assert-True ((Get-Content -Raw $scopeConfig) -match 'Host fixture-homelab') "$role role skipped the homelab host"
+            Assert-True ((Get-Content -Raw $scopeKey).Trim() -eq 'fake-homelab-private-key') "$role role did not provision the homelab key"
+        }
+        Assert-True ((Test-Path (Join-Path $scopeHome '.ssh/config.d/personal.conf')) -eq ($role -eq 'personal')) "$role role selected the wrong personal scope"
+        Assert-True ((Test-Path (Join-Path $scopeHome '.ssh/config.d/work.conf')) -eq ($role -eq 'work')) "$role role selected the wrong work scope"
+    }
+    Write-Host 'Windows SSH scope selection, attachment loading and change-driven provisioning ok'
 } finally {
     Set-Variable -Name HOME -Value $OriginalHome -Force
     $env:CHEZMOI_ROLE = $OriginalRole
