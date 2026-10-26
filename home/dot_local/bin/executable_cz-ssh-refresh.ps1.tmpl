@@ -33,7 +33,8 @@ function Test-ScopeEnabled([string]$Scope) {
     switch ($Scope) {
         'personal' { return ((Test-RoleHas personal) -or $TemplatePersonal) }
         'work' { return ((Test-RoleHas work) -or $TemplateWork) }
-        'homelab' { return ((Test-RoleHas homelab) -or $TemplateHomelab) }
+        # Personal machines are also homelab admin clients, not homelab servers.
+        'homelab' { return ((Test-ScopeEnabled personal) -or (Test-RoleHas homelab) -or $TemplateHomelab) }
         default { return $false }
     }
 }
