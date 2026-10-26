@@ -27,8 +27,6 @@ The macOS private-skills clone defaults to non-interactive SSH with a connection
 
 these maintain a generic ssh config scaffold, while private hostnames, aliases, keys, and other bitwarden item ids live in a private manifest referenced by local chezmoi config.
 
-Personal machines receive both personal and homelab SSH entries. Work-only machines receive neither personal nor homelab credentials. Do not enable the machine-wide `homelab` role just to get admin SSH access on a personal Mac: that role also selects headless defaults. See [machine scoping](scoping.md).
-
 ## setup
 
 1. install `bw` (and `jq` for posix refreshes; windows uses powershell json parsing).
