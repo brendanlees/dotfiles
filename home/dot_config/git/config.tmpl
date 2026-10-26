@@ -50,8 +50,9 @@
 {{- if and (ne .chezmoi.os "windows") (lookPath "gh") }}
 
 # Use the gh login for GitHub over HTTPS. The empty helper drops earlier ones,
-# so git never falls back to a keychain entry or a password prompt.
+# so git never falls back to a keychain entry or a password prompt. Plain gh,
+# not an absolute path: mise installs it under a versioned directory.
 [credential "https://github.com"]
   helper =
-  helper = !{{ lookPath "gh" }} auth git-credential
+  helper = !gh auth git-credential
 {{- end }}
