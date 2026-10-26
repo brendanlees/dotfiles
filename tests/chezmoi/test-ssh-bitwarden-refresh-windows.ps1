@@ -30,6 +30,9 @@ function bw {
             'download-failure' { $global:LASTEXITCODE = 1; return }
             'invalid-json' { return 'ATTACHMENT_CONTENT_NOT_FOR_LOGS' }
             'invalid-shape' { return '{"keys": [], "hosts": {}}' }
+            'invalid-scalar' { return '{"keys": "not-an-object", "hosts": {}}' }
+            'invalid-hosts-array' { return '{"keys": {}, "hosts": [{}]}' }
+            'invalid-root-array' { return '[{"keys": {}, "hosts": {}}]' }
         }
         return (@{
             description = 'ATTACHMENT_CONTENT_NOT_FOR_LOGS' + ('x' * 12000)
@@ -118,7 +121,7 @@ try {
     Assert-True ((Get-Content -Raw $config) -match 'Host fixture') 'unrelated attachment prevented Notes fallback'
     Assert-True ($global:BWAttachmentCalls.Count -eq $attachmentCalls) 'unrelated attachment was downloaded'
 
-    foreach ($mode in @('download-failure','invalid-json','invalid-shape','duplicate')) {
+    foreach ($mode in @('download-failure','invalid-json','invalid-shape','invalid-scalar','invalid-hosts-array','invalid-root-array','duplicate')) {
         $global:BWAttachmentMode = $mode
         Set-Content -LiteralPath $config -Value 'Host keep-existing'
         $failed = $false

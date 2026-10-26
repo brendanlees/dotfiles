@@ -44,7 +44,7 @@ function Get-Prop($Object, [string]$Name, $Default = '') {
     return $prop.Value
 }
 function Convert-JsonOrSkip([string]$Json, [string]$Message) {
-    try { return ($Json | ConvertFrom-Json -ErrorAction Stop) }
+    try { return ,($Json | ConvertFrom-Json -NoEnumerate -ErrorAction Stop) }
     catch { Stop-OrSkip $Message }
 }
 function Invoke-ExternalText([string]$Command, [string[]]$Arguments) {
@@ -215,7 +215,11 @@ try {
         if ([string]::IsNullOrWhiteSpace($manifestNotes)) { Stop-OrSkip "SSH Bitwarden manifest item needs '$manifestAttachmentName' or manifest JSON in Notes" }
         $manifest = Convert-JsonOrSkip $manifestNotes 'SSH Bitwarden manifest item notes must contain manifest JSON'
     }
-    if ((Get-Prop $manifest 'keys' $null) -isnot [pscustomobject] -or (Get-Prop $manifest 'hosts' $null) -isnot [pscustomobject]) {
+    # The [pscustomobject] accelerator tests PSObject wrappers, not JSON objects.
+    # Inspect properties directly so function output cannot unwrap array values.
+    if ($manifest -isnot [System.Management.Automation.PSCustomObject] -or
+        $manifest.keys -isnot [System.Management.Automation.PSCustomObject] -or
+        $manifest.hosts -isnot [System.Management.Automation.PSCustomObject]) {
         Stop-OrSkip 'SSH Bitwarden manifest must contain object keys and hosts'
     }
 
