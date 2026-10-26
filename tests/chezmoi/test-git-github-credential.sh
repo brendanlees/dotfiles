@@ -39,7 +39,9 @@ if [[ "$username" != fixture-user ]]; then
   exit 1
 fi
 
-render /usr/bin:/bin "$tmpdir/without-gh"
+# CI runners ship gh in /usr/bin, so hide every system tool from this render.
+mkdir -p "$tmpdir/no-tools"
+render "$tmpdir/no-tools" "$tmpdir/without-gh"
 if git config --file "$tmpdir/without-gh" --get-all credential.https://github.com.helper >/dev/null; then
   echo 'GitHub credential helper rendered without gh installed' >&2
   exit 1
