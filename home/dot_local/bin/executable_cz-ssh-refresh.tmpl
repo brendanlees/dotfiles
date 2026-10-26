@@ -312,8 +312,31 @@ if ! manifest_item_json=$(bw get item "$manifest_item" 2>/dev/null); then
   die_or_skip "unable to read SSH Bitwarden manifest item '$manifest_item'"
 fi
 
-if ! manifest_json=$(jq -er '.notes | fromjson' <<< "$manifest_item_json" 2>/dev/null); then
-  die_or_skip "SSH Bitwarden manifest item notes must contain manifest JSON"
+# Prefer the named attachment; Notes remain compatible with older manifests.
+# Once an attachment exists, a failure must not silently load stale Notes.
+manifest_attachment_name="bw-ssh-config.json"
+if ! manifest_attachments=$(jq -ce --arg name "$manifest_attachment_name" \
+  '[.attachments[]? | select(.fileName == $name)]' <<< "$manifest_item_json" 2>/dev/null); then
+  die_or_skip "unable to parse SSH Bitwarden manifest attachments"
+fi
+attachment_count=$(jq 'length' <<< "$manifest_attachments")
+if ((attachment_count > 1)); then
+  die_or_skip "multiple '$manifest_attachment_name' attachments found; keep exactly one"
+elif ((attachment_count == 1)); then
+  if ! manifest_id=$(jq -er '.id | select(type == "string" and length > 0)' <<< "$manifest_item_json" 2>/dev/null) ||
+    ! attachment_id=$(jq -er '.[0].id | select(type == "string" and length > 0)' <<< "$manifest_attachments" 2>/dev/null); then
+    die_or_skip "SSH Bitwarden manifest attachment requires item and attachment IDs"
+  fi
+  info "reading SSH manifest attachment '$manifest_attachment_name'"
+  if ! manifest_json=$(bw get attachment "$attachment_id" --itemid "$manifest_id" --raw 2>/dev/null); then
+    die_or_skip "unable to read SSH manifest attachment '$manifest_attachment_name'"
+  fi
+  if ! manifest_json=$(jq -cse 'if length == 1 then .[0] else error("expected one JSON value") end' \
+    <<< "$manifest_json" 2>/dev/null); then
+    die_or_skip "SSH manifest attachment '$manifest_attachment_name' must contain valid JSON"
+  fi
+elif ! manifest_json=$(jq -er '.notes | fromjson' <<< "$manifest_item_json" 2>/dev/null); then
+  die_or_skip "SSH Bitwarden manifest item needs '$manifest_attachment_name' or manifest JSON in Notes"
 fi
 
 if ! jq -e '(.keys | type == "object") and (.hosts | type == "object")' <<< "$manifest_json" >/dev/null; then
