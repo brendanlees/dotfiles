@@ -25,7 +25,7 @@ args = sys.argv[1:]
 with (root / "calls").open("a") as f:
     f.write(json.dumps(args) + "\n")
 path = root / "bar.json"
-state = json.loads(path.read_text()) if path.exists() else {"spotify": {}, "showy_quota.trigger": {}}
+state = json.loads(path.read_text()) if path.exists() else {"spotify": {}, "splashbar": {}, "showy_quota.trigger": {}}
 if args[:2] == ["--query", "bar"]:
     print(json.dumps({"items": list(state)}))
 elif args[:1] == ["--query"]:
@@ -49,8 +49,10 @@ else:
                 elif name in state:
                     state[name].update(dict(v.split("=", 1) for v in values[1:] if "=" in v))
         elif command == "--reorder":
-            state = {**{k: v for k, v in state.items() if k not in values},
-                     **{k: state[k] for k in values if k in state}}
+            # SketchyBar swaps only the specified slots, preserving other items.
+            slots = iter(values)
+            order = [next(slots) if key in values else key for key in state]
+            state = {key: state[key] for key in order}
     path.write_text(json.dumps(state))
 PY
 cat >"$TMP/bin/aerospace" <<'SH'
@@ -92,7 +94,7 @@ cat >"$XDG_CACHE_HOME/showy-quota/usage.json" <<'JSON'
 JSON
 cp "$XDG_CACHE_HOME/showy-quota/usage.json" "$TMP/subscribed-usage.json"
 # A warm upgrade removes the former OpenRouter row and the separate Codex column.
-printf '%s\n' '{"spotify":{},"showy_quota.trigger":{},"showy_quota.codex.slot":{},"showy_quota.openrouter.icon":{},"showy_quota.openrouter.balance":{},"showy_quota_bracket":{}}' >"$TMP/bar.json"
+printf '%s\n' '{"spotify":{},"splashbar":{},"showy_quota.trigger":{},"showy_quota.codex.slot":{},"showy_quota.openrouter.icon":{},"showy_quota.openrouter.balance":{},"showy_quota_bracket":{}}' >"$TMP/bar.json"
 : >"$TMP/calls"
 printf 'Dia\n' >"$TMP/front"
 
@@ -128,6 +130,10 @@ assert [name for name in state if name.endswith(".slot")] == ["showy_quota.claud
 order = list(state)
 assert order.index("showy_quota.codex.primary") < order.index("showy_quota.claude.slot")
 assert order.index("showy_quota.codex.icon") < order.index("showy_quota.claude.icon")
+# Creation order is reversed on the right: robot, stats, Spotify.
+assert order.index("splashbar") == order.index("showy_quota.claude.icon") + 1, order
+assert order.index("spotify") < order.index("showy_quota.trigger"), order
+
 PYTEST
 
 # Warm refreshes publish just one final layout, without remove/recreate or a competing renderer.
@@ -268,6 +274,9 @@ labels = [v.get("label", "") for k, v in state.items() if k.startswith("quota_de
 assert any(label.startswith("5h  ·  100% left") for label in labels), labels
 assert any(label.startswith("7d  ·  100% left") for label in labels), labels
 assert "Credits  ·  $11.14" in labels
+# A provider removal/re-addition must not move the robot back across the stats.
+order = list(state)
+assert order.index("splashbar") == order.index("showy_quota.claude.icon") + 1, order
 PYTEST
 "$CONFIG_DIR/plugins/quota.sh" toggle
 
