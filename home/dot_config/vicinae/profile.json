@@ -895,7 +895,7 @@
         }
       }
     },
-    "store.raycast.ableton-live": {
+    "@dch09/store.raycast.ableton-live": {
       "entrypoints": {
         "search-ableton-live-projects.command": {
           "alias": "abl s",
@@ -903,7 +903,7 @@
         }
       }
     },
-    "store.raycast.aerospace": {
+    "@limonkufu/store.raycast.aerospace": {
       "entrypoints": {
         "goToWorkspace": {
           "enabled": true
@@ -920,7 +920,7 @@
         }
       }
     },
-    "store.raycast.amphetamine": {
+    "@gstvds/store.raycast.amphetamine": {
       "entrypoints": {
         "amp-duration": {
           "enabled": false
@@ -943,14 +943,14 @@
         }
       }
     },
-    "store.raycast.appcleaner": {
+    "@dziad/store.raycast.appcleaner": {
       "entrypoints": {
         "uninstall": {
           "enabled": true
         }
       }
     },
-    "store.raycast.apple-reminders": {
+    "@thomaslombart/store.raycast.apple-reminders": {
       "entrypoints": {
         "create-reminder": {
           "alias": "rem n",
@@ -984,7 +984,7 @@
         }
       }
     },
-    "store.raycast.audio-device": {
+    "@benvp/store.raycast.audio-device": {
       "entrypoints": {
         "auto-switch-input": {
           "enabled": true
@@ -1028,7 +1028,7 @@
         }
       }
     },
-    "store.raycast.beat-per-minute": {
+    "@pernielsentikaer/store.raycast.beat-per-minute": {
       "entrypoints": {
         "calculate-bpm": {
           "alias": "bpm",
@@ -1036,7 +1036,7 @@
         }
       }
     },
-    "store.raycast.bitwarden": {
+    "@jomifepe/store.raycast.bitwarden": {
       "entrypoints": {
         "authenticator": {
           "enabled": true
@@ -1080,7 +1080,7 @@
         }
       }
     },
-    "store.raycast.brew": {
+    "@nhojb/store.raycast.brew": {
       "entrypoints": {
         "adopt-apps": {
           "enabled": true
@@ -1121,7 +1121,7 @@
         }
       }
     },
-    "store.raycast.browser-bookmarks": {
+    "@thomaslombart/store.raycast.browser-bookmarks": {
       "entrypoints": {
         "index": {
           "alias": "ff bk",
@@ -1129,7 +1129,7 @@
         }
       }
     },
-    "store.raycast.can-i-use": {
+    "@thomaslombart/store.raycast.can-i-use": {
       "entrypoints": {
         "index": {
           "alias": "cani",
@@ -1137,7 +1137,7 @@
         }
       }
     },
-    "store.raycast.change-case": {
+    "@erics118/store.raycast.change-case": {
       "entrypoints": {
         "change-case": {
           "alias": "cc",
@@ -1208,7 +1208,7 @@
         }
       }
     },
-    "store.raycast.chatgpt": {
+    "@abielzulio/store.raycast.chatgpt": {
       "entrypoints": {
         "ask": {
           "alias": "gpt q",
@@ -1245,7 +1245,7 @@
         }
       }
     },
-    "store.raycast.cheatsheets": {
+    "@destiner/store.raycast.cheatsheets": {
       "entrypoints": {
         "show-cheatsheets": {
           "alias": "cheat ls",
@@ -1253,7 +1253,7 @@
         }
       }
     },
-    "store.raycast.claude": {
+    "@florisdobber/store.raycast.claude": {
       "entrypoints": {
         "ask": {
           "alias": "cld q",
@@ -1278,7 +1278,7 @@
         }
       }
     },
-    "store.raycast.cloudflare": {
+    "@destiner/store.raycast.cloudflare": {
       "entrypoints": {
         "dns-toolkit": {
           "enabled": true
@@ -1324,7 +1324,7 @@
         }
       }
     },
-    "store.raycast.codesnap": {
+    "@Mokkapps/store.raycast.codesnap": {
       "entrypoints": {
         "index": {
           "alias": "codesnap",
@@ -1332,7 +1332,7 @@
         }
       }
     },
-    "store.raycast.coingecko": {
+    "@destiner/store.raycast.coingecko": {
       "entrypoints": {
         "calculate": {
           "alias": "coin calc",
@@ -1344,7 +1344,7 @@
         }
       }
     },
-    "store.raycast.color-picker": {
+    "@thomas/store.raycast.color-picker": {
       "entrypoints": {
         "color-names": {
           "enabled": true
@@ -1374,7 +1374,7 @@
         }
       }
     },
-    "store.raycast.common-directory": {
+    "@koinzhang/store.raycast.common-directory": {
       "entrypoints": {
         "add-common-directory": {
           "alias": "dir-a",
@@ -1382,7 +1382,7 @@
         }
       }
     },
-    "store.raycast.copy-path": {
+    "@koinzhang/store.raycast.copy-path": {
       "entrypoints": {
         "copy-path": {
           "alias": "path cp",
@@ -1390,7 +1390,7 @@
         }
       }
     },
-    "store.raycast.cron-description": {
+    "@niall-maloney/store.raycast.cron-description": {
       "entrypoints": {
         "index": {
           "alias": "cron",
@@ -1398,7 +1398,7 @@
         }
       }
     },
-    "store.raycast.date-format-converter": {
+    "@yangxy/store.raycast.date-format-converter": {
       "entrypoints": {
         "index": {
           "enabled": false
@@ -1408,7 +1408,7 @@
         }
       }
     },
-    "store.raycast.devutils": {
+    "@vietanhlehuu/store.raycast.devutils": {
       "entrypoints": {
         "auto": {
           "enabled": false
@@ -1535,7 +1535,7 @@
         }
       }
     },
-    "store.raycast.dig": {
+    "@danielbahl/store.raycast.dig": {
       "entrypoints": {
         "index": {
           "alias": "dns s",
@@ -1543,7 +1543,7 @@
         }
       }
     },
-    "store.raycast.dockerhub": {
+    "@k8scat/store.raycast.dockerhub": {
       "entrypoints": {
         "manage-access-token": {
           "enabled": false
@@ -1563,7 +1563,7 @@
         }
       }
     },
-    "store.raycast.downloads-manager": {
+    "@thomas/store.raycast.downloads-manager": {
       "entrypoints": {
         "copy-latest-download": {
           "enabled": true
@@ -1588,7 +1588,7 @@
         }
       }
     },
-    "store.raycast.dropover": {
+    "@jag-k/store.raycast.dropover": {
       "entrypoints": {
         "add-from-clipboard": {
           "enabled": false
@@ -1600,7 +1600,7 @@
         }
       }
     },
-    "store.raycast.ente-auth": {
+    "@chkpwd/store.raycast.ente-auth": {
       "entrypoints": {
         "delete": {
           "enabled": false
@@ -1617,7 +1617,7 @@
         }
       }
     },
-    "store.raycast.figma-files-raycast-extension": {
+    "@michaelschultz/store.raycast.figma-files-raycast-extension": {
       "entrypoints": {
         "index": {
           "enabled": false
@@ -1627,7 +1627,7 @@
         }
       }
     },
-    "store.raycast.flush-dns": {
+    "@rasmusbe/store.raycast.flush-dns": {
       "entrypoints": {
         "index": {
           "alias": "dns clr",
@@ -1635,7 +1635,7 @@
         }
       }
     },
-    "store.raycast.font-awesome": {
+    "@dutzi/store.raycast.font-awesome": {
       "entrypoints": {
         "index": {
           "alias": "fa",
@@ -1643,7 +1643,7 @@
         }
       }
     },
-    "store.raycast.get-ssh-key": {
+    "@Theon/store.raycast.get-ssh-key": {
       "entrypoints": {
         "index": {
           "alias": "ssh cp",
@@ -1655,7 +1655,7 @@
         }
       }
     },
-    "store.raycast.github": {
+    "@thomaslombart/store.raycast.github": {
       "entrypoints": {
         "create-branch": {
           "enabled": false
@@ -1711,7 +1711,7 @@
         }
       }
     },
-    "store.raycast.github-gist": {
+    "@koinzhang/store.raycast.github-gist": {
       "entrypoints": {
         "create-gist": {
           "alias": "gi n",
@@ -1723,7 +1723,7 @@
         }
       }
     },
-    "store.raycast.google-fonts": {
+    "@GastroGeek/store.raycast.google-fonts": {
       "entrypoints": {
         "search-fonts": {
           "alias": "gfonts",
@@ -1731,7 +1731,7 @@
         }
       }
     },
-    "store.raycast.google-workspace": {
+    "@thomaslombart/store.raycast.google-workspace": {
       "entrypoints": {
         "create-google-document": {
           "enabled": true
@@ -1756,7 +1756,7 @@
         }
       }
     },
-    "store.raycast.homeassistant": {
+    "@tonka3000/store.raycast.homeassistant": {
       "entrypoints": {
         "assist": {
           "alias": "ha ass",
@@ -1875,7 +1875,7 @@
         }
       }
     },
-    "store.raycast.http-status-codes": {
+    "@Alex_/store.raycast.http-status-codes": {
       "entrypoints": {
         "index": {
           "alias": "http s",
@@ -1883,7 +1883,7 @@
         }
       }
     },
-    "store.raycast.iconify": {
+    "@destiner/store.raycast.iconify": {
       "entrypoints": {
         "search-icons": {
           "enabled": false
@@ -1893,14 +1893,14 @@
         }
       }
     },
-    "store.raycast.imessage-2fa": {
+    "@yuercl/store.raycast.imessage-2fa": {
       "entrypoints": {
         "index": {
           "enabled": true
         }
       }
     },
-    "store.raycast.karakeep": {
+    "@luolei/store.raycast.karakeep": {
       "entrypoints": {
         "backups": {
           "enabled": true
@@ -1940,7 +1940,7 @@
         }
       }
     },
-    "store.raycast.kill-process": {
+    "@rolandleth/store.raycast.kill-process": {
       "entrypoints": {
         "index": {
           "alias": "kill",
@@ -1948,7 +1948,7 @@
         }
       }
     },
-    "store.raycast.media-converter": {
+    "@leandro.maia/store.raycast.media-converter": {
       "entrypoints": {
         "convert": {
           "enabled": true
@@ -1973,7 +1973,7 @@
         }
       }
     },
-    "store.raycast.models-dev": {
+    "@carlesandres/store.raycast.models-dev": {
       "entrypoints": {
         "search-models": {
           "enabled": true
@@ -1983,7 +1983,7 @@
         }
       }
     },
-    "store.raycast.mullvad": {
+    "@0x46616c6b/store.raycast.mullvad": {
       "entrypoints": {
         "connect": {
           "enabled": true
@@ -2003,7 +2003,7 @@
         }
       }
     },
-    "store.raycast.myip": {
+    "@Kang/store.raycast.myip": {
       "entrypoints": {
         "index": {
           "alias": "ip",
@@ -2011,7 +2011,7 @@
         }
       }
     },
-    "store.raycast.obsidian": {
+    "@marcjulian/store.raycast.obsidian": {
       "entrypoints": {
         "appendTaskCommand": {
           "enabled": false
@@ -2055,7 +2055,7 @@
         }
       }
     },
-    "store.raycast.paperless-ngx": {
+    "@damdam/store.raycast.paperless-ngx": {
       "entrypoints": {
         "documentForm": {
           "enabled": false
@@ -2065,7 +2065,7 @@
         }
       }
     },
-    "store.raycast.parcel": {
+    "@marcmagn1/store.raycast.parcel": {
       "entrypoints": {
         "add-delivery": {
           "alias": "pcla",
@@ -2077,7 +2077,7 @@
         }
       }
     },
-    "store.raycast.pick-your-wallpaper": {
+    "@hugomarfani/store.raycast.pick-your-wallpaper": {
       "entrypoints": {
         "choose-wallpaper": {
           "alias": "wp",
@@ -2088,7 +2088,7 @@
         }
       }
     },
-    "store.raycast.prettier": {
+    "@lin/store.raycast.prettier": {
       "entrypoints": {
         "formatCSS": {
           "alias": "prtr css",
@@ -2112,7 +2112,7 @@
         }
       }
     },
-    "store.raycast.raycast-timezone-converter": {
+    "@joao.mainka/store.raycast.raycast-timezone-converter": {
       "entrypoints": {
         "index": {
           "alias": "time",
@@ -2120,7 +2120,7 @@
         }
       }
     },
-    "store.raycast.readwise": {
+    "@natterstefan/store.raycast.readwise": {
       "entrypoints": {
         "books": {
           "enabled": false
@@ -2142,7 +2142,7 @@
         }
       }
     },
-    "store.raycast.readwise-reader": {
+    "@zach/store.raycast.readwise-reader": {
       "entrypoints": {
         "list-documents": {
           "enabled": true
@@ -2185,7 +2185,7 @@
         }
       }
     },
-    "store.raycast.reclaim-ai": {
+    "@lightbody/store.raycast.reclaim-ai": {
       "entrypoints": {
         "list-tasks": {
           "enabled": false
@@ -2204,7 +2204,7 @@
         }
       }
     },
-    "store.raycast.regex-tester": {
+    "@allenan/store.raycast.regex-tester": {
       "entrypoints": {
         "index": {
           "alias": "regex",
@@ -2212,7 +2212,7 @@
         }
       }
     },
-    "store.raycast.ruler": {
+    "@anwarulislam/store.raycast.ruler": {
       "entrypoints": {
         "ruler": {
           "alias": "ruler",
@@ -2221,7 +2221,7 @@
         }
       }
     },
-    "store.raycast.script-commands": {
+    "@tholanda/store.raycast.script-commands": {
       "entrypoints": {
         "list": {
           "alias": "sh s",
@@ -2229,7 +2229,7 @@
         }
       }
     },
-    "store.raycast.sesh": {
+    "@joshmedeski/store.raycast.sesh": {
       "entrypoints": {
         "cmd-connect": {
           "enabled": true
@@ -2245,7 +2245,7 @@
         }
       }
     },
-    "store.raycast.single-disk-eject": {
+    "@johndturn/store.raycast.single-disk-eject": {
       "entrypoints": {
         "index": {
           "alias": "eject",
@@ -2253,7 +2253,7 @@
         }
       }
     },
-    "store.raycast.spotify-player": {
+    "@mattisssa/store.raycast.spotify-player": {
       "entrypoints": {
         "addPlayingSongToPlaylist": {
           "enabled": false
@@ -2369,7 +2369,7 @@
         }
       }
     },
-    "store.raycast.tailscale": {
+    "@samlinville/store.raycast.tailscale": {
       "entrypoints": {
         "account-switcher": {
           "alias": "ts sw",
@@ -2417,7 +2417,7 @@
         }
       }
     },
-    "store.raycast.timers": {
+    "@ThatNerd/store.raycast.timers": {
       "entrypoints": {
         "configureMenubarPresets": {
           "enabled": false
@@ -2483,21 +2483,21 @@
         }
       }
     },
-    "store.raycast.tldr": {
+    "@pomdtr/store.raycast.tldr": {
       "entrypoints": {
         "search": {
           "enabled": true
         }
       }
     },
-    "store.raycast.tmux-cheatsheet": {
+    "@alikhatibak/store.raycast.tmux-cheatsheet": {
       "entrypoints": {
         "tmux-cheatsheet": {
           "enabled": true
         }
       }
     },
-    "store.raycast.toothpick": {
+    "@VladCuciureanu/store.raycast.toothpick": {
       "entrypoints": {
         "connect-device": {
           "enabled": false
@@ -2559,7 +2559,7 @@
         }
       }
     },
-    "store.raycast.translate": {
+    "@gebeto/store.raycast.translate": {
       "entrypoints": {
         "instant-translate-copy": {
           "enabled": true
@@ -2586,7 +2586,7 @@
         }
       }
     },
-    "store.raycast.typewhisper": {
+    "@SeoFood/store.raycast.typewhisper": {
       "entrypoints": {
         "add-dictionary-term": {
           "enabled": true
@@ -2623,14 +2623,14 @@
         }
       }
     },
-    "store.raycast.video-downloader": {
+    "@vimtor/store.raycast.video-downloader": {
       "entrypoints": {
         "index": {
           "enabled": true
         }
       }
     },
-    "store.raycast.vim-bro": {
+    "@ajaypremshankar/store.raycast.vim-bro": {
       "entrypoints": {
         "index": {
           "alias": "vim",
@@ -2638,7 +2638,7 @@
         }
       }
     },
-    "store.raycast.wallhaven": {
+    "@devadathanmb/store.raycast.wallhaven": {
       "entrypoints": {
         "my-collections": {
           "alias": "wh c",
@@ -2657,7 +2657,7 @@
         }
       }
     },
-    "store.raycast.web-converter": {
+    "@nielsvanrijn/store.raycast.web-converter": {
       "entrypoints": {
         "convert": {
           "alias": "con",

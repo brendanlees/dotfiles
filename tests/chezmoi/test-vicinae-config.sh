@@ -20,6 +20,26 @@ inventory = json.loads((config / "extensions.json").read_text())
 names = {item["name"] for item in inventory}
 assert len(names) == len(inventory)
 assert all(set(item) == {"name", "author"} for item in inventory)
+# Provider IDs use the bundle's manifest author, not its directory or Store publisher.
+# These organization-owned extensions have different authors, verified against
+# registered Vicinae providers and Reclaim's public package.json (not installed).
+manifest_authors = {
+    "apple-reminders": "thomaslombart",
+    "browser-bookmarks": "thomaslombart",
+    "devutils": "vietanhlehuu",
+    "github": "thomaslombart",
+    "google-workspace": "thomaslombart",
+    "reclaim-ai": "lightbody",
+    "tailscale": "samlinville",
+}
+expected_extension_ids = {
+    f"@{manifest_authors.get(item['name'], item['author'])}/store.raycast.{item['name']}"
+    for item in inventory
+}
+actual_extension_ids = {key for key in profile["providers"] if "store.raycast." in key}
+assert actual_extension_ids == expected_extension_ids, (
+    "profile must target full runtime provider IDs, including the manifest author"
+)
 assert set(profile) == {"$schema", "global_shortcuts", "launcher_window", "providers"}
 # Qt maps super to the physical Control key on macOS.
 assert profile["global_shortcuts"] == {"toggle": "super+SPACE"}
@@ -28,8 +48,6 @@ assert not list(config.glob("*settings.json*")), "do not capture local settings 
 shortcuts = [profile["global_shortcuts"]["toggle"]]
 for provider, data in profile["providers"].items():
     assert set(data) == {"entrypoints"}, "extension preferences must remain local"
-    if provider.startswith("store.raycast."):
-        assert provider.removeprefix("store.raycast.") in names
     for item in data["entrypoints"].values():
         assert set(item) <= {"alias", "shortcut", "enabled"}
         assert isinstance(item["enabled"], bool)
