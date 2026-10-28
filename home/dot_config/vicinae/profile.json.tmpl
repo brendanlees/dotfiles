@@ -1,7 +1,11 @@
+{{- $shortcutEntries := dict -}}
+{{- range (includeTemplate "vicinae-shortcuts.json.tmpl" . | fromJson) -}}
+{{- $_ := set $shortcutEntries .id (omit . "id" "name" "url" "icon" "app") -}}
+{{- end -}}
 {
   "$schema": "https://vicinae.com/schemas/config.json",
   "global_shortcuts": {
-    "toggle": "super+SPACE"
+    "toggle": "control+SPACE"
   },
   "launcher_window": {
     "compact_mode": {
@@ -838,7 +842,8 @@
         "volume-up": {
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "power": {
       "entrypoints": {
@@ -893,6 +898,11 @@
           "enabled": false,
           "shortcut": "super+control+alt+shift+S"
         }
+      },
+      "enabled": false,
+      "preferences": {
+        "enabled": false,
+        "undo": false
       }
     },
     "@dch09/store.raycast.ableton-live": {
@@ -901,7 +911,8 @@
           "alias": "abl s",
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@limonkufu/store.raycast.aerospace": {
       "entrypoints": {
@@ -936,7 +947,7 @@
           "shortcut": "super+shift+A"
         },
         "quick-start": {
-          "enabled": true
+          "enabled": false
         },
         "remaining": {
           "enabled": false
@@ -948,6 +959,9 @@
         "uninstall": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "uninstaller_app": "com.alienator88.Pearcleaner"
       }
     },
     "@thomaslombart/store.raycast.apple-reminders": {
@@ -982,7 +996,8 @@
           "alias": "rem a",
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@benvp/store.raycast.audio-device": {
       "entrypoints": {
@@ -1026,7 +1041,8 @@
         "use-combo3": {
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@pernielsentikaer/store.raycast.beat-per-minute": {
       "entrypoints": {
@@ -1034,7 +1050,8 @@
           "alias": "bpm",
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@jomifepe/store.raycast.bitwarden": {
       "entrypoints": {
@@ -1119,7 +1136,8 @@
           "alias": "brew up",
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@thomaslombart/store.raycast.browser-bookmarks": {
       "entrypoints": {
@@ -1330,7 +1348,8 @@
           "alias": "codesnap",
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@destiner/store.raycast.coingecko": {
       "entrypoints": {
@@ -1342,7 +1361,8 @@
           "alias": "coin s",
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@thomas/store.raycast.color-picker": {
       "entrypoints": {
@@ -1378,7 +1398,7 @@
       "entrypoints": {
         "add-common-directory": {
           "alias": "dir-a",
-          "enabled": false
+          "enabled": true
         }
       }
     },
@@ -1406,6 +1426,23 @@
         "insert-natural-language-date": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "isoDate": true,
+        "isoDateTime": true,
+        "formatWithMillis": true,
+        "formatWithTimezone": true,
+        "isoFormat": true,
+        "utcIsoFormat": true,
+        "unixTimestamp": true,
+        "unixMillis": true,
+        "localizedShortDate": true,
+        "localizedShortDateTime": true,
+        "localizedFullDateTime": true,
+        "localizedLongDateTime": true,
+        "localizedTime": true,
+        "localizedSecondsTime": true,
+        "naturalLanguageDateFormat": "YYYY-MM-DD"
       }
     },
     "@vietanhlehuu/store.raycast.devutils": {
@@ -1533,7 +1570,8 @@
         "yaml2json": {
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@danielbahl/store.raycast.dig": {
       "entrypoints": {
@@ -1561,6 +1599,10 @@
         "search-repository": {
           "enabled": false
         }
+      },
+      "enabled": false,
+      "preferences": {
+        "socketPath": "/var/run/docker.sock"
       }
     },
     "@thomas/store.raycast.downloads-manager": {
@@ -1600,23 +1642,6 @@
         }
       }
     },
-    "@chkpwd/store.raycast.ente-auth": {
-      "entrypoints": {
-        "delete": {
-          "enabled": false
-        },
-        "export": {
-          "enabled": false
-        },
-        "import": {
-          "enabled": true
-        },
-        "index": {
-          "enabled": true,
-          "shortcut": "super+control+alt+O"
-        }
-      }
-    },
     "@michaelschultz/store.raycast.figma-files-raycast-extension": {
       "entrypoints": {
         "index": {
@@ -1625,7 +1650,8 @@
         "open-file-url-from-clipboard": {
           "enabled": false
         }
-      }
+      },
+      "enabled": false
     },
     "@rasmusbe/store.raycast.flush-dns": {
       "entrypoints": {
@@ -1641,7 +1667,8 @@
           "alias": "fa",
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@Theon/store.raycast.get-ssh-key": {
       "entrypoints": {
@@ -1709,6 +1736,13 @@
         "workflow-runs": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "vscodeBuild": "vscode",
+        "repositoryCloneProtocol": "https",
+        "isOpenInBrowser": false,
+        "includeTeamReviewRequests": true,
+        "repositoryFilterMode": "all"
       }
     },
     "@koinzhang/store.raycast.github-gist": {
@@ -1729,7 +1763,8 @@
           "alias": "gfonts",
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@thomaslombart/store.raycast.google-workspace": {
       "entrypoints": {
@@ -1754,7 +1789,8 @@
         "search-google-drive-files": {
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@tonka3000/store.raycast.homeassistant": {
       "entrypoints": {
@@ -1873,6 +1909,12 @@
         "zones": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "usePing": true,
+        "ignorecerts": false,
+        "showEntityId": false,
+        "camerarefreshinterval": "3000"
       }
     },
     "@Alex_/store.raycast.http-status-codes": {
@@ -1891,6 +1933,13 @@
         "view-icons": {
           "enabled": false
         }
+      },
+      "enabled": false,
+      "preferences": {
+        "primaryAction": "paste",
+        "iconColor": "currentColor",
+        "customColor": "#ffffff",
+        "iconNameFormat": "set-name:icon-name"
       }
     },
     "@yuercl/store.raycast.imessage-2fa": {
@@ -1898,6 +1947,15 @@
         "index": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "enabledSources": "imessage",
+        "emailSource": "applemail",
+        "defaultSource": "all",
+        "enableVerificationLinks": true,
+        "lookBackUnit": "MINUTES",
+        "lookBackAmount": "10",
+        "ignoreRead": false
       }
     },
     "@luolei/store.raycast.karakeep": {
@@ -1946,6 +2004,18 @@
           "alias": "kill",
           "enabled": true
         }
+      },
+      "preferences": {
+        "refreshDuration": "3000",
+        "shouldSearchInPaths": false,
+        "shouldSearchInPid": false,
+        "shouldPrioritizeAppsWhenFiltering": false,
+        "shouldShowPID": false,
+        "shouldShowPath": false,
+        "closeWindowAfterKill": true,
+        "clearSearchBarAfterKill": true,
+        "goToRootAfterKill": false,
+        "skipConfirmation": false
       }
     },
     "@leandro.maia/store.raycast.media-converter": {
@@ -2053,6 +2123,10 @@
           "alias": "ob bk",
           "enabled": false
         }
+      },
+      "enabled": false,
+      "preferences": {
+        "configFileName": ".obsidian"
       }
     },
     "@damdam/store.raycast.paperless-ngx": {
@@ -2086,6 +2160,9 @@
         "set-as-wallpaper": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "wallpaperFolder": {{ printf "%s/Pictures/Wallpapers" .chezmoi.homeDir | toJson }}
       }
     },
     "@lin/store.raycast.prettier": {
@@ -2140,6 +2217,9 @@
         "tags": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "pageSize": "500"
       }
     },
     "@zach/store.raycast.readwise-reader": {
@@ -2219,7 +2299,8 @@
           "enabled": true,
           "shortcut": "super+control+alt+R"
         }
-      }
+      },
+      "enabled": false
     },
     "@tholanda/store.raycast.script-commands": {
       "entrypoints": {
@@ -2227,6 +2308,10 @@
           "alias": "sh s",
           "enabled": true
         }
+      },
+      "enabled": false,
+      "preferences": {
+        "folderPath": {{ printf "%s/raycast/script-commands" .chezmoi.homeDir | toJson }}
       }
     },
     "@joshmedeski/store.raycast.sesh": {
@@ -2243,7 +2328,8 @@
         "cmd-search": {
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@johndturn/store.raycast.single-disk-eject": {
       "entrypoints": {
@@ -2376,7 +2462,7 @@
           "enabled": true
         },
         "admin": {
-          "alias": "ts ,",
+          "alias": "ts ",
           "enabled": true
         },
         "connect": {
@@ -2385,7 +2471,7 @@
         },
         "devices": {
           "alias": "ts ls",
-          "enabled": true
+          "enabled": false
         },
         "disconnect": {
           "alias": "tsd",
@@ -2397,23 +2483,23 @@
         },
         "my-devices": {
           "alias": "ts n",
-          "enabled": true
+          "enabled": false
         },
         "netcheck": {
-          "enabled": true
+          "enabled": false
         },
         "services": {
-          "enabled": true
+          "enabled": false
         },
         "status": {
           "alias": "tss",
           "enabled": true
         },
         "toggle": {
-          "enabled": true
+          "enabled": false
         },
         "toggle-dns": {
-          "enabled": true
+          "enabled": false
         }
       }
     },
@@ -2481,6 +2567,17 @@
           "alias": "tms",
           "enabled": true
         }
+      },
+      "preferences": {
+        "selectedSound": "Submarine",
+        "volumeSetting": "1",
+        "ringContinuously": true,
+        "showMenuBarIconWhen": "always",
+        "showTitleInMenuBar": true,
+        "copyOnSwStop": false,
+        "closeWindowOnTimerStart": false,
+        "customTimerFormBypass": false,
+        "newTimerInputOrder": "Hours , Minutes, Seconds"
       }
     },
     "@pomdtr/store.raycast.tldr": {
@@ -2488,7 +2585,8 @@
         "search": {
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@alikhatibak/store.raycast.tmux-cheatsheet": {
       "entrypoints": {
@@ -2557,6 +2655,10 @@
         "view-mapped-devices": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "fuzzyRatio": "98",
+        "bluetoothBackend": "applescript"
       }
     },
     "@gebeto/store.raycast.translate": {
@@ -2584,7 +2686,8 @@
           "alias": "translate f",
           "enabled": true
         }
-      }
+      },
+      "enabled": false
     },
     "@SeoFood/store.raycast.typewhisper": {
       "entrypoints": {
@@ -2628,6 +2731,15 @@
         "index": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "downloadPath": {{ printf "%s/Downloads" .chezmoi.homeDir | toJson }},
+        "autoLoadUrlFromClipboard": false,
+        "autoLoadUrlFromSelectedText": false,
+        "enableBrowserExtensionSupport": false,
+        "forceIpv4": false,
+        "cookiesFromBrowser": "none",
+        "fastRemux": true
       }
     },
     "@ajaypremshankar/store.raycast.vim-bro": {
@@ -2670,7 +2782,60 @@
         "switch-windows": {
           "enabled": true
         }
+      },
+      "enabled": false
+    },
+    "@chkpwd/store.raycast.ente-auth": {
+      "preferences": {
+        "primaryAction": "paste",
+        "deleteExport": true
+      },
+      "entrypoints": {
+        "index": {
+          "shortcut": "super+control+alt+O"
+        }
       }
+    },
+    "developer": {
+      "enabled": false,
+      "entrypoints": {
+        "create": {
+          "enabled": true
+        }
+      }
+    },
+    "system": {
+      "entrypoints": {
+        "browse-apps": {
+          "enabled": true
+        },
+        "run": {
+          "enabled": true
+        }
+      }
+    },
+    "scripts": {
+      "preferences": {
+        "customDirs": [
+          {{ printf "%s/.config/kanata/scripts/raycast" .chezmoi.homeDir | toJson }}
+        ]
+      }
+    },
+    "shortcuts": {
+      "entrypoints": {{ $shortcutEntries | toPrettyJson }}
     }
+  },
+  "font": {
+    "normal": {
+      "family": ".AppleSystemUIFont"
+    }
+  },
+  "theme": {
+    "dark": {
+      "name": "vicinae-dark"
+    }
+  },
+  "telemetry": {
+    "system_info": false
   }
 }

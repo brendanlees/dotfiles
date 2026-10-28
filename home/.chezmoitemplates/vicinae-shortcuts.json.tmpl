@@ -1,0 +1,339 @@
+[
+  {
+    "id": "sct-e3ab9b3563ba",
+    "name": "Downloads",
+    "url": {{ printf "%s/Downloads" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "com.apple.finder",
+    "alias": "dwn"
+  },
+  {
+    "id": "sct-b1f9e3905a4b",
+    "name": "Code",
+    "url": {{ printf "%s/Code" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "alias": "cd"
+  },
+  {
+    "id": "sct-a5057fc9b753",
+    "name": "Desktop",
+    "url": {{ printf "%s/Desktop" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "dsk"
+  },
+  {
+    "id": "sct-e679020b771d",
+    "name": "Work",
+    "url": {{ printf "%s/Documents/Work" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "wrk"
+  },
+  {
+    "id": "sct-dbb9fb60c7b5",
+    "name": "Search App Store",
+    "url": "itms-apps://itunes.apple.com/search?term={App}",
+    "icon": "icon://bundle//System/Applications/App Store.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "app s"
+  },
+  {
+    "id": "sct-3bbea66ae67d",
+    "name": "Home",
+    "url": {{ printf "%s/" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "~"
+  },
+  {
+    "id": "sct-337e66b36c60",
+    "name": "Applications",
+    "url": "/Applications",
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "appl"
+  },
+  {
+    "id": "sct-1b3dd16a51b6",
+    "name": "Receipts",
+    "url": {{ printf "%s/Documents/Finance/Receipts" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "rcpts"
+  },
+  {
+    "id": "sct-4193ee444b6f",
+    "name": "Projects (Work)",
+    "url": {{ printf "%s/Documents/Work/[1] - Projects" .chezmoi.homeDir | toJson }},
+    "icon": "icon://omnicast/link",
+    "app": "default",
+    "enabled": true,
+    "alias": "pfw"
+  },
+  {
+    "id": "sct-d896f6a95c46",
+    "name": "Search Artist on Spotify",
+    "url": "https://open.spotify.com/search/artist:{artistquery}",
+    "icon": "icon://favicon/open.spotify.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "sp as"
+  },
+  {
+    "id": "sct-fc2236734dce",
+    "name": "Projects (Personal)",
+    "url": {{ printf "%s/Downloads/[1] - Projects" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "pf"
+  },
+  {
+    "id": "sct-0f39c8fc83d6",
+    "name": "White Sites",
+    "url": {{ printf "%s/Documents/Work/[4] - Archive/[ freelance ]" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "ws"
+  },
+  {
+    "id": "sct-77fc8e8817f1",
+    "name": "WP Hive",
+    "url": "https://wphive.com/plugin-search/?search={argument name=\"Argument\"}",
+    "icon": "icon://favicon/wphive.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": false
+  },
+  {
+    "id": "sct-150bd6f3ec68",
+    "name": "Wayback Machine",
+    "url": "https://web.archive.org/web/*/{Query}",
+    "icon": "icon://favicon/web.archive.org?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "way"
+  },
+  {
+    "id": "sct-1384196658ff",
+    "name": "Builtwith",
+    "url": "https://builtwith.com/?{Query}",
+    "icon": "icon://favicon/builtwith.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true
+  },
+  {
+    "id": "sct-2e90fb361dfd",
+    "name": "Ableton",
+    "url": {{ printf "%s/Music/Ableton/Projects" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "com.apple.finder",
+    "enabled": true,
+    "alias": "ablf"
+  },
+  {
+    "id": "sct-379c630f2584",
+    "name": "Logic",
+    "url": {{ printf "%s/Music/Logic" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "com.apple.finder",
+    "enabled": true,
+    "alias": "logf"
+  },
+  {
+    "id": "sct-893a82be26e5",
+    "name": "Music",
+    "url": {{ printf "%s/Music" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "mus"
+  },
+  {
+    "id": "sct-1fea69fb8949",
+    "name": "Documents",
+    "url": {{ printf "%s/Documents" .chezmoi.homeDir | toJson }},
+    "icon": "icon://bundle//System/Library/CoreServices/Finder.app",
+    "app": "default",
+    "enabled": true,
+    "alias": "doc"
+  },
+  {
+    "id": "sct-c5a1e1f86dc6",
+    "name": "Search Goodreads",
+    "url": "https://www.goodreads.com/search?q={Query}&qid=",
+    "icon": "icon://favicon/www.goodreads.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "gr"
+  },
+  {
+    "id": "sct-6adbe562f12b",
+    "name": "Search Github",
+    "url": "https://github.com/search?q={Query}&type=repositories",
+    "icon": "icon://favicon/github.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "ghs"
+  },
+  {
+    "id": "sct-08eadcddd113",
+    "name": "Search eBay",
+    "url": "https://www.ebay.com.au/sch/i.html?_nkw={Query}",
+    "icon": "icon://omnicast/cart?fill=primary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "eb"
+  },
+  {
+    "id": "sct-1186f2316f45",
+    "name": "Search GeneratePress docs",
+    "url": "https://docs.generatepress.com/?s={Query}",
+    "icon": "icon://favicon/docs.generatepress.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "gp"
+  },
+  {
+    "id": "sct-95fc79878ddf",
+    "name": "Search GenerateBlocks docs",
+    "url": "https://docs.generateblocks.com/?s={Query}",
+    "icon": "icon://favicon/docs.generateblocks.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "gb"
+  },
+  {
+    "id": "sct-7e82a09fa08e",
+    "name": "Google Translate",
+    "url": "https://translate.google.com/?sl={argument name=\"source language\" default=\"auto\"}&tl={argument name=\"target language\"}&text={word}&op=translate",
+    "icon": "icon://favicon/translate.google.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true
+  },
+  {
+    "id": "sct-450712f55db5",
+    "name": "Search reddit",
+    "url": "https://reddit.com/search?q={Query}&include_over_18=on&sort=relevance&t=all",
+    "icon": "icon://favicon/reddit.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "red s"
+  },
+  {
+    "id": "sct-d9ef4130fff6",
+    "name": "Search Etsy",
+    "url": "https://www.etsy.com/au/search?q={Query}",
+    "icon": "icon://favicon/www.etsy.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "et"
+  },
+  {
+    "id": "sct-8400c5e5c0e6",
+    "name": "Search Docker Hub",
+    "url": "https://hub.docker.com/search?q={Query}",
+    "icon": "icon://favicon/hub.docker.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "dckr"
+  },
+  {
+    "id": "sct-c9496a411b9e",
+    "name": "Search Bunnings",
+    "url": "https://www.bunnings.com.au/search/products?q={Query}",
+    "icon": "icon://omnicast/cart?fill=primary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "bngs"
+  },
+  {
+    "id": "sct-62a2972f11d3",
+    "name": "Search Amazon",
+    "url": "https://www.amazon.com.au/s?k={query}",
+    "icon": "icon://omnicast/cart?fill=primary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "amz"
+  },
+  {
+    "id": "sct-827176288b31",
+    "name": "Search Wikipedia",
+    "url": "https://en.wikipedia.org/w/index.php?search={Query}",
+    "icon": "icon://favicon/en.wikipedia.org?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "wiki"
+  },
+  {
+    "id": "sct-3392b581485e",
+    "name": "Search Giphy",
+    "url": "https://giphy.com/{Query}",
+    "icon": "icon://favicon/giphy.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "gif"
+  },
+  {
+    "id": "sct-76190f1ebfb5",
+    "name": "Search Stack Overflow",
+    "url": "https://stackoverflow.com/search?q={Query}",
+    "icon": "icon://favicon/stackoverflow.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "stack"
+  },
+  {
+    "id": "sct-196ebcceae26",
+    "name": "Search Google Maps",
+    "url": "https://www.google.com/maps/search/{Place}",
+    "icon": "icon://favicon/www.google.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "m"
+  },
+  {
+    "id": "sct-3706119b3c89",
+    "name": "Search YouTube",
+    "url": "https://www.youtube.com/results?search_query={Query}",
+    "icon": "icon://favicon/www.youtube.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "yt"
+  },
+  {
+    "id": "sct-fe9477ff6b41",
+    "name": "Search Google Images",
+    "url": "https://google.com/search?q={Query}&tbm=isch",
+    "icon": "icon://favicon/google.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "img"
+  },
+  {
+    "id": "sct-a2b42b8546fb",
+    "name": "Search Google",
+    "url": "https://google.com/search?q={Query}",
+    "icon": "icon://favicon/google.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "g"
+  },
+  {
+    "id": "sct-2f187c67ed59",
+    "name": "Search DuckDuckGo",
+    "url": "https://duckduckgo.com/?q={Query}",
+    "icon": "icon://favicon/duckduckgo.com?fallback=icon://omnicast/image?fill%3Dprimary-text",
+    "app": "default",
+    "enabled": true,
+    "alias": "s"
+  }
+]

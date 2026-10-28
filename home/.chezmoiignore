@@ -24,6 +24,7 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 
 {{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
 .config/vicinae
+.local/share/vicinae/shortcuts
 .finicky.js
 .config/spicetify
 .config/chezmoi-theme/obsidian.css

@@ -35,7 +35,7 @@ Strict JSON parsing excludes Zed's JSONC-compatible files:
 - `home/dot_config/zed/tasks.json`
 - Rendered `home/dot_config/zed/private_settings.json.tmpl`
 
-These files intentionally contain comments and trailing commas accepted by Zed. Other tracked and rendered `.json` files must parse as strict JSON.
+These files intentionally contain comments and trailing commas accepted by Zed. Chezmoi `modify_` files are programs, not static JSON; their owning tests must validate the resulting files through an actual chezmoi apply. Other tracked and rendered `.json` files must parse as strict JSON.
 
 ### updating ci dependencies
 

@@ -110,14 +110,16 @@ paths = [
         ["git", "ls-files", "--", "home/**/*.json", "agents/.skill-lock.json"],
         text=True,
     ).splitlines()
-    if path not in excluded_jsonc and Path(path).is_file()
+    if path not in excluded_jsonc
+    and not Path(path).name.startswith("modify_")
+    and Path(path).is_file()
 ]
 for path in paths:
     try:
         json.loads(Path(path).read_text())
     except json.JSONDecodeError as error:
         raise SystemExit(f"{path}: invalid JSON: {error}") from error
-print(f"validated {len(paths)} static JSON files; skipped 2 documented JSONC files")
+print(f"validated {len(paths)} static JSON files; skipped JSONC and chezmoi modify programs")
 PY
 
 if grep -nrE 'uses:[[:space:]]+[^[:space:]#]+@[^[:space:]#]+' .github/workflows \

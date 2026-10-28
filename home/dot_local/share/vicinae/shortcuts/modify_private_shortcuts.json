@@ -1,0 +1,44 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /* Only definitions are managed. Preserve existing IDs, history, and local-only shortcuts. */ -}}
+{{- $definitions := includeTemplate "vicinae-shortcuts.json.tmpl" . | fromJson -}}
+{{- $existing := list -}}
+{{- if (.chezmoi.stdin | trim) -}}
+{{- $existing = fromJson .chezmoi.stdin -}}
+{{- end -}}
+{{- $pending := dict -}}
+{{- range $definitions -}}
+{{- $_ := set $pending .id (pick . "id" "name" "url" "icon" "app") -}}
+{{- end -}}
+{{- $result := list -}}
+{{- range $existing -}}
+{{- $item := . -}}
+{{- if hasKey $pending .id -}}
+{{- range $key, $value := get $pending .id -}}
+{{- $_ := set $item $key $value -}}
+{{- end -}}
+{{- $_ := unset $pending .id -}}
+{{- else -}}
+{{- /* Do not silently duplicate or re-ID shortcuts made independently on another Mac. */ -}}
+{{- $url := .url -}}
+{{- if hasPrefix "~/" $url -}}
+{{- $url = printf "%s/%s" $.chezmoi.homeDir (trimPrefix "~/" $url) -}}
+{{- end -}}
+{{- range $definitions -}}
+{{- if eq .url $url -}}
+{{- fail (printf "Vicinae shortcut %q already exists under another ID; reconcile IDs before applying" .name) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- $result = append $result $item -}}
+{{- end -}}
+{{- range $definitions -}}
+{{- if hasKey $pending .id -}}
+{{- $item := get $pending .id -}}
+{{- $timestamp := now | unixEpoch | int64 -}}
+{{- $_ := set $item "createdAt" $timestamp -}}
+{{- $_ := set $item "updatedAt" $timestamp -}}
+{{- $_ := set $item "openCount" 0 -}}
+{{- $result = append $result $item -}}
+{{- end -}}
+{{- end -}}
+{{ $result | toPrettyJson }}
