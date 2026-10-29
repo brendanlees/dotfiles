@@ -274,10 +274,10 @@ def render_strip(config, metrics, items, mode, close_popup=False):
         if close_popup and name.endswith(".icon"):
             args += ["popup.drawing=off"]
     if rebuild:
-        # Right-side order is reversed; keep the robot just left of every quota row.
+        # Right-side order is reversed; keep the separate oMLX pill left of quotas.
         order = ["showy_quota.trigger", *names]
-        if "splashbar" in items:
-            order.append("splashbar")
+        if "omlx" in items:
+            order.append("omlx")
         args += ["--reorder", *order,
                  "--add", "bracket", "showy_quota_bracket", *names]
     args += [
