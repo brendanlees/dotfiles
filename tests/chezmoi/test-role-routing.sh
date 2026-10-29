@@ -66,8 +66,8 @@ done
 render_ignore personal-headless '{"personal":true,"work":false,"homelab":false,"headless":true,"chezmoi":{"os":"darwin"}}'
 assert_has personal-headless '.finicky.js'
 
-# This migration contains macOS application IDs and personal launcher shortcuts.
-for target in '.config/vicinae' '.local/share/vicinae/shortcuts'; do
+# Vicinae's profile, shortcuts and generated theme share the personal macOS scope.
+for target in '.config/vicinae' '.local/share/vicinae/shortcuts' '.local/share/vicinae/themes'; do
   assert_lacks personal "$target"
   for scope in personal-headless work homelab ephemeral windows; do
     assert_has "$scope" "$target"

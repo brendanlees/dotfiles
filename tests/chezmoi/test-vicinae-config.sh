@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import zipfile
 
 sys.dont_write_bytecode = True
@@ -25,7 +26,7 @@ def without_vault(temp):
     bw.chmod(0o700)
     return {**os.environ, "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"]}
 
-def render(template, home, data=None):
+def render(template, home, data=None, *, parse=json.loads):
     with tempfile.TemporaryDirectory() as temporary:
         temp = Path(temporary)
         (temp / "config.toml").write_text("[data]\n")
@@ -34,9 +35,9 @@ def render(template, home, data=None):
             "--config", str(temp / "config.toml"),
             "--persistent-state", str(temp / "state.boltdb"),
             "--override-data", json.dumps({"chezmoi": {"homeDir": home}, **(data or {})}),
-        ], input=template.read_text(), check=True, capture_output=True, text=True,
-           env=without_vault(temp))
-        return json.loads(result.stdout)
+        ], input=template.read_text() if isinstance(template, Path) else template,
+           check=True, capture_output=True, text=True, env=without_vault(temp))
+        return parse(result.stdout)
 
 profile = render(config / "profile.json.tmpl", "/Users/alice")
 definitions = render(root / "home/.chezmoitemplates/vicinae-shortcuts.json.tmpl", "/Users/alice")
@@ -70,6 +71,64 @@ assert set(profile) == {
 # The current GUI choice is Command+Space (Qt calls Command "control" on macOS).
 assert profile["global_shortcuts"] == {"toggle": "control+SPACE"}
 assert profile["telemetry"]["system_info"] is False
+assert profile["theme"] == {
+    "dark": {"name": "chezmoi"},
+    "light": {"name": "chezmoi"},
+}, "both system appearances must follow the active dark dotfiles palette"
+
+themes = render("{{ .themes | toJson }}", "/Users/alice")
+theme_template = root / "home/dot_local/share/vicinae/themes/chezmoi.toml.tmpl"
+
+def check_theme(theme, name, palette):
+    assert theme["meta"]["name"] == f"Chezmoi · {name}"
+    assert theme["meta"]["variant"] == "dark"
+    assert theme["meta"]["inherits"] == "vicinae-dark"
+    colors = theme["colors"]
+    assert colors["core"] == {
+        "background": palette["bg"], "foreground": palette["fg"],
+        "secondary_background": palette["surface"], "border": palette["border"],
+        "accent": palette["accent"], "accent_foreground": palette["bg"],
+    }
+    # Cover semantic meaning and readable selected text, not just valid hex values.
+    for key, token in {"muted": "muted", "placeholder": "comment",
+                       "danger": "error", "success": "success"}.items():
+        assert colors["text"][key] == palette[token]
+    assert colors["text"]["selection"] == {
+        "background": palette["accent"], "foreground": palette["bg"],
+    }
+    assert colors["list"]["item"]["selection"] == {
+        "background": palette["surface_alt"], "foreground": palette["fg"],
+        "secondary_background": palette["surface_alt"], "secondary_foreground": palette["muted"],
+    }
+    for key, token in {"blue": "primary", "green": "success", "red": "error",
+                       "yellow": "warn", "cyan": "info", "orange": "orange",
+                       "magenta": "secondary", "purple": "secondary"}.items():
+        assert colors["accents"][key] == palette[token]
+    assert colors["input"] == {
+        "border": palette["border"], "border_focus": palette["accent"],
+        "border_error": palette["error"],
+    }
+
+    # Component overrides must not retain hardcoded Vicinae default colors.
+    def check_colors(table):
+        for value in table.values():
+            if isinstance(value, dict):
+                check_colors(value)
+            else:
+                assert value in palette.values(), value
+    check_colors(colors)
+
+for name, theme in themes.items():
+    rendered = render(theme_template, "/Users/alice", {"theme": name}, parse=tomllib.loads)
+    check_theme(rendered, name, theme["palette"])
+
+# Distinct sentinel colors prove token routing even where real palettes share values.
+palette = {key: f"#{index:06x}" for index, key in enumerate(themes["moonfly"]["palette"], 1)}
+rendered = render(theme_template, "/Users/alice", {
+    "theme": "fixture", "themes": {"fixture": {"palette": palette}},
+}, parse=tomllib.loads)
+check_theme(rendered, "fixture", palette)
+
 assert [p.name for p in config.glob("*settings.json*")] == ["create_private_settings.json"]
 assert json.loads((config / "create_private_settings.json").read_text()) == {
     "imports": ["./profile.json"],
@@ -190,7 +249,9 @@ with tempfile.TemporaryDirectory() as temporary:
     partials.mkdir()
     shutil.copy(root / "home/.chezmoitemplates/vicinae-shortcuts.json.tmpl", partials)
     shutil.copytree(root / "home/dot_local/share/vicinae", fixture / "dot_local/share/vicinae")
-    (tmp / "config.toml").write_text("[data]\n")
+    (fixture / ".chezmoidata").mkdir()
+    shutil.copy(root / "home/.chezmoidata/themes.yml", fixture / ".chezmoidata")
+    (tmp / "config.toml").write_text('[data]\ntheme = "moonfly"\n')
 
     no_vault_env = without_vault(tmp)
 
@@ -211,6 +272,8 @@ with tempfile.TemporaryDirectory() as temporary:
     assert not list(fresh.iterdir()), "dry-run must not create application state"
     apply(fresh)
     fresh_settings = fresh / ".config/vicinae/settings.json"
+    theme_file = fresh / ".local/share/vicinae/themes/chezmoi.toml"
+    check_theme(tomllib.loads(theme_file.read_text()), "moonfly", themes["moonfly"]["palette"])
     target = fresh / ".local/share/vicinae/shortcuts/shortcuts.json"
     assert json.loads(fresh_settings.read_text()) == {"imports": ["./profile.json"]}
     created = json.loads(target.read_text())
@@ -223,8 +286,8 @@ with tempfile.TemporaryDirectory() as temporary:
     apply(fresh)
     assert target.read_bytes() == before, "reapplying must not reset creation times or history"
 
-    # Mutable settings (including JSONC, secrets, imports, and aliases) stay byte-for-byte local.
-    settings_bytes = b'// local settings\n{"imports":["./local.json"],"providers":{"private":{"preferences":{"apiToken":"fixture-secret"}},"shortcuts":{"entrypoints":{"local-private":{"alias":"private"}}}}\n'
+    # Mutable settings, including explicit theme overrides, stay byte-for-byte local.
+    settings_bytes = b'// local settings\n{"imports":["./local.json"],"theme":{"dark":{"name":"local-choice"}},"providers":{"private":{"preferences":{"apiToken":"fixture-secret"}},"shortcuts":{"entrypoints":{"local-private":{"alias":"private"}}}}\n'
     fresh_settings.write_bytes(settings_bytes)
     managed = created[0] | {
         "name": "Old managed name", "url": created[1]["url"], "app": "old-opener",
@@ -237,7 +300,9 @@ with tempfile.TemporaryDirectory() as temporary:
         "createdAt": 1, "updatedAt": 2, "lastUsedAt": 3,
     }
     target.write_text(json.dumps([managed, local]))
-    apply(fresh)
+    apply(fresh, data={"theme": "kanagawa-wave"})
+    check_theme(tomllib.loads(theme_file.read_text()), "kanagawa-wave", themes["kanagawa-wave"]["palette"])
+    assert [p.name for p in theme_file.parent.iterdir()] == ["chezmoi.toml"]
     result = {x["id"]: x for x in json.loads(target.read_text())}
     assert result[local["id"]] == local
     assert {key: result[managed["id"]][key] for key in fields} == {key: created[0][key] for key in fields}
