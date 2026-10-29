@@ -1,6 +1,6 @@
 # themes
 
-a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
+a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin, vicinae and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
 
 ## switching
 
@@ -37,6 +37,12 @@ herdr uses a chezmoi-generated config at `~/.config/herdr/config.toml`. The temp
 ### atuin
 
 Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.toml`. The template maps the active shared palette to Atuin's semantic colors and inherits any future meanings from Atuin's built-in `autumn` theme.
+
+### vicinae
+
+Personal, non-headless macOS machines generate `~/.local/share/vicinae/themes/chezmoi.toml` from the active palette. The theme ID stays `chezmoi`; its display name includes the palette, for example “Chezmoi · moonfly”. The managed profile selects it for both macOS appearance modes. All current palettes are dark, so switching macOS to light mode does not change the launcher to a different palette.
+
+Vicinae's writable `settings.json` is left untouched. [Local settings override imported profiles](https://docs.vicinae.com/config#config-imports), so an existing local theme choice may need a one-time `vicinae theme set chezmoi` in each affected appearance mode. Once selected, the normal `theme` command updates the generated file; Vicinae [watches theme files and reloads them automatically](https://docs.vicinae.com/theming/cli-tools#theme-directory-structure), with no extra reload hook.
 
 ## obsidian palette bridge
 

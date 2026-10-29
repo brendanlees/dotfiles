@@ -1,0 +1,82 @@
+# Generated from .chezmoidata/themes.yml; switch palettes with the theme command.
+{{- $p := (index .themes .theme).palette }}
+
+[meta]
+version = 1
+name = "Chezmoi · {{ .theme }}"
+description = "The active chezmoi palette"
+variant = "dark"
+inherits = "vicinae-dark"
+
+[colors.core]
+accent = "{{ $p.accent }}"
+accent_foreground = "{{ $p.bg }}"
+background = "{{ $p.bg }}"
+foreground = "{{ $p.fg }}"
+secondary_background = "{{ $p.surface }}"
+border = "{{ $p.border }}"
+
+[colors.main_window]
+border = "{{ $p.border }}"
+footer = { background = "{{ $p.surface }}" }
+
+[colors.settings_window]
+border = "{{ $p.border }}"
+
+[colors.accents]
+blue = "{{ $p.primary }}"
+green = "{{ $p.success }}"
+magenta = "{{ $p.secondary }}"
+orange = "{{ $p.orange }}"
+red = "{{ $p.error }}"
+yellow = "{{ $p.warn }}"
+cyan = "{{ $p.info }}"
+purple = "{{ $p.secondary }}"
+
+[colors.shortcut]
+border = "{{ $p.border }}"
+
+[colors.text]
+default = "{{ $p.fg }}"
+muted = "{{ $p.muted }}"
+danger = "{{ $p.error }}"
+success = "{{ $p.success }}"
+placeholder = "{{ $p.comment }}"
+selection = { background = "{{ $p.accent }}", foreground = "{{ $p.bg }}" }
+
+[colors.text.links]
+default = "{{ $p.primary }}"
+visited = "{{ $p.secondary }}"
+
+[colors.input]
+border = "{{ $p.border }}"
+border_focus = "{{ $p.accent }}"
+border_error = "{{ $p.error }}"
+
+[colors.button.primary]
+background = "{{ $p.surface }}"
+foreground = "{{ $p.fg }}"
+hover = { background = "{{ $p.surface_alt }}" }
+focus = { outline = "{{ $p.accent }}" }
+
+[colors.list.item.hover]
+foreground = "{{ $p.fg }}"
+secondary_foreground = "{{ $p.muted }}"
+
+[colors.list.item.selection]
+background = "{{ $p.surface_alt }}"
+foreground = "{{ $p.fg }}"
+secondary_background = "{{ $p.surface_alt }}"
+secondary_foreground = "{{ $p.muted }}"
+
+[colors.grid.item]
+background = "{{ $p.surface }}"
+hover = { outline = "{{ $p.accent }}" }
+selection = { outline = "{{ $p.accent }}" }
+
+[colors.scrollbars]
+background = "{{ $p.border }}"
+
+[colors.loading]
+bar = "{{ $p.accent }}"
+spinner = "{{ $p.fg }}"
