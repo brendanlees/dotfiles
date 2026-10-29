@@ -169,6 +169,7 @@
 {{- $bw_gitea  := bitwardenFields "item" "040ae08a-b331-4d3b-abc6-b303002d2a94" }}
 {{- $bw_ha_mcp := bitwardenFields "item" "afa4395b-8044-46b1-86c9-b48d007e82ac" }}
 {{- $bw_executor_work := bitwardenFields "item" "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" }}
+{{- $bw_vicinae := bitwardenFields "item" "ce6cc659-50b0-43c1-a15c-b4f20011264f" }}
 
 [data.bw_info]
 {{- range $k, $v := $bw_info }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
@@ -195,6 +196,11 @@
 
 [data.bw_executor_work]
   bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}
+
+[data.bw_vicinae]
+{{- with index $bw_vicinae "webhook_n8n_ws-tasks" }}
+  weekly_tasks_url = {{ .value | default "" | quote }}
+{{- end }}
 {{- end }}
 
 {{- if and $personal $work (lookPath "bw") }}

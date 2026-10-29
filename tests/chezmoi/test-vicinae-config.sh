@@ -6,6 +6,7 @@ python3 - "$repo_root" <<'PY'
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,7 +17,15 @@ import zipfile
 sys.dont_write_bytecode = True
 root = Path(sys.argv[1])
 config = root / "home/dot_config/vicinae"
-def render(template, home):
+def without_vault(temp):
+    fake_bin = temp / "bin"
+    fake_bin.mkdir()
+    bw = fake_bin / "bw"
+    bw.write_text("#!/bin/sh\necho 'Bitwarden must not run during render/apply' >&2\nexit 99\n")
+    bw.chmod(0o700)
+    return {**os.environ, "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"]}
+
+def render(template, home, data=None):
     with tempfile.TemporaryDirectory() as temporary:
         temp = Path(temporary)
         (temp / "config.toml").write_text("[data]\n")
@@ -24,8 +33,9 @@ def render(template, home):
             "chezmoi", "execute-template", "--source", str(root),
             "--config", str(temp / "config.toml"),
             "--persistent-state", str(temp / "state.boltdb"),
-            "--override-data", json.dumps({"chezmoi": {"homeDir": home}}),
-        ], input=template.read_text(), check=True, capture_output=True, text=True)
+            "--override-data", json.dumps({"chezmoi": {"homeDir": home}, **(data or {})}),
+        ], input=template.read_text(), check=True, capture_output=True, text=True,
+           env=without_vault(temp))
         return json.loads(result.stdout)
 
 profile = render(config / "profile.json.tmpl", "/Users/alice")
@@ -141,6 +151,22 @@ for item in definitions:
     url = urlsplit(item["url"])
     assert not url.scheme or url.hostname in public_hosts
 
+# Secret-backed shortcuts are optional and never put their URL in the shared profile.
+weekly_id = "sct-a066c2457a04"
+webhook = 'https://hooks.example.invalid/webhook/weekly-task-secret?label="quoted"'
+secret_data = {"bw_vicinae": {"weekly_tasks_url": webhook}}
+definition_template = root / "home/.chezmoitemplates/vicinae-shortcuts.json.tmpl"
+assert weekly_id not in ids
+for cache in [{}, {"weekly_tasks_url": ""}]:
+    assert render(definition_template, "/Users/alice", {"bw_vicinae": cache}) == definitions
+with_secret = render(definition_template, "/Users/alice", secret_data)
+assert {item["id"] for item in with_secret} == ids | {weekly_id}
+weekly = next(item for item in with_secret if item["id"] == weekly_id)
+assert weekly["name"] == "[ws] weekly tasks" and weekly["url"] == webhook
+secret_profile = render(config / "profile.json.tmpl", "/Users/alice", secret_data)
+assert secret_profile["providers"]["shortcuts"]["entrypoints"][weekly_id] == {}
+assert "weekly-task-secret" not in json.dumps(secret_profile)
+
 # Render for another user, including a home path needing JSON escaping.
 other_home = '/Users/Bob "Test"'
 other_profile = render(config / "profile.json.tmpl", other_home)
@@ -166,16 +192,18 @@ with tempfile.TemporaryDirectory() as temporary:
     shutil.copytree(root / "home/dot_local/share/vicinae", fixture / "dot_local/share/vicinae")
     (tmp / "config.toml").write_text("[data]\n")
 
-    def apply(home, *, check=True, dry_run=False):
+    no_vault_env = without_vault(tmp)
+
+    def apply(home, *, check=True, dry_run=False, data=None):
         command = [
             "chezmoi", "apply", "--source", str(fixture), "--destination", str(home),
             "--config", str(tmp / "config.toml"), "--persistent-state", str(tmp / "state.boltdb"),
-            "--override-data", json.dumps({"chezmoi": {"homeDir": str(home), "os": "darwin"}}),
+            "--override-data", json.dumps({"chezmoi": {"homeDir": str(home), "os": "darwin"}, **(data or {})}),
             "--no-tty",
         ]
         if dry_run:
             command.append("--dry-run")
-        return subprocess.run(command, check=check, capture_output=True, text=True)
+        return subprocess.run(command, check=check, capture_output=True, text=True, env=no_vault_env)
 
     fresh = tmp / "fresh"
     fresh.mkdir()
@@ -218,6 +246,37 @@ with tempfile.TemporaryDirectory() as temporary:
     assert fresh_settings.read_bytes() == settings_bytes
     before = target.read_bytes()
     apply(fresh)
+    assert target.read_bytes() == before
+
+    # Adding/rotating a cached webhook preserves its stable ID, history, and local settings.
+    apply(fresh, data=secret_data)
+    records = json.loads(target.read_text())
+    weekly = next(item for item in records if item["id"] == weekly_id)
+    assert weekly["url"] == webhook
+    assert target.stat().st_mode & 0o777 == 0o600
+    assert "weekly-task-secret" not in (fresh / ".config/vicinae/profile.json").read_text()
+    weekly.update(openCount=9, createdAt=101, updatedAt=202, lastUsedAt=303)
+    target.write_text(json.dumps(records))
+    original_weekly = weekly.copy()
+    apply(fresh, data=secret_data)
+    records = json.loads(target.read_text())
+    assert sum(item["id"] == weekly_id for item in records) == 1
+    assert next(item for item in records if item["id"] == weekly_id) == original_weekly
+    replacement = "https://hooks.example.invalid/webhook/replacement-secret"
+    apply(fresh, data={"bw_vicinae": {"weekly_tasks_url": replacement}})
+    rotated = next(item for item in json.loads(target.read_text()) if item["id"] == weekly_id)
+    assert rotated == original_weekly | {"url": replacement}
+    before = target.read_bytes()
+    apply(fresh, data={"bw_vicinae": {"weekly_tasks_url": ""}})
+    assert target.read_bytes() == before, "missing secrets must not erase existing local shortcuts"
+    assert fresh_settings.read_bytes() == settings_bytes
+
+    # Reject non-web URLs without leaking the supplied value or changing shortcut data.
+    failure = apply(fresh, check=False, data={
+        "bw_vicinae": {"weekly_tasks_url": "javascript:weekly-task-secret"},
+    })
+    assert failure.returncode and "HTTP(S)" in failure.stderr
+    assert "weekly-task-secret" not in failure.stdout + failure.stderr
     assert target.read_bytes() == before
 
     # Independent IDs require explicit reconciliation, not replacement.
