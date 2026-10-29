@@ -46,6 +46,10 @@ case "$item_id" in
     field_name="secret_path"
     field_value="ha-mcp-value"
     ;;
+  ce6cc659-50b0-43c1-a15c-b4f20011264f)
+    field_name="${VICINAE_FIELD_NAME:-webhook_n8n_ws-tasks}"
+    field_value="https://hooks.example.invalid/weekly-tasks?token=fixture"
+    ;;
   0b9286df-9ffc-4ab8-996e-b42d014e44d4)
     field_name="work_field"
     field_value="work-value"
@@ -142,7 +146,9 @@ assert_bw_item_ids() {
 import sys
 import tomllib
 from pathlib import Path
-assert tomllib.loads(Path(sys.argv[1]).read_text())['data']['github_token'] == sys.argv[2]
+data = tomllib.loads(Path(sys.argv[1]).read_text())['data']
+assert data['github_token'] == sys.argv[2]
+assert data['bw_vicinae']['weekly_tasks_url'] == 'https://hooks.example.invalid/weekly-tasks?token=fixture'
 PY
 }
 
@@ -157,7 +163,8 @@ assert_bw_item_ids "personal" \
   "040ae08a-b331-4d3b-abc6-b303002d2a94" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
-  "0c4c3b88-6ed3-49a0-9f59-b487007acf3e"
+  "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
+  "ce6cc659-50b0-43c1-a15c-b4f20011264f"
 
 INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
@@ -167,7 +174,17 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
-  "0b9286df-9ffc-4ab8-996e-b42d014e44d4"
+  "0b9286df-9ffc-4ab8-996e-b42d014e44d4" \
+  "ce6cc659-50b0-43c1-a15c-b4f20011264f"
+
+# A missing optional field must not break init or populate an unusable URL.
+VICINAE_FIELD_NAME=unrelated_field render_role personal
+python3 - "$tmpdir/config-personal.toml" <<'PY'
+import sys
+import tomllib
+from pathlib import Path
+assert not tomllib.loads(Path(sys.argv[1]).read_text())['data']['bw_vicinae']
+PY
 
 # Execute the rendered bootstrap expansion with a stub installer. It must pass
 # the download input to init without replacing a project's GitHub credential.

@@ -1,3 +1,11 @@
+{{- /* Use cached init data, never query the vault during a render/apply. */ -}}
+{{- $weeklyTasksURL := "" -}}
+{{- if and (hasKey . "bw_vicinae") (hasKey .bw_vicinae "weekly_tasks_url") -}}
+{{- $weeklyTasksURL = .bw_vicinae.weekly_tasks_url -}}
+{{- end -}}
+{{- if and $weeklyTasksURL (not (regexMatch "^https?://[^[:space:]]+$" $weeklyTasksURL)) -}}
+{{- fail "Vicinae weekly-tasks webhook must be an HTTP(S) URL without whitespace" -}}
+{{- end -}}
 [
   {
     "id": "sct-e3ab9b3563ba",
@@ -335,5 +343,12 @@
     "app": "default",
     "enabled": true,
     "alias": "s"
-  }
+  }{{ if $weeklyTasksURL }},
+  {
+    "id": "sct-a066c2457a04",
+    "name": "[ws] weekly tasks",
+    "url": {{ $weeklyTasksURL | toJson }},
+    "icon": "icon://omnicast/oauth?fill=primary-text",
+    "app": "default"
+  }{{ end }}
 ]
