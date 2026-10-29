@@ -126,6 +126,9 @@ apply_fixture() {
 printf 'managed\n' >"$minimal_source/home/dot_config/sketchybar/marker"
 printf 'stale\n' >"$home_dir/.local/bin/zsh-patina"
 printf 'stale\n' >"$home_dir/.config/zsh-patina/config.toml"
+mkdir -p "$home_dir/.config/sketchybar/items" "$home_dir/.config/sketchybar/plugins"
+printf 'stale\n' >"$home_dir/.config/sketchybar/items/splashbar.sh"
+printf 'stale\n' >"$home_dir/.config/sketchybar/plugins/splashbar.py"
 printf '%s\n' \
   '[data]' \
   'personal = true' \
@@ -168,6 +171,8 @@ done
 [[ ! -s "$DEFAULTS_STATE_DIR/writes" ]]
 
 [[ -f "$home_dir/.config/sketchybar/marker" ]]
+[[ ! -e "$home_dir/.config/sketchybar/items/splashbar.sh" ]]
+[[ ! -e "$home_dir/.config/sketchybar/plugins/splashbar.py" ]]
 [[ ! -e "$home_dir/.local/bin/zsh-patina" ]]
 [[ ! -e "$home_dir/.config/zsh-patina" ]]
 

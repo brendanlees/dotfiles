@@ -119,8 +119,8 @@ source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/tailscale.sh"
 add_spacer status_spotify right "$MEDIA_GAP"
 source "$ITEM_DIR/spotify.sh"
-# Create the robot first so quota's renderer can keep it left of the dynamic rows.
-source "$ITEM_DIR/splashbar.sh"
+# Create oMLX first so quota's renderer can keep its separate pill beside the rows.
+source "$ITEM_DIR/omlx.sh"
 source "$ITEM_DIR/quota.sh"
 
 # ------------------------------------------
