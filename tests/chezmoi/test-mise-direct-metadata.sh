@@ -74,6 +74,7 @@ brews=$(chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.
   '{{ concat .brews.base .brews.personal .brews.work | toJson }}')
 python3 - "$tmpdir" "$brews" <<'PY'
 import json
+import re
 import sys
 import tomllib
 from pathlib import Path
@@ -82,6 +83,12 @@ for path in Path(sys.argv[1]).glob('mise-*-*.toml'):
     _, platform, role = path.stem.split('-')
     tools[platform, role] = tomllib.loads(path.read_text())['tools']
 assert len(tools) == 16
+# Headless Sync uses the Node runtime already managed on personal Macs.
+for (platform, role), names in tools.items():
+    if (platform, role) == ('darwin', 'personal'):
+        assert re.fullmatch(r'\d+\.\d+\.\d+', names.get('npm:obsidian-headless', ''))
+    else:
+        assert 'npm:obsidian-headless' not in names
 assert all('github:Giammarco-Ferranti/deja' not in names for names in tools.values())
 for platform in ('linux', 'alpine', 'windows', 'darwin'):
     assert tools[platform, 'base'].keys() < tools[platform, 'personal'].keys()
