@@ -17,9 +17,11 @@ For an existing checkout, its `git remote get-url origin` must exactly match the
 
 ## first apply
 
-When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait, so they cannot populate the clone destinations prematurely. Automatic SSH setup runs after tools and before private skills until its first successful refresh. Locked or failed attempts are retried on the next apply, so unlocking the vault does not require resetting chezmoi's script state. After success, update/apply skips the SSH helper entirely.
+When a Bitwarden SSH manifest is configured, private Gitea externals (`~/.claude` and `~/.pi`) wait until `~/.ssh/config.d/personal.conf` exists. On macOS and Linux, they also check the destination's effective SSH configuration: an explicitly selected agent must be reachable and expose the configured public key. Local-file hosts do not require Bitwarden desktop. The first apply can therefore install `.zshrc`, mise tools and SSH helpers without private repo access. Pi theme generation and the macOS Claude install also wait during bootstrap, so they cannot populate the clone destinations prematurely. Once their respective checkout exists, those local hooks no longer require the agent; private repository fetches still do. Automatic SSH setup runs after tools and before private skills until its first successful refresh. Locked or failed attempts are retried on the next apply, so unlocking the vault does not require resetting chezmoi's script state. After success, update/apply skips the SSH helper entirely.
 
-After the first successful SSH refresh, run `chezmoi apply` again to clone the Gitea configs. If Bitwarden was locked, unlock it and run `chezmoi apply` to provision SSH, then apply once more. Existing SSH setups without a configured manifest keep their normal external behavior.
+After the first successful SSH refresh, run `chezmoi apply` again to clone the Gitea configs. For agent-backed hosts, first open Bitwarden desktop, sign in and enable its SSH agent manually. The CLI session and desktop vault are separate. Unavailable agents defer private clones, not config generation; retrying readiness never refreshes the vault. Existing SSH setups without a configured manifest keep their normal external behavior.
+
+On macOS/Linux, diagnose readiness with `cz-ssh-ready git@gitea.lab.brendans.cloud` (or an SSH destination/repository URL). It reads local SSH configuration and lists agent public keys with a five-second timeout per command. It does not connect to the remote, unlock Bitwarden or approve signing. Passing this check does not verify server authorization or host-key trust. The macOS private-skills helper performs the same check before its first clone, but existing checkouts can reconcile offline.
 
 The macOS private-skills clone defaults to non-interactive SSH with a connection timeout. For a new Git host, verify and accept its host key with SSH yourself before retrying; the helper does not bypass host verification.
 
@@ -89,7 +91,7 @@ hosts may omit `key` when openssh defaults, tailscale ssh, or dns should decide 
 ## key modes
 
 - `local_file`: fetches the bitwarden ssh key item, writes the private key to `path` with `0600`, writes a sibling `.pub` hint when available, and emits scoped config under `~/.ssh/config.d/`.
-- `bitwarden_agent`: never writes private key material. it writes a public-key hint under `~/.ssh/public-keys/` and emits config for bitwarden ssh agent.
+- `bitwarden_agent`: never writes private key material. it writes a public-key hint under `~/.ssh/public-keys/` and emits config for bitwarden ssh agent. Without an override, the POSIX helper writes `~/.bitwarden-ssh-agent.sock` directly, so first provisioning does not depend on `.zshrc`. Custom socket variables remain supported; the Mac App Store installation needs its sandboxed socket path.
 
 to migrate to `bitwarden_agent`, import the key into bitwarden, change the manifest mode, keep `public_key`, then remove any old local private key manually.
 
@@ -97,7 +99,7 @@ to migrate to `bitwarden_agent`, import the key into bitwarden, change the manif
 
 A successful refresh, automatic or manual, records completion under `${XDG_STATE_HOME:-~/.local/state}/chezmoi/ssh-refresh`. On later `chezmoi apply` and `chezmoi update`, the SSH setup hook checks only for that receipt. It does not invoke the SSH helper, query Bitwarden, compare helper/configuration checksums, or inspect generated SSH files. Existing checksum receipts are accepted without another refresh. Failed or skipped first attempts do not create a receipt; it contains no vault credentials.
 
-After changing the manifest, keys, enabled roles, or agent socket configuration, run `bw sync` and `cz-ssh-refresh --fail` with the vault unlocked. Use the same helper to restore deleted generated configs or keys. Direct invocations always refresh, regardless of the receipt. The generic SSH scaffold and GitHub override remain chezmoi-managed.
+After changing the manifest, keys, enabled roles, or agent socket configuration, run `bw sync` and `cz-ssh-refresh --fail` with the vault unlocked. Do this once for older generated configs that still refer to an unset `$BITWARDEN_SSH_AUTH_SOCK`; the receipt deliberately prevents automatic rewriting. Use the same helper to restore deleted generated configs or keys. Direct invocations always refresh, regardless of the receipt. The generic SSH scaffold and GitHub override remain chezmoi-managed.
 
 `cz-ssh-refresh` is non-blocking during `chezmoi apply`: missing bitwarden, missing `jq` on posix, lock state, or manifest config prints `warn:` and exits 0. use `cz-ssh-refresh --fail` when refresh errors should be fatal. On windows the managed helper is `~/.local/bin/cz-ssh-refresh.ps1`; the powershell profile prepends `~/.local/bin` to `PATH`, so a new shell can run `cz-ssh-refresh` directly.
 

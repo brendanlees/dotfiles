@@ -134,6 +134,10 @@ checkout_is_interrupted() {
 
 clone_checkout_if_missing() {
   [[ ! -e $CHECKOUT && ! -L $CHECKOUT ]] || return 0
+  local readiness
+  readiness="$(dirname "$0")/cz-ssh-ready"
+  [[ -x $readiness ]] || fatal 'cz-ssh-ready is unavailable; apply dotfiles before cloning private skills'
+  "$readiness" "$CONFIGURED_REMOTE" || fatal 'private clone deferred until SSH is ready'
   local parent base temporary
   parent=${CHECKOUT%/*}
   base=${CHECKOUT##*/}

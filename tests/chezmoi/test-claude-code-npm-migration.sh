@@ -44,7 +44,8 @@ if [[ ! -f "$npm_script" ]]; then
   exit 1
 fi
 
-role_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false}'
+# SSH readiness has its own bootstrap test; do not inherit the live manifest.
+role_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"ssh":{"bw_manifest_item":""}}'
 rendered=$(chezmoi execute-template \
   --source="$repo_root" \
   --override-data "$role_data" \

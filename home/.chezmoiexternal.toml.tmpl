@@ -79,54 +79,11 @@ exclude = [
 {{- end }}
 
 
-{{/* Spicetify text theme essentials */}}
-
-{{- if and (eq .chezmoi.os "darwin") .personal (not .headless) }}
-[".config/spicetify/Themes/text/README.md"]
-type = "file"
-url = "https://raw.githubusercontent.com/spicetify/spicetify-themes/master/text/README.md"
-refreshPeriod = "168h"
-
-[".config/spicetify/Themes/text/user.css"]
-type = "file"
-url = "https://raw.githubusercontent.com/spicetify/spicetify-themes/master/text/user.css"
-refreshPeriod = "168h"
-
-{{- range .spicetify.extensions }}
-[".config/spicetify/Extensions/{{ .filename }}"]
-type = "file"
-url = "{{ .url }}"
-refreshPeriod = "168h"
-
-{{- end }}
-
-[".config/spicetify/CustomApps/marketplace"]
-type = "archive"
-url = "https://github.com/spicetify/marketplace/releases/latest/download/marketplace.zip"
-exact = true
-stripComponents = 1
-refreshPeriod = "168h"
-
-[".config/spicetify/CustomApps/stats"]
-type = "archive"
-url = "https://github.com/harbassan/spicetify-apps/releases/download/stats-v1.1.3/spicetify-stats.release.zip"
-exact = true
-stripComponents = 1
-refreshPeriod = "168h"
-
-[".config/spicetify/CustomApps/library"]
-type = "archive"
-url = "https://github.com/harbassan/spicetify-apps/releases/download/library-v1.1.1/spicetify-library.release.zip"
-exact = true
-stripComponents = 1
-refreshPeriod = "168h"
-{{- end }}
-
 {{- if .personal }}
 
 {{/* Externals are applied before ~/.ssh and the tool/SSH after-hooks. */}}
 {{- if eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "false" }}
-{{- warnf "Private Gitea configs deferred until Bitwarden SSH is provisioned. After SSH refresh succeeds, run chezmoi apply again." }}
+{{- warnf "Private Gitea configs deferred: generate SSH config with cz-ssh-refresh --fail, then check cz-ssh-ready git@gitea.lab.brendans.cloud. Open Bitwarden and enable/unlock its SSH agent if required; retry chezmoi apply." }}
 {{- else }}
 {{/* agent harness configs */}}
 [".claude"]

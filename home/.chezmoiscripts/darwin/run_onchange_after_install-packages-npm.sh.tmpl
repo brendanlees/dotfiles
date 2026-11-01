@@ -2,7 +2,7 @@
 # managed by chezmoi - re-runs when packages-darwin.yml changes
 
 {{- $packages := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .npm .)) }}
-{{- $harnessReady := eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true" }}
+{{- $claudeReady := or (stat (joinPath .chezmoi.homeDir ".claude/.git")) (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true") }}
 
 {{- if $packages }}
 MISE="$HOME/.local/bin/mise"
@@ -13,7 +13,7 @@ fi
 
 "$MISE" install node
 {{ range $packages -}}
-{{ if and (eq . "@anthropic-ai/claude-code") (not $harnessReady) -}}
+{{ if and (eq . "@anthropic-ai/claude-code") (not $claudeReady) -}}
 echo "deferring Claude installation until the private config can be cloned"
 {{ else -}}
 "$MISE" exec node -- npm install -g {{ . }}

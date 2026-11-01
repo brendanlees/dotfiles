@@ -20,7 +20,6 @@ dockutil --no-restart --add '' --type spacer --section apps
 # audio
 dockutil --no-restart --add '/System/Applications/Utilities/Audio MIDI Setup.app'
 dockutil --no-restart --add '/Applications/Ableton Live 12 Suite.app'
-dockutil --no-restart --add '/Applications/Spotify.app'
 dockutil --no-restart --add '' --type spacer --section apps
 
 # productivity

@@ -28,7 +28,6 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 .local/share/vicinae/scripts
 .local/share/vicinae/themes
 .finicky.js
-.config/spicetify
 .config/chezmoi-theme/obsidian.css
 {{- end }}
 
@@ -98,6 +97,7 @@ Library/Logs/Syncthing
 !.local/bin/cz-private-agent-skills.ps1
 {{- else }}
 !.local/bin/cz-ssh-refresh
+!.local/bin/cz-ssh-ready
 {{- if eq .chezmoi.os "darwin" }}
 !.local/bin/cz-private-agent-skills
 !.local/bin/obsidian

@@ -25,7 +25,7 @@ args = sys.argv[1:]
 with (root / "calls").open("a") as f:
     f.write(json.dumps(args) + "\n")
 path = root / "bar.json"
-state = json.loads(path.read_text()) if path.exists() else {"spotify": {}, "omlx": {}, "showy_quota.trigger": {}}
+state = json.loads(path.read_text()) if path.exists() else {"tailscale": {}, "omlx": {}, "showy_quota.trigger": {}}
 if args[:2] == ["--query", "bar"]:
     print(json.dumps({"items": list(state)}))
 elif args[:1] == ["--query"]:
@@ -94,7 +94,7 @@ cat >"$XDG_CACHE_HOME/showy-quota/usage.json" <<'JSON'
 JSON
 cp "$XDG_CACHE_HOME/showy-quota/usage.json" "$TMP/subscribed-usage.json"
 # A warm upgrade removes the former OpenRouter row and the separate Codex column.
-printf '%s\n' '{"spotify":{},"omlx":{},"showy_quota.trigger":{},"showy_quota.codex.slot":{},"showy_quota.openrouter.icon":{},"showy_quota.openrouter.balance":{},"showy_quota_bracket":{}}' >"$TMP/bar.json"
+printf '%s\n' '{"tailscale":{},"omlx":{},"showy_quota.trigger":{},"showy_quota.codex.slot":{},"showy_quota.openrouter.icon":{},"showy_quota.openrouter.balance":{},"showy_quota_bracket":{}}' >"$TMP/bar.json"
 : >"$TMP/calls"
 printf 'Dia\n' >"$TMP/front"
 
@@ -130,7 +130,7 @@ assert [name for name in state if name.endswith(".slot")] == ["showy_quota.claud
 order = list(state)
 assert order.index("showy_quota.codex.primary") < order.index("showy_quota.claude.slot")
 assert order.index("showy_quota.codex.icon") < order.index("showy_quota.claude.icon")
-# Creation order is reversed on the right: oMLX, quotas, Spotify.
+# Creation order is reversed on the right: oMLX, quotas, Tailscale.
 assert order.index("omlx") == order.index("showy_quota.claude.icon") + 1, order
 calls = [json.loads(line) for line in (root / "calls").read_text().splitlines()]
 for call in calls:
@@ -138,7 +138,7 @@ for call in calls:
         start = call.index("bracket") + 2
         end = next((i for i in range(start, len(call)) if call[i].startswith("--")), len(call))
         assert "omlx" not in call[start:end], "oMLX must have its own pill"
-assert order.index("spotify") < order.index("showy_quota.trigger"), order
+assert order.index("tailscale") < order.index("showy_quota.trigger"), order
 
 PYTEST
 
@@ -352,7 +352,7 @@ root = pathlib.Path(sys.argv[1])
 config = tomllib.loads((root / "home/dot_config/aerospace/aerospace.toml").read_text())
 assert "quota_toggle" in config["mode"]["main"]["binding"]["ctrl-alt-q"]
 bar = (root / "home/dot_config/sketchybar/executable_sketchybarrc").read_text()
-assert bar.index('source "$ITEM_DIR/spotify.sh"') < bar.index('source "$ITEM_DIR/quota.sh"')
+assert bar.index('source "$ITEM_DIR/omlx.sh"') < bar.index('source "$ITEM_DIR/quota.sh"')
 calls = [json.loads(line) for line in pathlib.Path(sys.argv[2]).read_text().splitlines()]
 assert any("--subscribe" in call and "front_app_switched" in call and "quota_toggle" in call for call in calls)
 PYTEST

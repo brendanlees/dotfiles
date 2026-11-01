@@ -242,7 +242,13 @@ case "$agent_sock_env" in
   "" | *"{"*"{"*) agent_sock_env="BITWARDEN_SSH_AUTH_SOCK" ;;
 esac
 validate_agent_sock_env "$agent_sock_env"
+# Fresh provisioning must work before an interactive shell sources .zshrc.
+# Custom socket variables remain opt-in; do not replace the user's SSH_AUTH_SOCK.
 agent_sock_value="${!agent_sock_env:-\$$agent_sock_env}"
+if [[ "$agent_sock_env" == BITWARDEN_SSH_AUTH_SOCK && -z "${!agent_sock_env:-}" ]]; then
+  # shellcheck disable=SC2088 # OpenSSH, not this shell, expands the home directory.
+  agent_sock_value='~/.bitwarden-ssh-agent.sock'
+fi
 
 require_command bw
 require_command jq

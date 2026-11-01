@@ -20,7 +20,9 @@ The script checks Apple's Command Line Tools (or an active Xcode installation), 
 
 If developer tools are missing, complete the Apple installer and rerun the script. It does not accept Xcode licences or switch developer directories for you. Remote Homebrew/mise installers require confirmation; automation can opt in with `CHEZMOI_ALLOW_REMOTE_SCRIPTS=1`.
 
-For Bitwarden-backed private repos, unlock the CLI before init and configure the SSH manifest. The first apply provisions SSH; a second apply fetches the Gitea configs. See [SSH bootstrap](ssh.md#first-apply) and [secrets](secrets.md).
+The role-scoped `taps` list in `home/.chezmoidata/packages-darwin.yml` is also the Homebrew approval list. Provisioning runs `brew trust --tap` before tapping each entry; this trusts future contents of those taps, without disabling trust checks globally. Fully qualified packages must have their tap declared for the same roles.
+
+For Bitwarden-backed private repos, unlock the CLI before init and configure the SSH manifest. The first apply provisions SSH. For agent-backed hosts, separately open Bitwarden desktop, sign in and enable its SSH agent before applying again to fetch private configs. The desktop toggle remains manual. See [SSH bootstrap](ssh.md#first-apply) and [secrets](secrets.md).
 
 **linux**
 
@@ -51,7 +53,7 @@ see [scoping](docs/scoping.md) for non-interactive options via env vars, ansible
 
 ## macOS Finder and input preferences
 
-The defaults hook applies the captured Finder, mouse, trackpad and keyboard preferences to non-headless personal and work Macs. System shortcuts, Kanata and OpenLogi retain their existing configuration owners.
+The defaults hook applies selected Finder, mouse, trackpad and keyboard preferences to non-headless personal and work Macs. System shortcuts stay under local user control; Kanata and OpenLogi retain their own configuration. Full preference and application-preset plist snapshots are no longer tracked. This does not delete existing preferences or uninstall applications. LaunchAgent/service templates remain managed.
 
 Column view is the default for Finder windows and searches. Finder can still remember a different view in an existing folder's `.DS_Store`; provisioning does not erase those files, sidebar bookmarks or recent-folder history. Log out and back in if keyboard layout or input changes do not take effect immediately.
 

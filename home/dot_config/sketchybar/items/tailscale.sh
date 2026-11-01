@@ -2,7 +2,7 @@
 
 # Item starts hidden; the plugin reveals it only when Tailscale is running.
 # Icon is the `:tailscale:` token rendered by sketchybar-app-font (matches the
-# icon library used by spaces.sh / front_app.sh / spotify.sh).
+# icon library used by spaces.sh / front_app.sh).
 sketchybar --add item tailscale right \
     --set tailscale \
     drawing=off \

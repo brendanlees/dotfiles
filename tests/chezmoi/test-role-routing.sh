@@ -99,8 +99,9 @@ render_scope_templates() {
     <"$source_root/.chezmoiremove.tmpl" >"$tmpdir/$name.remove"
 }
 
-personal_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
-personal_work_data='{"personal":true,"work":true,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
+# Role routing is independent of the current machine\'s SSH readiness.
+personal_data='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"ssh":{"bw_manifest_item":""},"chezmoi":{"os":"linux","username":"test"}}'
+personal_work_data='{"personal":true,"work":true,"homelab":false,"ephemeral":false,"headless":false,"ssh":{"bw_manifest_item":""},"chezmoi":{"os":"linux","username":"test"}}'
 work_data='{"personal":false,"work":true,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"linux","username":"test"}}'
 homelab_data='{"personal":false,"work":false,"homelab":true,"ephemeral":false,"headless":true,"chezmoi":{"os":"linux","username":"test"}}'
 

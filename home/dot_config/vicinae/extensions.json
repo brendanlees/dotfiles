@@ -244,10 +244,6 @@
     "name": "single-disk-eject"
   },
   {
-    "author": "mattisssa",
-    "name": "spotify-player"
-  },
-  {
     "author": "tailscale",
     "name": "tailscale"
   },
@@ -270,10 +266,6 @@
   {
     "author": "gebeto",
     "name": "translate"
-  },
-  {
-    "author": "SeoFood",
-    "name": "typewhisper"
   },
   {
     "author": "vimtor",
