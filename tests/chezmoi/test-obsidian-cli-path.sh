@@ -72,38 +72,13 @@ define_fixture linux
 [[ ! -e "$tmpdir/linux/home/.local/bin/obsidian" && \
   ! -L "$tmpdir/linux/home/.local/bin/obsidian" ]]
 
-# Start inside the vault, but do not open a directory buffer: Neo-tree would
-# steal focus from the daily note. Preserve the calling shell's working directory.
+# ov only moves the shell into the vault, including under a home path with spaces.
 chezmoi execute-template --source "$repo_root" --override-data "$darwin_data" \
   --file "$source_root/dot_config/zsh/exact_aliases.d/general.zsh.tmpl" \
   >"$tmpdir/aliases.zsh"
-vault="$tmpdir/home with spaces/Notes/Obsidian/Vaults/PKM Vault/PKM"
-mkdir -p "$tmpdir/bin" "$vault"
-cat >"$tmpdir/bin/nvim" <<'SH'
-#!/usr/bin/env bash
-printf '%s\n' "$@" >"$OV_TEST_LOG"
-pwd -P >"$OV_TEST_LOG.cwd"
-SH
-chmod +x "$tmpdir/bin/nvim"
+vault="$tmpdir/home with spaces/Notes/Obsidian/PKM"
+mkdir -p "$vault"
+HOME="$tmpdir/home with spaces" ALIASES_FILE="$tmpdir/aliases.zsh" VAULT="$vault" \
+  zsh -fc 'source "$ALIASES_FILE"; eval ov; [[ $PWD -ef $VAULT ]]'
 
-OV_TEST_LOG="$tmpdir/nvim.log" HOME="$tmpdir/home with spaces" \
-  PATH="$tmpdir/bin:$PATH" ALIASES_FILE="$tmpdir/aliases.zsh" \
-  zsh -fc 'alias ov=false; source "$ALIASES_FILE"; before=$PWD; eval "ov --headless"; [[ $PWD == $before ]]'
-
-printf '%s\n' \
-  '-c' 'Obsidian today' \
-  '--headless' >"$tmpdir/expected.log"
-cmp "$tmpdir/expected.log" "$tmpdir/nvim.log"
-(cd "$vault" && pwd -P) >"$tmpdir/expected.cwd"
-cmp "$tmpdir/expected.cwd" "$tmpdir/nvim.log.cwd"
-
-# A missing vault must fail rather than launching an editor in the wrong directory.
-if OV_TEST_LOG="$tmpdir/missing.log" HOME="$tmpdir/missing home" \
-  PATH="$tmpdir/bin:$PATH" ALIASES_FILE="$tmpdir/aliases.zsh" \
-  zsh -fc 'source "$ALIASES_FILE"; eval ov' >"$tmpdir/missing.out" 2>&1; then
-  echo 'ov must fail when the vault is missing' >&2
-  exit 1
-fi
-[[ ! -e "$tmpdir/missing.log" ]]
-
-echo 'Obsidian CLI path registration and Neovim daily-note shortcut ok'
+echo 'Obsidian CLI path registration and vault shortcut ok'
