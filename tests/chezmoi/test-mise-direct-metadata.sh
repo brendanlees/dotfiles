@@ -86,7 +86,9 @@ assert len(tools) == 16
 # Headless Sync uses the Node runtime already managed on personal Macs.
 for (platform, role), names in tools.items():
     if (platform, role) == ('darwin', 'personal'):
-        assert re.fullmatch(r'\d+\.\d+\.\d+', names.get('npm:obsidian-headless', ''))
+        headless = names.get('npm:obsidian-headless', {})
+        assert re.fullmatch(r'\d+\.\d+\.\d+', headless.get('version', ''))
+        assert headless.get('allow_builds') == ['better-sqlite3']
     else:
         assert 'npm:obsidian-headless' not in names
 assert all('github:Giammarco-Ferranti/deja' not in names for names in tools.values())

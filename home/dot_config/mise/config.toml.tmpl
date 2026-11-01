@@ -57,7 +57,7 @@ python = "latest"
 {{ end -}}
 {{ if .personal -}}
 {{ if eq .chezmoi.os "darwin" -}}
-"npm:obsidian-headless" = "0.0.14"
+"npm:obsidian-headless" = { version = "0.0.14", allow_builds = ["better-sqlite3"] }
 {{ end -}}
 actionlint = "latest"
 pi = "latest"
