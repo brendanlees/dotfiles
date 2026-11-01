@@ -179,6 +179,28 @@ assert providers["applications"]["entrypoints"]["io.robbie.HomeAssistant"]["shor
 assert providers["snippets"]["entrypoints"]["manage"]["enabled"] is False
 assert providers["core"]["entrypoints"]["search-emojis"]["shortcut"] == "super+alt+SPACE"
 assert providers["files"]["entrypoints"]["search"]["enabled"] is True
+assert "shortcut" not in providers["applications"]["entrypoints"]["md.obsidian"]
+assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {
+    "enabled": True, "shortcut": "alt+N",
+}
+
+# The launcher starts a new terminal with the same interactive-shell alias,
+# rather than running a terminal editor without a TTY or opening the Obsidian GUI.
+with tempfile.TemporaryDirectory() as temporary:
+    temp = Path(temporary)
+    opener = temp / "open"
+    opener.write_text('#!/bin/sh\nprintf "%s\\n" "$@" >"$OPEN_LOG"\n')
+    opener.chmod(0o700)
+    log = temp / "open.log"
+    subprocess.run(
+        ["bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
+        check=True,
+        env={**os.environ, "PATH": str(temp) + os.pathsep + os.environ["PATH"],
+             "OPEN_LOG": str(log)},
+    )
+    assert log.read_text().splitlines() == [
+        "-na", "Ghostty", "--args", "-e", "/bin/zsh", "-lic", "ov",
+    ]
 
 # Definitions and bindings share one source, so their IDs cannot drift apart.
 fields = {"id", "name", "url", "icon", "app"}
@@ -276,6 +298,7 @@ with tempfile.TemporaryDirectory() as temporary:
     check_theme(tomllib.loads(theme_file.read_text()), "moonfly", themes["moonfly"]["palette"])
     target = fresh / ".local/share/vicinae/shortcuts/shortcuts.json"
     assert json.loads(fresh_settings.read_text()) == {"imports": ["./profile.json"]}
+    assert os.access(fresh / ".local/share/vicinae/scripts/obsidian-daily.sh", os.X_OK)
     created = json.loads(target.read_text())
     assert {x["id"] for x in created} == ids
     assert all(x["openCount"] == 0 and isinstance(x["createdAt"], int) and x["createdAt"] > 0 for x in created)
