@@ -46,6 +46,14 @@ printf '/agents/state/\n' >"$public_root/.gitignore"
 checkout="$tmpdir/private-checkout"
 config_file="$tmpdir/chezmoi.toml"
 helper="$tmpdir/cz-private-agent-skills"
+# This test owns clone/reconcile behavior; agent protocol coverage lives in test-gitea-ssh-remotes.
+cat >"$tmpdir/cz-ssh-ready" <<'SH'
+#!/bin/sh
+printf '%s\n' "$1" >>"$FIXTURE_READY_LOG"
+[ "${FIXTURE_SSH_READY:-true}" = true ]
+SH
+chmod +x "$tmpdir/cz-ssh-ready"
+export FIXTURE_READY_LOG="$tmpdir/readiness.log"
 
 render_helper() {
   local personal=$1 output=$2
@@ -115,6 +123,15 @@ FIXTURE_FAIL_CLONE=true "$helper" reconcile >/dev/null 2>&1
 [[ ! -e $checkout && ! -e $state_file && ! -e $first_destination ]]
 [[ -z $(find "$tmpdir" -maxdepth 1 -name '.private-checkout.cz-private-agent-skills.*.tmp' -print -quit) ]]
 : >"$FIXTURE_GIT_LOG"
+
+# Missing agent readiness must defer a clone without creating its destination.
+FIXTURE_SSH_READY=false "$helper" reconcile >/dev/null 2>&1
+[[ ! -e $checkout && ! -e $state_file ]]
+if grep -Fxq clone "$FIXTURE_GIT_LOG"; then
+  echo 'private clone attempted before SSH readiness' >&2
+  exit 1
+fi
+grep -Fxq "$remote" "$FIXTURE_READY_LOG"
 
 # Bootstrap clones once, composes direct skills, and writes exact excludes.
 "$helper" --fail reconcile

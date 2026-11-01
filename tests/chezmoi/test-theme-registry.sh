@@ -176,10 +176,6 @@ cat >"$fixture/.chezmoiscripts/run_after_00-install-tools.sh" <<'SCRIPT'
 printf 'unexpected tool install\n' >"$HOME/tools-ran"
 exit 99
 SCRIPT
-cat >"$fixture/.chezmoiscripts/darwin/run_onchange_after_apply-spicetify.sh.tmpl" <<'SCRIPT'
-#!/bin/sh
-printf '{{ .theme }}\n' >"$HOME/spicetify-theme"
-SCRIPT
 cat >"$fixture/.chezmoiexternal.toml" <<EXTERNAL
 ["external.txt"]
 type = "file"
@@ -234,7 +230,6 @@ run_theme guts >"$tmpdir/switch.log" 2>&1 || {
 
 grep -Fxq guts "$home/.config/active-theme"
 check_borders guts
-grep -Fxq guts "$home/spicetify-theme"
 grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "guts"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
 [[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]

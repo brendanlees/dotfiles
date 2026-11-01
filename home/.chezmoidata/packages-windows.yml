@@ -41,7 +41,6 @@ scoops:
     - extras/powertoys # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
     - extras/qmk-toolbox # related to brew: qmk
     - extras/responsively
-    - extras/spotify
     - extras/sqlitebrowser
     - extras/twinkle-tray
     - extras/upscayl

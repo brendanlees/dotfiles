@@ -20,7 +20,7 @@ fi
 
 status_json="$(tailscale status --json 2>/dev/null)" || hide_item
 
-# Defensive: python3 is part of the expected toolchain (spotify plugin uses it too).
+# Hide the item when the JSON parser is unavailable.
 if [ ! -x /usr/bin/python3 ]; then
   hide_item
 fi

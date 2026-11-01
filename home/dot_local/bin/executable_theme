@@ -168,9 +168,6 @@ fi
 # without running package installers or syncing private harness repositories.
 theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl")
 case "$(chezmoi execute-template --source "$CHEZMOI_DIR" '{{ .chezmoi.os }}')" in
-  darwin)
-    theme_scripts+=("$CHEZMOI_DIR/.chezmoiscripts/darwin/run_onchange_after_apply-spicetify.sh.tmpl")
-    ;;
   windows)
     theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl")
     ;;

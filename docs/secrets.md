@@ -72,10 +72,6 @@ Temporarily clear any intentional `GH_TOKEN` override as well when diagnosing or
 
 Restart terminals and agents from a clean parent environment. Existing processes retain inherited variables; a new shell launched inside an old terminal, tmux server, or agent can still inherit the stale export. Profiles deliberately do not unset user-supplied tokens. Remove old exports from project or launcher configuration if the problem returns there.
 
-### Spicetify
-
-The upstream CLI update checker makes unauthenticated GitHub requests and does not read `GITHUB_TOKEN`. The managed config disables that checker; Homebrew owns Spicetify updates. Exporting a token alone cannot fix rate limits from that checker.
-
 ## bitwarden cache refresh
 
 Normal `chezmoi update` and `chezmoi apply` use cached init data. SSH provisioning uses Bitwarden only until its first successful setup; later refreshes are explicit (see [SSH refresh behavior](ssh.md#refresh-behavior)). Reinitialization, including `chezmoi update --init`, can still query Bitwarden.

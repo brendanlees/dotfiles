@@ -1,6 +1,6 @@
-{{- if and .personal (ne .chezmoi.os "windows") (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true") -}}
+{{- if and .personal (ne .chezmoi.os "windows") (or (stat (joinPath .chezmoi.homeDir ".pi/.git")) (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true")) -}}
 #!/usr/bin/env python3
-"""Atomically write the chezmoi-rendered Pi theme after the .pi external sync."""
+"""Atomically write the Pi theme once its private checkout is available."""
 
 import os
 from pathlib import Path

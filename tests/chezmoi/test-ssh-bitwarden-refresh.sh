@@ -394,6 +394,16 @@ assert_not_contains "$bw_log" 'get item local-key'
 [[ "$attachment_output" != *ATTACHMENT_CONTENT_NOT_FOR_LOGS* ]]
 assert_not_exists "$attachment_home/bw-ssh-config.json"
 
+# First apply cannot depend on a newly written .zshrc being sourced.
+default_socket_home=$(new_home default-socket)
+env -u BITWARDEN_SSH_AUTH_SOCK -u SSH_BW_AGENT_SOCK_ENV \
+  HOME="$default_socket_home" XDG_STATE_HOME="$default_socket_home/.local/state" \
+  PATH="$fake_bin:$PATH" BW_LOG="$bw_log" BW_ATTACHMENT_MODE=present \
+  "$rendered_darwin_refresh_cmd" --fail
+assert_contains "$default_socket_home/.ssh/config.d/personal.conf" 'IdentityAgent ~/.bitwarden-ssh-agent.sock'
+# shellcheck disable=SC2016
+assert_not_contains "$default_socket_home/.ssh/config.d/personal.conf" 'IdentityAgent $BITWARDEN_SSH_AUTH_SOCK'
+
 # Unrelated attachments do not replace legacy Notes.
 legacy_home=$(new_home unrelated-attachment)
 : > "$bw_log"

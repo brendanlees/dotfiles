@@ -1,8 +1,11 @@
 #!/bin/sh
-# managed by chezmoi - re-runs when packages-darwin.yml changes
+# The role-scoped taps list is the approval list, including future tap updates.
+# Do not bypass Homebrew trust checks or approve unrelated installed taps.
+set -eu
 
-{{- $taps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .taps .)) }}
+{{- $taps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .taps .)) | uniq }}
 
 {{- range $taps }}
-brew tap {{ . }}
+brew trust --tap {{ . | quote }}
+brew tap {{ . | quote }}
 {{- end }}

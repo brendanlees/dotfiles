@@ -56,7 +56,7 @@ for call in calls:
 assert "splashbar" not in items, items
 assert items.count("omlx") == 1, items
 assert items.index("omlx") == items.index("showy_quota.trigger") - 1, items
-assert items.index("spotify") < items.index("omlx"), items
+assert "spotify" not in items, items
 widget = properties["omlx"]
 assert widget["drawing"] == "off", "do not flash a widget on machines without oMLX"
 assert widget["update_freq"] == "3" and widget["updates"] == "on", "hidden items must keep checking for startup"

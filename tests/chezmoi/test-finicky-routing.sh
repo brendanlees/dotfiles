@@ -17,7 +17,7 @@ const route = (href) => {
 };
 const mailto = new URL('mailto:hello@example.com?subject=Hello');
 assert.equal(config.handlers.some((handler) => handler.match(mailto, { opener: null })), false);
-assert.equal(route('https://open.spotify.com/track/123'), 'Spotify');
+assert.equal(route('https://open.spotify.com/track/123'), 'Dia');
 assert.equal(route('https://open.spotify.com.evil.example/track/123'), 'Dia');
 assert.equal(route('https://example.com/?url=open.spotify.com'), 'Dia');
 assert.equal(route('https://example.com/'), 'Dia');

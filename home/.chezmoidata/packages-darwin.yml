@@ -20,7 +20,8 @@ npm:
   work: []
 
 taps:
-  base: []
+  base:
+    - oven-sh/bun
   personal:
     - anomalyco/tap
     - felixkratz/formulae
@@ -28,11 +29,11 @@ taps:
     - nikitabobko/tap
     - qmk/qmk
     - xykong/tap
-    - oven-sh/bun
     - openclaw/tap
     - yt-dlp/taps
     - mutagen-io/mutagen
     - bskaplou/tap
+    - gromgit/brewtils
   work:
     - ddev/ddev
     - discoteq/discoteq
@@ -78,8 +79,6 @@ brews:
     - macfuse
     - macwhisper
     - micro-snitch
-    - soundsource
-    - spicetify-cli
     - syncthing
     - tldr
     - worktrunk
@@ -130,7 +129,6 @@ casks:
     - ableton-live-suite
     - affinity-photo
     - airbuddy
-    - betterdisplay
     - cryptomator
     - cuadriver
     - claude
@@ -148,7 +146,6 @@ casks:
     - helium-browser
     - boltai
     - plexamp
-    - spotify
     - iina
     - brave-browser
     - bitwarden
@@ -171,7 +168,6 @@ casks:
     - ente-auth
     - homerow
     - flux-app
-    - typewhisper
     - font-monaspace-nerd-font
     - font-monaspice-nerd-font
     - font-noto-sans-symbols-2

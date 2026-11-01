@@ -4,6 +4,13 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
+# Only service definitions remain managed as plists; app state stays local.
+python3 - "$repo_root/home/Library" <<'PY'
+import sys
+from pathlib import Path
+assert not list(Path(sys.argv[1]).rglob('*.plist')), 'do not restore full plist snapshots'
+PY
+
 fixture="$tmpdir/source"
 mkdir -p "$fixture/.chezmoiscripts/darwin" "$tmpdir/bin"
 cp "$repo_root/home/.chezmoiignore" "$fixture/"

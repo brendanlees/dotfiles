@@ -1,7 +1,16 @@
-{{- /* Keep externals and hooks that populate their directories on the same bootstrap phase. */ -}}
+{{- /* Gate private fetches; local hooks can instead accept their existing checkout. */ -}}
 {{- $manifest := and (hasKey . "ssh") (hasKey .ssh "bw_manifest_item") .ssh.bw_manifest_item -}}
-{{- if and $manifest (not (stat (joinPath .chezmoi.homeDir ".ssh/config.d/personal.conf"))) -}}
+{{- if not $manifest -}}
+true
+{{- else if not (stat (joinPath .chezmoi.homeDir ".ssh/config.d/personal.conf")) -}}
+false
+{{- else if eq .chezmoi.os "windows" -}}
+true
+{{- else -}}
+{{- $helper := joinPath .chezmoi.homeDir ".local/bin/cz-ssh-ready" -}}
+{{- if not (stat $helper) -}}
 false
 {{- else -}}
-true
+{{- output "sh" "-c" "if HOME=\"$1\" \"$2\" \"$3\" >/dev/null 2>&1; then printf true; else printf false; fi" "cz-ssh-ready" .chezmoi.homeDir $helper "git@gitea.lab.brendans.cloud" -}}
+{{- end -}}
 {{- end -}}

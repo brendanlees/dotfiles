@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Check the selected SSH agent without connecting to a server or unlocking a vault."""
+
+import os
+from pathlib import Path
+import stat
+import subprocess
+import sys
+from urllib.parse import urlsplit
+
+
+def run(args, **kwargs):
+    return subprocess.run(args, capture_output=True, text=True, timeout=5, **kwargs)
+
+
+def expand_path(value):
+    if value == "SSH_AUTH_SOCK":
+        value = os.environ.get(value, "")
+    elif value.startswith("$") and not value.startswith("${"):
+        value = os.environ.get(value[1:], "")
+    value = os.path.expandvars(value).replace("%d", str(Path.home()))
+    if not value or "$" in value or "%" in value:
+        raise ValueError("unresolved agent/key path; export its socket variable or run cz-ssh-refresh --fail")
+    return Path(value).expanduser()
+
+
+def check(remote):
+    # Use ssh itself to resolve Host aliases and option precedence, without connecting.
+    args = ["ssh", "-G", "-F", str(Path.home() / ".ssh/config")]
+    if remote.startswith("ssh://"):
+        url = urlsplit(remote)
+        if not url.hostname:
+            raise ValueError("invalid SSH repository URL")
+        host = (url.username + "@" if url.username else "") + url.hostname
+        if url.port:
+            args.extend(["-p", str(url.port)])
+    else:
+        host = remote.split(":", 1)[0]
+    if not host or host.startswith("-"):
+        raise ValueError("invalid SSH destination")
+    result = run([*args, "--", host])
+    if result.returncode:
+        raise ValueError("cannot read SSH configuration; run cz-ssh-refresh --fail")
+    options = {}
+    for line in result.stdout.splitlines():
+        key, _, value = line.partition(" ")
+        options.setdefault(key, []).append(value)
+    agent = options.get("identityagent", ["none"])[0]
+    # Local-file and ordinary SSH setups do not depend on the Bitwarden agent.
+    if agent == "none":
+        return
+    socket = expand_path(agent)
+    if not stat.S_ISSOCK(socket.stat().st_mode):
+        raise ValueError("configured SSH agent socket is unavailable")
+    result = run(["ssh-add", "-L"], env={**os.environ, "SSH_AUTH_SOCK": str(socket)})
+    keys = {tuple(line.split()[:2]) for line in result.stdout.splitlines() if len(line.split()) >= 2}
+    if result.returncode or not keys:
+        raise ValueError("SSH agent has no available keys")
+    # Generated agent entries use public-key hints; never open private key files.
+    hints = [expand_path(value) for value in options.get("identityfile", []) if value.endswith(".pub")]
+    if hints and not any(tuple(path.read_text().split()[:2]) in keys for path in hints):
+        raise ValueError("SSH agent does not expose the configured public key")
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: cz-ssh-ready SSH_DESTINATION_OR_GIT_URL", file=sys.stderr)
+        return 2
+    try:
+        check(sys.argv[1])
+    except (OSError, ValueError, subprocess.TimeoutExpired) as error:
+        print(f"warn: SSH is not ready: {error}. Open Bitwarden, enable its SSH agent, "
+              "sign in/unlock if needed, then retry chezmoi apply.", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

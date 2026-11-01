@@ -8,7 +8,7 @@ defaults write -g AppleInterfaceStyle -string Dark
 defaults write -g AppleShowScrollBars -string WhenScrolling
 
 {{ if $manageInputFinder -}}
-# keyboard and text input; symbolic shortcuts remain owned by their managed plist.
+# Keyboard and text input; leave symbolic shortcuts under local user control.
 defaults write -g AppleKeyboardUIMode -int 1
 defaults write -g ApplePressAndHoldEnabled -bool false
 defaults write -g InitialKeyRepeat -int 15

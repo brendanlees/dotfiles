@@ -13,7 +13,7 @@ theme --current          # print active theme
 
 type to fuzzy-filter theme names, then press Enter to select. Escape or Ctrl-C cancels without changing files or applying configuration. the picker requires the already-provisioned [fzf](https://github.com/junegunn/fzf#usage); direct selection does not.
 
-the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi and Spicetify theme hooks for the current OS. It does not install packages, update plugins or sync private repositories.
+the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi theme hook for the current OS. It does not install packages, update plugins or sync private repositories.
 
 tmux, ghostty, herdr, borders, sketchybar and nvim are live-reloaded where available.
 

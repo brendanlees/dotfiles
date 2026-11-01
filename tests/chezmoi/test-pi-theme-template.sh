@@ -111,7 +111,7 @@ fi
 rendered_posix="$tmpdir/pi-theme-writer.py"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts","personal":true}' \
+  --override-data '{"theme":"guts","personal":true,"ssh":{"bw_manifest_item":""}}' \
   <"$posix_writer" >"$rendered_posix"
 
 agent_dir="$tmpdir/pi-agent"
@@ -123,7 +123,7 @@ jq -e '.name == "chezmoi" and .vars.activeTheme == "guts"' "$target" >/dev/null
 rendered_windows="$tmpdir/pi-theme-writer.ps1"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"theme":"guts","personal":true,"chezmoi":{"os":"windows"}}' \
+  --override-data '{"theme":"guts","personal":true,"ssh":{"bw_manifest_item":""},"chezmoi":{"os":"windows"}}' \
   <"$windows_writer" >"$rendered_windows"
 grep -Fq '"activeTheme": "guts"' "$rendered_windows"
 grep -Fq 'chezmoi.json' "$rendered_windows"
