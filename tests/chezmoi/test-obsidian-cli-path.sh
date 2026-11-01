@@ -72,4 +72,27 @@ define_fixture linux
 [[ ! -e "$tmpdir/linux/home/.local/bin/obsidian" && \
   ! -L "$tmpdir/linux/home/.local/bin/obsidian" ]]
 
-echo 'Obsidian CLI path registration ok'
+# The Neovim shortcut must preserve spaces in HOME and the vault path, load the
+# lazy plugin before running its daily-note command, and forward extra arguments.
+chezmoi execute-template --source "$repo_root" --override-data "$darwin_data" \
+  --file "$source_root/dot_config/zsh/exact_aliases.d/general.zsh.tmpl" \
+  >"$tmpdir/aliases.zsh"
+mkdir -p "$tmpdir/bin" "$tmpdir/home with spaces"
+cat >"$tmpdir/bin/nvim" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$OV_TEST_LOG"
+SH
+chmod +x "$tmpdir/bin/nvim"
+
+OV_TEST_LOG="$tmpdir/nvim.log" HOME="$tmpdir/home with spaces" \
+  PATH="$tmpdir/bin:$PATH" ALIASES_FILE="$tmpdir/aliases.zsh" \
+  zsh -fc 'source "$ALIASES_FILE"; eval "ov --headless"'
+
+printf '%s\n' \
+  "$tmpdir/home with spaces/Notes/Obsidian/Vaults/PKM Vault/PKM" \
+  '-c' 'Lazy load obsidian.nvim' \
+  '-c' 'Obsidian today' \
+  '--headless' >"$tmpdir/expected.log"
+cmp "$tmpdir/expected.log" "$tmpdir/nvim.log"
+
+echo 'Obsidian CLI path registration and Neovim daily-note shortcut ok'

@@ -5,3 +5,6 @@
 alias sudo="sudo env PATH=\"\$PATH\" " # expand aliases + preserve PATH for mise tools
 alias dotfiles="cd ~/.local/share/chezmoi"
 alias c="clear"
+
+# Load Obsidian explicitly: opening the vault directory does not trigger Markdown loading.
+alias ov='nvim "$HOME/Notes/Obsidian/Vaults/PKM Vault/PKM" -c "Lazy load obsidian.nvim" -c "Obsidian today"'
