@@ -198,8 +198,10 @@ apply_fresh
 [[ $(wc -l <"$fresh_home/ssh-refresh-calls") -eq 2 ]]
 
 # A listening agent with no keys must also defer private clones.
-eval "$(ssh-agent -s -a "$fresh_home/.bitwarden-ssh-agent.sock")" >/dev/null
-test_agent_pid=$SSH_AGENT_PID
+# Older ssh-agent versions do not quote socket paths with spaces in their output.
+# Set the socket ourselves and extract only the PID, rather than evaluating shell code.
+export SSH_AUTH_SOCK="$fresh_home/.bitwarden-ssh-agent.sock"
+test_agent_pid=$(ssh-agent -s -a "$SSH_AUTH_SOCK" | awk -F '[=;]' '/^SSH_AGENT_PID=/ {print $2}')
 apply_fresh
 [[ ! -e "$fresh_home/clones" && ! -e "$fresh_home/skills-reconciled" ]]
 
