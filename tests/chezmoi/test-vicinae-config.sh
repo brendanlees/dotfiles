@@ -184,96 +184,240 @@ assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {
     "enabled": True, "shortcut": "alt+N",
 }
 
-# Alt+N opens the ov herdr session on its notes tab and starts nvim only from an
-# idle shell. An attached client keeps its own view while a new client opens on
-# the session's focused tab, so the script replaces any attached window.
+# Alt+N owns one Ghostty window, not every terminal or every ov client.
+# Keep these launcher regressions with the binding's existing contract owner.
 fake_tool = r'''#!/usr/bin/env python3
-import json, os, sys
+import fcntl, json, os, sys, time
 from pathlib import Path
 
 tool, args = Path(sys.argv[0]).name, sys.argv[1:]
-state_file = Path(os.environ["FAKE_STATE"])
-state = json.loads(state_file.read_text())
-target = args[:2] if tool == "herdr" and args[:1] in (["--machine"], ["--session"]) else []
-args = args[len(target):]
-with open(os.environ["FAKE_LOG"], "a") as log:
-    log.write(json.dumps([tool, *args]) + "\n")
-if tool == "pkill":
-    sys.exit(1)  # no attached client to replace
-if tool == "osascript":
-    assert 'tell application "Ghostty"' in sys.stdin.read()
-    state["running"] = True  # attaching starts a stopped session
-elif args == ["machine", "list", "--json"]:
-    print(json.dumps([{"label": label} for label in state["machines"]]))
-elif args == ["session", "list", "--json"]:
-    print(json.dumps({"sessions": [{"name": name} for name in state["sessions"]]}))
-else:
-    assert target == state["target"], target
-    if not state["running"]:
-        sys.exit("server_not_running")
-    result = {}
-    if args[:2] == ["tab", "list"]:
-        result = {"tabs": state["tabs"]}
-    elif args[:2] == ["pane", "list"]:
-        result = {"panes": state["panes"]}
-    elif args[:2] == ["pane", "process-info"]:
-        result = {"process_info": {"shell_pid": 10, "foreground_process_group_id": 20 if state["busy"] else 10}}
-    elif args[:2] == ["workspace", "create"]:
-        state["tabs"].append({"tab_id": "w9:t1", "label": "1"})
-        state["panes"].append({"pane_id": "w9:p1", "tab_id": "w9:t1"})
-        result = {"tab": {"tab_id": "w9:t1"}, "root_pane": {"pane_id": "w9:p1"}}
-    elif args[:2] == ["tab", "rename"]:
-        next(tab for tab in state["tabs"] if tab["tab_id"] == args[2])["label"] = args[3]
-    print(json.dumps({"id": "fake", "result": result}))
-state_file.write_text(json.dumps(state))
+if tool == "lockf":
+    assert args == ["-s", "-t", "0", "9"]
+    try:
+        fcntl.flock(9, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        sys.exit(75)
+    sys.exit(0)
+
+# The local headless server starts in the background; serialize fixture state.
+with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
+    fcntl.flock(guard, fcntl.LOCK_EX)
+    state_file = Path(os.environ["FAKE_STATE"])
+    state = json.loads(state_file.read_text())
+    target = args[:2] if tool == "herdr" and args[:1] in (["--machine"], ["--session"]) else []
+    args = args[len(target):]
+    with open(os.environ["FAKE_LOG"], "a") as log:
+        log.write(json.dumps([tool, *args]) + "\n")
+    if tool in ("pkill", "kill"):
+        sys.exit("must not disconnect another client")
+    elif tool == "sleep":
+        pass
+    elif tool == "aerospace":
+        if args[:1] == ["list-windows"]:
+            assert args == ["list-windows", "--all", "--format",
+                            "%{window-id} %{app-bundle-id} %{window-title}", "--json"]
+            if state.get("aerospace_failed"):
+                sys.exit("AeroSpace unavailable")
+            if state.get("pending_window") and not state.get("window_missing"):
+                if state.get("window_delay", 0):
+                    state["window_delay"] -= 1
+                else:
+                    state["windows"].append(state.pop("pending_window"))
+            print(json.dumps(state["windows"]))
+        elif args[:1] == ["move-node-to-workspace"]:
+            assert args[1:2] == ["--window-id"] and args[3:] == ["8-notes"]
+            state["moved"] = int(args[2])
+        elif args[:1] == ["focus"]:
+            assert args[1:2] == ["--window-id"]
+            state["focused"] = int(args[2])
+        else:
+            raise AssertionError(args)
+    elif tool == "osascript":
+        script = sys.stdin.read()
+        assert 'tell application "Ghostty"' in script
+        assert "set name override of notesTab to item 2 of argv" in script
+        assert "set name override of focused terminal of notesTab to item 2 of argv" in script
+        assert state["focused_tab"] == next(t["tab_id"] for t in state["tabs"] if t["label"] == "notes")
+        state["pending_window"] = {
+            "window-id": 42, "app-bundle-id": "com.mitchellh.ghostty", "window-title": args[2],
+        }
+    elif tool in ("ssh", "nohup"):
+        # Background servers must not inherit the launch lock.
+        try:
+            os.fstat(9)
+        except OSError:
+            pass
+        else:
+            raise AssertionError("headless server inherited launch lock")
+        if tool == "ssh":
+            assert args[:5] == ["-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "bmax"]
+            assert "nohup herdr --session ov server" in args[5]
+            if state.get("ssh_failed"):
+                sys.exit("SSH unavailable")
+        else:
+            assert args == ["herdr", "--session", "ov", "server"]
+        state["running"] = not state.get("start_failed", False)
+    elif args == ["machine", "list", "--json"]:
+        print(json.dumps([{"label": label} for label in state["machines"]]))
+    else:
+        assert tool == "herdr" and target == state["target"], (tool, target)
+        if not state["running"]:
+            sys.exit("server_not_running")
+        result = {}
+        if args[:2] == ["tab", "list"]:
+            result = {"tabs": state["tabs"]}
+        elif args[:2] == ["pane", "list"]:
+            result = {"panes": state["panes"]}
+        elif args[:2] == ["pane", "process-info"]:
+            result = {"process_info": state.get("process_info", {
+                "shell_pid": 10, "foreground_process_group_id": 20 if state["busy"] else 10,
+            })}
+        elif args[:2] == ["workspace", "create"]:
+            state["tabs"].append({"tab_id": "w9:t1", "label": "1"})
+            state["panes"].append({"pane_id": "w9:p1", "tab_id": "w9:t1"})
+            result = {"tab": {"tab_id": "w9:t1"}, "root_pane": {"pane_id": "w9:p1"}}
+        elif args[:2] == ["tab", "rename"]:
+            next(tab for tab in state["tabs"] if tab["tab_id"] == args[2])["label"] = args[3]
+        elif args[:2] == ["tab", "focus"]:
+            state["focused_tab"] = args[2]
+        elif args[:2] == ["pane", "run"]:
+            state["busy"] = True
+        else:
+            raise AssertionError(args)
+        print(json.dumps({"id": "fake", "result": result}))
+    state_file.write_text(json.dumps(state))
+if tool == "sleep":
+    time.sleep(0.01)
 '''
-
-def open_daily_note(**state):
-    with tempfile.TemporaryDirectory() as temporary:
-        temp = Path(temporary)
-        for tool in ["herdr", "osascript", "pkill"]:
-            (temp / tool).write_text(fake_tool)
-            (temp / tool).chmod(0o700)
-        (temp / "state.json").write_text(json.dumps(state))
-        result = subprocess.run(
-            ["bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
-            capture_output=True, text=True,
-            env={**os.environ, "PATH": str(temp) + os.pathsep + os.environ["PATH"],
-                 "FAKE_STATE": str(temp / "state.json"), "FAKE_LOG": str(temp / "calls.log")},
-        )
-        assert result.returncode == 0, result.stderr
-        reads = (["machine", "list"], ["session", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
-        calls = [json.loads(line) for line in (temp / "calls.log").read_text().splitlines()]
-        return [call for call in calls if call[0] != "herdr" or call[1:3] not in reads]
-
-def window(attach):
-    return [["pkill", "-HUP", "-fx", attach], ["osascript", "-", f"/bin/zsh -lic 'exec {attach}'"]]
 
 notes = {
     "tabs": [{"tab_id": "w5:t1", "label": "agent"}, {"tab_id": "w6:t1", "label": "notes"}],
     "panes": [{"pane_id": "w5:p2", "tab_id": "w5:t1"}, {"pane_id": "w6:p1", "tab_id": "w6:t1"}],
 }
-# A remote attach also leaves a local sessions/ov folder, which must not change the route.
-bair = {"machines": ["bmax", "bmax/ov"], "sessions": ["default", "ov"], "target": ["--machine", "bmax/ov"]}
-remote = window("herdr --remote bmax --session ov")
+# The existence of a local ov session must not override the saved bmax route.
+bair = {"machines": ["bmax", "bmax/ov"], "target": ["--machine", "bmax/ov"]}
+bmax = {"machines": [], "target": ["--session", "ov"]}
+title = "Obsidian Notes (Herdr)"
+unrelated_windows = [
+    {"window-id": 11, "app-bundle-id": "com.mitchellh.ghostty", "window-title": " "},
+    {"window-id": 12, "app-bundle-id": "com.mitchellh.ghostty", "window-title": "another project"},
+    {"window-id": 13, "app-bundle-id": "unrelated.app", "window-title": title},
+]
 daily = "cd ~/Notes/Obsidian/PKM && nvim -c 'Obsidian today'"
-assert open_daily_note(**bair, running=True, busy=False, **notes) == [
-    ["herdr", "pane", "run", "w6:p1", daily], ["herdr", "tab", "focus", "w6:t1"], *remote,
-], "a Mac with the saved bmax/ov machine opens nvim in bmax's idle notes shell"
-assert open_daily_note(**bair, running=False, busy=False, tabs=[], panes=[]) == [
-    *remote,
-    ["herdr", "workspace", "create", "--label", "notes"],
-    ["herdr", "tab", "rename", "w9:t1", "notes"],
-    ["herdr", "pane", "run", "w9:p1", daily],
-    ["herdr", "tab", "focus", "w9:t1"],
-    *remote,
-], "attaching starts a stopped session, which then gains a notes tab"
-assert open_daily_note(
-    machines=[], sessions=["default", "ov"], target=["--session", "ov"],
-    running=True, busy=True, **notes,
-) == [
-    ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
-], "bmax uses its local session, and a running editor never receives typed input"
+focus_notes = [
+    ["aerospace", "move-node-to-workspace", "--window-id", "42", "8-notes"],
+    ["aerospace", "focus", "--window-id", "42"],
+]
+def window(attach):
+    return [["osascript", "-", f"/bin/zsh -lic 'exec {attach}'", title], *focus_notes]
+
+from contextlib import contextmanager
+@contextmanager
+def notes_launcher(**state):
+    with tempfile.TemporaryDirectory() as temporary:
+        temp = Path(temporary)
+        for tool in ["herdr", "osascript", "aerospace", "ssh", "nohup", "sleep", "lockf", "pkill", "kill"]:
+            (temp / tool).write_text(fake_tool)
+            (temp / tool).chmod(0o700)
+        state_file, log_file = temp / "state.json", temp / "calls.log"
+        state_file.write_text(json.dumps({
+            "running": True, "busy": False, "windows": unrelated_windows, **notes, **state,
+        }))
+        def invoke(*, fail=None):
+            log_file.write_text("")
+            result = subprocess.run(
+                ["/bin/bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
+                capture_output=True, text=True, timeout=15,
+                env={**os.environ, "HOME": str(temp),
+                     "PATH": str(temp) + os.pathsep + os.environ["PATH"],
+                     "FAKE_STATE": str(state_file), "FAKE_LOG": str(log_file)},
+            )
+            if fail:
+                assert result.returncode != 0 and fail in result.stderr, result
+            else:
+                assert result.returncode == 0, result.stderr
+            reads = (["machine", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
+            calls = [json.loads(line) for line in log_file.read_text().splitlines()]
+            calls = [call for call in calls if not (
+                (call[0] == "herdr" and call[1:3] in reads)
+                or call[:2] == ["aerospace", "list-windows"] or call[0] == "sleep"
+            )]
+            current = json.loads(state_file.read_text())
+            assert current["windows"][:3] == unrelated_windows, "unrelated windows stay untouched"
+            return calls, current
+        yield invoke, state_file, temp
+
+with notes_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
+    calls, state = invoke()
+    assert calls == [
+        ["herdr", "pane", "run", "w6:p1", daily],
+        ["herdr", "tab", "focus", "w6:t1"],
+        *window("herdr --remote bmax --session ov"),
+    ]
+    assert state["moved"] == state["focused"] == 42
+    calls, state = invoke()
+    assert calls == focus_notes, "repeat Alt+N only focuses the existing notes window"
+    # Closing notes must not lose the editor or leave a stale window-ID cache.
+    state["windows"] = unrelated_windows
+    state_file.write_text(json.dumps(state))
+    calls, _ = invoke()
+    assert calls == [
+        ["herdr", "tab", "focus", "w6:t1"], *window("herdr --remote bmax --session ov"),
+    ], "reopening reconnects without restarting Neovim"
+
+with notes_launcher(**bmax, busy=True) as (invoke, _, _):
+    calls, _ = invoke()
+    assert calls == [
+        ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
+    ], "local routing never sends input to a running editor"
+
+with notes_launcher(**bmax, process_info={}) as (invoke, _, _):
+    calls, _ = invoke()
+    assert not any(call[:3] == ["herdr", "pane", "run"] for call in calls), "unknown process is not an idle shell"
+
+for route, attach, starter in [
+    (bair, "herdr --remote bmax --session ov", "ssh"),
+    (bmax, "herdr --session ov", "nohup"),
+]:
+    with notes_launcher(**route, running=False, tabs=[], panes=[]) as (invoke, _, _):
+        calls, _ = invoke()
+        assert calls[0][0] == starter
+        assert calls[1:] == [
+            ["herdr", "workspace", "create", "--label", "notes"],
+            ["herdr", "tab", "rename", "w9:t1", "notes"],
+            ["herdr", "pane", "run", "w9:p1", daily],
+            ["herdr", "tab", "focus", "w9:t1"],
+            *window(attach),
+        ], "cold start prepares notes before attaching exactly one window"
+
+with notes_launcher(**bair, running=False, start_failed=True) as (invoke, _, _):
+    calls, _ = invoke(fail="did not become ready")
+    assert len(calls) == 1 and calls[0][0] == "ssh", "failed startup opens no window"
+
+with notes_launcher(**bair, running=False, ssh_failed=True) as (invoke, _, _):
+    calls, _ = invoke(fail="SSH unavailable")
+    assert len(calls) == 1 and calls[0][0] == "ssh", "failed SSH never falls back to local"
+
+with notes_launcher(**bmax, aerospace_failed=True) as (invoke, _, _):
+    calls, _ = invoke(fail="AeroSpace unavailable")
+    assert not calls, "failed window discovery must not spawn duplicates"
+
+with notes_launcher(**bmax, window_missing=True) as (invoke, _, _):
+    calls, _ = invoke(fail="AeroSpace could not find it")
+    assert sum(call[0] == "osascript" for call in calls) == 1
+    assert not any(call[:2] == ["aerospace", "focus"] for call in calls)
+
+# Holding the same lock simulates a second hotkey while the first is starting.
+import fcntl
+with notes_launcher(**bmax) as (invoke, _, temp):
+    lock = temp / ".cache/vicinae/obsidian-notes.lock"
+    lock.parent.mkdir(parents=True)
+    with lock.open("w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        calls, _ = invoke()
+        assert not calls, "overlapping invocations do nothing"
+    calls, _ = invoke()
+    assert any(call[0] == "osascript" for call in calls), "released locks do not block future launches"
 
 # Definitions and bindings share one source, so their IDs cannot drift apart.
 fields = {"id", "name", "url", "icon", "app"}
