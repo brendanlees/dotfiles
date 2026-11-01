@@ -7,5 +7,5 @@ set -euo pipefail
 # @raycast.icon 📝
 # @raycast.description Open today's daily note in a new Ghostty window
 
-# An interactive login shell loads mise and the same ov alias used in terminals.
+# An interactive login shell loads mise and the same ov shortcut used in terminals.
 exec open -na Ghostty --args -e /bin/zsh -lic ov

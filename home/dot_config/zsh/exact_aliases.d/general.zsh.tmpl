@@ -6,5 +6,10 @@ alias sudo="sudo env PATH=\"\$PATH\" " # expand aliases + preserve PATH for mise
 alias dotfiles="cd ~/.local/share/chezmoi"
 alias c="clear"
 
-# :Obsidian triggers plugin loading; :Lazy is not registered yet during interactive startup.
-alias ov='nvim "$HOME/Notes/Obsidian/Vaults/PKM Vault/PKM" -c "Obsidian today"'
+# Remove the old alias when this file is reloaded in an existing shell.
+unalias ov 2>/dev/null || true
+# Use the vault as cwd without opening a directory buffer that Neo-tree can take over.
+ov() (
+    cd "$HOME/Notes/Obsidian/Vaults/PKM Vault/PKM" || return
+    nvim -c "Obsidian today" "$@"
+)
