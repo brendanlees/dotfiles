@@ -184,23 +184,91 @@ assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {
     "enabled": True, "shortcut": "alt+N",
 }
 
-# The launcher starts a new terminal with the same interactive-shell alias,
-# rather than running a terminal editor without a TTY or opening the Obsidian GUI.
-with tempfile.TemporaryDirectory() as temporary:
-    temp = Path(temporary)
-    opener = temp / "open"
-    opener.write_text('#!/bin/sh\nprintf "%s\\n" "$@" >"$OPEN_LOG"\n')
-    opener.chmod(0o700)
-    log = temp / "open.log"
-    subprocess.run(
-        ["bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
-        check=True,
-        env={**os.environ, "PATH": str(temp) + os.pathsep + os.environ["PATH"],
-             "OPEN_LOG": str(log)},
-    )
-    assert log.read_text().splitlines() == [
-        "-na", "Ghostty", "--args", "-e", "/bin/zsh", "-lic", "ov",
-    ]
+# Alt+N opens the ov herdr session on its vault tab and starts nvim only from an
+# idle shell. An attached client keeps its own view while a new client opens on
+# the session's focused tab, so the script replaces any attached window.
+fake_tool = r'''#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+
+tool, args = Path(sys.argv[0]).name, sys.argv[1:]
+state_file = Path(os.environ["FAKE_STATE"])
+state = json.loads(state_file.read_text())
+target = args[:2] if tool == "herdr" and args[:1] in (["--machine"], ["--session"]) else []
+args = args[len(target):]
+with open(os.environ["FAKE_LOG"], "a") as log:
+    log.write(json.dumps([tool, *args]) + "\n")
+if tool == "pkill":
+    sys.exit(1)  # no attached client to replace
+if tool == "osascript":
+    assert 'tell application "Ghostty"' in sys.stdin.read()
+    state["running"] = True  # attaching starts a stopped session
+elif args == ["session", "list", "--json"]:
+    print(json.dumps({"sessions": [{"name": name} for name in state["sessions"]]}))
+else:
+    assert target == state["target"], target
+    if not state["running"]:
+        sys.exit("server_not_running")
+    result = {}
+    if args[:2] == ["tab", "list"]:
+        result = {"tabs": state["tabs"]}
+    elif args[:2] == ["pane", "list"]:
+        result = {"panes": state["panes"]}
+    elif args[:2] == ["pane", "process-info"]:
+        result = {"process_info": {"shell_pid": 10, "foreground_process_group_id": 20 if state["busy"] else 10}}
+    elif args[:2] == ["workspace", "create"]:
+        state["tabs"].append({"tab_id": "w9:t1", "label": "1"})
+        state["panes"].append({"pane_id": "w9:p1", "tab_id": "w9:t1"})
+        result = {"tab": {"tab_id": "w9:t1"}, "root_pane": {"pane_id": "w9:p1"}}
+    elif args[:2] == ["tab", "rename"]:
+        next(tab for tab in state["tabs"] if tab["tab_id"] == args[2])["label"] = args[3]
+    print(json.dumps({"id": "fake", "result": result}))
+state_file.write_text(json.dumps(state))
+'''
+
+def open_daily_note(**state):
+    with tempfile.TemporaryDirectory() as temporary:
+        temp = Path(temporary)
+        for tool in ["herdr", "osascript", "pkill"]:
+            (temp / tool).write_text(fake_tool)
+            (temp / tool).chmod(0o700)
+        (temp / "state.json").write_text(json.dumps(state))
+        result = subprocess.run(
+            ["bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
+            capture_output=True, text=True,
+            env={**os.environ, "PATH": str(temp) + os.pathsep + os.environ["PATH"],
+                 "FAKE_STATE": str(temp / "state.json"), "FAKE_LOG": str(temp / "calls.log")},
+        )
+        assert result.returncode == 0, result.stderr
+        reads = (["session", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
+        calls = [json.loads(line) for line in (temp / "calls.log").read_text().splitlines()]
+        return [call for call in calls if call[0] != "herdr" or call[1:3] not in reads]
+
+def window(attach):
+    return [["pkill", "-HUP", "-fx", attach], ["osascript", "-", f"/bin/zsh -lic 'exec {attach}'"]]
+
+vault = {
+    "tabs": [{"tab_id": "w5:t1", "label": "agent"}, {"tab_id": "w6:t1", "label": "vault"}],
+    "panes": [{"pane_id": "w5:p2", "tab_id": "w5:t1"}, {"pane_id": "w6:p1", "tab_id": "w6:t1"}],
+}
+bmax = {"sessions": ["default"], "target": ["--machine", "bmax/ov"]}
+remote = window("herdr --remote bmax --session ov")
+assert open_daily_note(**bmax, running=True, busy=False, **vault) == [
+    ["herdr", "pane", "run", "w6:p1", "ov"], ["herdr", "tab", "focus", "w6:t1"], *remote,
+], "without a local ov session, use bmax's and start nvim from the idle vault shell"
+assert open_daily_note(**bmax, running=False, busy=False, tabs=[], panes=[]) == [
+    *remote,
+    ["herdr", "workspace", "create", "--label", "vault"],
+    ["herdr", "tab", "rename", "w9:t1", "vault"],
+    ["herdr", "pane", "run", "w9:p1", "ov"],
+    ["herdr", "tab", "focus", "w9:t1"],
+    *remote,
+], "attaching starts a stopped session, which then gains a vault tab"
+assert open_daily_note(
+    sessions=["default", "ov"], target=["--session", "ov"], running=True, busy=True, **vault,
+) == [
+    ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
+], "a local ov session wins, and a running editor never receives typed input"
 
 # Definitions and bindings share one source, so their IDs cannot drift apart.
 fields = {"id", "name", "url", "icon", "app"}
