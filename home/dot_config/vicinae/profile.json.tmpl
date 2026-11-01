@@ -576,8 +576,7 @@
           "enabled": true
         },
         "md.obsidian": {
-          "enabled": true,
-          "shortcut": "alt+N"
+          "enabled": true
         },
         "me.damir.dropover-mac": {
           "enabled": true
@@ -2815,6 +2814,12 @@
       }
     },
     "scripts": {
+      "entrypoints": {
+        "obsidian-daily.sh": {
+          "enabled": true,
+          "shortcut": "alt+N"
+        }
+      },
       "preferences": {
         "customDirs": [
           {{ printf "%s/.config/kanata/scripts/raycast" .chezmoi.homeDir | toJson }}

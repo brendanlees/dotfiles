@@ -72,8 +72,8 @@ define_fixture linux
 [[ ! -e "$tmpdir/linux/home/.local/bin/obsidian" && \
   ! -L "$tmpdir/linux/home/.local/bin/obsidian" ]]
 
-# The Neovim shortcut must preserve spaces in HOME and the vault path, load the
-# lazy plugin before running its daily-note command, and forward extra arguments.
+# The Neovim shortcut must preserve spaces in HOME and the vault path, invoke
+# the command that loads Obsidian directly, and forward extra arguments.
 chezmoi execute-template --source "$repo_root" --override-data "$darwin_data" \
   --file "$source_root/dot_config/zsh/exact_aliases.d/general.zsh.tmpl" \
   >"$tmpdir/aliases.zsh"
@@ -90,7 +90,6 @@ OV_TEST_LOG="$tmpdir/nvim.log" HOME="$tmpdir/home with spaces" \
 
 printf '%s\n' \
   "$tmpdir/home with spaces/Notes/Obsidian/Vaults/PKM Vault/PKM" \
-  '-c' 'Lazy load obsidian.nvim' \
   '-c' 'Obsidian today' \
   '--headless' >"$tmpdir/expected.log"
 cmp "$tmpdir/expected.log" "$tmpdir/nvim.log"
