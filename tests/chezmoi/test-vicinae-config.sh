@@ -184,7 +184,7 @@ assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {
     "enabled": True, "shortcut": "alt+N",
 }
 
-# Alt+N opens the ov herdr session on its vault tab and starts nvim only from an
+# Alt+N opens the ov herdr session on its notes tab and starts nvim only from an
 # idle shell. An attached client keeps its own view while a new client opens on
 # the session's focused tab, so the script replaces any attached window.
 fake_tool = r'''#!/usr/bin/env python3
@@ -203,6 +203,8 @@ if tool == "pkill":
 if tool == "osascript":
     assert 'tell application "Ghostty"' in sys.stdin.read()
     state["running"] = True  # attaching starts a stopped session
+elif args == ["machine", "list", "--json"]:
+    print(json.dumps([{"label": label} for label in state["machines"]]))
 elif args == ["session", "list", "--json"]:
     print(json.dumps({"sessions": [{"name": name} for name in state["sessions"]]}))
 else:
@@ -240,35 +242,38 @@ def open_daily_note(**state):
                  "FAKE_STATE": str(temp / "state.json"), "FAKE_LOG": str(temp / "calls.log")},
         )
         assert result.returncode == 0, result.stderr
-        reads = (["session", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
+        reads = (["machine", "list"], ["session", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
         calls = [json.loads(line) for line in (temp / "calls.log").read_text().splitlines()]
         return [call for call in calls if call[0] != "herdr" or call[1:3] not in reads]
 
 def window(attach):
     return [["pkill", "-HUP", "-fx", attach], ["osascript", "-", f"/bin/zsh -lic 'exec {attach}'"]]
 
-vault = {
-    "tabs": [{"tab_id": "w5:t1", "label": "agent"}, {"tab_id": "w6:t1", "label": "vault"}],
+notes = {
+    "tabs": [{"tab_id": "w5:t1", "label": "agent"}, {"tab_id": "w6:t1", "label": "notes"}],
     "panes": [{"pane_id": "w5:p2", "tab_id": "w5:t1"}, {"pane_id": "w6:p1", "tab_id": "w6:t1"}],
 }
-bmax = {"sessions": ["default"], "target": ["--machine", "bmax/ov"]}
+# A remote attach also leaves a local sessions/ov folder, which must not change the route.
+bair = {"machines": ["bmax", "bmax/ov"], "sessions": ["default", "ov"], "target": ["--machine", "bmax/ov"]}
 remote = window("herdr --remote bmax --session ov")
-assert open_daily_note(**bmax, running=True, busy=False, **vault) == [
-    ["herdr", "pane", "run", "w6:p1", "ov"], ["herdr", "tab", "focus", "w6:t1"], *remote,
-], "without a local ov session, use bmax's and start nvim from the idle vault shell"
-assert open_daily_note(**bmax, running=False, busy=False, tabs=[], panes=[]) == [
+daily = "cd ~/Notes/Obsidian/PKM && nvim -c 'Obsidian today'"
+assert open_daily_note(**bair, running=True, busy=False, **notes) == [
+    ["herdr", "pane", "run", "w6:p1", daily], ["herdr", "tab", "focus", "w6:t1"], *remote,
+], "a Mac with the saved bmax/ov machine opens nvim in bmax's idle notes shell"
+assert open_daily_note(**bair, running=False, busy=False, tabs=[], panes=[]) == [
     *remote,
-    ["herdr", "workspace", "create", "--label", "vault"],
-    ["herdr", "tab", "rename", "w9:t1", "vault"],
-    ["herdr", "pane", "run", "w9:p1", "ov"],
+    ["herdr", "workspace", "create", "--label", "notes"],
+    ["herdr", "tab", "rename", "w9:t1", "notes"],
+    ["herdr", "pane", "run", "w9:p1", daily],
     ["herdr", "tab", "focus", "w9:t1"],
     *remote,
-], "attaching starts a stopped session, which then gains a vault tab"
+], "attaching starts a stopped session, which then gains a notes tab"
 assert open_daily_note(
-    sessions=["default", "ov"], target=["--session", "ov"], running=True, busy=True, **vault,
+    machines=[], sessions=["default", "ov"], target=["--session", "ov"],
+    running=True, busy=True, **notes,
 ) == [
     ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
-], "a local ov session wins, and a running editor never receives typed input"
+], "bmax uses its local session, and a running editor never receives typed input"
 
 # Definitions and bindings share one source, so their IDs cannot drift apart.
 fields = {"id", "name", "url", "icon", "app"}

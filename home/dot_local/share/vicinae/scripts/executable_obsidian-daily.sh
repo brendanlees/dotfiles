@@ -5,22 +5,20 @@ set -euo pipefail
 # @raycast.title Obsidian Daily Note (Neovim)
 # @raycast.mode silent
 # @raycast.icon 📝
-# @raycast.description Open today's daily note in the vault tab of the ov herdr session
+# @raycast.description Open today's daily note in the notes tab of the ov herdr session
 
 # Vicinae may start without the login PATH; inherited tools still win.
 PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"
 
-session=ov
-# bmax keeps the vault in sync, so Macs without their own ov session attach to it.
-host=bmax
-
-if herdr session list --json | jq -e --arg name "$session" 'any(.sessions[]; .name == $name)' >/dev/null; then
-  api=(herdr --session "$session")
-  attach="herdr --session $session"
+# bmax keeps the vault synced, so Macs that save its ov session as a herdr
+# machine use that; bmax itself uses its local session. Remote attaches also
+# create a local sessions/ov folder, so herdr's session list can't decide this.
+if herdr machine list --json | jq -e 'any(.[]; .label == "bmax/ov")' >/dev/null; then
+  api=(herdr --machine bmax/ov)
+  attach="herdr --remote bmax --session ov"
 else
-  # Uses the saved herdr machine labelled bmax/ov.
-  api=(herdr --machine "$host/$session")
-  attach="herdr --remote $host --session $session"
+  api=(herdr --session ov)
+  attach="herdr --session ov"
 fi
 
 # An attached client keeps its own view, while a new one opens on the session's
@@ -48,16 +46,17 @@ if ! "${api[@]}" tab list >/dev/null 2>&1; then
   done
 fi
 
-tab=$("${api[@]}" tab list | jq -r 'first(.result.tabs[] | select(.label == "vault") | .tab_id) // empty')
+tab=$("${api[@]}" tab list | jq -r 'first(.result.tabs[] | select(.label == "notes") | .tab_id) // empty')
 if [[ -z $tab ]]; then
-  tab=$("${api[@]}" workspace create --label vault | jq -r .result.tab.tab_id)
-  "${api[@]}" tab rename "$tab" vault >/dev/null
+  tab=$("${api[@]}" workspace create --label notes | jq -r .result.tab.tab_id)
+  "${api[@]}" tab rename "$tab" notes >/dev/null
 fi
 pane=$("${api[@]}" pane list | jq -r --arg tab "$tab" 'first(.result.panes[] | select(.tab_id == $tab) | .pane_id)')
 # Start nvim only from an idle shell, never by typing into a running program.
+# That shell expands ~, so the same path works for bmax's session.
 if "${api[@]}" pane process-info --pane "$pane" |
   jq -e '.result.process_info | .foreground_process_group_id == .shell_pid' >/dev/null; then
-  "${api[@]}" pane run "$pane" ov >/dev/null
+  "${api[@]}" pane run "$pane" "cd ~/Notes/Obsidian/PKM && nvim -c 'Obsidian today'" >/dev/null
 fi
 "${api[@]}" tab focus "$tab" >/dev/null
 open_window
