@@ -5,10 +5,39 @@ set -euo pipefail
 # @raycast.title Obsidian Daily Note (Neovim)
 # @raycast.mode silent
 # @raycast.icon 📝
-# @raycast.description Open today's daily note in the notes tab of the ov herdr session
+# @raycast.description Focus notes on workspace 8, opening today's note when starting Neovim
 
 # Vicinae may start without the login PATH; inherited tools still win.
 PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"
+
+# Repeated hotkeys during startup must not create competing windows. macOS
+# lockf locks the inherited descriptor; a crashed launcher releases it too.
+mkdir -p "$HOME/.cache/vicinae"
+exec 9>"$HOME/.cache/vicinae/obsidian-notes.lock"
+lockf -s -t 0 9 || {
+  status=$?
+  [[ $status == 75 ]] && exit 0
+  exit "$status"
+}
+
+window_title="Obsidian Notes (Herdr)"
+notes_window() {
+  aerospace list-windows --all --format '%{window-id} %{app-bundle-id} %{window-title}' --json |
+    jq -r --arg title "$window_title" 'first(.[] | select(
+      ."app-bundle-id" == "com.mitchellh.ghostty" and ."window-title" == $title
+    ) | ."window-id") // empty'
+}
+focus_window() {
+  aerospace move-node-to-workspace --window-id "$1" 8-notes
+  aerospace focus --window-id "$1"
+}
+
+# Do not change Herdr's view or type into the editor when returning to notes.
+window=$(notes_window)
+if [[ -n $window ]]; then
+  focus_window "$window"
+  exit 0
+fi
 
 # bmax keeps the vault synced, so Macs that save its ov session as a herdr
 # machine use that; bmax itself uses its local session. Remote attaches also
@@ -16,34 +45,34 @@ PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"
 if herdr machine list --json | jq -e 'any(.[]; .label == "bmax/ov")' >/dev/null; then
   api=(herdr --machine bmax/ov)
   attach="herdr --remote bmax --session ov"
+  remote=true
 else
   api=(herdr --session ov)
   attach="herdr --session ov"
+  remote=false
 fi
 
-# An attached client keeps its own view, while a new one opens on the session's
-# focused tab, so replace any client already attached with this command.
-open_window() {
-  pkill -HUP -fx "$attach" || true
-  osascript - "/bin/zsh -lic 'exec $attach'" >/dev/null <<'APPLESCRIPT'
-on run argv
-  tell application "Ghostty"
-    set cfg to new surface configuration
-    set command of cfg to item 1 of argv
-    new window with configuration cfg
-    activate
-  end tell
-end run
-APPLESCRIPT
-}
-
-# Attaching starts a stopped session; wait for it before changing its layout.
+# Prepare a stopped server before attaching: an attached Herdr client keeps
+# its own view, so focusing a tab after attachment would not select notes.
 if ! "${api[@]}" tab list >/dev/null 2>&1; then
-  open_window
+  if "$remote"; then
+    ssh -o BatchMode=yes -o ConnectTimeout=10 bmax \
+      'export PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"; nohup herdr --session ov server </dev/null >/dev/null 2>&1 &' 9>&-
+  else
+    nohup herdr --session ov server </dev/null >/dev/null 2>&1 9>&- &
+  fi
+  ready=false
   for _ in {1..30}; do
-    "${api[@]}" tab list >/dev/null 2>&1 && break
+    if "${api[@]}" tab list >/dev/null 2>&1; then
+      ready=true
+      break
+    fi
     sleep 1
   done
+  if ! "$ready"; then
+    echo "The ov Herdr session did not become ready; no notes window was opened." >&2
+    exit 1
+  fi
 fi
 
 tab=$("${api[@]}" tab list | jq -r 'first(.result.tabs[] | select(.label == "notes") | .tab_id) // empty')
@@ -55,8 +84,34 @@ pane=$("${api[@]}" pane list | jq -r --arg tab "$tab" 'first(.result.panes[] | s
 # Start nvim only from an idle shell, never by typing into a running program.
 # That shell expands ~, so the same path works for bmax's session.
 if "${api[@]}" pane process-info --pane "$pane" |
-  jq -e '.result.process_info | .foreground_process_group_id == .shell_pid' >/dev/null; then
+  jq -e '.result.process_info | .shell_pid > 0 and .foreground_process_group_id == .shell_pid' >/dev/null; then
   "${api[@]}" pane run "$pane" "cd ~/Notes/Obsidian/PKM && nvim -c 'Obsidian today'" >/dev/null
 fi
 "${api[@]}" tab focus "$tab" >/dev/null
-open_window
+
+# Override both titles so Neovim/Herdr output and Ghostty's blank default
+# cannot hide this window from AeroSpace. Never identify it by app alone.
+osascript - "/bin/zsh -lic 'exec $attach'" "$window_title" >/dev/null <<'APPLESCRIPT'
+on run argv
+  tell application "Ghostty"
+    set cfg to new surface configuration
+    set command of cfg to item 1 of argv
+    set notesWindow to new window with configuration cfg
+    set notesTab to selected tab of notesWindow
+    set name override of notesTab to item 2 of argv
+    set name override of focused terminal of notesTab to item 2 of argv
+  end tell
+end run
+APPLESCRIPT
+
+# AeroSpace learns about new windows asynchronously.
+for _ in {1..30}; do
+  window=$(notes_window)
+  if [[ -n $window ]]; then
+    focus_window "$window"
+    exit 0
+  fi
+  sleep 0.1
+done
+echo "The notes window opened, but AeroSpace could not find it." >&2
+exit 1
