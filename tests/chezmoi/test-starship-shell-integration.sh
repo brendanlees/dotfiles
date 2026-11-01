@@ -50,6 +50,7 @@ for name, role, tty, optout, missing, failure, term in [
     ("missing", "personal-mac", True, False, True, False, "xterm-256color"),
     ("no-zinit", "personal-mac", True, False, False, False, "xterm-256color"),
     ("failure", "personal-mac", True, False, False, True, "xterm-256color"),
+    ("command", "personal-mac", True, False, False, False, "xterm-256color"),
     ("pipe", "personal-mac", False, False, False, False, "xterm-256color"),
     ("dumb", "personal-mac", True, False, False, False, "dumb"),
     *[(role, role, True, False, False, False, "xterm-256color")
@@ -119,9 +120,11 @@ printf '%s\\n' 'export PATH="{tools}:$PATH"'
         "FTL_TEST_PLUGIN": str(ftl_plugin), "ZINIT_LOG": str(zinit_log),
         "TEST_CALLS": str(calls),
     }
+    # The harness itself uses zsh -c; other cases hide that to stand in for a prompt shell.
+    script = 'source "$1"; :' if name == "command" else 'unset ZSH_EXECUTION_STRING; source "$1"; :'
     master, slave = pty.openpty() if tty else (None, None)
     try:
-        result = subprocess.run([zsh, "-dfic", 'source "$1"; :', "zsh", str(rc)],
+        result = subprocess.run([zsh, "-dfic", script, "zsh", str(rc)],
                                 env=env, stdin=slave if tty else subprocess.DEVNULL,
                                 stdout=slave if tty else subprocess.PIPE,
                                 stderr=subprocess.PIPE, timeout=15)
