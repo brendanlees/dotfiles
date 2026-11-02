@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+# Host-local opt-in: obsidian_headless.enabled and vault_path in .chezmoidata/local.yml.
+# Reload when the agent or its startup guards change, not on unrelated applies.
+# helper: {{ include "dot_local/bin/executable_cz-obsidian" | sha256sum }}
+# agent: {{ includeTemplate "Library/LaunchAgents/private_com.brendan.obsidian-headless.plist.tmpl" . | sha256sum }}
+{{ if eq .chezmoi.os "darwin" -}}
+label=com.brendan.obsidian-headless
+domain="gui/$(id -u)"
+plist="$HOME/Library/LaunchAgents/$label.plist"
+
+if launchctl print "$domain/$label" >/dev/null 2>&1; then
+  launchctl bootout "$domain/$label"
+fi
+
+{{ if and .personal (dig "obsidian_headless" "enabled" false .) -}}
+vault='{{ dig "obsidian_headless" "vault_path" (joinPath .chezmoi.homeDir "Notes/Obsidian/PKM") . | replace "'" "'\\''" }}'
+mise="$HOME/.local/bin/mise"
+"$mise" --cd "$HOME" exec -- python3 "$HOME/.local/bin/cz-obsidian" check --path "$vault"
+
+umask 077
+mkdir -p "$HOME/Library/Logs/ObsidianHeadless"
+chmod 700 "$HOME/Library/Logs/ObsidianHeadless"
+launchctl bootstrap "$domain" "$plist"
+{{ else -}}
+# Removing the agent prevents it from returning at the next login. Keep all
+# credentials, sync state, logs and vault contents when opting out.
+rm -f "$plist"
+{{ end -}}
+{{ end -}}
