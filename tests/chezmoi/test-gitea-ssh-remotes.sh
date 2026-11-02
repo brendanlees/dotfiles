@@ -211,6 +211,23 @@ ssh-add "$tmpdir/wrong-key" >/dev/null 2>&1
 apply_fresh
 [[ ! -e "$fresh_home/clones" && ! -e "$fresh_home/skills-reconciled" ]]
 ssh-add "$tmpdir/fixture-key" >/dev/null 2>&1
+
+# Upgrades may already have usable SSH but not the newly introduced helper.
+# Externals are evaluated before apply installs that helper.
+rm "$fresh_home/.local/bin/cz-ssh-ready"
+readiness() {
+  "$chezmoi_bin" execute-template --source "$repo_root" --override-data-file "$render_data" \
+    --override-data "{\"chezmoi\":{\"homeDir\":\"$fresh_home\"}}" \
+    '{{ includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" . }}'
+}
+[[ $(PATH="$tmpdir/bin:$PATH" readiness) == true ]] || {
+  echo 'Existing SSH must work before the readiness helper is installed' >&2
+  exit 1
+}
+[[ $(PATH="$tmpdir/bin" readiness) == false ]] || {
+  echo 'Missing Python must defer private fetches safely' >&2
+  exit 1
+}
 apply_fresh
 [[ -f "$fresh_home/skills-reconciled" ]]
 [[ -d "$fresh_home/.claude/.git" && -d "$fresh_home/.pi/.git" ]]

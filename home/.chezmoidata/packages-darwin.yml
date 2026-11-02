@@ -86,7 +86,6 @@ brews:
     - felixkratz/formulae/borders
     - felixkratz/formulae/sketchybar
     - qmk/qmk/qmk
-    - icm
     - gromgit/brewtils/taproom
     - bskaplou/tap/vitaly
 
