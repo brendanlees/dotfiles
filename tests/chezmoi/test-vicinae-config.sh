@@ -180,9 +180,12 @@ assert providers["snippets"]["entrypoints"]["manage"]["enabled"] is False
 assert providers["core"]["entrypoints"]["search-emojis"]["shortcut"] == "super+alt+SPACE"
 assert providers["files"]["entrypoints"]["search"]["enabled"] is True
 assert "shortcut" not in providers["applications"]["entrypoints"]["md.obsidian"]
-assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {
-    "enabled": True, "shortcut": "alt+N",
-}
+assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {"enabled": True}
+assert "alt+N" not in shortcuts, "AeroSpace owns Alt+N without Vicinae's success HUD"
+aerospace = tomllib.loads((root / "home/dot_config/aerospace/aerospace.toml").read_text())
+notes_binding = aerospace["mode"]["main"]["binding"]["alt-n"]
+assert notes_binding.startswith("exec-and-forget ")
+notes_command = notes_binding.removeprefix("exec-and-forget ")
 
 # Alt+N owns one Ghostty window, not every terminal or every ov client.
 # Keep these launcher regressions with the binding's existing contract owner.
@@ -316,6 +319,9 @@ from contextlib import contextmanager
 def notes_launcher(**state):
     with tempfile.TemporaryDirectory() as temporary:
         temp = Path(temporary)
+        script = temp / ".local/share/vicinae/scripts/obsidian-daily.sh"
+        script.parent.mkdir(parents=True)
+        shutil.copy(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh", script)
         for tool in ["herdr", "osascript", "aerospace", "ssh", "nohup", "sleep", "lockf", "pkill", "kill"]:
             (temp / tool).write_text(fake_tool)
             (temp / tool).chmod(0o700)
@@ -326,7 +332,7 @@ def notes_launcher(**state):
         def invoke(*, fail=None):
             log_file.write_text("")
             result = subprocess.run(
-                ["/bin/bash", str(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh")],
+                ["/bin/bash", "-c", notes_command],
                 capture_output=True, text=True, timeout=15,
                 env={**os.environ, "HOME": str(temp),
                      "PATH": str(temp) + os.pathsep + os.environ["PATH"],

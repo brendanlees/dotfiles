@@ -144,6 +144,8 @@ alt-6 = 'workspace 6-misc1'
 alt-7 = 'workspace 7-misc2'
 
 alt-8 = 'workspace 8-notes'
+# Run directly to avoid Vicinae's success notification.
+alt-n = 'exec-and-forget /bin/bash "$HOME/.local/share/vicinae/scripts/obsidian-daily.sh"'
 # raycast: alt+o = obsidian, alt+shift+n = notion, alt+shift+t = todoist
 
 alt-9 = 'workspace 9-music'
