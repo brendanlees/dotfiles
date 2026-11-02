@@ -131,7 +131,8 @@ alt-2 = 'workspace 2-code'
 # - alt+a = primary ai model
 # - alt+shift+a = secondary ai model
 # - hyper+a = ai wrapper (boltai, etc.)
-# - alt+t = terminal
+# Focus a regular terminal, leaving the Alt+N notes window alone.
+alt-t = 'exec-and-forget /bin/bash "$HOME/.config/aerospace/focus-terminal.sh"'
 
 alt-3 = 'workspace 3-email'
 # raycast: alt+m = mail
@@ -144,6 +145,8 @@ alt-6 = 'workspace 6-misc1'
 alt-7 = 'workspace 7-misc2'
 
 alt-8 = 'workspace 8-notes'
+# Run directly to avoid Vicinae's success notification.
+alt-n = 'exec-and-forget /bin/bash "$HOME/.local/share/vicinae/scripts/obsidian-daily.sh"'
 # raycast: alt+o = obsidian, alt+shift+n = notion, alt+shift+t = todoist
 
 alt-9 = 'workspace 9-music'
