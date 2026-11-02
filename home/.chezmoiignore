@@ -5,6 +5,10 @@ Library
 .mactop
 {{- end }}
 
+{{- if not (and (eq .chezmoi.os "darwin") .personal (dig "obsidian_headless" "enabled" false .)) }}
+Library/LaunchAgents/com.brendan.obsidian-headless.plist
+{{- end }}
+
 {{- if or (ne .chezmoi.os "darwin") .headless }}
 .config/ghostty
 .config/worktrunk

@@ -1,0 +1,8 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+# Retire only the setup wrapper; keep the service and Obsidian's own state.
+rm -f "$HOME/.local/bin/cz-obsidian" \
+  "$HOME/.config/obsidian-headless/setup.json"
+{{- end }}
