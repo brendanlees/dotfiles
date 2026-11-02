@@ -176,6 +176,9 @@ providers = profile["providers"]
 # On macOS Qt's control is Command; super is physical Control.
 assert providers["applications"]["entrypoints"]["com.apple.finder"]["shortcut"] == "control+alt+F"
 assert providers["applications"]["entrypoints"]["io.robbie.HomeAssistant"]["shortcut"] == "super+alt+H"
+assert providers["applications"]["entrypoints"].get("com.spotify.client") == {
+    "enabled": True, "shortcut": "alt+Y",
+}, "Vicinae must launch Spotify with Option+Y"
 assert providers["snippets"]["entrypoints"]["manage"]["enabled"] is False
 assert providers["core"]["entrypoints"]["search-emojis"]["shortcut"] == "super+alt+SPACE"
 assert providers["files"]["entrypoints"]["search"]["enabled"] is True
@@ -183,6 +186,7 @@ assert "shortcut" not in providers["applications"]["entrypoints"]["md.obsidian"]
 assert providers["scripts"]["entrypoints"]["obsidian-daily.sh"] == {"enabled": True}
 assert "alt+N" not in shortcuts, "AeroSpace owns Alt+N without Vicinae's success HUD"
 aerospace = tomllib.loads((root / "home/dot_config/aerospace/aerospace.toml").read_text())
+assert "alt-y" not in aerospace["mode"]["main"]["binding"], "Vicinae alone owns Option+Y"
 notes_binding = aerospace["mode"]["main"]["binding"]["alt-n"]
 assert notes_binding.startswith("exec-and-forget ")
 notes_command = notes_binding.removeprefix("exec-and-forget ")
