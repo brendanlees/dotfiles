@@ -220,7 +220,9 @@ with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
     args = args[len(target):]
     with open(os.environ["FAKE_LOG"], "a") as log:
         log.write(json.dumps([tool, *args]) + "\n")
-    if tool in ("pkill", "kill"):
+    if tool == "ssh":
+        sys.exit("notes launcher must not use SSH")
+    elif tool in ("pkill", "kill"):
         sys.exit("must not disconnect another client")
     elif tool == "sleep":
         pass
@@ -265,7 +267,7 @@ with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
             state["pending_window"] = {
                 "window-id": 42, "app-bundle-id": "com.mitchellh.ghostty", "window-title": args[2],
             }
-    elif tool in ("ssh", "nohup"):
+    elif tool == "nohup":
         # Background servers must not inherit the launch lock.
         try:
             os.fstat(9)
@@ -273,18 +275,13 @@ with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
             pass
         else:
             raise AssertionError("headless server inherited launch lock")
-        if tool == "ssh":
-            assert args[:5] == ["-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "bmax"]
-            assert "nohup herdr --session ov server" in args[5]
-            if state.get("ssh_failed"):
-                sys.exit("SSH unavailable")
-        else:
-            assert args == ["herdr", "--session", "ov", "server"]
+        assert args == ["herdr", "--session", "ov", "server"]
+        assert Path.cwd() == (Path.home() / "Notes/Obsidian/PKM").resolve()
         state["running"] = not state.get("start_failed", False)
     elif args == ["machine", "list", "--json"]:
-        print(json.dumps([{"label": label} for label in state["machines"]]))
+        sys.exit("notes launcher must not query saved SSH machines")
     else:
-        assert tool == "herdr" and target == state["target"], (tool, target)
+        assert tool == "herdr" and target == ["--session", "ov"], (tool, target)
         if not state["running"]:
             sys.exit("server_not_running")
         result = {}
@@ -297,6 +294,7 @@ with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
                 "shell_pid": 10, "foreground_process_group_id": 20 if state["busy"] else 10,
             })}
         elif args[:2] == ["workspace", "create"]:
+            assert args[2:] == ["--label", "notes", "--cwd", str(Path.home() / "Notes/Obsidian/PKM")]
             state["tabs"].append({"tab_id": "w9:t1", "label": "1"})
             state["panes"].append({"pane_id": "w9:p1", "tab_id": "w9:t1"})
             result = {"tab": {"tab_id": "w9:t1"}, "root_pane": {"pane_id": "w9:p1"}}
@@ -318,9 +316,6 @@ notes = {
     "tabs": [{"tab_id": "w5:t1", "label": "agent"}, {"tab_id": "w6:t1", "label": "notes"}],
     "panes": [{"pane_id": "w5:p2", "tab_id": "w5:t1"}, {"pane_id": "w6:p1", "tab_id": "w6:t1"}],
 }
-# The existence of a local ov session must not override the saved bmax route.
-bair = {"machines": ["bmax", "bmax/ov"], "target": ["--machine", "bmax/ov"]}
-bmax = {"machines": [], "target": ["--session", "ov"]}
 title = "Obsidian Notes (Herdr)"
 unrelated_windows = [
     {"window-id": 11, "app-bundle-id": "com.mitchellh.ghostty", "window-title": " "},
@@ -340,6 +335,7 @@ from contextlib import contextmanager
 def ghostty_launcher(command=notes_command, **state):
     with tempfile.TemporaryDirectory(prefix="ghostty launcher ") as temporary:
         temp = Path(temporary)
+        (temp / "Notes/Obsidian/PKM").mkdir(parents=True)
         script = temp / ".local/share/vicinae/scripts/obsidian-daily.sh"
         script.parent.mkdir(parents=True)
         shutil.copy(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh", script)
@@ -367,7 +363,7 @@ def ghostty_launcher(command=notes_command, **state):
                 assert result.returncode != 0 and fail in result.stderr, result
             else:
                 assert result.returncode == 0, result.stderr
-            reads = (["machine", "list"], ["tab", "list"], ["pane", "list"], ["pane", "process-info"])
+            reads = (["tab", "list"], ["pane", "list"], ["pane", "process-info"])
             calls = [json.loads(line) for line in log_file.read_text().splitlines()]
             calls = [call for call in calls if not (
                 (call[0] == "herdr" and call[1:3] in reads)
@@ -378,12 +374,12 @@ def ghostty_launcher(command=notes_command, **state):
             return calls, current
         yield invoke, state_file, temp
 
-with ghostty_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
+with ghostty_launcher(window_delay=2) as (invoke, state_file, temp):
     calls, state = invoke()
     assert calls == [
         ["herdr", "pane", "run", "w6:p1", daily],
         ["herdr", "tab", "focus", "w6:t1"],
-        *window("herdr --remote bmax --session ov"),
+        *window("herdr --session ov"),
     ]
     assert state["moved"] == state["focused"] == 42
     calls, state = invoke()
@@ -393,54 +389,51 @@ with ghostty_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
     state_file.write_text(json.dumps(state))
     calls, _ = invoke()
     assert calls == [
-        ["herdr", "tab", "focus", "w6:t1"], *window("herdr --remote bmax --session ov"),
-    ], "reopening reconnects without restarting Neovim"
+        ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
+    ], "reopening attaches locally without restarting Neovim"
 
-with ghostty_launcher(**bmax, busy=True) as (invoke, _, _):
+with ghostty_launcher(busy=True) as (invoke, _, _):
     calls, _ = invoke()
     assert calls == [
         ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
     ], "local routing never sends input to a running editor"
 
-with ghostty_launcher(**bmax, process_info={}) as (invoke, _, _):
+with ghostty_launcher(process_info={}) as (invoke, _, _):
     calls, _ = invoke()
     assert not any(call[:3] == ["herdr", "pane", "run"] for call in calls), "unknown process is not an idle shell"
 
-for route, attach, starter in [
-    (bair, "herdr --remote bmax --session ov", "ssh"),
-    (bmax, "herdr --session ov", "nohup"),
-]:
-    with ghostty_launcher(**route, running=False, tabs=[], panes=[]) as (invoke, _, _):
-        calls, _ = invoke()
-        assert calls[0][0] == starter
-        assert calls[1:] == [
-            ["herdr", "workspace", "create", "--label", "notes"],
-            ["herdr", "tab", "rename", "w9:t1", "notes"],
-            ["herdr", "pane", "run", "w9:p1", daily],
-            ["herdr", "tab", "focus", "w9:t1"],
-            *window(attach),
-        ], "cold start prepares notes before attaching exactly one window"
+with ghostty_launcher(running=False, tabs=[], panes=[]) as (invoke, _, temp):
+    calls, _ = invoke()
+    assert calls == [
+        ["nohup", "herdr", "--session", "ov", "server"],
+        ["herdr", "workspace", "create", "--label", "notes", "--cwd", str(temp / "Notes/Obsidian/PKM")],
+        ["herdr", "tab", "rename", "w9:t1", "notes"],
+        ["herdr", "pane", "run", "w9:p1", daily],
+        ["herdr", "tab", "focus", "w9:t1"],
+        *window("herdr --session ov"),
+    ], "cold start prepares the local vault before attaching exactly one window"
 
-with ghostty_launcher(**bair, running=False, start_failed=True) as (invoke, _, _):
+with ghostty_launcher(running=False, start_failed=True) as (invoke, _, _):
     calls, _ = invoke(fail="did not become ready")
-    assert len(calls) == 1 and calls[0][0] == "ssh", "failed startup opens no window"
+    assert len(calls) == 1 and calls[0][0] == "nohup", "failed startup opens no window"
 
-with ghostty_launcher(**bair, running=False, ssh_failed=True) as (invoke, _, _):
-    calls, _ = invoke(fail="SSH unavailable")
-    assert len(calls) == 1 and calls[0][0] == "ssh", "failed SSH never falls back to local"
+with ghostty_launcher() as (invoke, _, temp):
+    (temp / "Notes/Obsidian/PKM").rmdir()
+    calls, _ = invoke(fail="No such file or directory")
+    assert not calls, "a missing local vault must not start a server or open a window"
 
-with ghostty_launcher(**bmax, aerospace_failed=True) as (invoke, _, _):
+with ghostty_launcher(aerospace_failed=True) as (invoke, _, _):
     calls, _ = invoke(fail="AeroSpace unavailable")
     assert not calls, "failed window discovery must not spawn duplicates"
 
-with ghostty_launcher(**bmax, window_missing=True) as (invoke, _, _):
+with ghostty_launcher(window_missing=True) as (invoke, _, _):
     calls, _ = invoke(fail="AeroSpace could not find it")
     assert sum(call[0] == "osascript" for call in calls) == 1
     assert not any(call[:2] == ["aerospace", "focus"] for call in calls)
 
 # Holding the same lock simulates a second hotkey while the first is starting.
 import fcntl
-with ghostty_launcher(**bmax) as (invoke, _, temp):
+with ghostty_launcher() as (invoke, _, temp):
     lock = temp / ".cache/vicinae/obsidian-notes.lock"
     lock.parent.mkdir(parents=True)
     with lock.open("w") as held:

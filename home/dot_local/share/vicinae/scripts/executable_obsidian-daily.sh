@@ -39,28 +39,15 @@ if [[ -n $window ]]; then
   exit 0
 fi
 
-# bmax keeps the vault synced, so Macs that save its ov session as a herdr
-# machine use that; bmax itself uses its local session. Remote attaches also
-# create a local sessions/ov folder, so herdr's session list can't decide this.
-if herdr machine list --json | jq -e 'any(.[]; .label == "bmax/ov")' >/dev/null; then
-  api=(herdr --machine bmax/ov)
-  attach="herdr --remote bmax --session ov"
-  remote=true
-else
-  api=(herdr --session ov)
-  attach="herdr --session ov"
-  remote=false
-fi
+vault="$HOME/Notes/Obsidian/PKM"
+cd "$vault"
+api=(herdr --session ov)
+attach="herdr --session ov"
 
 # Prepare a stopped server before attaching: an attached Herdr client keeps
 # its own view, so focusing a tab after attachment would not select notes.
 if ! "${api[@]}" tab list >/dev/null 2>&1; then
-  if "$remote"; then
-    ssh -o BatchMode=yes -o ConnectTimeout=10 bmax \
-      'export PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"; nohup herdr --session ov server </dev/null >/dev/null 2>&1 &' 9>&-
-  else
-    nohup herdr --session ov server </dev/null >/dev/null 2>&1 9>&- &
-  fi
+  nohup herdr --session ov server </dev/null >/dev/null 2>&1 9>&- &
   ready=false
   for _ in {1..30}; do
     if "${api[@]}" tab list >/dev/null 2>&1; then
@@ -77,12 +64,11 @@ fi
 
 tab=$("${api[@]}" tab list | jq -r 'first(.result.tabs[] | select(.label == "notes") | .tab_id) // empty')
 if [[ -z $tab ]]; then
-  tab=$("${api[@]}" workspace create --label notes | jq -r .result.tab.tab_id)
+  tab=$("${api[@]}" workspace create --label notes --cwd "$vault" | jq -r .result.tab.tab_id)
   "${api[@]}" tab rename "$tab" notes >/dev/null
 fi
 pane=$("${api[@]}" pane list | jq -r --arg tab "$tab" 'first(.result.panes[] | select(.tab_id == $tab) | .pane_id)')
 # Start nvim only from an idle shell, never by typing into a running program.
-# That shell expands ~, so the same path works for bmax's session.
 if "${api[@]}" pane process-info --pane "$pane" |
   jq -e '.result.process_info | .shell_pid > 0 and .foreground_process_group_id == .shell_pid' >/dev/null; then
   "${api[@]}" pane run "$pane" "cd ~/Notes/Obsidian/PKM && nvim -c 'Obsidian today'" >/dev/null
