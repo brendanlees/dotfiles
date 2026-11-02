@@ -1,0 +1,14 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+# Unload before removing files; preserve Obsidian's login, vault state and logs.
+service="gui/$(id -u)/com.brendan.obsidian-headless"
+if launchctl print "$service" >/dev/null 2>&1; then
+  launchctl bootout "$service"
+fi
+
+rm -f "$HOME/Library/LaunchAgents/com.brendan.obsidian-headless.plist" \
+  "$HOME/.local/bin/cz-obsidian" \
+  "$HOME/.config/obsidian-headless/setup.json"
+{{- end }}

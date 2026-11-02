@@ -59,21 +59,19 @@ Column view is the default for Finder windows and searches. Finder can still rem
 
 ## Obsidian headless Sync on personal Macs
 
-Personal macOS scope installs `ob` and `cz-obsidian`; syncing remains off until explicitly enabled on that machine. Back up your vault before the first sync. Obsidian [warns against running desktop Sync and headless Sync on the same device](https://help.obsidian.md/sync/headless).
+Personal macOS scope installs `ob` through mise. Sign in and link each vault directly with the CLI:
 
-For repeatable setup, create a Bitwarden item whose **notes** contain metadata JSON, not passwords:
-
-```json
-{"email": "you@example.com", "vault": "remote-vault-id"}
+```sh
+cd ~/Notes/Obsidian/PKM
+ob login
+ob sync-list-remote
+ob sync-setup --vault "remote-vault-id-or-name"
+ob sync
 ```
 
-Use a remote vault ID to avoid ambiguity between identically named vaults. Optional sync settings and manual-entry options are listed by `cz-obsidian setup --help`.
+Setup is needed once per vault; after that, run `ob sync` from the vault, or `ob sync --continuous` to keep syncing in the foreground. Dotfiles do not manage authentication or a background service.
 
-Unlock the Bitwarden CLI, then run `cz-obsidian setup --item "your metadata item name or ID"`. The helper defaults to `~/Notes/Obsidian/PKM` (`--path` overrides it). You enter the account password, MFA code and vault encryption password directly into Obsidian's prompts. Only the Bitwarden item reference is remembered locally; ordinary applies and service starts do not query Bitwarden.
-
-Setup does not start syncing. Disable desktop Sync on the Mac, then follow the printed host-local `.chezmoidata/local.yml` instructions and apply to enable the login service. Setting `obsidian_headless.enabled` to `false` and applying stops it without deleting notes, credentials or sync state. Stop the service before rerunning setup.
-
-The service checks local credentials, vault setup and the selected vault's desktop Sync setting on every start. Token presence does not prove the login is still valid: authentication failures are reported by `ob` in `~/Library/Logs/ObsidianHeadless/error.log`; renew the login interactively with `ob login`. The client owns its private token and encryption state under `~/.obsidian-headless`; do not copy that directory between machines.
+Back up existing notes before the first sync. Do not run desktop Sync and headless Sync on the same device. See [Obsidian's headless Sync documentation](https://help.obsidian.md/sync/headless) for options.
 
 ## maintenance
 
