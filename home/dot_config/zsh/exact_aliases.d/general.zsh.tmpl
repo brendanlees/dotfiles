@@ -6,3 +6,26 @@ alias sudo="sudo env PATH=\"\$PATH\" " # expand aliases + preserve PATH for mise
 alias dotfiles="cd ~/.local/share/chezmoi"
 alias c="clear"
 alias ov="cd ~/Notes/Obsidian/PKM"
+alias obv="ov"
+
+obf() {
+    obv && nvim -c 'lua require("fff").find_files()' "$@"
+}
+
+obn() {
+    obv && nvim -c 'lua require("obsidian"); require("user.obsidian.templates").pick()' "$@"
+}
+
+obr() {
+    obv || return
+    if (( $# )); then
+        nvim -- "$@"
+    else
+        # Resume only this vault, not the last session from an unrelated project.
+        nvim -c 'lua local session = require("resession"); local cwd = vim.fn.getcwd(); session.load(cwd, { dir = "dirsession", silence_errors = true }); if session.get_current() ~= cwd then require("fff").find_files() end'
+    fi
+}
+
+odb() {
+    obv && nvim -c 'Obsidian today' "$@"
+}
