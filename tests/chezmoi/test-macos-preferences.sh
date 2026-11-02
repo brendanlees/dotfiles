@@ -124,4 +124,22 @@ check_scope unscoped darwin false false false false
 check_scope linux linux true true false false
 check_scope windows windows true true false false
 
-echo 'macOS Finder and input preferences: typed values, portable paths and role/OS routing ok'
+# Exercise the Dock script without changing the live Dock or restarting it.
+cat >"$tmpdir/bin/dockutil" <<'SH'
+#!/bin/sh
+printf '%s\n' "$*" >>"$DOCK_COMMANDS"
+SH
+chmod +x "$tmpdir/bin/dockutil"
+PATH="$tmpdir/bin:$PATH" DOCK_COMMANDS="$tmpdir/dock-commands" \
+  PREFS_RESTARTS="$tmpdir/dock-restarts" \
+  bash "$repo_root/home/.chezmoiscripts/darwin/run_onchange_after_configure-dock.sh"
+grep -Fxq -- '--no-restart --add /Applications/Dia.app' "$tmpdir/dock-commands" || {
+  echo 'Dock must include Dia' >&2
+  exit 1
+}
+if grep -Fq -- '/Applications/Arc.app' "$tmpdir/dock-commands"; then
+  echo 'Dock must not restore Arc' >&2
+  exit 1
+fi
+
+echo 'macOS Finder, input and Dock preferences: typed values, portable paths, role/OS routing and Dia browser ok'
