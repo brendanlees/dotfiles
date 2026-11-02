@@ -67,7 +67,7 @@ assert ('gromgit/brewtils' in taps) == (sys.argv[2] == 'personal')
 for package in data['packages']:
     if package.count('/') == 2:
         assert package.rsplit('/', 1)[0] in taps, f'{package} needs an explicitly approved tap'
-assert not {'itsycal', 'betterdisplay', 'spotify', 'soundsource', 'typewhisper', 'spicetify-cli'} & set(data['packages'])
+assert not {'itsycal', 'betterdisplay', 'spotify', 'soundsource', 'typewhisper', 'spicetify-cli', 'icm'} & set(data['packages'])
 expected = [command for tap in taps for command in (['trust', '--tap', tap], ['tap', tap])]
 actual = [json.loads(line) for line in (root / 'brew.log').read_text().splitlines()]
 assert actual == expected * 2, actual

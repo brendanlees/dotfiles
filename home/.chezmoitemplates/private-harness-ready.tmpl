@@ -7,10 +7,12 @@ false
 {{- else if eq .chezmoi.os "windows" -}}
 true
 {{- else -}}
-{{- $helper := joinPath .chezmoi.homeDir ".local/bin/cz-ssh-ready" -}}
-{{- if not (stat $helper) -}}
+{{- /* Externals render before apply installs helpers; use the current source copy. */ -}}
+{{- $helper := joinPath .chezmoi.sourceDir "dot_local/bin/executable_cz-ssh-ready" -}}
+{{- $python := lookPath "python3" -}}
+{{- if or (not $python) (not (stat $helper)) -}}
 false
 {{- else -}}
-{{- output "sh" "-c" "if HOME=\"$1\" \"$2\" \"$3\" >/dev/null 2>&1; then printf true; else printf false; fi" "cz-ssh-ready" .chezmoi.homeDir $helper "git@gitea.lab.brendans.cloud" -}}
+{{- output "sh" "-c" "if HOME=\"$1\" \"$2\" \"$3\" \"$4\" >/dev/null 2>&1; then printf true; else printf false; fi" "cz-ssh-ready" .chezmoi.homeDir $python $helper "git@gitea.lab.brendans.cloud" -}}
 {{- end -}}
 {{- end -}}
