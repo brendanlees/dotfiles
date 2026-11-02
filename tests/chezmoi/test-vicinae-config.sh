@@ -186,8 +186,13 @@ aerospace = tomllib.loads((root / "home/dot_config/aerospace/aerospace.toml").re
 notes_binding = aerospace["mode"]["main"]["binding"]["alt-n"]
 assert notes_binding.startswith("exec-and-forget ")
 notes_command = notes_binding.removeprefix("exec-and-forget ")
+assert providers["applications"]["entrypoints"]["com.mitchellh.ghostty"] == {"enabled": True}
+assert "alt+T" not in shortcuts, "AeroSpace owns Alt+T without activating the notes window"
+terminal_binding = aerospace["mode"]["main"]["binding"]["alt-t"]
+assert terminal_binding.startswith("exec-and-forget ")
+terminal_command = terminal_binding.removeprefix("exec-and-forget ")
 
-# Alt+N owns one Ghostty window, not every terminal or every ov client.
+# Alt+N and Alt+T must not interfere with each other's Ghostty windows.
 # Keep these launcher regressions with the binding's existing contract owner.
 fake_tool = r'''#!/usr/bin/env python3
 import fcntl, json, os, sys, time
@@ -232,18 +237,30 @@ with open(os.environ["FAKE_STATE"] + ".lock", "w") as guard:
             state["moved"] = int(args[2])
         elif args[:1] == ["focus"]:
             assert args[1:2] == ["--window-id"]
+            if state.get("focus_failed"):
+                sys.exit("Window unavailable")
             state["focused"] = int(args[2])
         else:
             raise AssertionError(args)
     elif tool == "osascript":
         script = sys.stdin.read()
         assert 'tell application "Ghostty"' in script
-        assert "set name override of notesTab to item 2 of argv" in script
-        assert "set name override of focused terminal of notesTab to item 2 of argv" in script
-        assert state["focused_tab"] == next(t["tab_id"] for t in state["tabs"] if t["label"] == "notes")
-        state["pending_window"] = {
-            "window-id": 42, "app-bundle-id": "com.mitchellh.ghostty", "window-title": args[2],
-        }
+        if args == ["-"]:
+            assert "set terminalWindow to new window" in script
+            assert "activate window terminalWindow" in script
+            if state.get("osascript_failed"):
+                sys.exit("Ghostty unavailable")
+            state["windows"].append({
+                "window-id": 43, "app-bundle-id": "com.mitchellh.ghostty", "window-title": " ",
+            })
+            state["focused"] = 43
+        else:
+            assert "set name override of notesTab to item 2 of argv" in script
+            assert "set name override of focused terminal of notesTab to item 2 of argv" in script
+            assert state["focused_tab"] == next(t["tab_id"] for t in state["tabs"] if t["label"] == "notes")
+            state["pending_window"] = {
+                "window-id": 42, "app-bundle-id": "com.mitchellh.ghostty", "window-title": args[2],
+            }
     elif tool in ("ssh", "nohup"):
         # Background servers must not inherit the launch lock.
         try:
@@ -316,12 +333,16 @@ def window(attach):
 
 from contextlib import contextmanager
 @contextmanager
-def notes_launcher(**state):
-    with tempfile.TemporaryDirectory() as temporary:
+def ghostty_launcher(command=notes_command, **state):
+    with tempfile.TemporaryDirectory(prefix="ghostty launcher ") as temporary:
         temp = Path(temporary)
         script = temp / ".local/share/vicinae/scripts/obsidian-daily.sh"
         script.parent.mkdir(parents=True)
         shutil.copy(root / "home/dot_local/share/vicinae/scripts/executable_obsidian-daily.sh", script)
+        terminal_script = temp / ".config/aerospace/focus-terminal.sh"
+        terminal_script.parent.mkdir(parents=True)
+        shutil.copy(root / "home/dot_config/aerospace/executable_focus-terminal.sh", terminal_script)
+        initial_windows = state.get("windows", unrelated_windows)
         for tool in ["herdr", "osascript", "aerospace", "ssh", "nohup", "sleep", "lockf", "pkill", "kill"]:
             (temp / tool).write_text(fake_tool)
             (temp / tool).chmod(0o700)
@@ -332,7 +353,7 @@ def notes_launcher(**state):
         def invoke(*, fail=None):
             log_file.write_text("")
             result = subprocess.run(
-                ["/bin/bash", "-c", notes_command],
+                ["/bin/bash", "-c", command],
                 capture_output=True, text=True, timeout=15,
                 env={**os.environ, "HOME": str(temp),
                      "PATH": str(temp) + os.pathsep + os.environ["PATH"],
@@ -349,11 +370,11 @@ def notes_launcher(**state):
                 or call[:2] == ["aerospace", "list-windows"] or call[0] == "sleep"
             )]
             current = json.loads(state_file.read_text())
-            assert current["windows"][:3] == unrelated_windows, "unrelated windows stay untouched"
+            assert current["windows"][:len(initial_windows)] == initial_windows, "existing windows stay untouched"
             return calls, current
         yield invoke, state_file, temp
 
-with notes_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
+with ghostty_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
     calls, state = invoke()
     assert calls == [
         ["herdr", "pane", "run", "w6:p1", daily],
@@ -371,13 +392,13 @@ with notes_launcher(**bair, window_delay=2) as (invoke, state_file, temp):
         ["herdr", "tab", "focus", "w6:t1"], *window("herdr --remote bmax --session ov"),
     ], "reopening reconnects without restarting Neovim"
 
-with notes_launcher(**bmax, busy=True) as (invoke, _, _):
+with ghostty_launcher(**bmax, busy=True) as (invoke, _, _):
     calls, _ = invoke()
     assert calls == [
         ["herdr", "tab", "focus", "w6:t1"], *window("herdr --session ov"),
     ], "local routing never sends input to a running editor"
 
-with notes_launcher(**bmax, process_info={}) as (invoke, _, _):
+with ghostty_launcher(**bmax, process_info={}) as (invoke, _, _):
     calls, _ = invoke()
     assert not any(call[:3] == ["herdr", "pane", "run"] for call in calls), "unknown process is not an idle shell"
 
@@ -385,7 +406,7 @@ for route, attach, starter in [
     (bair, "herdr --remote bmax --session ov", "ssh"),
     (bmax, "herdr --session ov", "nohup"),
 ]:
-    with notes_launcher(**route, running=False, tabs=[], panes=[]) as (invoke, _, _):
+    with ghostty_launcher(**route, running=False, tabs=[], panes=[]) as (invoke, _, _):
         calls, _ = invoke()
         assert calls[0][0] == starter
         assert calls[1:] == [
@@ -396,26 +417,26 @@ for route, attach, starter in [
             *window(attach),
         ], "cold start prepares notes before attaching exactly one window"
 
-with notes_launcher(**bair, running=False, start_failed=True) as (invoke, _, _):
+with ghostty_launcher(**bair, running=False, start_failed=True) as (invoke, _, _):
     calls, _ = invoke(fail="did not become ready")
     assert len(calls) == 1 and calls[0][0] == "ssh", "failed startup opens no window"
 
-with notes_launcher(**bair, running=False, ssh_failed=True) as (invoke, _, _):
+with ghostty_launcher(**bair, running=False, ssh_failed=True) as (invoke, _, _):
     calls, _ = invoke(fail="SSH unavailable")
     assert len(calls) == 1 and calls[0][0] == "ssh", "failed SSH never falls back to local"
 
-with notes_launcher(**bmax, aerospace_failed=True) as (invoke, _, _):
+with ghostty_launcher(**bmax, aerospace_failed=True) as (invoke, _, _):
     calls, _ = invoke(fail="AeroSpace unavailable")
     assert not calls, "failed window discovery must not spawn duplicates"
 
-with notes_launcher(**bmax, window_missing=True) as (invoke, _, _):
+with ghostty_launcher(**bmax, window_missing=True) as (invoke, _, _):
     calls, _ = invoke(fail="AeroSpace could not find it")
     assert sum(call[0] == "osascript" for call in calls) == 1
     assert not any(call[:2] == ["aerospace", "focus"] for call in calls)
 
 # Holding the same lock simulates a second hotkey while the first is starting.
 import fcntl
-with notes_launcher(**bmax) as (invoke, _, temp):
+with ghostty_launcher(**bmax) as (invoke, _, temp):
     lock = temp / ".cache/vicinae/obsidian-notes.lock"
     lock.parent.mkdir(parents=True)
     with lock.open("w") as held:
@@ -424,6 +445,38 @@ with notes_launcher(**bmax) as (invoke, _, temp):
         assert not calls, "overlapping invocations do nothing"
     calls, _ = invoke()
     assert any(call[0] == "osascript" for call in calls), "released locks do not block future launches"
+
+# Alt+T reuses a regular terminal across workspaces, never the named notes window.
+notes_window = {"window-id": 42, "app-bundle-id": "com.mitchellh.ghostty", "window-title": title}
+other_app = {"window-id": 14, "app-bundle-id": "unrelated.app", "window-title": "project"}
+with ghostty_launcher(command=terminal_command, windows=[notes_window, other_app, *unrelated_windows]) as (invoke, _, _):
+    calls, state = invoke()
+    assert calls == [["aerospace", "focus", "--window-id", "11"]]
+    assert state["focused"] == 11 and "moved" not in state
+    calls, _ = invoke()
+    assert calls == [["aerospace", "focus", "--window-id", "11"]], "repeated Alt+T reuses the terminal"
+
+# With only notes, or with no Ghostty windows, create a normal window once.
+for existing in [[notes_window, other_app], [other_app], []]:
+    with ghostty_launcher(command=terminal_command, windows=existing) as (invoke, _, _):
+        calls, state = invoke()
+        assert calls == [["osascript", "-"]]
+        assert state["focused"] == 43 and "moved" not in state
+        assert len(state["windows"]) == len(existing) + 1
+        calls, _ = invoke()
+        assert calls == [["aerospace", "focus", "--window-id", "43"]], "reuse the newly opened terminal"
+
+with ghostty_launcher(command=terminal_command, aerospace_failed=True) as (invoke, _, _):
+    calls, _ = invoke(fail="AeroSpace unavailable")
+    assert not calls, "failed discovery must not open another window"
+
+with ghostty_launcher(command=terminal_command, focus_failed=True) as (invoke, _, _):
+    calls, _ = invoke(fail="Window unavailable")
+    assert calls == [["aerospace", "focus", "--window-id", "11"]], "failed focus must not open another window"
+
+with ghostty_launcher(command=terminal_command, windows=[notes_window], osascript_failed=True) as (invoke, _, _):
+    calls, state = invoke(fail="Ghostty unavailable")
+    assert calls == [["osascript", "-"]] and state["windows"] == [notes_window]
 
 # Definitions and bindings share one source, so their IDs cannot drift apart.
 fields = {"id", "name", "url", "icon", "app"}
@@ -490,6 +543,7 @@ with tempfile.TemporaryDirectory() as temporary:
     tmp = Path(temporary)
     fixture = tmp / "source"
     shutil.copytree(config, fixture / "dot_config/vicinae")
+    shutil.copytree(root / "home/dot_config/aerospace", fixture / "dot_config/aerospace")
     partials = fixture / ".chezmoitemplates"
     partials.mkdir()
     shutil.copy(root / "home/.chezmoitemplates/vicinae-shortcuts.json.tmpl", partials)
@@ -522,6 +576,7 @@ with tempfile.TemporaryDirectory() as temporary:
     target = fresh / ".local/share/vicinae/shortcuts/shortcuts.json"
     assert json.loads(fresh_settings.read_text()) == {"imports": ["./profile.json"]}
     assert os.access(fresh / ".local/share/vicinae/scripts/obsidian-daily.sh", os.X_OK)
+    assert os.access(fresh / ".config/aerospace/focus-terminal.sh", os.X_OK)
     created = json.loads(target.read_text())
     assert {x["id"] for x in created} == ids
     assert all(x["openCount"] == 0 and isinstance(x["createdAt"], int) and x["createdAt"] > 0 for x in created)
