@@ -1,9 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Host-local opt-in: obsidian_headless.enabled and vault_path in .chezmoidata/local.yml.
-# Reload when the agent or its startup guards change, not on unrelated applies.
-# helper: {{ include "dot_local/bin/executable_cz-obsidian" | sha256sum }}
+# Reload only when the service configuration changes.
 # agent: {{ includeTemplate "Library/LaunchAgents/private_com.brendan.obsidian-headless.plist.tmpl" . | sha256sum }}
 {{ if eq .chezmoi.os "darwin" -}}
 label=com.brendan.obsidian-headless
@@ -17,15 +15,27 @@ fi
 {{ if and .personal (dig "obsidian_headless" "enabled" false .) -}}
 vault='{{ dig "obsidian_headless" "vault_path" (joinPath .chezmoi.homeDir "Notes/Obsidian/PKM") . | replace "'" "'\\''" }}'
 mise="$HOME/.local/bin/mise"
-"$mise" --cd "$HOME" exec -- python3 "$HOME/.local/bin/cz-obsidian" check --path "$vault"
+status=$("$mise" --cd "$HOME" exec -- ob sync-status --path "$vault" --json)
+
+# Refuse to start alongside desktop Sync; a headless-only vault may lack this file.
+"$mise" --cd "$HOME" exec -- node - "$vault" "$status" <<'JS'
+const fs = require("node:fs");
+const path = require("node:path");
+const config = JSON.parse(process.argv[3]);
+const file = path.join(process.argv[2], config.configDir || ".obsidian", "core-plugins.json");
+if (!fs.existsSync(file)) process.exit(0);
+const plugins = JSON.parse(fs.readFileSync(file, "utf8"));
+if (Array.isArray(plugins) ? plugins.includes("sync") : plugins.sync) {
+  console.error("Disable desktop Obsidian Sync before starting headless Sync");
+  process.exit(1);
+}
+JS
 
 umask 077
 mkdir -p "$HOME/Library/Logs/ObsidianHeadless"
 chmod 700 "$HOME/Library/Logs/ObsidianHeadless"
 launchctl bootstrap "$domain" "$plist"
 {{ else -}}
-# Removing the agent prevents it from returning at the next login. Keep all
-# credentials, sync state, logs and vault contents when opting out.
 rm -f "$plist"
 {{ end -}}
 {{ end -}}

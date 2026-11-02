@@ -11,9 +11,9 @@
         <string>{{ .chezmoi.homeDir | html }}</string>
         <string>exec</string>
         <string>--</string>
-        <string>python3</string>
-        <string>{{ .chezmoi.homeDir | html }}/.local/bin/cz-obsidian</string>
-        <string>run</string>
+        <string>ob</string>
+        <string>sync</string>
+        <string>--continuous</string>
         <string>--path</string>
         <string>{{ dig "obsidian_headless" "vault_path" (joinPath .chezmoi.homeDir "Notes/Obsidian/PKM") . | html }}</string>
     </array>
