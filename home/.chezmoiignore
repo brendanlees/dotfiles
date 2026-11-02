@@ -105,6 +105,9 @@ Library/Logs/Syncthing
 {{- if eq .chezmoi.os "darwin" }}
 !.local/bin/cz-private-agent-skills
 !.local/bin/obsidian
+{{- if .personal }}
+!.local/bin/cz-obsidian
+{{- end }}
 !.local/bin/pi-hindsight
 {{- end }}
 {{- end }}
@@ -113,6 +116,9 @@ Library/Logs/Syncthing
 {{- if ne .chezmoi.os "darwin" }}
 .local/bin/obsidian
 .local/bin/pi-hindsight
+{{- end }}
+{{- if or (ne .chezmoi.os "darwin") (not .personal) }}
+.local/bin/cz-obsidian
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
