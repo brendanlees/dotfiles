@@ -2,15 +2,18 @@ matches:
   # --- CSS ---
 
   # CSS > Comment (Small / Default)
-  - trigger: ":cts"
+  - triggers: [";cts", ";template"]
+    label: "Comment - CSS: small"
     replace: "/* $|$ */"
 
   # CSS > Comment (Subtitle)
-  - trigger: ":ctm"
+  - triggers: [";ctm", ";template"]
+    label: "Comment - CSS: subtitle"
     replace: "/* --- $|$ --- */"
 
   # CSS > Comment (Title)
-  - trigger: ":ctl"
+  - triggers: [";ctl", ";template"]
+    label: "Comment - CSS: title"
     replace: |
 
       /* ==========================================
@@ -18,7 +21,8 @@ matches:
       ------------------------------------------ */
 
   # Steady CSS Header
-  - trigger: ":cth"
+  - triggers: [";cth", ";template"]
+    label: "Comment - CSS: Steady header"
     replace: |
       /*
       ==========================================
@@ -45,7 +49,8 @@ matches:
   # --- JavaScript ---
 
   # JS > Comment (Title)
-  - trigger: ":ctjl"
+  - triggers: [";ctjl", ";template"]
+    label: "Comment - JavaScript: title"
     replace: |
 
       // ==========================================
@@ -53,11 +58,13 @@ matches:
       //------------------------------------------
 
   # JS > Comment (Subtitle)
-  - trigger: ":ctjm"
+  - triggers: [";ctjm", ";template"]
+    label: "Comment - JavaScript: subtitle"
     replace: "// --- $|$ --- //"
 
   # Steady JS Header
-  - trigger: ":ctjh"
+  - triggers: [";ctjh", ";template"]
+    label: "Comment - JavaScript: Steady header"
     replace: |
       //
       //==========================================
@@ -83,25 +90,29 @@ matches:
   # --- PHP ---
 
   # PHP > Comment (Title)
-  - trigger: ":ctpl"
+  - triggers: [";ctpl", ";template"]
+    label: "Comment - PHP: title"
     replace: |
       /** ==========================================
       * =! $|$
       *------------------------------------------ */
 
   # PHP > Comment (Subtitle)
-  - trigger: ":ctpm"
+  - triggers: [";ctpm", ";template"]
+    label: "Comment - PHP: block"
     replace: |
       /**
        * $|$
        */
 
   # PHP > Comment
-  - trigger: ":ctps"
+  - triggers: [";ctps", ";template"]
+    label: "Comment - PHP: inline"
     replace: "/** $|$ */"
 
   # PHP > Comment (Function)
-  - trigger: ":ctpf"
+  - triggers: [";ctpf", ";template"]
+    label: "Comment - PHP: function with date"
     replace: |
       /*
        * @function $|$
@@ -117,12 +128,14 @@ matches:
   # --- Bash ---
 
   # Bash > Comment (Title / Large)
-  - trigger: ":ctbl"
+  - triggers: [";ctbl", ";template"]
+    label: "Comment - Bash: title"
     replace: |
       # ------------------------------------------
       # $|$
       # ------------------------------------------
 
   # Bash > Comment (Subtitle / Medium)
-  - trigger: ":ctbm"
+  - triggers: [";ctbm", ";template"]
+    label: "Comment - Bash: subtitle"
     replace: "# --- $|$ ---"

@@ -1,17 +1,17 @@
 {{- if and .personal (lookPath "bw") -}}
 matches:
-  - trigger: ":bname"
+  - trigger: ";bname"
     replace: "{{ .bw_info.full_name }}"
 
-  - trigger: ":bphone"
+  - trigger: ";bphone"
     replace: "{{ .bw_info.phone }}"
 
-  - trigger: ":abn"
+  - trigger: ";abn"
     replace: "{{ .bw_info.abn }}"
 
-  - trigger: ":bpo"
+  - trigger: ";bpo"
     replace: "{{ .bw_info.po_box }}"
 
-  - trigger: ":bnk"
+  - trigger: ";bnk"
     replace: "{{ .bw_info.bnkn }}"
 {{- end }}

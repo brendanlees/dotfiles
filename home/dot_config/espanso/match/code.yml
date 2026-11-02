@@ -1,34 +1,40 @@
+# Shared ;template aliases open Espanso's searchable selection dialog.
 matches:
   # CSS > Media Query - Phone
-  - trigger: ":mq-md"
+  - triggers: [";mq-md", ";template"]
+    label: "CSS - Media query: phone"
     replace: |
       @media (max-width: 768px) {
       	$|$
       }
 
   # CSS > Media Query - Small Phone
-  - trigger: ":mq-sm"
+  - triggers: [";mq-sm", ";template"]
+    label: "CSS - Media query: small phone"
     replace: |
       @media (max-width: 480px) {
       	$|$
       }
 
   # CSS > Media Query - Blank
-  - trigger: ":mq--"
+  - triggers: [";mq--", ";template"]
+    label: "CSS - Media query: custom range"
     replace: |
       @media (min-width: ) and (max-width: ) {
       	$|$
       }
 
   # CSS > Quick Spacing Utilities
-  - trigger: ":utspace"
+  - triggers: [";utspace", ";template"]
+    label: "CSS - Spacing utilities"
     replace: |
       --space-m: 1rem;
       --space-l: calc(var(--space-m)*2);
       --space-xl: calc(var(--space-m)*4);
 
   # CSS > Data Selector
-  - trigger: ":csdata"
+  - triggers: [";csdata", ";template"]
+    label: "CSS - Class selector"
     replace: '[class*="example"]'
 
   # HTML > Break
@@ -40,5 +46,5 @@ matches:
     replace: "&nbsp;"
 
   # HTML > </bl> branding
-  - trigger: ":bl-branding"
+  - trigger: ";bl-branding"
     replace: "&lt;/bl&gt;"
