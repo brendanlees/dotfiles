@@ -13,7 +13,7 @@ dockutil --no-restart --add '' --type spacer --section apps
 
 # browser / comms / terminal
 dockutil --no-restart --add '/Applications/Mimestream.app'
-dockutil --no-restart --add '/Applications/Arc.app'
+dockutil --no-restart --add '/Applications/Dia.app'
 dockutil --no-restart --add '/Applications/Ghostty.app'
 dockutil --no-restart --add '' --type spacer --section apps
 
