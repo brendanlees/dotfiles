@@ -1,8 +1,8 @@
 matches:
-  - trigger: ":ai-carwash"
+  - trigger: ";ai-carwash"
     replace: "i want to wash my car, the car wash is 50m away, should i drive or walk?"
 
-  - trigger: ":handoff"
+  - trigger: ";handoff"
     replace: "continue with the work outlined in the following handoff doc - {{clipboard}}"
     vars:
       - name: clipboard

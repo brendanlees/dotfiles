@@ -1,20 +1,20 @@
 {{- if and .work (lookPath "bw") -}}
 matches:
-  - trigger: ":wmail"
+  - trigger: ";wmail"
     replace: "{{ .bw_work.email_work }}"
 
-  - trigger: ":wphone"
+  - trigger: ";wphone"
     replace: "{{ .bw_work.work_phone }}"
 
-  - trigger: ":bkcal"
+  - trigger: ";bkcal"
     replace: "{{ .bw_work.booking_url }}"
 
-  - trigger: ":frm/policies"
+  - trigger: ";frm/policies"
     form: "{{ .bw_work.form_policies }}"
 
   - trigger: "==stdy-stg"
     form: "{{ .bw_work.staging_url }}"
 
-  - trigger: ":kmail"
+  - trigger: ";kmail"
     replace: "{{ .bw_work.email_ws }}"
 {{- end }}

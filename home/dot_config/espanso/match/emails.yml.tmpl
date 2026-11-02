@@ -1,20 +1,20 @@
 {{- if and .personal (lookPath "bw") -}}
 matches:
-  - trigger: ":bmail"
+  - trigger: ";bmail"
     replace: "{{ .bw_info.email }}"
 
-  - trigger: ":gmail"
+  - trigger: ";gmail"
     replace: "{{ .bw_info.email_old }}"
 
-  - trigger: ":smail"
+  - trigger: ";smail"
     replace: "$|${{ .bw_info.email_shop }}"
 
-  - trigger: ":pmail"
+  - trigger: ";pmail"
     replace: "{{ .bw_info.email_pub }}"
 
-  - trigger: ":hmail"
+  - trigger: ";hmail"
     replace: "{{ .bw_info.email_hbd }}"
 
-  - trigger: ":rwmail"
+  - trigger: ";rwmail"
     replace: "{{ .bw_info.email_rw }}"
 {{- end }}

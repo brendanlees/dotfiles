@@ -1,0 +1,184 @@
+# Wait for a word separator so ;bash does not expand before ;bashex is typed.
+# These insert literal Markdown, not rendered rich text.
+matches:
+  - trigger: ";css"
+    label: "Markdown - css: empty block"
+    right_word: true
+    replace: |-
+      ```css
+      $|$
+      ```
+
+  - trigger: ";cssex"
+    label: "Markdown - css: example"
+    right_word: true
+    replace: |-
+      ```css
+      .example {
+        color: rebeccapurple;
+      }
+      $|$
+      ```
+
+  - trigger: ";yaml"
+    label: "Markdown - yaml: empty block"
+    right_word: true
+    replace: |-
+      ```yaml
+      $|$
+      ```
+
+  - trigger: ";yamlex"
+    label: "Markdown - yaml: example"
+    right_word: true
+    replace: |-
+      ```yaml
+      app:
+        name: example
+        enabled: true
+      $|$
+      ```
+
+  - trigger: ";jinja"
+    label: "Markdown - jinja: empty block"
+    right_word: true
+    replace: |-
+      ```jinja
+      $|$
+      ```
+
+  - trigger: ";jinjaex"
+    label: "Markdown - jinja: example"
+    right_word: true
+    replace: |-
+      ```jinja
+      {% set name = "world" %}
+      Hello, \{\{ name }}!
+      $|$
+      ```
+
+  - trigger: ";toml"
+    label: "Markdown - toml: empty block"
+    right_word: true
+    replace: |-
+      ```toml
+      $|$
+      ```
+
+  - trigger: ";tomlex"
+    label: "Markdown - toml: example"
+    right_word: true
+    replace: |-
+      ```toml
+      [app]
+      name = "example"
+      enabled = true
+      $|$
+      ```
+
+  - trigger: ";go"
+    label: "Markdown - go: empty block"
+    right_word: true
+    replace: |-
+      ```go
+      $|$
+      ```
+
+  - trigger: ";goex"
+    label: "Markdown - go: example"
+    right_word: true
+    replace: |-
+      ```go
+      package main
+
+      import "fmt"
+
+      func main() {
+          fmt.Println("Hello, world!")
+      }
+      $|$
+      ```
+
+  - trigger: ";bash"
+    label: "Markdown - bash: empty block"
+    right_word: true
+    replace: |-
+      ```bash
+      #!/usr/bin/env bash
+
+      $|$
+      ```
+
+  - trigger: ";bashex"
+    label: "Markdown - bash: example"
+    right_word: true
+    replace: |-
+      ```bash
+      #!/usr/bin/env bash
+
+      name="world"
+      printf 'Hello, %s!\n' "$name"
+      $|$
+      ```
+
+  - trigger: ";lua"
+    label: "Markdown - lua: empty block"
+    right_word: true
+    replace: |-
+      ```lua
+      $|$
+      ```
+
+  - trigger: ";luaex"
+    label: "Markdown - lua: example"
+    right_word: true
+    replace: |-
+      ```lua
+      local name = "world"
+      print("Hello, " .. name .. "!")
+      $|$
+      ```
+
+  - trigger: ";sh"
+    label: "Markdown - sh: empty block"
+    right_word: true
+    replace: |-
+      ```sh
+      #!/bin/sh
+
+      $|$
+      ```
+
+  - trigger: ";shex"
+    label: "Markdown - sh: example"
+    right_word: true
+    replace: |-
+      ```sh
+      #!/bin/sh
+
+      name="world"
+      printf 'Hello, %s!\n' "$name"
+      $|$
+      ```
+
+  - trigger: ";zsh"
+    label: "Markdown - zsh: empty block"
+    right_word: true
+    replace: |-
+      ```zsh
+      #!/usr/bin/env zsh
+
+      $|$
+      ```
+
+  - trigger: ";zshex"
+    label: "Markdown - zsh: example"
+    right_word: true
+    replace: |-
+      ```zsh
+      #!/usr/bin/env zsh
+
+      name="world"
+      printf 'Hello, %s!\n' "$name"
+      $|$
+      ```

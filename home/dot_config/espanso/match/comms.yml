@@ -1,6 +1,8 @@
 matches:
-  - trigger: ":lmk"
+  - triggers: [";lmk", ";template"]
+    label: "Comms - Let me know if any problems or changes"
     replace: "Let me know if any probs/changes etc."
 
-  - trigger: ":chz"
+  - triggers: [";chz", ";template"]
+    label: "Comms - Cheers sign-off"
     replace: "Cheers,"
