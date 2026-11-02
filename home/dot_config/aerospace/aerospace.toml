@@ -150,6 +150,7 @@ alt-n = 'exec-and-forget /bin/bash "$HOME/.local/share/vicinae/scripts/obsidian-
 # raycast: alt+o = obsidian, alt+shift+n = notion, alt+shift+t = todoist
 
 alt-9 = 'workspace 9-music'
+# Vicinae: alt+y launches Spotify; AeroSpace routes its windows below.
 
 
 # --- globals ---
@@ -266,6 +267,14 @@ run = 'move-node-to-workspace 8-notes'
 [[on-window-detected]]
 if = 'test %{app-bundle-id} = com.todoist.mac.Todoist && test %{window-title} ~= "^(Today|Upcoming|Inbox|Filters & Labels|.*\(Todoist\))$"'
 run = 'move-node-to-workspace 8-notes'
+
+# --- 9. music ---
+[[on-window-detected]]
+if = 'test %{app-bundle-id} = com.spotify.client'
+run = [
+  'move-node-to-workspace 9-music',
+  'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/move-spotify-to-music.sh --delay 1"',
+]
 
 # --- excluded apps
 
