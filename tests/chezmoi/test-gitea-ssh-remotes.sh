@@ -36,27 +36,6 @@ if grep -Fq 'https://gitea.lab.brendans.cloud/xbxd/' "$rendered_external"; then
   exit 1
 fi
 
-migration_script="$tmpdir/migrate-gitea-remotes.sh"
-chezmoi execute-template --source "$repo_root" --override-data-file "$render_data" \
-  --file "$repo_root/home/.chezmoiscripts/run_before_migrate-gitea-external-remotes.sh.tmpl" \
-  >"$migration_script"
-chmod +x "$migration_script"
-
-for repo in claude-config pi-config; do
-  target="$tmpdir/home/.${repo%-config}"
-  mkdir -p "$target"
-  git init --quiet "$target"
-  git -C "$target" remote add origin \
-    "https://gitea.lab.brendans.cloud/xbxd/$repo.git"
-done
-
-HOME="$tmpdir/home" "$migration_script"
-for repo in claude-config pi-config; do
-  target="$tmpdir/home/.${repo%-config}"
-  expected="ssh://git@gitea.lab.brendans.cloud/xbxd/$repo.git"
-  [[ $(git -C "$target" remote get-url origin) == "$expected" ]]
-done
-
 # Configure Bitwarden only for the fresh-machine case. Existing SSH setups
 # without a manifest retain the external behavior tested above.
 python3 - "$render_data" <<'PY'

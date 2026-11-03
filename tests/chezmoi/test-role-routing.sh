@@ -81,6 +81,12 @@ for target in '.config/espanso' 'Library/LaunchAgents/com.federicoterzi.espanso.
   done
 done
 
+# SketchyBar is personal macOS only; other machines also remove an old copy.
+assert_lacks personal '.config/sketchybar'
+for scope in work homelab ephemeral windows; do
+  assert_has "$scope" '.config/sketchybar'
+done
+
 assert_lacks windows "$windows_private_helper"
 assert_lacks windows "$windows_private_apply"
 assert_has windows "$posix_private_helper"
@@ -118,6 +124,7 @@ done
 
 assert_file_lacks "$tmpdir/work.external" '[".pi"]'
 assert_file_lacks "$tmpdir/homelab.external" '[".pi"]'
+grep -Fxq '.config/sketchybar' "$tmpdir/work.remove"
 
 # Leaving the personal role must not rewrite or remove private harness data.
 fixture="$tmpdir/source"
