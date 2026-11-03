@@ -23,12 +23,10 @@ taps:
   base:
     - oven-sh/bun
   personal:
-    - anomalyco/tap
     - felixkratz/formulae
     - macos-fuse-t/cask
     - nikitabobko/tap
     - qmk/qmk
-    - xykong/tap
     - openclaw/tap
     - yt-dlp/taps
     - mutagen-io/mutagen
@@ -74,11 +72,9 @@ brews:
     - kanata
     - localsend
     - little-snitch
-    - macmon
     - mactop
     - macfuse
     - macwhisper
-    - micro-snitch
     - syncthing
     - tldr
     - worktrunk

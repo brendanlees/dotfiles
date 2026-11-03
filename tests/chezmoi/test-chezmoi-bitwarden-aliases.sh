@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-aliases_file="$repo_root/home/dot_config/zsh/exact_aliases.d/chezmoi.zsh.tmpl"
+aliases_file="$repo_root/home/dot_config/zsh/exact_private_aliases.d/chezmoi.zsh.tmpl"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 

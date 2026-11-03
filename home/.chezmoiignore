@@ -1,5 +1,4 @@
 {{- if ne .chezmoi.os "darwin" }}
-dotfiles-mac # only manage mac dotfiles on mac
 Library
 .chezmoiscripts/darwin/**
 .mactop
@@ -66,14 +65,6 @@ Library/Logs/Syncthing
 .config/kanata/scripts/windows
 {{- end }}
 
-{{- if or .headless (not (or .personal .work)) }}
-.config/vial-qmk
-{{- end }}
-
-{{- if not .personal }}
-.config/private_env_tokens.sh
-{{- end }}
-
 {{- $validHAMcp := and
   (hasKey . "bw_ha_mcp")
   (hasKey .bw_ha_mcp "secret_path")
@@ -91,11 +82,7 @@ Library/Logs/Syncthing
 
 {{- if ne .chezmoi.os "linux" }}
 .local/bin/*
-# Keep retired helpers visible to .chezmoiremove.
-!.local/bin/chezmoi-apply-library
-!.local/bin/chezmoi-readd-library
 !.local/bin/theme
-!.local/bin/zsh-patina
 {{- if eq .chezmoi.os "windows" }}
 !.local/bin/cz-ssh-refresh.ps1
 !.local/bin/cz-private-agent-skills.ps1
@@ -131,13 +118,8 @@ AppData
 {{- if eq .chezmoi.os "windows" }}
 .config/alacritty
 # POSIX-only scripts are not executable on Windows.
-.chezmoiscripts/migrate-gitea-external-remotes.sh
 .chezmoiscripts/01-refresh-ssh-keys.sh
 .chezmoiscripts/run_after_01-refresh-ssh-keys.sh.tmpl
-.chezmoiscripts/remove-out-of-scope-sketchybar.sh
-.chezmoiscripts/run_onchange_before_remove-out-of-scope-sketchybar.sh.tmpl
-.chezmoiscripts/migrate-source-root-local-data.sh
-.chezmoiscripts/run_once_before_migrate-source-root-local-data.sh.tmpl
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}
@@ -150,7 +132,6 @@ AppData
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
-.config/wezterm
 .chezmoiscripts/windows/**
 {{- end }}
 

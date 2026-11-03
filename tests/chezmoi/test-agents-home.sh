@@ -11,7 +11,8 @@ for path in \
   "$repo_root/agents/pi/APPEND_SYSTEM.md" \
   "$repo_root/agents/.skill-lock.json" \
   "$repo_root/agents/skills" \
-  "$source_root/symlink_dot_agents.tmpl"; do
+  "$source_root/symlink_dot_agents.tmpl" \
+  "$source_root/dot_local/state/skills/symlink_dot_skill-lock.json.tmpl"; do
   [[ -e "$path" ]] || {
     echo "missing agents source path: $path" >&2
     exit 1
@@ -79,13 +80,15 @@ PY
 minimal_source="$tmpdir/source"
 home_dir="$tmpdir/home"
 config_file="$tmpdir/chezmoi.toml"
-mkdir -p "$minimal_source/agents/skills" "$minimal_source/home" "$home_dir"
+mkdir -p "$minimal_source/agents/skills" "$minimal_source/home/dot_local/state/skills" "$home_dir"
 printf 'home\n' >"$minimal_source/.chezmoiroot"
 printf '# canonical\n' >"$minimal_source/agents/AGENTS.md"
 printf '{}\n' >"$minimal_source/agents/.skill-lock.json"
 cp "$source_root/.chezmoiignore" "$minimal_source/home/.chezmoiignore"
 cp "$source_root/.chezmoiremove.tmpl" "$minimal_source/home/.chezmoiremove.tmpl"
 cp "$source_root/symlink_dot_agents.tmpl" "$minimal_source/home/symlink_dot_agents.tmpl"
+cp "$source_root/dot_local/state/skills/symlink_dot_skill-lock.json.tmpl" \
+  "$minimal_source/home/dot_local/state/skills/"
 printf '%s\n' \
   '[data]' \
   'personal = true' \
@@ -104,6 +107,8 @@ chezmoi apply \
 [[ -L "$home_dir/.agents" ]]
 [[ "$(readlink "$home_dir/.agents")" == "$minimal_source/agents" ]]
 [[ ! -e "$home_dir/agents" ]]
+# The skills CLI uses the XDG state lock when XDG_STATE_HOME is set.
+[[ "$(readlink "$home_dir/.local/state/skills/.skill-lock.json")" == "$minimal_source/agents/.skill-lock.json" ]]
 printf '# edited through target\n' >"$home_dir/.agents/AGENTS.md"
 grep -Fxq '# edited through target' "$minimal_source/agents/AGENTS.md"
 
@@ -123,6 +128,7 @@ chezmoi apply \
   --no-tty
 
 [[ ! -e "$home_dir/.agents" && ! -L "$home_dir/.agents" ]]
+[[ ! -L "$home_dir/.local/state/skills/.skill-lock.json" ]]
 
 if git -C "$repo_root" check-ignore -q agents/AGENTS.md; then
   echo 'portable AGENTS.md must be tracked' >&2

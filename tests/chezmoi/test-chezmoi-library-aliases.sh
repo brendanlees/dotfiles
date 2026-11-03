@@ -3,9 +3,7 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 source_root="$repo_root/home"
-aliases_file="$source_root/dot_config/zsh/exact_aliases.d/chezmoi.zsh.tmpl"
-ignore_file="$source_root/.chezmoiignore"
-remove_file="$source_root/.chezmoiremove.tmpl"
+aliases_file="$source_root/dot_config/zsh/exact_private_aliases.d/chezmoi.zsh.tmpl"
 chezmoi_bin=$(command -v chezmoi)
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/chezmoi-library-aliases.XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT
@@ -100,26 +98,4 @@ if run_alias cz-lib-readd --definitely-invalid >"$tmpdir/readd-error.out" 2>&1; 
   echo 'cz-lib-readd hid a chezmoi argument error' >&2
   exit 1
 fi
-
-# Retirement must work on macOS despite the broad .local/bin ignore rule.
-cleanup_source="$tmpdir/cleanup"
-mkdir -p "$cleanup_source" "$fixture_home/.local/bin" \
-  "$fixture_home/.local/share/zsh/plugins/fzf-tab" "$fixture_home/.local/state/zsh"
-role='{"personal":true,"work":false,"homelab":false,"ephemeral":false,"headless":false,"chezmoi":{"os":"darwin"}}'
-chezmoi execute-template --source "$repo_root" --override-data "$role" \
-  --file "$ignore_file" >"$cleanup_source/.chezmoiignore"
-chezmoi execute-template --source "$repo_root" --override-data "$role" \
-  --file "$remove_file" >"$cleanup_source/.chezmoiremove"
-for name in chezmoi-apply-library chezmoi-readd-library unrelated; do
-  printf 'old binary\n' >"$fixture_home/.local/bin/$name"
-done
-printf 'old plugin\n' >"$fixture_home/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
-printf 'history\n' >"$fixture_home/.local/state/zsh/history"
-HOME="$fixture_home" "$chezmoi_bin" apply --source "$cleanup_source" \
-  --destination "$fixture_home" --config "$config_file" --no-tty --force
-[[ ! -e "$fixture_home/.local/bin/chezmoi-apply-library" ]]
-[[ ! -e "$fixture_home/.local/bin/chezmoi-readd-library" ]]
-[[ -f "$fixture_home/.local/bin/unrelated" ]]
-[[ ! -e "$fixture_home/.local/share/zsh/plugins" ]]
-grep -Fxq 'history' "$fixture_home/.local/state/zsh/history"
-echo 'native Library operations and helper retirement ok'
+echo 'native Library operations ok'

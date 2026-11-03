@@ -74,7 +74,7 @@ define_fixture linux
 
 # Run the shortcuts without opening the real vault or editor.
 chezmoi execute-template --source "$repo_root" --override-data "$darwin_data" \
-  --file "$source_root/dot_config/zsh/exact_aliases.d/general.zsh.tmpl" \
+  --file "$source_root/dot_config/zsh/exact_private_aliases.d/general.zsh.tmpl" \
   >"$tmpdir/aliases.zsh"
 vault="$tmpdir/home with spaces/Notes/Obsidian/PKM"
 mkdir -p "$vault"

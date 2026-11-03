@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SOURCE_ROOT="$ROOT/home"
-ALIASES_TEMPLATE="$SOURCE_ROOT/dot_config/zsh/exact_aliases.d/docker.zsh.tmpl"
+ALIASES_TEMPLATE="$SOURCE_ROOT/dot_config/zsh/exact_private_aliases.d/docker.zsh.tmpl"
 TEST_BASE="${TMPDIR:-/tmp}"
 TEST_ROOT="${TEST_BASE%/}/infisical-compose-aliases-test-$$"
 ALIASES="$TEST_ROOT/docker.zsh"
