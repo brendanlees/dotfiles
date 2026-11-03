@@ -9,4 +9,4 @@ usage: {{ fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list
 {{- $items := $data.base -}}
 {{- if $ctx.personal }}{{ $items = concat $items $data.personal }}{{- end -}}
 {{- if $ctx.work }}{{ $items = concat $items $data.work }}{{- end -}}
-{{- $items | toJson -}}
+{{- $items | uniq | toJson -}}
