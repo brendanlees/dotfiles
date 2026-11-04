@@ -19,7 +19,7 @@ tmux, ghostty, herdr, borders, sketchybar and nvim are live-reloaded where avail
 
 a few apps need a manual restart to pick up the new theme:
 
-- btop, mactop, zed, vscode
+- btop, mactop, zed
 - `bat` re-reads its config on next invocation
 
 ## harness integrations

@@ -261,7 +261,6 @@ cat <<'EOF'
    - mactop
    - bat (next invocation reads new config)
    - zed
-   - vscode (if templated)
 
 :: fzf reads colors from ~/.config/fzf/opts on every launch — no reload needed.
    If a shell still has a stale $FZF_DEFAULT_OPTS from before the
