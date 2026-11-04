@@ -12,6 +12,7 @@ PILL_HEIGHT=36
 ITEM_PADDING=8
 BAR_EDGE_PADDING=14
 GROUP_GAP=2
+MEDIA_GAP=0
 BORDER_RADIUS=8
 
 # ------------------------------------------
@@ -90,6 +91,8 @@ add_spacer() {
 
 sketchybar --add event aerospace_workspace_change
 sketchybar --add event microphone_change
+# Spotify posts this distributed notification on playback/track changes.
+sketchybar --add event spotify_change com.spotify.client.PlaybackStateChanged
 
 # ------------------------------------------
 # left items (spaces)
@@ -114,6 +117,8 @@ source "$ITEM_DIR/battery.sh"
 add_spacer backup_sync right "$GROUP_GAP" off
 source "$ITEM_DIR/backup_status.sh"
 source "$ITEM_DIR/tailscale.sh"
+add_spacer status_spotify right "$MEDIA_GAP"
+source "$ITEM_DIR/spotify.sh"
 # Create oMLX first so quota's renderer can keep its separate pill beside the rows.
 source "$ITEM_DIR/omlx.sh"
 source "$ITEM_DIR/quota.sh"
