@@ -16,7 +16,7 @@ esac
 }
 
 actionlint_version=${ACTIONLINT_VERSION:-1.7.12}
-chezmoi_version=${CHEZMOI_VERSION:-2.71.1}
+chezmoi_version=${CHEZMOI_VERSION:-2.74.0}
 shellcheck_version=${SHELLCHECK_VERSION:-0.11.0}
 taplo_version=${TAPLO_VERSION:-0.10.0}
 yamllint_version=${YAMLLINT_VERSION:-1.38.0}
@@ -65,7 +65,7 @@ install_chezmoi() {
   fetch \
     "https://github.com/twpayne/chezmoi/releases/download/v${chezmoi_version}/chezmoi_${chezmoi_version}_linux_amd64.tar.gz" \
     "$work/chezmoi.tar.gz"
-  verify e1fb16c962644d57f4d451c324aa86163d00faf5d035500f41fb48943a66dfed \
+  verify 1b98a567f726f41540414aea4caf912699d53e248b29ccf8369cf553657b2374 \
     "$work/chezmoi.tar.gz"
   tar -xzf "$work/chezmoi.tar.gz" -C "$work" chezmoi
   install -m 0755 "$work/chezmoi" "$bin_dir/chezmoi"

@@ -38,7 +38,7 @@ for name, data in variants.items():
     assert not any(path.startswith(".local/share/zsh/plugins/") for path in external), external
     enabled = name == "personal-mac"
     assert ("zinit light mattmc3/starship-ftl" in rendered[name]) == enabled
-    assert ('ver"56bea62528c1419ed47b0cda5afaac579bf4739a"' in rendered[name]) == enabled
+    assert ('ver"ee349a85b9e9ed4b5e3aac1d8d44a58a0fc87926"' in rendered[name]) == enabled
 
 starship = tomllib.loads(render("dot_config/starship/private_starship.toml.tmpl", base))
 assert starship["git_status"]["ignore_submodules"] is True
@@ -141,7 +141,7 @@ printf '%s\\n' 'export PATH="{tools}:$PATH"'
     assert len(ftl) == (1 if enabled or failure else 0), (name, lines)
     if enabled:
         assert ftl == [f"ftl:-p %F{{{accent}}}❯%f  starship:config={home}/.config/starship/starship.toml"], ftl
-        assert any("56bea62528c1419ed47b0cda5afaac579bf4739a" in line and
+        assert any("ee349a85b9e9ed4b5e3aac1d8d44a58a0fc87926" in line and
                    "mattmc3/starship-ftl" in line for line in zinit_log.read_text().splitlines())
     assert not any("transient" in line for line in lines), lines
 

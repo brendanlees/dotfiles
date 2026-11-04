@@ -49,7 +49,7 @@ if [ "${HERDR_TEST_GO_FAIL:-0}" = 1 ]; then
   exit 1
 fi
 [ "$*" = version ]
-printf '%s\n' 'go version go1.26.2'
+printf '%s\n' 'go version go1.26.10'
 SH
 cat >"$fakebin/herdr" <<'SH'
 #!/bin/sh
@@ -102,7 +102,7 @@ STATE
 : >"$tmpdir/herdr.log"
 run_reconciler "$rendered"
 
-nav_ref='742db891e7d1f9a550b16c01dc8a6763f2b1493a'
+nav_ref='7873100eb47212269005c693effb2a844986b30f'
 plus_ref='f38df3570bea8f7ca71dc1ba11bce3b123d14402'
 last_workspace_ref='8b55ebf15deaa52b49ff1c2500aab0c19c729420'
 worktrunk_ref='f9df9ba700b8a4f4d97ddfe3ea3eb345e80b880b'

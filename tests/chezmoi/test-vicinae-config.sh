@@ -147,7 +147,7 @@ allowed_preferences = {
     "@natterstefan/store.raycast.readwise": "pageSize",
     "@rolandleth/store.raycast.kill-process": "clearSearchBarAfterKill closeWindowAfterKill goToRootAfterKill refreshDuration shouldPrioritizeAppsWhenFiltering shouldSearchInPaths shouldSearchInPid shouldShowPID shouldShowPath skipConfirmation",
     "@tholanda/store.raycast.script-commands": "folderPath",
-    "@thomaslombart/store.raycast.github": "includeTeamReviewRequests isOpenInBrowser repositoryCloneProtocol repositoryFilterMode vscodeBuild",
+    "@thomaslombart/store.raycast.github": "includeTeamReviewRequests isOpenInBrowser repositoryCloneProtocol repositoryFilterMode",
     "@tonka3000/store.raycast.homeassistant": "camerarefreshinterval ignorecerts showEntityId usePing",
     "@vimtor/store.raycast.video-downloader": "autoLoadUrlFromClipboard autoLoadUrlFromSelectedText cookiesFromBrowser downloadPath enableBrowserExtensionSupport fastRemux forceIpv4",
     "@yangxy/store.raycast.date-format-converter": "formatWithMillis formatWithTimezone isoDate isoDateTime isoFormat localizedFullDateTime localizedLongDateTime localizedSecondsTime localizedShortDate localizedShortDateTime localizedTime naturalLanguageDateFormat unixMillis unixTimestamp utcIsoFormat",
@@ -173,6 +173,7 @@ for provider, data in profile["providers"].items():
                 shortcuts.append(item["shortcut"])
 assert len(shortcuts) == len(set(shortcuts)), "active global shortcuts must not collide"
 providers = profile["providers"]
+assert providers["@thomaslombart/store.raycast.github"]["preferences"]["isOpenInBrowser"] is True
 # On macOS Qt's control is Command; super is physical Control.
 assert providers["applications"]["entrypoints"]["com.apple.finder"]["shortcut"] == "control+alt+F"
 assert providers["applications"]["entrypoints"]["io.robbie.HomeAssistant"]["shortcut"] == "super+alt+H"
