@@ -14,7 +14,7 @@ concurrency:
 
 env:
   ACTIONLINT_VERSION: 1.7.12
-  CHEZMOI_VERSION: 2.71.1
+  CHEZMOI_VERSION: 2.74.0
   SHELLCHECK_VERSION: 0.11.0
   TAPLO_VERSION: 0.10.0
   YAMLLINT_VERSION: 1.38.0
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install pinned lint tools
         run: bash tests/ci/install-linux-tools.sh lint
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install pinned chezmoi
         run: bash tests/ci/install-linux-tools.sh chezmoi
@@ -65,7 +65,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install pinned tools
         run: bash tests/ci/install-linux-tools.sh all
@@ -94,7 +94,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install pinned chezmoi on Linux
         if: runner.os == 'Linux'
@@ -106,11 +106,11 @@ jobs:
           case "$(uname -m)" in
             arm64)
               arch=arm64
-              sha=9fad1201c328428634b8a086f767df0dfe6dd3ea1128a2a7c45bc0b16641e294
+              sha=9d89672a597a9333ab47ea5173fcececb85c04864205686a7aa5699c3d8bd98c
               ;;
             x86_64)
               arch=amd64
-              sha=1551f07cab00441540a12e663ffbf4645664319c0f91d30a5f9a255470b561cc
+              sha=3d30cb05efae2f4a68519d6d0e8856765f2b21a0686e66498ee6d2de7707e5e6
               ;;
             *)
               echo "unsupported macOS architecture: $(uname -m)" >&2
@@ -156,7 +156,7 @@ jobs:
     env:
       CHEZMOI_ROLE: ephemeral,headless
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: install pinned chezmoi
         shell: pwsh
@@ -166,7 +166,7 @@ jobs:
           $url = "https://github.com/twpayne/chezmoi/releases/download/v$env:CHEZMOI_VERSION/$asset"
           Invoke-WebRequest -Uri $url -OutFile $zip
           $actual = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLowerInvariant()
-          $expected = 'efdb5ae7e8e455e8f7c1b3d7d97beb7e946d9234f58d73945b78aaf6a5e92de6'
+          $expected = '13dee2831d371c6ce2ac30fc9ae1aad4f70c68e7d44700f6129fe4b244ee7a95'
           if ($actual -ne $expected) {
             throw "chezmoi checksum mismatch: $actual"
           }

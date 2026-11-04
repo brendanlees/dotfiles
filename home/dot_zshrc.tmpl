@@ -125,7 +125,7 @@ _starship_ftl_active=0
 # launcher's `zsh -lic 'exec herdr'` would render into FTL's log instead.
 if [[ ${STARSHIP_FTL:-1} == 1 && -o interactive && -o zle && -t 1 && $TERM != dumb ]] &&
    (( ! ${+ZSH_EXECUTION_STRING} && _zinit_available && $+commands[starship] )); then
-  zinit ice ver"56bea62528c1419ed47b0cda5afaac579bf4739a"
+  zinit ice ver"ee349a85b9e9ed4b5e3aac1d8d44a58a0fc87926"
   if zinit light mattmc3/starship-ftl &&
      (( $+functions[ftl-prompt] )) &&
      ftl-prompt -p '%F{ {{- (index .themes .theme).palette.accent -}} }❯%f ' starship; then

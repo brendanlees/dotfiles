@@ -15,7 +15,7 @@
 {{- end -}}
 
 # --- detect if ephemeral  ---
-{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") (eq .chezmoi.username "ubuntu" "vagrant" "vscode") -}}
+{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS") (env "GITPOD_WORKSPACE_ID") (env "CI") (eq .chezmoi.username "ubuntu" "vagrant") -}}
 {{-   $ephemeral = true -}}
 {{- end -}}
 

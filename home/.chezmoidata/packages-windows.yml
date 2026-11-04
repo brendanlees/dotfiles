@@ -38,20 +38,18 @@ scoops:
     - extras/onlyoffice-desktopeditors
     - extras/notion
     - extras/obsidian
-    - extras/powertoys # MS PowerToys — broad utility suite (FancyZones, Keyboard Manager, etc.)
-    - extras/qmk-toolbox # related to brew: qmk
+    - extras/powertoys
+    - extras/qmk-toolbox
     - extras/responsively
     - extras/sqlitebrowser
     - extras/twinkle-tray
     - extras/upscayl
     - extras/vial
     - extras/vlc
-    - extras/vscode
     - extras/zed
-    - extras/zen-browser
-    - nerd-fonts/JetBrainsMono-NF-Mono # matches .font_family "JetBrainsMono Nerd Font Mono"
+    - nerd-fonts/JetBrainsMono-NF-Mono
     - nerd-fonts/Monaspace-NF-Mono
-    - nerd-fonts/NerdFontsSymbolsOnly # icon fallback — robust to primary-font naming drift
+    - nerd-fonts/NerdFontsSymbolsOnly
     - extras/glazewm
     - extras/zebar
     - extras/tacky-borders
@@ -72,7 +70,6 @@ wingets:
     - Doist.Todoist
     - MullvadVPN.MullvadVPN
     - psmux
-    - TheBrowserCompany.Arc
     - WireGuard.WireGuard
     - Zoom.Zoom
     - tailscale.tailscale

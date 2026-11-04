@@ -2,7 +2,7 @@ herdr:
   plugins:
     - id: vim-herdr-navigation
       source: paulbkim-dev/vim-herdr-navigation
-      ref: 742db891e7d1f9a550b16c01dc8a6763f2b1493a
+      ref: 7873100eb47212269005c693effb2a844986b30f
     - id: cloudmanic.herdr-plus
       source: cloudmanic/herdr-plus
       ref: f38df3570bea8f7ca71dc1ba11bce3b123d14402

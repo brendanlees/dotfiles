@@ -19,7 +19,6 @@ assert bindings['alt-b'] == ['workspace 1-browser', 'exec-and-forget open -a Dia
 expected = {
     'company.thebrowser.Browser': '1-browser',
     'company.thebrowser.dia': '1-browser',
-    'com.microsoft.VSCode': '2-code',
     'dev.zed.Zed': '2-code',
     'com.mimestream.Mimestream': '3-email',
     'notion.id': '3-email',
