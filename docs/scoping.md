@@ -34,7 +34,7 @@ precedence: `CHEZMOI_ROLE` environment variable, then hostname defaults, then in
 - `~/.zshrc`, rendered from `.chezmoitemplates/zshrc-minimal.zsh`
 - `~/.config/nvim-minimal/init.lua`, selected with `NVIM_APPNAME=nvim-minimal`
 
-tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, and still opens without it if GitHub is unreachable. It starts `yaml-language-server` when it is installed, with Home Assistant's YAML tags allowed.
+tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, snacks.nvim and, except on musl, fff. Each plugin is optional, so the editor still opens if GitHub is unreachable or Neovim is older. Language servers start only when their command is installed; `yaml-language-server` allows Home Assistant's YAML tags. fff's musl library does not load on Alpine, so musl hosts use the snacks file picker.
 
 the Home Assistant Advanced SSH add-on recreates its container on each start, so its options install the packages and apply the role every time:
 
@@ -61,7 +61,11 @@ set `dotfile_roles` to a list such as `[homelab, headless]`. pass it through the
 
 run this as the intended dotfiles owner. an existing checkout can be reinitialized explicitly when its role changes.
 
-## root on servers
+## servers
+
+headless homelab Linux hosts, outside the `minimal` role, use `nvim-minimal` instead of AstroNvim and a lean mise toolset. They keep the shell, lazygit, lazydocker and admin CLIs, and add Node and npm language servers for YAML, Compose, Bash, JSON and Dockerfiles. Rust, Go and desktop tools stay on desktops, where Rust builds Neovim and Herdr extensions. `.chezmoitemplates/server-profile.tmpl` holds the condition; `.chezmoiignore` repeats it because some test fixtures do not copy the templates directory.
+
+root on a server installs only Neovim through mise and keeps the full zsh config, whose aliases skip tools that are not installed. Dropping a tool from these lists does not uninstall it; the homelab Ansible update run removes the leftovers.
 
 root keeps its own global mise tools. `~/.config/mise/miserc.toml` ignores project configs under `/home`, rather than trusting code owned by every user there. This removes the repeated trust warnings without granting those configs root execution.
 

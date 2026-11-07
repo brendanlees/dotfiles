@@ -54,9 +54,9 @@ refreshPeriod = "168h"
 include = ["{{ .nerd_font }}NerdFontMono-*.ttf"]
 {{- end }}
 
-{{/* nvim config */}}
+{{/* nvim config; servers use the bundled nvim-minimal instead */}}
 
-{{- if not .ephemeral }}
+{{- if not (or .ephemeral (eq (includeTemplate ".chezmoitemplates/server-profile.tmpl" .) "true")) }}
 {{- $nvimPath := ".config/nvim" }}
 {{- if eq .chezmoi.os "windows" }}{{ $nvimPath = "AppData/Local/nvim" }}{{ end }}
 ["{{ $nvimPath }}"]
