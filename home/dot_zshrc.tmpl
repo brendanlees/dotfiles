@@ -1,3 +1,6 @@
+{{- if dig "minimal" false . -}}
+{{ template "zshrc-minimal.zsh" . }}
+{{- else -}}
 [[ -n "$ZPROF" ]] && zmodload zsh/zprof
 
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -458,3 +461,4 @@ if (( _zinit_available )); then
   zinit light zsh-users/zsh-syntax-highlighting
 fi
 unset _zinit_available ZINIT_HOME
+{{ end -}}

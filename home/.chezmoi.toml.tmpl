@@ -7,6 +7,7 @@
 {{- $homelab   := false -}}
 {{- $ephemeral := false -}}
 {{- $headless  := false -}}
+{{- $minimal   := false -}}
 
 # --- detect hostname  ---
 {{- $hostname := .chezmoi.hostname -}}
@@ -27,6 +28,7 @@
 {{-   if regexMatch "(^|,)homelab(,|$)"   $role }}{{ $homelab   = true }}{{ end -}}
 {{-   if regexMatch "(^|,)ephemeral(,|$)" $role }}{{ $ephemeral = true }}{{ end -}}
 {{-   if regexMatch "(^|,)headless(,|$)"  $role }}{{ $headless  = true }}{{ end -}}
+{{-   if regexMatch "(^|,)minimal(,|$)"   $role }}{{ $minimal   = true }}{{ $headless = true }}{{ end -}}
 {{- end -}}
 
 # --- identify machine type ---
@@ -143,6 +145,7 @@
   homelab   = {{ $homelab }}
   ephemeral = {{ $ephemeral }}
   headless  = {{ $headless }}
+  minimal   = {{ $minimal }}
 {{- if $github_token }}
   github_token = {{ $github_token | quote }}
 {{- end }}

@@ -136,3 +136,18 @@ AppData
 {{- end }}
 
 .DS_Store
+
+{{- /* Configs created before the minimal role existed lack this flag. */}}
+{{- if dig "minimal" false . }}
+# Minimal role: only the shell and the standalone Neovim config. Tools come
+# from the host's package manager, so scripts, externals and mise are skipped.
+*
+.*
+**/*
+!.zshrc
+!.config
+!.config/nvim-minimal
+!.config/nvim-minimal/**
+{{- else }}
+.config/nvim-minimal
+{{- end }}
