@@ -27,6 +27,7 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 
 {{- if or (ne .chezmoi.os "darwin") .headless (not .personal) }}
 .config/vicinae
+.config/zsh/aliases.d/vicinae.zsh
 .local/share/vicinae/shortcuts
 .local/share/vicinae/scripts
 .local/share/vicinae/themes

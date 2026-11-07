@@ -8,6 +8,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -654,6 +655,41 @@ with tempfile.TemporaryDirectory() as temporary:
     target.write_text("[broken")
     failure = apply(fresh, check=False)
     assert failure.returncode and target.read_text() == "[broken"
+
+    # cz-vicinae-update copies GUI changes into the template, applies it, and clears the local copies.
+    wrapper = tmp / "bin/chezmoi"
+    wrapper.write_text("#!/bin/sh\nexec " + shlex.quote(shutil.which("chezmoi")) + ' "$@" ' + shlex.join([
+        "--source", str(fixture), "--destination", str(fresh), "--config", str(tmp / "config.toml"),
+        "--persistent-state", str(tmp / "state.boltdb"), "--no-tty",
+        "--override-data", json.dumps({"chezmoi": {"homeDir": str(fresh), "os": "darwin"}}),
+    ]) + "\n")
+    wrapper.chmod(0o755)
+    profile_file = fresh / ".config/vicinae/profile.json"
+    profile = json.loads(profile_file.read_text())
+    shortcut_ids = set(profile["providers"]["shortcuts"]["entrypoints"])
+    template_owned = {"shortcuts": {"entrypoints": {min(shortcut_ids): {"alias": "gui"}}}}
+    comment = "// Written by Vicinae\n\n"
+    fresh_settings.write_text(comment + json.dumps({
+        "imports": ["./profile.json"],
+        "global_shortcuts": profile["global_shortcuts"],
+        "launcher_window": {"compact_mode": {"enabled": False}},
+        "providers": {"fixture": {"preferences": {"folder": str(fresh / "Notes")}}} | template_owned,
+    }))
+    before = fresh_settings.read_bytes()
+    subprocess.run(
+        ["zsh", "-fc", 'source "$1"; cz-vicinae-update', "zsh",
+         str(root / "home/dot_config/zsh/exact_private_aliases.d/vicinae.zsh")],
+        check=True, capture_output=True, text=True, env={**no_vault_env, "HOME": str(fresh)},
+    )
+    assert str(fresh) not in (fixture / "dot_config/vicinae/profile.json.tmpl").read_text()
+    profile = json.loads(profile_file.read_text())
+    assert profile["launcher_window"]["compact_mode"]["enabled"] is False
+    assert profile["providers"]["fixture"]["preferences"]["folder"] == str(fresh / "Notes")
+    assert set(profile["providers"]["shortcuts"]["entrypoints"]) == shortcut_ids
+    text = fresh_settings.read_text()
+    assert text.startswith(comment)
+    assert json.loads(text[len(comment):]) == {"imports": ["./profile.json"], "providers": template_owned}
+    assert (fresh / ".config/vicinae/settings.json.bak").read_bytes() == before
 
 path = config / "executable_install-extensions.py"
 spec = importlib.util.spec_from_file_location("installer", path)
