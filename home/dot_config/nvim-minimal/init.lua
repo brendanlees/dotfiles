@@ -1,6 +1,6 @@
 -- Standalone editor config for constrained hosts, such as the Home Assistant
 -- SSH add-on. Selected with NVIM_APPNAME=nvim-minimal by the minimal role.
--- Uses Neovim's built-in plugin manager and one plugin, mini.nvim.
+-- Uses Neovim's built-in plugin manager with mini.nvim and indent-blankline.
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -63,20 +63,10 @@ vim.api.nvim_create_autocmd("FileType", {
 -- indent guides
 -- ------------------------------------------
 
--- Draw a guide at every indent level with 'listchars', sized to each buffer's
--- shiftwidth. mini.indentscope highlights the current block on top.
-local function set_indent_guides()
-  local width = math.max(vim.fn.shiftwidth(), 1)
-  vim.opt_local.listchars = {
-    tab = "│ ",
-    trail = "·",
-    nbsp = "␣",
-    leadmultispace = "│" .. string.rep(" ", width - 1),
-  }
-end
+-- indent-blankline draws rainbow guides (see plugins); mini.indentscope
+-- highlights the current block on top. Here, only mark stray whitespace.
 o.list = true
-vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, { callback = set_indent_guides })
-vim.api.nvim_create_autocmd("OptionSet", { pattern = { "shiftwidth", "tabstop" }, callback = set_indent_guides })
+o.listchars = { tab = "→ ", trail = "·", nbsp = "␣" }
 
 -- ------------------------------------------
 -- lsp
@@ -123,10 +113,21 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- ------------------------------------------
 
 -- Plugins are optional: the editor still works if GitHub is unreachable.
-local has_mini = pcall(vim.pack.add, {
+pcall(vim.pack.add, {
   { src = "https://github.com/nvim-mini/mini.nvim", version = "stable" },
+  "https://github.com/lukas-reineke/indent-blankline.nvim",
+  "https://github.com/TheGLander/indent-rainbowline.nvim",
 }, { confirm = false })
-has_mini = has_mini and pcall(require, "mini.pick")
+local has_mini = pcall(require, "mini.pick")
+
+-- Rainbow indent guides, matching the full AstroNvim config.
+if pcall(require, "ibl") and pcall(require, "indent-rainbowline") then
+  require("ibl").setup(require("indent-rainbowline").make_opts {
+    indent = { char = "│" },
+    scope = { enabled = false },
+    whitespace = { remove_blankline_trail = true },
+  })
+end
 
 if has_mini then
   -- Glyph icons need a Nerd Font in the local terminal.
@@ -135,6 +136,13 @@ if has_mini then
   require("mini.statusline").setup()
   local indentscope = require "mini.indentscope"
   indentscope.setup { symbol = "│", draw = { animation = indentscope.gen_animation.none() } }
+  -- Smooth scrolling only, as in the full config.
+  require("mini.animate").setup {
+    cursor = { enable = false },
+    resize = { enable = false },
+    open = { enable = false },
+    close = { enable = false },
+  }
 
   local miniclue = require "mini.clue"
   miniclue.setup {
@@ -202,7 +210,9 @@ if has_mini then
       local dir_buf = vim.api.nvim_get_current_buf()
       vim.cmd.enew()
       pcall(vim.api.nvim_buf_delete, dir_buf, { force = true })
-      pick.files()
+      -- Wait until startup ends: files opened inside this autocmd would skip
+      -- filetype detection, and so highlighting.
+      vim.schedule(pick.files)
     end,
   })
 else
