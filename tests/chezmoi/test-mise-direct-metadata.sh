@@ -83,14 +83,21 @@ for path in Path(sys.argv[1]).glob('mise-*-*.toml'):
     _, platform, role = path.stem.split('-')
     tools[platform, role] = tomllib.loads(path.read_text())['tools']
 assert len(tools) == 16
-# Headless Sync uses the Node runtime already managed on personal Macs.
+# Headless Sync and the Excalidraw CLI use the Node runtime already managed on
+# personal Macs, at exact versions.
 for (platform, role), names in tools.items():
     if (platform, role) == ('darwin', 'personal'):
         headless = names.get('npm:obsidian-headless', {})
         assert re.fullmatch(r'\d+\.\d+\.\d+', headless.get('version', ''))
         assert headless.get('allow_builds') == ['better-sqlite3']
+        excalidraw = names.get('npm:mcp-excalidraw-server', {})
+        assert re.fullmatch(r'\d+\.\d+\.\d+', excalidraw.get('version', ''))
+        # Trust exceptions must name exact versions, never a whole package.
+        assert all(re.fullmatch(r'[@\w./-]+@\d+\.\d+\.\d+', item)
+                   for item in excalidraw.get('trust_policy_excludes', []))
     else:
         assert 'npm:obsidian-headless' not in names
+        assert 'npm:mcp-excalidraw-server' not in names
 assert all('github:Giammarco-Ferranti/deja' not in names for names in tools.values())
 for platform in ('linux', 'alpine', 'windows', 'darwin'):
     assert tools[platform, 'base'].keys() < tools[platform, 'personal'].keys()

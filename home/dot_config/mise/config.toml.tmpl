@@ -58,6 +58,11 @@ python = "latest"
 {{ if .personal -}}
 {{ if eq .chezmoi.os "darwin" -}}
 "npm:obsidian-headless" = { version = "0.0.14", allow_builds = ["better-sqlite3"] }
+# Excalidraw canvas CLI for the private excalidraw agent skill. Its Mermaid
+# dependencies pin two releases published without provenance, each reviewed
+# against its upstream tag and publisher: mermaid 10.9.4 (a hand-published
+# security backport) and langium 3.3.1 (from a run of releases without it).
+"npm:mcp-excalidraw-server" = { version = "2.1.2", trust_policy_excludes = ["mermaid@10.9.4", "langium@3.3.1"] }
 {{ end -}}
 actionlint = "latest"
 pi = "latest"
