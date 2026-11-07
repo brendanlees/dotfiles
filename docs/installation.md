@@ -56,3 +56,9 @@ npx skills update -g -y
 ```
 
 review the lockfile diff before committing. custom and locally edited skills are allowlisted in `.gitignore`, stay out of the lockfile and are never updated. to fork an upstream skill, remove it from the lockfile and allowlist it.
+
+some CLIs ship their own version-matched skills instead:
+
+- `cua-driver skills install` links the Cua Driver skill pack into detected agents.
+- `crabbox init` adds a repo-local Crabbox skill; `crabbox --skill` prints it.
+- `herdr --skill` prints the Herdr skill.
