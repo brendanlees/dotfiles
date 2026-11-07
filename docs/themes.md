@@ -42,7 +42,7 @@ Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.t
 
 Personal, non-headless macOS machines generate `~/.local/share/vicinae/themes/chezmoi.toml` from the active palette. The theme ID stays `chezmoi`; its display name includes the palette, for example “Chezmoi · moonfly”. The managed profile selects it for both macOS appearance modes. All current palettes are dark, so switching macOS to light mode does not change the launcher to a different palette.
 
-Vicinae's writable `settings.json` is left untouched. [Local settings override imported profiles](https://docs.vicinae.com/config#config-imports), so an existing local theme choice may need a one-time `vicinae theme set chezmoi` in each affected appearance mode. Once selected, the normal `theme` command updates the generated file; Vicinae [watches theme files and reloads them automatically](https://docs.vicinae.com/theming/cli-tools#theme-directory-structure), with no extra reload hook.
+Vicinae's writable `settings.json` is left untouched. [Local settings override imported profiles](https://docs.vicinae.com/config#config-imports), so an existing local theme choice may need a one-time `vicinae theme set chezmoi` in each affected appearance mode. Once selected, the normal `theme` command updates the generated file; Vicinae [watches theme files and reloads them automatically](https://docs.vicinae.com/theming/cli-tools#theme-directory-structure), with no extra reload hook. After changing settings in the GUI, run `cz-vicinae-update` to copy them into the profile and clear the local copies.
 
 ## obsidian palette bridge
 

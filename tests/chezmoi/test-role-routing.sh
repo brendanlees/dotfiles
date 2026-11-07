@@ -67,7 +67,7 @@ render_ignore personal-headless '{"personal":true,"work":false,"homelab":false,"
 assert_has personal-headless '.finicky.js'
 
 # Vicinae's profile, shortcuts, scripts and theme share the personal macOS scope.
-for target in '.config/vicinae' '.local/share/vicinae/shortcuts' '.local/share/vicinae/scripts' '.local/share/vicinae/themes'; do
+for target in '.config/vicinae' '.config/zsh/aliases.d/vicinae.zsh' '.local/share/vicinae/shortcuts' '.local/share/vicinae/scripts' '.local/share/vicinae/themes'; do
   assert_lacks personal "$target"
   for scope in personal-headless work homelab ephemeral windows; do
     assert_has "$scope" "$target"
