@@ -129,10 +129,9 @@ local has_mini = pcall(vim.pack.add, {
 has_mini = has_mini and pcall(require, "mini.pick")
 
 if has_mini then
-  require("mini.icons").setup { style = "ascii" }
+  -- Glyph icons need a Nerd Font in the local terminal.
+  require("mini.icons").setup()
   require("mini.pick").setup()
-  -- <Leader>e opens the explorer; `nvim <dir>` opens the file picker below.
-  require("mini.files").setup { options = { use_as_default_explorer = false } }
   require("mini.statusline").setup()
   local indentscope = require "mini.indentscope"
   indentscope.setup { symbol = "│", draw = { animation = indentscope.gen_animation.none() } }
@@ -206,14 +205,9 @@ if has_mini then
       pick.files()
     end,
   })
-  map("n", "<Leader>e", function()
-    local files = require "mini.files"
-    local path = vim.api.nvim_buf_get_name(0)
-    if not files.close() then files.open(vim.uv.fs_stat(path) and path or nil) end
-  end, { desc = "Toggle file explorer" })
 else
-  -- Built-in fallbacks: netrw and :find.
+  -- Built-in fallback for the picker.
   o.path:append "**"
   map("n", "<Leader>ff", ":find ", { desc = "Find files" })
-  map("n", "<Leader>e", "<Cmd>Explore<CR>", { desc = "File explorer" })
 end
+map("n", "<Leader>e", "<Cmd>Explore<CR>", { desc = "File explorer (netrw)" })
