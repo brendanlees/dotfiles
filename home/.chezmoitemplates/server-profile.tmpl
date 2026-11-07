@@ -1,0 +1,3 @@
+{{- /* Headless homelab Linux hosts get a lean toolset and nvim-minimal. The
+   minimal role (Home Assistant SSH add-on) has its own, smaller routing. */ -}}
+{{- and (dig "homelab" false .) (dig "headless" false .) (eq .chezmoi.os "linux") (not (dig "minimal" false .)) -}}
