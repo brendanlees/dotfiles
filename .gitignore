@@ -18,38 +18,10 @@ dot_DS_Store
 # agents/.skill-lock.json. Only custom and forked skills are tracked;
 # allow a new one by adding it below.
 /agents/skills/*
-!/agents/skills/agent-browser/
 !/agents/skills/bro/
-!/agents/skills/browser-testing-with-devtools/
-!/agents/skills/code-review-and-quality/
-!/agents/skills/code-simplification/
-!/agents/skills/codebase-design/
-!/agents/skills/context-engineering/
-!/agents/skills/crabbox/
-!/agents/skills/cua-driver/
-!/agents/skills/diagnose/
-!/agents/skills/documentation-and-adrs/
-!/agents/skills/doubt-driven-development/
-!/agents/skills/frontend-ui-engineering/
-!/agents/skills/handoff-to-hermes/
-!/agents/skills/herdr/
-!/agents/skills/hermes-cron/
-!/agents/skills/improve-codebase-architecture/
-!/agents/skills/init-deep/
-!/agents/skills/moshi-best-practices/
-!/agents/skills/performance-optimization/
+!/agents/skills/grill-moi/
 !/agents/skills/playwright-cli/
-!/agents/skills/security-and-hardening/
-!/agents/skills/servarr-health-check/
-!/agents/skills/shield-health-check/
-!/agents/skills/shipping-and-launch/
-!/agents/skills/skill-creator/
-!/agents/skills/spec-driven-development/
-!/agents/skills/system-prompt-maintainer/
-!/agents/skills/task-log/
-!/agents/skills/test-driven-development/
 !/agents/skills/unslop/
-!/agents/skills/zoom-out/
 
 # docs / specs
 /docs/superpowers/
