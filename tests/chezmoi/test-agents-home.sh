@@ -137,4 +137,21 @@ fi
 git -C "$repo_root" check-ignore -q agents/state/example
 git -C "$repo_root" check-ignore -q agents/backups/example
 
+# skills.sh installs stay untracked; only allowlisted custom skills are committed.
+git -C "$repo_root" check-ignore -q agents/skills/example-upstream/SKILL.md
+python3 - "$repo_root" <<'PY'
+import json
+import subprocess
+import sys
+
+root = sys.argv[1]
+locked = set(json.load(open(f'{root}/agents/.skill-lock.json'))['skills'])
+tracked = {p.split('/')[2] for p in subprocess.check_output(['git', '-C', root, 'ls-files', 'agents/skills'], text=True).split()}
+assert tracked, 'custom skills must be tracked'
+assert not tracked & locked, f'locked skills must not be committed: {sorted(tracked & locked)}'
+for name in sorted(tracked):
+    ignored = subprocess.run(['git', '-C', root, 'check-ignore', '-q', '--no-index', f'agents/skills/{name}/SKILL.md'])
+    assert ignored.returncode == 1, f'tracked skill missing from the .gitignore allowlist: {name}'
+PY
+
 echo 'Agents home symlink ok'
