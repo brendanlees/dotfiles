@@ -27,6 +27,9 @@ o.splitbelow = true
 o.undofile = true
 o.confirm = true
 o.updatetime = 250
+-- tmux and SSH often hide true colour support from detection.
+o.termguicolors = true
+o.completeopt = "menuone,noselect,popup"
 
 -- ------------------------------------------
 -- clipboard
@@ -48,6 +51,65 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- ------------------------------------------
+-- indent guides
+-- ------------------------------------------
+
+-- Draw a guide at every indent level with 'listchars', sized to each buffer's
+-- shiftwidth. mini.indentscope highlights the current block on top.
+local function set_indent_guides()
+  local width = math.max(vim.fn.shiftwidth(), 1)
+  vim.opt_local.listchars = {
+    tab = "│ ",
+    trail = "·",
+    nbsp = "␣",
+    leadmultispace = "│" .. string.rep(" ", width - 1),
+  }
+end
+o.list = true
+vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, { callback = set_indent_guides })
+vim.api.nvim_create_autocmd("OptionSet", { pattern = { "shiftwidth", "tabstop" }, callback = set_indent_guides })
+
+-- ------------------------------------------
+-- lsp
+-- ------------------------------------------
+
+-- yaml-language-server comes from npm in the host's setup; skip it if absent.
+vim.lsp.config("yamlls", {
+  cmd = { "yaml-language-server", "--stdio" },
+  filetypes = { "yaml" },
+  root_markers = { "configuration.yaml", ".git" },
+  settings = {
+    redhat = { telemetry = { enabled = false } },
+    yaml = {
+      keyOrdering = false,
+      -- Home Assistant's YAML tags, so they are not reported as errors.
+      customTags = {
+        "!include scalar",
+        "!include_dir_list scalar",
+        "!include_dir_named scalar",
+        "!include_dir_merge_list scalar",
+        "!include_dir_merge_named scalar",
+        "!secret scalar",
+        "!env_var scalar",
+        "!input scalar",
+      },
+    },
+  },
+})
+if vim.fn.executable "yaml-language-server" == 1 then vim.lsp.enable "yamlls" end
+
+vim.diagnostic.config { virtual_text = true, severity_sort = true }
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+    if client:supports_method "textDocument/completion" then
+      vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+    end
+  end,
+})
+
+-- ------------------------------------------
 -- plugins
 -- ------------------------------------------
 
@@ -62,6 +124,8 @@ if has_mini then
   require("mini.pick").setup()
   require("mini.files").setup()
   require("mini.statusline").setup()
+  local indentscope = require "mini.indentscope"
+  indentscope.setup { symbol = "│", draw = { animation = indentscope.gen_animation.none() } }
 
   local miniclue = require "mini.clue"
   miniclue.setup {
@@ -75,6 +139,7 @@ if has_mini then
     },
     clues = {
       { mode = "n", keys = "<Leader>f", desc = "+Find" },
+      { mode = "n", keys = "<Leader>l", desc = "+LSP" },
       miniclue.gen_clues.g(),
       miniclue.gen_clues.z(),
       miniclue.gen_clues.registers(),
@@ -104,6 +169,13 @@ map("n", "[b", "<Cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<Leader>/", "gcc", { remap = true, desc = "Toggle comment" })
 map("x", "<Leader>/", "gc", { remap = true, desc = "Toggle comment" })
 map({ "n", "x" }, "<Leader>y", '"+y', { desc = "Copy to system clipboard" })
+
+-- Built-in LSP keys also work: K hover, grn rename, gra code action, grr references.
+map("n", "<Leader>ld", vim.diagnostic.open_float, { desc = "Line diagnostics" })
+map("n", "<Leader>la", vim.lsp.buf.code_action, { desc = "Code action" })
+map("n", "<Leader>lf", vim.lsp.buf.format, { desc = "Format buffer" })
+map("n", "]d", function() vim.diagnostic.jump { count = 1, float = true } end, { desc = "Next diagnostic" })
+map("n", "[d", function() vim.diagnostic.jump { count = -1, float = true } end, { desc = "Previous diagnostic" })
 
 if has_mini then
   local pick = require("mini.pick").builtin
