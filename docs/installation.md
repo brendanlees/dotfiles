@@ -48,3 +48,11 @@ mise --cd "$HOME" self-update
 mise --cd "$HOME" upgrade --exclude starship
 mise --cd "$HOME" prune
 ```
+
+install missing [skills.sh](https://skills.sh/) skills from `agents/.skill-lock.json` and update the rest to their latest upstream versions:
+
+```sh
+npx skills update -g -y
+```
+
+review the lockfile diff before committing. custom and locally edited skills are allowlisted in `.gitignore`, stay out of the lockfile and are never updated. to fork an upstream skill, remove it from the lockfile and allowlist it.

@@ -11,7 +11,7 @@ my personal setup for macos, linux and windows environments, managed by [chezmoi
 - configuration stays in each tools native format, with chezmoi / go templating where a role or shared theme actually changes it.
 - tests to focus on bootstrap, role changes and scripts that can overwrite or remove files.
 - CI to handle syntax and template validation.
-- `agents/skills/` to sync upstream [skills.sh](https://skills.sh/) skills, with sources recorded in `agents/.skill-lock.json`. many upstream copies carry local edits, which `skills update` would overwrite.
+- `agents/skills/` for custom and locally edited skills. upstream [skills.sh](https://skills.sh/) skills are recorded in `agents/.skill-lock.json` but ignored by git, so installs never land in commits.
 - custom agent harness configurations and skills synced from personal/private external repositories.
 - custom distributed theming to sync shell and (most) cli tooling.
 
@@ -28,7 +28,7 @@ home/                           # deployable chezmoi source state
   .chezmoitemplates/            # shared template partials
   dot_config/                   # XDG configuration
   dot_local/bin/                # user scripts
-agents/                         # shared agent instructions and upstream skills
+agents/                         # shared agent instructions, custom skills and skills.sh lockfile
 tests/                          # repo-only tests
 docs/                           # repo-only documentation
 ```
