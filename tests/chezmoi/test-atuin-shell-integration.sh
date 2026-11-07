@@ -7,7 +7,7 @@ tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 data='{"personal":true,"work":false,"homelab":false,"headless":false,"ephemeral":false,"theme":"guts","chezmoi":{"os":"darwin","username":"test"}}'
-linux_data='{"personal":false,"work":false,"homelab":true,"headless":true,"ephemeral":false,"theme":"guts","chezmoi":{"os":"linux","username":"test"}}'
+linux_data='{"personal":false,"work":false,"homelab":true,"headless":true,"ephemeral":false,"theme":"guts","chezmoi":{"os":"linux","arch":"amd64","username":"test"}}'
 
 atuin_theme_template="$source_root/dot_config/atuin/themes/chezmoi.toml.tmpl"
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
@@ -61,7 +61,9 @@ chezmoi execute-template --source "$repo_root" --override-data "$data" \
 grep -Fxq 'atuin = "latest"' "$tmpdir/mise.toml"
 chezmoi execute-template --source "$repo_root" --override-data "$linux_data" \
   --file "$source_root/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-linux.toml"
-grep -Fxq 'libc = "musl"' "$tmpdir/mise-linux.toml"
+grep -Fq 'asset_pattern = "atuin-x86_64-unknown-linux-musl.tar.gz"' "$tmpdir/mise-linux.toml"
+# A global musl setting would also give Node a musl build that glibc hosts cannot run.
+if grep -Fxq 'libc = "musl"' "$tmpdir/mise-linux.toml"; then exit 1; fi
 
 chezmoi execute-template --source "$repo_root" --override-data "$data" \
   --file "$source_root/dot_zshrc.tmpl" >"$tmpdir/zshrc"

@@ -1,10 +1,6 @@
 {{- $server := eq (includeTemplate ".chezmoitemplates/server-profile.tmpl" .) "true" -}}
 {{- $serverRoot := and $server (eq .chezmoi.username "root") -}}
 [settings]
-{{ if eq .chezmoi.os "linux" -}}
-# Prefer static Linux artifacts so managed tools run on older Ubuntu hosts.
-libc = "musl"
-{{ end -}}
 {{ if and (hasKey . "github_token") .github_token -}}
 github.credential_command = 'chezmoi execute-template "{{ "{{ .github_token }}" }}"'
 {{ end -}}
@@ -28,7 +24,14 @@ glow = "latest"
 gum = "latest"
 fd = "latest"
 fzf = "latest"
+{{ if eq .chezmoi.os "linux" -}}
+# Atuin's glibc build needs glibc 2.39, newer than some homelab hosts have, so
+# name its musl asset. A global libc = "musl" would also give Node a musl build
+# that glibc hosts cannot run, and older mise ignores a per-tool libc option.
+"github:atuinsh/atuin" = { version = "latest", asset_pattern = "atuin-{{ ternary "aarch64" "x86_64" (eq .chezmoi.arch "arm64") }}-unknown-linux-musl.tar.gz" }
+{{ else -}}
 atuin = "latest"
+{{ end -}}
 chezmoi = "latest"
 jq = "latest"
 duf = "latest"
