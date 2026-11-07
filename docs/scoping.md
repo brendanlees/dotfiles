@@ -34,14 +34,15 @@ precedence: `CHEZMOI_ROLE` environment variable, then hostname defaults, then in
 - `~/.zshrc`, rendered from `.chezmoitemplates/zshrc-minimal.zsh`
 - `~/.config/nvim-minimal/init.lua`, selected with `NVIM_APPNAME=nvim-minimal`
 
-tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, and still opens without it if GitHub is unreachable.
+tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, and still opens without it if GitHub is unreachable. It starts `yaml-language-server` when it is installed, with Home Assistant's YAML tags allowed.
 
 the Home Assistant Advanced SSH add-on recreates its container on each start, so its options install the packages and apply the role every time:
 
 ```yaml
-packages: [neovim, git, ripgrep, fd, tree-sitter-yaml, tree-sitter-json, tree-sitter-bash]
+packages: [neovim, git, ripgrep, fd, nodejs, npm, tree-sitter-yaml, tree-sitter-json, tree-sitter-bash, tree-sitter-python]
 init_commands:
   - sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- -b /root/.local/bin
+  - npm install -g --no-fund --no-audit yaml-language-server@2
   - CHEZMOI_ROLE=minimal /root/.local/bin/chezmoi init --apply brendanlees
 ```
 
