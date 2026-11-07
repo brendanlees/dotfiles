@@ -1,3 +1,5 @@
+{{- $server := eq (includeTemplate ".chezmoitemplates/server-profile.tmpl" .) "true" -}}
+{{- $serverRoot := and $server (eq .chezmoi.username "root") -}}
 [settings]
 {{ if eq .chezmoi.os "linux" -}}
 # Prefer static Linux artifacts so managed tools run on older Ubuntu hosts.
@@ -8,6 +10,10 @@ github.credential_command = 'chezmoi execute-template "{{ "{{ .github_token }}" 
 {{ end -}}
 
 [tools]
+{{ if $serverRoot -}}
+# Root on servers keeps only the editor; the shell config works without the rest.
+neovim = "latest"
+{{ else -}}
 uv = "latest"
 neovim = "latest"
 starship = "latest"
@@ -23,11 +29,36 @@ gum = "latest"
 fd = "latest"
 fzf = "latest"
 atuin = "latest"
-# Skip Rust on Alpine because installing it crashes the Home Assistant SSH container.
+chezmoi = "latest"
+jq = "latest"
+duf = "latest"
+dua = "latest"
+gdu = "latest"
+bat = "latest"
+delta = "latest"
+{{ if eq .chezmoi.os "linux" -}}
+"github:aristocratos/btop" = "latest"
+{{ end -}}
+{{ if ne .chezmoi.os "windows" -}}
+tmux = "latest"
+{{ end -}}
+{{ if $server -}}
+# Language servers for nvim-minimal. Node is only here for the npm-based ones.
+node = "lts"
+lua-language-server = "latest"
+taplo = "latest"
+"npm:yaml-language-server" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:vscode-langservers-extracted" = "latest"
+"npm:dockerfile-language-server-nodejs" = "latest"
+"npm:@microsoft/compose-language-service" = "latest"
+{{ else -}}
+# Desktop development tools; servers skip these to save space.
+# Rust builds Neovim and Herdr extensions. Skip it on Alpine because installing
+# it crashes the Home Assistant SSH container.
 {{ if not (and (eq .chezmoi.os "linux") (eq (dig "osRelease" "id" "" .chezmoi) "alpine")) -}}
 rust = "latest"
 {{ end -}}
-chezmoi = "latest"
 hunk = "latest"
 {{ if or .personal .homelab -}}
 infisical = "latest"
@@ -35,22 +66,13 @@ infisical = "latest"
 {{ if ne .chezmoi.os "windows" -}}
 # Toolchain for the pinned Herdr Plus source build.
 go = "1.26.10"
-tmux = "latest"
 {{ end -}}
-jq = "latest"
 gh = "latest"
-duf = "latest"
-dua = "latest"
-gdu = "latest"
 "github:schollz/croc" = "latest"
 fastfetch = "latest"
 yazi = "latest"
-{{ if eq .chezmoi.os "linux" -}}
-"github:aristocratos/btop" = "latest"
-{{ end -}}
 "github:joshmedeski/sesh" = "latest"
-bat = "latest"
-delta = "latest"
+{{ end -}}
 {{ if eq .chezmoi.os "darwin" -}}
 node = "lts"
 python = "latest"
@@ -70,7 +92,10 @@ shellcheck = "latest"
 shfmt = "latest"
 # Aqua cannot list gitea.com releases; the Forgejo backend speaks the Gitea API.
 "forgejo:gitea/tea" = { version = "latest", api_url = "https://gitea.com/api/v1" }
+{{ if not $server -}}
 taplo = "latest"
+{{ end -}}
 yamllint = "latest"
 yq = "latest"
+{{ end -}}
 {{ end -}}

@@ -148,6 +148,8 @@ AppData
 !.config
 !.config/nvim-minimal
 !.config/nvim-minimal/**
-{{- else }}
+{{- /* Servers also get nvim-minimal. Same condition as
+   .chezmoitemplates/server-profile.tmpl, which some test fixtures do not copy. */}}
+{{- else if not (and (dig "homelab" false .) (dig "headless" false .) (eq .chezmoi.os "linux")) }}
 .config/nvim-minimal
 {{- end }}

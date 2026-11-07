@@ -168,8 +168,40 @@ chezmoi execute-template --source "$repo_root" --override-data '{"minimal":true}
 assert_file_has "$tmpdir/minimal.zshrc" 'export NVIM_APPNAME=nvim-minimal'
 assert_file_lacks "$tmpdir/minimal.zshrc" 'mise activate'
 
-for scope in ephemeral personal work homelab windows; do
+for scope in ephemeral personal work windows; do
   assert_has "$scope" '.config/nvim-minimal'
 done
+
+# Headless homelab servers use nvim-minimal instead of AstroNvim, and a lean
+# toolset without Rust or Go. Root on a server keeps only the editor.
+assert_lacks homelab '.config/nvim-minimal'
+assert_file_lacks "$tmpdir/homelab.external" '[".config/nvim"]'
+assert_file_has "$tmpdir/personal.external" '[".config/nvim"]'
+
+render_mise() {
+  chezmoi execute-template --source "$repo_root" --override-data "$2" \
+    <"$source_root/dot_config/mise/config.toml.tmpl" | sed -n '/^\[tools\]/,$p' | grep -E '^[^#[:space:][]' |
+    cut -d' ' -f1 >"$tmpdir/$1.tools"
+}
+render_mise server-user "$homelab_data"
+render_mise server-root '{"personal":false,"work":false,"homelab":true,"ephemeral":false,"headless":true,"chezmoi":{"os":"linux","username":"root"}}'
+render_mise desktop "$personal_data"
+
+for tool in neovim lazygit lazydocker node '"npm:yaml-language-server"' '"npm:@microsoft/compose-language-service"'; do
+  grep -Fxq "$tool" "$tmpdir/server-user.tools"
+done
+for tool in rust go; do
+  if grep -Fxq "$tool" "$tmpdir/server-user.tools"; then exit 1; fi
+  grep -Fxq "$tool" "$tmpdir/desktop.tools"
+done
+[[ $(cat "$tmpdir/server-root.tools") == neovim ]]
+
+chezmoi execute-template --source "$repo_root" --override-data "$homelab_data" \
+  <"$source_root/dot_zshrc.tmpl" >"$tmpdir/server.zshrc"
+chezmoi execute-template --source "$repo_root" --override-data "$personal_data" \
+  <"$source_root/dot_zshrc.tmpl" >"$tmpdir/desktop.zshrc"
+assert_file_has "$tmpdir/server.zshrc" 'export NVIM_APPNAME=nvim-minimal'
+assert_file_has "$tmpdir/server.zshrc" 'mise activate'
+assert_file_lacks "$tmpdir/desktop.zshrc" 'export NVIM_APPNAME=nvim-minimal'
 
 echo 'role routing matrix and private ownership boundary ok'

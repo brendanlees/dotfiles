@@ -52,6 +52,10 @@ source "$XDG_CONFIG_HOME/zsh/aliases.zsh"
 # ------------------------------------------
 
 export EDITOR=nvim
+{{- if eq (includeTemplate ".chezmoitemplates/server-profile.tmpl" .) "true" }}
+# Servers use the standalone config in ~/.config/nvim-minimal.
+export NVIM_APPNAME=nvim-minimal
+{{- end }}
 set -o vi
 bindkey jj vi-cmd-mode
 
