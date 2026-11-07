@@ -9,6 +9,7 @@ dotfiles are scoped by machine role. on first init, chezmoi prompts interactivel
 | `homelab`   | apply homelab environment config                                                |
 | `ephemeral` | auto-detected for ci/containers; minimal config                                 |
 | `headless`  | skip gui config (ghostty, kanata); auto-set for homelab, prompted for work-only |
+| `minimal`   | only a small zshrc and a standalone neovim config; no mise, scripts or externals |
 
 known hostnames can also be auto-assigned without prompting in `home/.chezmoi.toml.tmpl`.
 
@@ -20,11 +21,29 @@ set `CHEZMOI_ROLE` to a comma-separated list before running `chezmoi init`:
 CHEZMOI_ROLE=personal,work chezmoi init --apply brendanlees
 ```
 
-valid tokens: `personal`, `work`, `homelab`, `headless`, `ephemeral`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false. CI uses `CHEZMOI_ROLE=ephemeral,headless` for non-interactive validation.
+valid tokens: `personal`, `work`, `homelab`, `headless`, `ephemeral`, `minimal`. tokens are additive, so `personal,work` sets both flags true. anything not listed stays false. CI uses `CHEZMOI_ROLE=ephemeral,headless` for non-interactive validation.
 
 precedence: `CHEZMOI_ROLE` environment variable, then hostname defaults, then interactive prompts. the environment is read at init time; changing it before a plain `chezmoi apply` does not reinitialize the role.
 
 `chezmoi init --data` is a boolean flag, not a JSON data argument. use the role environment variable for initialization; `--override-data` is useful for temporary rendering and tests.
+
+## minimal hosts
+
+`minimal` is for hosts that only need a shell and an editor, such as the Home Assistant SSH add-on. It implies `headless` and must be requested with `CHEZMOI_ROLE`. It manages two targets:
+
+- `~/.zshrc`, rendered from `.chezmoitemplates/zshrc-minimal.zsh`
+- `~/.config/nvim-minimal/init.lua`, selected with `NVIM_APPNAME=nvim-minimal`
+
+tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, and still opens without it if GitHub is unreachable.
+
+the Home Assistant Advanced SSH add-on recreates its container on each start, so its options install the packages and apply the role every time:
+
+```yaml
+packages: [neovim, git, ripgrep, fd, tree-sitter-yaml, tree-sitter-json, tree-sitter-bash]
+init_commands:
+  - sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- -b /root/.local/bin
+  - CHEZMOI_ROLE=minimal /root/.local/bin/chezmoi init --apply brendanlees
+```
 
 ## configure via ansible
 

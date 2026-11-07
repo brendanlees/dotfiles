@@ -147,4 +147,29 @@ for file in .claude/keep Assets/keep Documents/PowerShell/keep; do
   grep -Fxq keep "$home/$file"
 done
 
+# The minimal role manages only its shell and standalone Neovim config, with
+# no mise, scripts or externals. Other roles do not receive that config.
+CHEZMOI_ROLE=minimal chezmoi execute-template --init --source "$repo_root" \
+  <"$source_root/.chezmoi.toml.tmpl" >"$tmpdir/minimal-init.toml"
+grep -Fxq '  minimal   = true' "$tmpdir/minimal-init.toml"
+grep -Fxq '  headless  = true' "$tmpdir/minimal-init.toml"
+
+minimal_home="$tmpdir/minimal-home"
+mkdir -p "$minimal_home"
+printf '[data]\npersonal=false\nwork=false\nhomelab=false\nephemeral=false\nheadless=true\nminimal=true\n' >"$tmpdir/minimal.toml"
+HOME="$minimal_home" chezmoi managed --source "$repo_root" --config "$tmpdir/minimal.toml" \
+  --destination "$minimal_home" --persistent-state "$tmpdir/minimal.boltdb" --include=all \
+  --override-data '{"chezmoi":{"os":"linux","username":"root"}}' >"$tmpdir/minimal.managed"
+printf '%s\n' .config .config/nvim-minimal .config/nvim-minimal/init.lua .zshrc |
+  cmp - "$tmpdir/minimal.managed"
+
+chezmoi execute-template --source "$repo_root" --override-data '{"minimal":true}' \
+  <"$source_root/dot_zshrc.tmpl" >"$tmpdir/minimal.zshrc"
+assert_file_has "$tmpdir/minimal.zshrc" 'export NVIM_APPNAME=nvim-minimal'
+assert_file_lacks "$tmpdir/minimal.zshrc" 'mise activate'
+
+for scope in ephemeral personal work homelab windows; do
+  assert_has "$scope" '.config/nvim-minimal'
+done
+
 echo 'role routing matrix and private ownership boundary ok'
