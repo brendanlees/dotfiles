@@ -45,9 +45,18 @@ vim.g.clipboard = "osc52"
 -- ------------------------------------------
 
 -- Parsers come from Alpine packages (tree-sitter-yaml and friends), so nothing
--- is compiled here. Filetypes without a parser keep regex highlighting.
+-- is compiled here. Those packages install their highlight queries under
+-- /usr/share/tree-sitter, outside Neovim's runtime path.
+if vim.uv.fs_stat "/usr/share/tree-sitter/queries" then o.runtimepath:append "/usr/share/tree-sitter" end
+
+-- Starting treesitter turns regex syntax off, so only start it when there are
+-- highlight queries for the language. Otherwise regex highlighting stays on.
 vim.api.nvim_create_autocmd("FileType", {
-  callback = function(args) pcall(vim.treesitter.start, args.buf) end,
+  callback = function(args)
+    local lang = vim.treesitter.language.get_lang(args.match)
+    local ok, query = pcall(vim.treesitter.query.get, lang, "highlights")
+    if ok and query then pcall(vim.treesitter.start, args.buf, lang) end
+  end,
 })
 
 -- ------------------------------------------
@@ -122,7 +131,8 @@ has_mini = has_mini and pcall(require, "mini.pick")
 if has_mini then
   require("mini.icons").setup { style = "ascii" }
   require("mini.pick").setup()
-  require("mini.files").setup()
+  -- <Leader>e opens the explorer; `nvim <dir>` opens the file picker below.
+  require("mini.files").setup { options = { use_as_default_explorer = false } }
   require("mini.statusline").setup()
   local indentscope = require "mini.indentscope"
   indentscope.setup { symbol = "│", draw = { animation = indentscope.gen_animation.none() } }
@@ -184,6 +194,18 @@ if has_mini then
   map("n", "<Leader>fb", pick.buffers, { desc = "Find buffers" })
   map("n", "<Leader>fh", pick.help, { desc = "Find help" })
   map("n", "<Leader>fr", pick.resume, { desc = "Resume last picker" })
+  -- `nvim <dir>`: change into the directory and open the file picker.
+  vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+      local dir = vim.fn.argv(0)
+      if vim.fn.argc() ~= 1 or vim.fn.isdirectory(dir) == 0 then return end
+      vim.cmd.cd(vim.fn.fnameescape(dir))
+      local dir_buf = vim.api.nvim_get_current_buf()
+      vim.cmd.enew()
+      pcall(vim.api.nvim_buf_delete, dir_buf, { force = true })
+      pick.files()
+    end,
+  })
   map("n", "<Leader>e", function()
     local files = require "mini.files"
     local path = vim.api.nvim_buf_get_name(0)
