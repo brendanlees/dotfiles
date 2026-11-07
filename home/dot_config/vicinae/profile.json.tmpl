@@ -14,39 +14,50 @@
   },
   "providers": {
     "apple-shortcuts": {
+      "enabled": true,
       "entrypoints": {
         "38C86DCC-1E1B-49BF-AA5D-8EC23B7FC33E": {
-          "enabled": true
+          "enabled": false
         },
         "44B60F1A-6A0A-4D70-82D7-E31F626DE850": {
-          "enabled": true
+          "enabled": false
         },
         "71FFAFD7-1CA0-41C3-A197-ACA0E5187D3B": {
-          "enabled": true
+          "enabled": false
         },
         "7319A8E0-A7ED-4E8E-B686-7B5149982122": {
-          "enabled": true
+          "enabled": false
         },
         "8B2553CA-E287-4E7F-8853-98ADC667190A": {
-          "enabled": true
+          "enabled": false
         },
         "A12B14F9-7728-461B-BE3A-A300AD238888": {
-          "enabled": true
+          "enabled": false
         },
         "A3F9534F-3A2C-4031-8700-AC25588B6845": {
           "enabled": false
         },
         "B2A0D107-4DB2-4B54-A014-8007AAB15630": {
-          "enabled": true
+          "enabled": false
         },
         "C5AE7984-3C7A-4DD7-8FE2-D5C6310206DE": {
-          "enabled": true
+          "enabled": false
         },
         "CD335D3C-A3CB-4DA8-B6A5-2574233103A8": {
-          "enabled": true
+          "enabled": false
         },
         "E610F57A-68E7-4F75-A678-D01F09ACAE1F": {
-          "enabled": true
+          "enabled": false
+        },
+        "5E36B254-8470-40FA-AA01-070CA193923E": {
+          "enabled": false
+        },
+        "A935865D-F71C-4EA2-AF05-8039F1F09F79": {
+          "enabled": false
+        },
+        "AC00E7B2-9AA6-49C1-9D24-931F4B987E12": {
+          "enabled": true,
+          "shortcut": "super+control+alt+shift+J"
         }
       }
     },
@@ -913,6 +924,11 @@
         "switchApps": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "showFullBindings": true,
+        "showMenuBarExtras": true,
+        "showWorkspaceName": false
       }
     },
     "@gstvds/store.raycast.amphetamine": {
@@ -1079,6 +1095,15 @@
           "alias": "bw s",
           "enabled": true
         }
+      },
+      "preferences": {
+        "cliPath": "/opt/homebrew/bin/bw",
+        "fetchFavicons": true,
+        "repromptIgnoreDuration": "900000",
+        "serverUrl": "",
+        "shouldCacheVaultItems": true,
+        "syncOnLaunch": true,
+        "windowActionOnCopy": "close"
       }
     },
     "@nhojb/store.raycast.brew": {
@@ -1137,6 +1162,12 @@
           "alias": "cani",
           "enabled": true
         }
+      },
+      "preferences": {
+        "briefMode": false,
+        "defaultQuery": "defaults",
+        "showPartialSupport": false,
+        "showReleaseDate": true
       }
     },
     "@erics118/store.raycast.change-case": {
@@ -1245,6 +1276,19 @@
         "summarize": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "isAutoFullInput": false,
+        "isAutoLoadText": false,
+        "isAutoSaveConversation": true,
+        "isAutoTTS": false,
+        "isHistoryPaused": false,
+        "proxyProtocol": "http",
+        "useApiEndpoint": false,
+        "useAzure": false,
+        "useProxy": false,
+        "useStream": true,
+        "useVisionModel": false
       }
     },
     "@destiner/store.raycast.cheatsheets": {
@@ -1278,6 +1322,11 @@
           "alias": "cld s",
           "enabled": true
         }
+      },
+      "preferences": {
+        "isAutoFullInput": false,
+        "isAutoLoad": false,
+        "useStream": true
       }
     },
     "@destiner/store.raycast.cloudflare": {
@@ -1379,6 +1428,7 @@
       }
     },
     "@koinzhang/store.raycast.common-directory": {
+      "enabled": false,
       "entrypoints": {
         "add-common-directory": {
           "alias": "dir-a",
@@ -1655,6 +1705,7 @@
       "enabled": false
     },
     "@Theon/store.raycast.get-ssh-key": {
+      "enabled": false,
       "entrypoints": {
         "index": {
           "alias": "ssh cp",
@@ -1723,9 +1774,12 @@
       },
       "preferences": {
         "repositoryCloneProtocol": "https",
-        "isOpenInBrowser": true,
+        "isOpenInBrowser": false,
         "includeTeamReviewRequests": true,
-        "repositoryFilterMode": "all"
+        "repositoryFilterMode": "all",
+        "defaultSearchTerms": "author:@me",
+        "vscodeBuild": "vscode",
+        "baseClonePath": {{ printf "%s/Code/homelab" .chezmoi.homeDir | toJson }}
       }
     },
     "@koinzhang/store.raycast.github-gist": {
@@ -1786,11 +1840,11 @@
         },
         "automations": {
           "alias": "ha auto",
-          "enabled": true
+          "enabled": false
         },
         "batteries": {
           "alias": "ha bat",
-          "enabled": true
+          "enabled": false
         },
         "binarysensors": {
           "enabled": false
@@ -1799,11 +1853,11 @@
           "enabled": false
         },
         "calendar": {
-          "enabled": true
+          "enabled": false
         },
         "cameras": {
           "alias": "ha cam",
-          "enabled": true
+          "enabled": false
         },
         "climate": {
           "enabled": false
@@ -1815,7 +1869,7 @@
           "enabled": false
         },
         "customentities": {
-          "enabled": true
+          "enabled": false
         },
         "dashboard": {
           "alias": "ha",
@@ -1825,7 +1879,7 @@
           "enabled": false
         },
         "entity-settings": {
-          "enabled": true
+          "enabled": false
         },
         "fans": {
           "enabled": false
@@ -1840,7 +1894,7 @@
         },
         "lights": {
           "alias": "ha l",
-          "enabled": true
+          "enabled": false
         },
         "mediaplayers": {
           "enabled": false
@@ -1852,33 +1906,33 @@
           "enabled": false
         },
         "runService": {
-          "enabled": true
+          "enabled": false
         },
         "scenes": {
           "alias": "ha sc",
-          "enabled": true
+          "enabled": false
         },
         "scripts": {
           "alias": "ha scp",
-          "enabled": true
+          "enabled": false
         },
         "sensors": {
           "alias": "ha sen",
           "enabled": false
         },
         "services": {
-          "enabled": true
+          "enabled": false
         },
         "switches": {
           "alias": "ha sw",
-          "enabled": true
+          "enabled": false
         },
         "toggle-ac-menu": {
-          "enabled": true
+          "enabled": false
         },
         "updates": {
           "alias": "ha up",
-          "enabled": true
+          "enabled": false
         },
         "vacuums": {
           "enabled": false
@@ -1896,8 +1950,12 @@
       "preferences": {
         "usePing": true,
         "ignorecerts": false,
-        "showEntityId": false,
-        "camerarefreshinterval": "3000"
+        "showEntityId": true,
+        "camerarefreshinterval": "3000",
+        "instance": "https://hass.lan.brendans.cloud",
+        "instanceInternal": "https://hass.lan.brendans.cloud",
+        "homeSSIDs": "< o >, [ ~ ]",
+        "preferredapp": "companion"
       }
     },
     "@Alex_/store.raycast.http-status-codes": {
@@ -1906,6 +1964,9 @@
           "alias": "http s",
           "enabled": true
         }
+      },
+      "preferences": {
+        "typeOfPerson": "dog"
       }
     },
     "@destiner/store.raycast.iconify": {
@@ -1979,6 +2040,22 @@
         "updateKarakeep": {
           "enabled": true
         }
+      },
+      "preferences": {
+        "apiUrl": "https://karakeep.lab.brendans.cloud",
+        "displayBookmarkPreview": true,
+        "displayBookmarkStatus": false,
+        "displayCreatedAt": true,
+        "displayDescription": true,
+        "displayNote": false,
+        "displaySummary": true,
+        "displayTags": true,
+        "language": "en",
+        "linkMainAction": "openInBrowser",
+        "prefillUrlFromBrowser": true,
+        "showWebsitePreview": true,
+        "textMainAction": "viewDetail",
+        "verboseLogging": false
       }
     },
     "@rolandleth/store.raycast.kill-process": {
@@ -2132,6 +2209,9 @@
           "alias": "pcl",
           "enabled": true
         }
+      },
+      "preferences": {
+        "ambiguousDotDateOrder": "day_month"
       }
     },
     "@hugomarfani/store.raycast.pick-your-wallpaper": {
@@ -2178,6 +2258,9 @@
           "alias": "time",
           "enabled": true
         }
+      },
+      "preferences": {
+        "hideWorldMap": false
       }
     },
     "@natterstefan/store.raycast.readwise": {
@@ -2294,7 +2377,8 @@
       },
       "enabled": false,
       "preferences": {
-        "folderPath": {{ printf "%s/raycast/script-commands" .chezmoi.homeDir | toJson }}
+        "addedFolderToRaycast": false,
+        "folderPath": "~/raycast/script-commands"
       }
     },
     "@joshmedeski/store.raycast.sesh": {
@@ -2368,6 +2452,9 @@
         "toggle-dns": {
           "enabled": false
         }
+      },
+      "preferences": {
+        "tailscalePath": "/usr/local/bin/tailscale"
       }
     },
     "@ThatNerd/store.raycast.timers": {
@@ -2563,13 +2650,14 @@
         }
       },
       "preferences": {
-        "downloadPath": {{ printf "%s/Downloads" .chezmoi.homeDir | toJson }},
+        "downloadPath": "~/Downloads",
         "autoLoadUrlFromClipboard": false,
         "autoLoadUrlFromSelectedText": false,
         "enableBrowserExtensionSupport": false,
         "forceIpv4": false,
         "cookiesFromBrowser": "none",
-        "fastRemux": true
+        "fastRemux": true,
+        "homebrewPath": "/opt/homebrew/bin/brew"
       }
     },
     "@ajaypremshankar/store.raycast.vim-bro": {
@@ -2597,6 +2685,11 @@
           "alias": "wh t",
           "enabled": true
         }
+      },
+      "preferences": {
+        "downloadDir": "~/Downloads",
+        "sfwOnly": false,
+        "username": "xbxd"
       }
     },
     "@nielsvanrijn/store.raycast.web-converter": {
@@ -2618,7 +2711,9 @@
     "@chkpwd/store.raycast.ente-auth": {
       "preferences": {
         "primaryAction": "paste",
-        "deleteExport": true
+        "deleteExport": true,
+        "cliPath": "/opt/homebrew/bin/ente",
+        "exportPath": {{ printf "%s/.ente" .chezmoi.homeDir | toJson }}
       },
       "entrypoints": {
         "index": {
@@ -2647,6 +2742,7 @@
     "scripts": {
       "entrypoints": {
         "obsidian-daily.sh": {
+          "alias": "notes",
           "enabled": true
         }
       },
@@ -2658,6 +2754,33 @@
     },
     "shortcuts": {
       "entrypoints": {{ $shortcutEntries | toPrettyJson }}
+    },
+    "@CT-7567/store.raycast.simple-dictionary": {
+      "entrypoints": {
+        "search": {
+          "alias": "dict",
+          "preferences": {
+            "default_language": "en"
+          }
+        }
+      }
+    },
+    "@SeoFood/store.raycast.typewhisper": {
+      "preferences": {
+        "port": ""
+      }
+    },
+    "@mattisssa/store.raycast.spotify-player": {
+      "entrypoints": {
+        "dislike": {
+          "enabled": true,
+          "shortcut": "alt+shift+G"
+        },
+        "like": {
+          "enabled": true,
+          "shortcut": "super+shift+G"
+        }
+      }
     }
   },
   "font": {
