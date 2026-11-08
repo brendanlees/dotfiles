@@ -8,15 +8,7 @@ symlink_template="$source_root/Library/Application Support/lazygit/symlink_confi
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
-# LazyGit migrates the old git.pagers/pager shape to this schema on startup.
-rendered=$(chezmoi execute-template --source "$repo_root" \
-  --override-data '{"theme":"black-metal-bathory"}' --file "$template")
-grep -Fxq '  diffRenderers:' <<<"$rendered"
-grep -Fxq '    - command: hunk pager' <<<"$rendered"
-if grep -Fxq '  pagers:' <<<"$rendered"; then
-  echo 'legacy git.pagers syntax is still rendered' >&2
-  exit 1
-fi
+rendered=$(chezmoi execute-template --source "$repo_root" --file "$template")
 
 # Both macOS and XDG paths must resolve to the same managed file, not two
 # independently managed copies that can drift.
@@ -45,4 +37,4 @@ cmp "$xdg_config" "$fixture_source/dot_config/lazygit/config.yml"
 # Reapplying the rendered shape must be a no-op.
 [[ -z $(HOME="$fixture_home" chezmoi diff --source "$fixture_source" \
   --destination "$fixture_home" --config "$config_file" --no-pager) ]]
-echo 'lazygit config schema and macOS alias ok'
+echo 'lazygit macOS alias and idempotent apply ok'

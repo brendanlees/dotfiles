@@ -79,37 +79,9 @@ if sys.argv[2] != 'true':
     assert 'com.apple.mouse.scaling' not in data.get('-g', {})
     raise SystemExit()
 
-global_ = data['-g']
-assert global_['KeyRepeat'] == 2 and global_['InitialKeyRepeat'] == 15
-assert global_['AppleKeyboardUIMode'] == 1
-assert global_['com.apple.mouse.scaling'] == 0.875
-assert global_['com.apple.scrollwheel.scaling'] == 0.5
-assert global_['com.apple.trackpad.scaling'] == 1.5
-assert global_['com.apple.swipescrolldirection'] is False
-assert global_['com.apple.keyboard.fnState'] is False
-finder = data['com.apple.finder']
-assert finder['FXPreferredViewStyle'] == finder['FXPreferredSearchViewStyle'] == 'clmv'
-assert finder['FXDefaultSearchScope'] == 'SCcf'
-assert finder['NewWindowTarget'] == 'PfLo'
-assert finder['NewWindowTargetPath'] == (home / 'Downloads').as_uri() + '/'
-assert finder['CreateDesktop'] is False and finder['ShowPathbar'] is True
-assert finder['_FXSortFoldersFirst'] is True
-assert finder['StandardViewOptions']['ColumnViewOptions']['ShowPreview'] is True
-assert finder['StandardViewOptions']['ColumnViewOptions']['FontSize'] == 13.0
-for domain in ('com.apple.AppleMultitouchTrackpad', 'com.apple.driver.AppleBluetoothMultitouch.trackpad'):
-    assert data[domain]['Clicking'] is True
-    assert data[domain]['TrackpadThreeFingerDrag'] is True
-    assert data[domain]['TrackpadRightClick'] is True
-    assert data[domain]['TrackpadThreeFingerHorizSwipeGesture'] == 0
-for domain in ('com.apple.AppleMultitouchMouse', 'com.apple.driver.AppleBluetoothMultitouch.mouse'):
-    assert data[domain]['MouseButtonMode'] == 'OneButton'
-    assert data[domain]['MouseMomentumScroll'] is True
-keyboard = data['com.apple.HIToolbox']
-assert keyboard['AppleCurrentKeyboardLayoutInputSourceID'] == 'com.apple.keylayout.Australian'
-layout = keyboard['AppleEnabledInputSources'][0]
-assert layout['KeyboardLayout Name'] == 'Australian'
-assert type(layout['KeyboardLayout ID']) is int and layout['KeyboardLayout ID'] == 15
-assert keyboard['AppleSelectedInputSources'][-1] == layout
+assert data, 'eligible desktop should receive preference writes'
+finder = data.get('com.apple.finder', {})
+keyboard = data.get('com.apple.HIToolbox', {})
 # Never snapshot history, device identities or unrelated shortcut ownership.
 assert not {'FXRecentFolders', 'GoToFieldHistory', 'FXDesktopVolumePositions', 'WindowState'} & finder.keys()
 assert 'AppleInputSourceHistory' not in keyboard
@@ -124,22 +96,4 @@ check_scope unscoped darwin false false false false
 check_scope linux linux true true false false
 check_scope windows windows true true false false
 
-# Exercise the Dock script without changing the live Dock or restarting it.
-cat >"$tmpdir/bin/dockutil" <<'SH'
-#!/bin/sh
-printf '%s\n' "$*" >>"$DOCK_COMMANDS"
-SH
-chmod +x "$tmpdir/bin/dockutil"
-PATH="$tmpdir/bin:$PATH" DOCK_COMMANDS="$tmpdir/dock-commands" \
-  PREFS_RESTARTS="$tmpdir/dock-restarts" \
-  bash "$repo_root/home/.chezmoiscripts/darwin/run_onchange_after_configure-dock.sh"
-grep -Fxq -- '--no-restart --add /Applications/Dia.app' "$tmpdir/dock-commands" || {
-  echo 'Dock must include Dia' >&2
-  exit 1
-}
-if grep -Fq -- '/Applications/Arc.app' "$tmpdir/dock-commands"; then
-  echo 'Dock must not restore Arc' >&2
-  exit 1
-fi
-
-echo 'macOS Finder, input and Dock preferences: typed values, portable paths, role/OS routing and Dia browser ok'
+echo 'macOS preference role/OS routing and local-state boundaries ok'

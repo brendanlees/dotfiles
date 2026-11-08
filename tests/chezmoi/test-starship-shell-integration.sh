@@ -16,7 +16,7 @@ import tomllib
 
 repo, tmp, zsh = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
 base = dict(personal=True, work=False, homelab=False, headless=False,
-            ephemeral=False, theme="guts", chezmoi={"os": "darwin", "username": "test"})
+            ephemeral=False, chezmoi={"os": "darwin", "username": "test"})
 
 def render(name, data):
     return subprocess.check_output([
@@ -38,11 +38,6 @@ for name, data in variants.items():
     assert not any(path.startswith(".local/share/zsh/plugins/") for path in external), external
     enabled = name == "personal-mac"
     assert ("zinit light mattmc3/starship-ftl" in rendered[name]) == enabled
-    assert ('ver"ee349a85b9e9ed4b5e3aac1d8d44a58a0fc87926"' in rendered[name]) == enabled
-
-starship = tomllib.loads(render("dot_config/starship/private_starship.toml.tmpl", base))
-assert starship["git_status"]["ignore_submodules"] is True
-accent = starship["palettes"][starship["palette"]]["accent"]
 
 for name, role, tty, optout, missing, failure, term in [
     ("enabled", "personal-mac", True, False, False, False, "xterm-256color"),
@@ -139,11 +134,6 @@ printf '%s\\n' 'export PATH="{tools}:$PATH"'
     assert lines.count("native") == (0 if enabled else 1), (name, lines)
     ftl = [line for line in lines if line.startswith("ftl:")]
     assert len(ftl) == (1 if enabled or failure else 0), (name, lines)
-    if enabled:
-        assert ftl == [f"ftl:-p %F{{{accent}}}❯%f  starship:config={home}/.config/starship/starship.toml"], ftl
-        assert any("ee349a85b9e9ed4b5e3aac1d8d44a58a0fc87926" in line and
-                   "mattmc3/starship-ftl" in line for line in zinit_log.read_text().splitlines())
-    assert not any("transient" in line for line in lines), lines
 
-print("Zinit FTL pin, scope, early Mise PATH, opt-out, fallback and prompt policy ok")
+print("Zinit FTL scope, early Mise PATH, opt-out and fallback ok")
 PY

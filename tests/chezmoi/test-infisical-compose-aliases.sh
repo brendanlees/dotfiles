@@ -23,7 +23,6 @@ work = false
 homelab = false
 ephemeral = true
 headless = true
-theme = "black-metal-bathory"
 TOML
 CHEZMOI_CONFIG_FILE="$TEST_ROOT/chezmoi.toml" \
   chezmoi execute-template <"$ALIASES_TEMPLATE" >"$ALIASES"
