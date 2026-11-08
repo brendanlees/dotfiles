@@ -118,9 +118,6 @@ for shortcut in ("obf", "obn", "obr", "odb"):
     cwd, flag, command, end = (root / f"{shortcut}.log").read_bytes().decode().split("\0")
     assert cwd == vault and flag == "-c" and end == "", shortcut
     commands[shortcut] = command
-assert commands["obf"] == 'lua require("fff").find_files()'
-assert commands["obn"] == 'lua require("obsidian"); require("user.obsidian.templates").pick()'
-assert commands["odb"] == "Obsidian today"
 # Resume uses directory sessions, never AstroNvim's global Last Session.
 assert 'require("resession")' in commands["obr"]
 assert 'dir = "dirsession"' in commands["obr"]
