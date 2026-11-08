@@ -15,7 +15,6 @@ import tomllib
 from pathlib import Path
 
 config = tomllib.loads(Path(sys.argv[1]).read_text())
-assert "-m gpt-6-luna " in config["commit"]["generation"]["command"]
 commands = {
     hook: next(iter(config[hook].values()))
     for hook in ("post-switch", "post-start")
@@ -82,4 +81,4 @@ if args[:2] == ["tab", "get"] or args[:1] == ["display-message"]:
         assert run("post-start", context, fail=True) == [query]
 PY
 
-echo "Worktrunk multiplexer routing, pane setup, and commit model ok"
+echo "Worktrunk multiplexer routing and pane setup ok"

@@ -11,10 +11,8 @@ mkdir -p "$CONFIG_DIR/plugins" "$CONFIG_DIR/items" "$TMP/bin"
 export PATH="$TMP/bin:$PATH"
 
 chezmoi execute-template --source "$ROOT" \
-  --override-data '{"theme":"black-metal-bathory"}' \
   --file "$SOURCE/colors.sh.tmpl" > "$CONFIG_DIR/colors.sh"
 source "$CONFIG_DIR/colors.sh"
-test "$SPOTIFY_COLOR" = "$ACCENT"
 cp "$SOURCE/plugins/executable_spotify.sh" "$CONFIG_DIR/plugins/spotify.sh"
 chmod +x "$CONFIG_DIR/plugins/spotify.sh"
 
@@ -76,14 +74,11 @@ run_plugin() {
 run_plugin playing
 assert_log 'spotify drawing=on'
 assert_log 'label=Emma Ruth Rundle — Haunted Houses'
-assert_log 'icon=▶'
-assert_log "icon.color=$SPOTIFY_COLOR"
 test "$(cat "$OSASCRIPT_LOG")" = read
 
 run_plugin paused
 assert_log 'spotify drawing=on'
 assert_log 'label=Emma Ruth Rundle — Haunted Houses'
-assert_log 'icon=⏸'
 
 for scenario in closed failed; do
   run_plugin "$scenario"
@@ -115,7 +110,6 @@ cp "$SOURCE/items/spotify.sh" "$CONFIG_DIR/items/spotify.sh"
 : > "$SKETCHYBAR_LOG"
 bash "$SOURCE/executable_sketchybarrc"
 assert_log '--add event spotify_change com.spotify.client.PlaybackStateChanged'
-assert_log '--add item spotify right'
 assert_log "script=$CONFIG_DIR/plugins/spotify.sh"
 assert_log '--subscribe spotify spotify_change media_change'
 assert_log 'tell application "Spotify" to activate'

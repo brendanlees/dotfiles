@@ -2,10 +2,10 @@
 
 ## tests
 
-- Before changing behavior or configuration, identify the nearest owning test in `tests/` and run it to reproduce the current behavior when practical.
-- Every behavior or configuration change must either update its owning test or preserve an existing test that already covers the changed contract. State which test covers it in the final report.
-- Prefer extending one existing contract test over adding another file. Add a focused regression test for user-visible bugs that lacked coverage.
-- Test observable behavior, role or OS routing, destructive transitions, and regressions. Leave syntax, rendering, and broad apply coverage to the existing CI smoke jobs.
+- Before changing script behaviour or safety boundaries, look for an existing owning test in `tests/` and run it to reproduce the current behaviour when practical.
+- Personal preferences are not test contracts. Do not add assertions that freeze shortcuts, colours, themes, app or plugin inventories, version choices, snippets, workspace layouts, or other settings. Ordinary configuration edits do not need dedicated tests.
+- Add or update tests for meaningful script behaviour, safety boundaries, or regressions. Prefer extending an existing test over adding another file, and use fixture data rather than copying current preferences into expected values.
+- Keep tests for data preservation, credential handling, installation failures, destructive transitions, and role or OS boundaries. Leave syntax, rendering, and broad apply coverage to the existing CI smoke jobs. State the relevant checks in the final report.
 - Keep one clear test owner per contract. Avoid duplicate assertions, implementation snapshots, and low-value matrices.
 - When behavior is removed or absorbed by broader coverage, remove or merge its stale tests and fixtures in the same change.
 - After the final edit, run the targeted owning tests, then `bash tests/ci/check-static.sh` and `bash tests/ci/run-chezmoi-tests.sh`.

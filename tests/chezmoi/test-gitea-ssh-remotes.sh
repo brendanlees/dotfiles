@@ -266,17 +266,22 @@ if HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-re
 fi
 
 # Local hooks remain usable after cloning even when private fetches are deferred.
-python3 - "$render_data" <<'PY'
+python3 - "$render_data" "$repo_root" <<'PY'
 import json
+import subprocess
 import sys
 from pathlib import Path
 path = Path(sys.argv[1])
 data = json.loads(path.read_text())
-data['theme'] = 'guts'
+registry = json.loads(subprocess.check_output(
+    ['chezmoi', 'data', '--source', sys.argv[2], '--format', 'json'], text=True,
+))
+data['theme'] = 'fixture'
+data['themes'] = {'fixture': next(iter(registry['themes'].values()))}
 path.write_text(json.dumps(data))
 PY
 apply_fresh
-jq -e '.vars.activeTheme == "guts"' "$fresh_home/.pi/agent/themes/chezmoi.json" >/dev/null
+jq -e '.vars.activeTheme == "fixture"' "$fresh_home/.pi/agent/themes/chezmoi.json" >/dev/null
 grep -Fq 'exec node -- claude install --force latest' \
   "$fixture/.chezmoiscripts/darwin/run_onchange_after_install-packages-npm.sh.tmpl"
 [[ $(wc -l <"$fresh_home/clones") -eq 2 ]]

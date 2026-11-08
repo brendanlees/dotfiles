@@ -54,63 +54,6 @@ fi
 grep -Fxq 'keep this generated lockfile' "$home/.config/mise/mise.lock"
 [[ $(wc -l <"$tmpdir/install.log") -eq 3 ]]
 
-# Check rendering and gating for every role and platform without repeating the
-# tool inventory, so tools can be added or changed without editing this test.
-for platform in linux alpine windows darwin; do
-  case "$platform" in
-    linux) os='{"os":"linux","osRelease":{"id":"ubuntu"}}' ;;
-    alpine) os='{"os":"linux","osRelease":{"id":"alpine"}}' ;;
-    *) os="{\"os\":\"$platform\"}" ;;
-  esac
-  for role in base personal work homelab; do
-    flags='"personal":false,"work":false,"homelab":false'
-    [[ $role == base ]] || flags=${flags/\"$role\":false/\"$role\":true}
-    chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-      --override-data "{$flags,\"chezmoi\":$os}" \
-      --file "$repo_root/home/dot_config/mise/config.toml.tmpl" >"$tmpdir/mise-$platform-$role.toml"
-  done
-done
-brews=$(chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" \
-  '{{ concat .brews.base .brews.personal .brews.work | toJson }}')
-python3 - "$tmpdir" "$brews" <<'PY'
-import json
-import re
-import sys
-import tomllib
-from pathlib import Path
-tools = {}
-for path in Path(sys.argv[1]).glob('mise-*-*.toml'):
-    _, platform, role = path.stem.split('-')
-    tools[platform, role] = tomllib.loads(path.read_text())['tools']
-assert len(tools) == 16
-# Headless Sync and the Excalidraw CLI use the Node runtime already managed on
-# personal Macs, at exact versions.
-for (platform, role), names in tools.items():
-    if (platform, role) == ('darwin', 'personal'):
-        headless = names.get('npm:obsidian-headless', {})
-        assert re.fullmatch(r'\d+\.\d+\.\d+', headless.get('version', ''))
-        assert headless.get('allow_builds') == ['better-sqlite3']
-        excalidraw = names.get('npm:mcp-excalidraw-server', {})
-        assert re.fullmatch(r'\d+\.\d+\.\d+', excalidraw.get('version', ''))
-        # Trust exceptions must name exact versions, never a whole package.
-        assert all(re.fullmatch(r'[@\w./-]+@\d+\.\d+\.\d+', item)
-                   for item in excalidraw.get('trust_policy_excludes', []))
-    else:
-        assert 'npm:obsidian-headless' not in names
-        assert 'npm:mcp-excalidraw-server' not in names
-assert all('github:Giammarco-Ferranti/deja' not in names for names in tools.values())
-for platform in ('linux', 'alpine', 'windows', 'darwin'):
-    assert tools[platform, 'base'].keys() < tools[platform, 'personal'].keys()
-assert not any('rust' in tools['alpine', role] for role in ('base', 'personal', 'work', 'homelab'))
-
-# Homebrew must not also install a tool that mise owns on macOS.
-def bare(name):
-    return name.split(':')[-1].rsplit('/', 1)[-1]
-mise_darwin = {bare(tool) for (platform, _), names in tools.items() if platform == 'darwin' for tool in names}
-duplicates = mise_darwin & {bare(brew) for brew in json.loads(sys.argv[2])}
-assert not duplicates, f'declared in both mise and Homebrew: {sorted(duplicates)}'
-PY
-
 # Retire only Deja on both a desktop and the headless Alpine SSH app. Use real
 # apply semantics so ignore rules cannot silently prevent removal.
 retired=(

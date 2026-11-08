@@ -12,10 +12,12 @@ trap 'rm -rf "$tmpdir"' EXIT
   exit 1
 }
 
+# Fixture inventory exercises reconciliation without freezing plugins or refs.
+plugins='{"plugins":[{"id":"fixture-main","source":"example/main","ref":"fixture-ref","config":{"open_mode":"workspace"}},{"id":"fixture-personal","source":"example/personal","ref":"personal-ref","personal_only":true}]}'
 rendered="$tmpdir/install-herdr-plugins.sh"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"personal":true}' \
+  --override-data "{\"personal\":true,\"herdr\":$plugins}" \
   <"$template" >"$rendered"
 chmod +x "$rendered"
 
@@ -59,12 +61,12 @@ set -eu
 printf '%s\n' "$*" >>"$HERDR_TEST_LOG"
 case "$*" in
   --version) [ "${HERDR_TEST_HERDR_FAIL:-0}" != 1 ] ;;
-  'plugin install cloudmanic/herdr-plus '*)
+  'plugin install '*)
     # The pinned upstream build chooses source compilation whenever Go is on PATH.
     command -v go >/dev/null
     go version >/dev/null
     [ "${HERDR_TEST_INSTALL_FAIL:-0}" != 1 ] ;;
-  'plugin config-dir worktrunk') printf '%s\n' "$HERDR_TEST_CONFIG_DIR" ;;
+  'plugin config-dir fixture-main') printf '%s\n' "$HERDR_TEST_CONFIG_DIR" ;;
 esac
 SH
 chmod +x "$tmpdir/home/.local/bin/mise" "$tmpdir/shims/go" "$fakebin/go" "$fakebin/herdr"
@@ -92,50 +94,14 @@ run_reconciler "$rendered"
 cmp "$tmpdir/first-state" "$tmpdir/state/chezmoi/herdr-plugins.txt"
 cmp "$tmpdir/first-log" "$tmpdir/herdr.log"
 
-cat >"$tmpdir/state/chezmoi/herdr-plugins.txt" <<'STATE'
-old-plugin|example/old-plugin|old-ref
-official.browser|ogulcancelik/herdr-browser|be6888b71cf4eb5939ee79a746bd1a1c22ade046
-third774.last-workspace|third774/herdr-last-workspace|8b55ebf15deaa52b49ff1c2500aab0c19c729420
-persiyanov.reviewr|persiyanov/herdr-reviewr|f1dd491e47ef55410eca7c73daebe3726f06bda0
-STATE
-
+printf '%s\n' 'old-plugin|example/old-plugin|old-ref' >>"$tmpdir/state/chezmoi/herdr-plugins.txt"
 : >"$tmpdir/herdr.log"
 run_reconciler "$rendered"
-
-nav_ref='7873100eb47212269005c693effb2a844986b30f'
-plus_ref='f38df3570bea8f7ca71dc1ba11bce3b123d14402'
-last_workspace_ref='8b55ebf15deaa52b49ff1c2500aab0c19c729420'
-worktrunk_ref='f9df9ba700b8a4f4d97ddfe3ea3eb345e80b880b'
-navigator_ref='313b753b1f98f802b7d861430a13cb95a86e8dd3'
-crabbox_ref='70aaebd1083615eadeddb920b1f344822a2f013b'
-grep -Fxq "plugin install paulbkim-dev/vim-herdr-navigation --ref $nav_ref --yes" "$tmpdir/herdr.log"
-grep -Fxq "plugin install cloudmanic/herdr-plus --ref $plus_ref --yes" "$tmpdir/herdr.log"
-grep -Fxq "plugin install third774/herdr-last-workspace --ref $last_workspace_ref --yes" "$tmpdir/herdr.log"
-grep -Fxq "plugin install devashish2203/herdr-worktrunk --ref $worktrunk_ref --yes" "$tmpdir/herdr.log"
-grep -Fxq "plugin install thanhdat77/herdr-navigator --ref $navigator_ref --yes" "$tmpdir/herdr.log"
-grep -Fxq "plugin install openclaw/crabbox/plugins/herdr --ref $crabbox_ref --yes" "$tmpdir/herdr.log"
+grep -Fxq 'plugin install example/main --ref fixture-ref --yes' "$tmpdir/herdr.log"
+grep -Fxq 'plugin install example/personal --ref personal-ref --yes' "$tmpdir/herdr.log"
 grep -Fxq 'plugin uninstall old-plugin' "$tmpdir/herdr.log"
-grep -Fxq 'plugin uninstall official.browser' "$tmpdir/herdr.log"
-grep -Fxq 'plugin uninstall persiyanov.reviewr' "$tmpdir/herdr.log"
-grep -Fxq "vim-herdr-navigation|paulbkim-dev/vim-herdr-navigation|$nav_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
-grep -Fxq "cloudmanic.herdr-plus|cloudmanic/herdr-plus|$plus_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
-grep -Fxq "third774.last-workspace|third774/herdr-last-workspace|$last_workspace_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
-grep -Fxq "worktrunk|devashish2203/herdr-worktrunk|$worktrunk_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
-grep -Fxq "herdr-navigator|thanhdat77/herdr-navigator|$navigator_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
-grep -Fxq "crabbox|openclaw/crabbox/plugins/herdr|$crabbox_ref" \
-  "$tmpdir/state/chezmoi/herdr-plugins.txt"
+cmp "$tmpdir/first-state" "$tmpdir/state/chezmoi/herdr-plugins.txt"
 grep -Fxq 'open_mode = "workspace"' "$tmpdir/plugin-config/config.toml"
-for removed_plugin in old-plugin official.browser persiyanov.reviewr; do
-  if grep -Fq "$removed_plugin" "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
-    echo "stale managed plugin remained in state ledger: $removed_plugin" >&2
-    exit 1
-  fi
-done
 
 # Failures must not publish a new ledger, rewrite config, or remove old plugins.
 cp "$tmpdir/state/chezmoi/herdr-plugins.txt" "$tmpdir/success-state"
@@ -189,7 +155,7 @@ mv "$tmpdir/herdr" "$fakebin/herdr"
 windows_rendered="$tmpdir/install-herdr-plugins-windows.sh"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"personal":true,"chezmoi":{"os":"windows"}}' \
+  --override-data "{\"personal\":true,\"herdr\":$plugins,\"chezmoi\":{\"os\":\"windows\"}}" \
   <"$template" >"$windows_rendered"
 [[ ! -s "$windows_rendered" ]] || {
   echo 'Windows must not reconcile Herdr plugins' >&2
@@ -199,19 +165,19 @@ chezmoi execute-template \
 nonpersonal_rendered="$tmpdir/install-herdr-plugins-nonpersonal.sh"
 chezmoi execute-template \
   --source "$repo_root" \
-  --override-data '{"personal":false}' \
+  --override-data "{\"personal\":false,\"herdr\":$plugins}" \
   <"$template" >"$nonpersonal_rendered"
 chmod +x "$nonpersonal_rendered"
 : >"$tmpdir/herdr.log"
 run_reconciler "$nonpersonal_rendered"
 
-if grep -Fq 'plugin install openclaw/crabbox/plugins/herdr' "$tmpdir/herdr.log"; then
-  echo 'non-personal install must not install the Crabbox plugin' >&2
+if grep -Fq 'plugin install example/personal' "$tmpdir/herdr.log"; then
+  echo 'non-personal install must not install personal-only plugins' >&2
   exit 1
 fi
-grep -Fxq 'plugin uninstall crabbox' "$tmpdir/herdr.log"
-if grep -Fq 'crabbox|' "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
-  echo 'non-personal install retained Crabbox in the managed plugin ledger' >&2
+grep -Fxq 'plugin uninstall fixture-personal' "$tmpdir/herdr.log"
+if grep -Fq 'fixture-personal|' "$tmpdir/state/chezmoi/herdr-plugins.txt"; then
+  echo 'non-personal install retained a personal-only plugin in the ledger' >&2
   exit 1
 fi
 
