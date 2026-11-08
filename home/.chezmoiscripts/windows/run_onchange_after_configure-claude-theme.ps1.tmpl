@@ -1,0 +1,21 @@
+{{- if and .personal (eq .chezmoi.os "windows") (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true") -}}
+$ErrorActionPreference = "Stop"
+
+$themeJson = @'
+{{ includeTemplate ".chezmoitemplates/claude-theme.json.tmpl" . }}
+'@
+
+if ($env:CLAUDE_CONFIG_DIR) {
+    $configDir = [Environment]::ExpandEnvironmentVariables($env:CLAUDE_CONFIG_DIR)
+} else {
+    $configDir = Join-Path $HOME ".claude"
+}
+
+$themeDir = Join-Path $configDir "themes"
+$targetPath = Join-Path $themeDir "chezmoi.json"
+$tempPath = "$targetPath.tmp"
+[IO.Directory]::CreateDirectory($themeDir) | Out-Null
+[IO.File]::WriteAllText($tempPath, $themeJson.TrimEnd() + "`n", [Text.UTF8Encoding]::new($false))
+Move-Item -LiteralPath $tempPath -Destination $targetPath -Force
+Write-Output "configured Claude Code theme in $targetPath"
+{{- end -}}
