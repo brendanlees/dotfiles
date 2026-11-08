@@ -1,6 +1,6 @@
 # themes
 
-a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin, vicinae and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
+a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, claude code, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin, vicinae and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
 
 ## switching
 
@@ -13,9 +13,9 @@ theme --current          # print active theme
 
 type to fuzzy-filter theme names, then press Enter to select. Escape or Ctrl-C cancels without changing files or applying configuration. the picker requires the already-provisioned [fzf](https://github.com/junegunn/fzf#usage); direct selection does not.
 
-the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi theme hook for the current OS. It does not install packages, update plugins or sync private repositories.
+the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi and Claude Code theme hooks for the current OS. It does not install packages, update plugins or sync private repositories.
 
-tmux, ghostty, herdr, borders, sketchybar and nvim are live-reloaded where available.
+tmux, ghostty, herdr, borders, sketchybar, nvim and claude code are live-reloaded where available.
 
 a few apps need a manual restart to pick up the new theme:
 
@@ -29,6 +29,12 @@ a few apps need a manual restart to pick up the new theme:
 on personal machines, dotfiles generate one theme named `chezmoi` at `~/.pi/agent/themes/chezmoi.json`. select it with `/theme` in Pi, or set `"theme": "chezmoi"` in the private harness settings.
 
 the private Pi repository owns settings, packages and extensions. dotfiles do not rewrite those choices or generate a separate footer override. the theme writer runs after the external checkout because chezmoi cannot also manage ordinary files inside an external Git repository.
+
+### claude code
+
+on personal machines, dotfiles generate one custom theme at `~/.claude/themes/chezmoi.json`, selected in the private `~/.claude/settings.json` as `"theme": "custom:chezmoi"`. the template maps the palette onto [Claude Code's theme tokens](https://code.claude.com/docs/en/terminal-config); diff colors stay on the `dark` base because the palette has no tinted diff backgrounds. Claude Code watches its themes folder, so open sessions recolor after `theme <name>`. if `~/.claude/themes/` did not exist when a session started, that session needs one restart.
+
+as with pi, the writer runs after the `.claude` external checkout, and the generated file is gitignored in the private repository.
 
 ### herdr
 
@@ -62,11 +68,14 @@ Do not use an in-vault symlink ([Obsidian symlink limitations](https://help.obsi
 | `home/.chezmoidata/local.yml`                                                 | gitignored, host-local override - `theme` writes here                                   |
 | `home/.chezmoidata/themes.yml`                                                | registry: palette + per-app theme names                                                 |
 | `home/.chezmoitemplates/pi-theme.json.tmpl`                                   | shared source for the generated pi theme                                                |
+| `home/.chezmoitemplates/claude-theme.json.tmpl`                               | shared source for the generated claude code theme                                       |
 | `home/dot_config/atuin/themes/chezmoi.toml.tmpl`                              | generated Atuin theme using the active shared palette                                   |
 | `home/dot_config/herdr/config.toml.tmpl`                                      | tmux-compatible herdr keys and generated custom palette                                 |
 | `home/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl`          | posix atomic writer for `~/.pi/agent/themes/chezmoi.json` after the `.pi` external sync |
 | `home/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl` | windows atomic writer for the same generated runtime theme                              |
 | `~/.pi/agent/themes/chezmoi.json`                                             | pi generated runtime output (gitignored)                                                |
+| `home/.chezmoiscripts/run_onchange_after_configure-claude-theme.py.tmpl`      | posix atomic writer for `~/.claude/themes/chezmoi.json` after the `.claude` external sync |
+| `home/.chezmoiscripts/windows/run_onchange_after_configure-claude-theme.ps1.tmpl` | windows atomic writer for the same claude code theme                                |
 
 chezmoi merges `home/.chezmoidata/*.yml` 'lexicographically', so `local.yml` beats `defaults.yml`.
 

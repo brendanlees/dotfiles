@@ -33,8 +33,10 @@ printf 'theme: first\n' >"$fixture/.chezmoidata/defaults.yml"
 cp "$fixture/.chezmoidata/defaults.yml" "$tmpdir/defaults.before"
 cp "$source_root/dot_config/borders/executable_bordersrc.tmpl" "$fixture/dot_config/borders/"
 cp "$source_root/.chezmoitemplates/pi-theme.json.tmpl" \
+  "$source_root/.chezmoitemplates/claude-theme.json.tmpl" \
   "$source_root/.chezmoitemplates/private-harness-ready.tmpl" "$fixture/.chezmoitemplates/"
-cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" "$fixture/.chezmoiscripts/"
+cp "$source_root/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" \
+  "$source_root/.chezmoiscripts/run_onchange_after_configure-claude-theme.py.tmpl" "$fixture/.chezmoiscripts/"
 printf '{{ .theme }}\n' >"$fixture/dot_config/active-theme.tmpl"
 cat >"$fixture/.chezmoiscripts/run_after_00-install-tools.sh" <<'SCRIPT'
 #!/bin/sh
@@ -70,7 +72,7 @@ BORDERS
 chmod +x "$tmpdir/bin/chezmoi" "$tmpdir/bin/pgrep" "$tmpdir/bin/borders"
 run_theme() {
   HOME="$home" USER=fixture PATH="$tmpdir/bin:/usr/bin:/bin" \
-    PI_AGENT_DIR="$home/.pi/agent" CHEZMOI_SOURCE_DIR="$fixture" \
+    PI_AGENT_DIR="$home/.pi/agent" CLAUDE_CONFIG_DIR="$home/.claude" CHEZMOI_SOURCE_DIR="$fixture" \
     REAL_CHEZMOI="$chezmoi_bin" TEST_CONFIG="$tmpdir/config.toml" \
     "$bash_bin" "$source_root/dot_local/bin/executable_theme" "$@"
 }
@@ -85,6 +87,7 @@ run_theme second >"$tmpdir/switch.log" 2>&1 || {
 grep -Fxq second "$home/.config/active-theme"
 grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "second"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
+jq -e '.name == "chezmoi (second)"' "$home/.claude/themes/chezmoi.json" >/dev/null
 [[ ! -e "$home/tools-ran" && ! -e "$home/external.txt" ]]
 echo 'theme switches without tool or external updates and invokes the optional Obsidian adapter'
 

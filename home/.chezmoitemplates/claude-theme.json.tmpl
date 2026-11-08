@@ -1,0 +1,40 @@
+{{- /* Claude Code custom theme, selected in ~/.claude/settings.json as "custom:chezmoi".
+       Claude Code watches ~/.claude/themes/, so `theme <name>` recolors open sessions.
+       Diff colors stay on the base preset: the palette has no tinted diff backgrounds. */ -}}
+{{- $selected := index .themes .theme -}}
+{{- $p := $selected.palette -}}
+{
+  "name": {{ printf "chezmoi (%s)" .theme | quote }},
+  "base": {{ $selected.apps.nvim_background | quote }},
+  "overrides": {
+    "claude": {{ $p.accent | quote }},
+    "claudeShimmer": {{ $p.info | quote }},
+    "text": {{ $p.fg | quote }},
+    "inverseText": {{ $p.bg | quote }},
+    "inactive": {{ $p.comment | quote }},
+    "inactiveShimmer": {{ $p.muted | quote }},
+    "subtle": {{ $p.border | quote }},
+    "suggestion": {{ $p.primary_alt | quote }},
+    "permission": {{ $p.primary | quote }},
+    "permissionShimmer": {{ $p.primary_alt | quote }},
+    "remember": {{ $p.info | quote }},
+    "success": {{ $p.success | quote }},
+    "error": {{ $p.error | quote }},
+    "warning": {{ $p.warn | quote }},
+    "warningShimmer": {{ $p.orange | quote }},
+    "merged": {{ $p.secondary | quote }},
+    "promptBorder": {{ $p.border | quote }},
+    "promptBorderShimmer": {{ $p.comment | quote }},
+    "planMode": {{ $p.info_alt | quote }},
+    "autoAccept": {{ $p.secondary | quote }},
+    "bashBorder": {{ $p.orange | quote }},
+    "ide": {{ $p.info | quote }},
+    "userMessageBackground": {{ $p.surface | quote }},
+    "userMessageBackgroundHover": {{ $p.surface_alt | quote }},
+    "bashMessageBackgroundColor": {{ $p.tool_neutral_bg | quote }},
+    "memoryBackgroundColor": {{ $p.tool_neutral_bg | quote }},
+    "selectionBg": {{ $p.surface_alt | quote }},
+    "rate_limit_fill": {{ $p.primary | quote }},
+    "rate_limit_empty": {{ $p.border | quote }}
+  }
+}

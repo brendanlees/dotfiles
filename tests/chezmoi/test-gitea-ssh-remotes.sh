@@ -143,6 +143,7 @@ apply_fresh() {
   # provisioning. Exclude public downloads from this offline regression.
   for template in \
     "$repo_root/home/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl" \
+    "$repo_root/home/.chezmoiscripts/run_onchange_after_configure-claude-theme.py.tmpl" \
     "$repo_root/home/.chezmoiscripts/darwin/run_onchange_after_install-packages-npm.sh.tmpl"; do
     relative=${template#"$repo_root/home/"}
     PATH="$tmpdir/bin:$PATH" "$chezmoi_bin" execute-template --source "$repo_root" --override-data-file "$render_data" \
@@ -160,7 +161,7 @@ from pathlib import Path
 entries = tomllib.loads(Path(sys.argv[1]).read_text())
 Path(sys.argv[2]).write_text(json.dumps({k: v for k, v in entries.items() if k in ('.claude', '.pi')}))
 PY
-  HOME="$fresh_home" XDG_CONFIG_HOME="$fresh_home/.config" XDG_STATE_HOME="$fresh_home/.local/state" PI_AGENT_DIR='' \
+  HOME="$fresh_home" XDG_CONFIG_HOME="$fresh_home/.config" XDG_STATE_HOME="$fresh_home/.local/state" PI_AGENT_DIR='' CLAUDE_CONFIG_DIR='' \
     MISE_DATA_DIR="$fresh_home/.local/share/mise" PATH="$tmpdir/bin:/usr/bin:/bin" "$chezmoi_bin" apply \
     --source "$fixture" --destination "$fresh_home" --config "$tmpdir/fresh.toml" \
     --persistent-state "$tmpdir/fresh-state.boltdb" --force
@@ -212,7 +213,7 @@ apply_fresh
 [[ -d "$fresh_home/.claude/.git" && -d "$fresh_home/.pi/.git" ]]
 [[ $(wc -l <"$fresh_home/clones") -eq 2 ]]
 [[ $(wc -l <"$fresh_home/ssh-refresh-calls") -eq 2 ]]
-[[ -f "$fresh_home/.pi/agent/themes/chezmoi.json" && -f "$fresh_home/.claude/cli-installed" ]]
+[[ -f "$fresh_home/.pi/agent/themes/chezmoi.json" && -f "$fresh_home/.claude/themes/chezmoi.json" && -f "$fresh_home/.claude/cli-installed" ]]
 
 # Existing non-agent hosts do not need Bitwarden; effective Host selection matters.
 printf '\nHost local-key\n  IdentityAgent none\n' >>"$fresh_home/.ssh/config.d/personal.conf"
@@ -282,6 +283,7 @@ path.write_text(json.dumps(data))
 PY
 apply_fresh
 jq -e '.vars.activeTheme == "fixture"' "$fresh_home/.pi/agent/themes/chezmoi.json" >/dev/null
+jq -e '.name == "chezmoi (fixture)"' "$fresh_home/.claude/themes/chezmoi.json" >/dev/null
 grep -Fq 'exec node -- claude install --force latest' \
   "$fixture/.chezmoiscripts/darwin/run_onchange_after_install-packages-npm.sh.tmpl"
 [[ $(wc -l <"$fresh_home/clones") -eq 2 ]]

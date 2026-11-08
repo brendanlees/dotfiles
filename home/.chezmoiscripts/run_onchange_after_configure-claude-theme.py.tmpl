@@ -1,0 +1,29 @@
+{{- if and .personal (ne .chezmoi.os "windows") (or (stat (joinPath .chezmoi.homeDir ".claude/.git")) (eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "true")) -}}
+#!/usr/bin/env python3
+"""Atomically write the Claude Code theme once its private checkout is available."""
+
+import os
+from pathlib import Path
+
+THEME_JSON = {{ includeTemplate ".chezmoitemplates/claude-theme.json.tmpl" . | quote }}
+
+
+def config_dir() -> Path:
+    override = os.environ.get("CLAUDE_CONFIG_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".claude"
+
+
+def main() -> None:
+    target = config_dir() / "themes" / "chezmoi.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_suffix(".json.tmp")
+    temporary.write_text(THEME_JSON.rstrip() + "\n")
+    os.replace(temporary, target)
+    print(f"configured Claude Code theme in {target}")
+
+
+if __name__ == "__main__":
+    main()
+{{- end -}}

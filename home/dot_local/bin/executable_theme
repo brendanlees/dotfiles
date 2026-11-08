@@ -166,10 +166,16 @@ fi
 
 # Run only the theme hooks. Native script selection retains run_onchange state
 # without running package installers or syncing private harness repositories.
-theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl")
+theme_scripts=(
+  "$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl"
+  "$CHEZMOI_DIR/.chezmoiscripts/run_onchange_after_configure-claude-theme.py.tmpl"
+)
 case "$(chezmoi execute-template --source "$CHEZMOI_DIR" '{{ .chezmoi.os }}')" in
   windows)
-    theme_scripts=("$CHEZMOI_DIR/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl")
+    theme_scripts=(
+      "$CHEZMOI_DIR/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl"
+      "$CHEZMOI_DIR/.chezmoiscripts/windows/run_onchange_after_configure-claude-theme.ps1.tmpl"
+    )
     ;;
 esac
 chezmoi apply --source "$CHEZMOI_DIR" --include=scripts --exclude=externals \
