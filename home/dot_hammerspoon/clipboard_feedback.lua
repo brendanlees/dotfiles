@@ -18,7 +18,10 @@ end
 
 local function setItem(label, drawing)
     -- Serialize processes, keeping only the latest complete state while one runs.
-    feedback.pending = { "--set", "clipboard_feedback", "label=" .. label, "drawing=" .. drawing }
+    feedback.pending = {
+        "--set", "clipboard_feedback", "label=" .. label, "drawing=" .. drawing,
+        "--set", "clipboard_balance", "drawing=" .. drawing,
+    }
     dispatch()
 end
 
