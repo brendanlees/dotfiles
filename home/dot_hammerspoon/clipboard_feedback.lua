@@ -48,11 +48,11 @@ feedback.tap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(eve
     local key = event:getKeyCode()
     local label
     if key == hs.keycodes.map.x then
-        label = "cut"
+        label = "Cut"
     elseif key == hs.keycodes.map.c then
-        label = "copy"
+        label = "Copied"
     elseif key == hs.keycodes.map.v then
-        label = "paste"
+        label = "Pasted"
     else
         return false
     end
@@ -63,7 +63,7 @@ feedback.tap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(eve
         feedback.pollTimer = nil
     end
 
-    if label == "paste" then
+    if label == "Pasted" then
         show(label)
     else
         local count = hs.pasteboard.changeCount()

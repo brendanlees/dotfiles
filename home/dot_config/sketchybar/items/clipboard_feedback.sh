@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Fixed label width keeps cut/copy/paste the same size so the balance item can
+# Fixed label width keeps Cut/Copied/Pasted the same size so the balance item can
 # mirror it exactly and the focused-app pill stays centered while it flashes.
 clipboard_feedback=(
     drawing=off
     icon.drawing=off
     label.font="$FONT:Regular:13.0"
-    label.width=48
+    label.width=56
     label.align=center
     label.padding_left="$ITEM_PADDING"
     label.padding_right="$ITEM_PADDING"
