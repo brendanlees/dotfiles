@@ -20,6 +20,7 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 
 {{- if or (ne .chezmoi.os "darwin") (not .personal) }}
 .config/sketchybar
+.hammerspoon
 .docker/cli-plugins/docker-compose
 .docker/cli-plugins/docker-buildx
 {{- end }}

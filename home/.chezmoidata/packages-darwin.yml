@@ -125,6 +125,7 @@ casks:
     - cuadriver
     - claude
     - onlyoffice
+    - hammerspoon
     - home-assistant
     - karabiner-elements
     - ledger-live

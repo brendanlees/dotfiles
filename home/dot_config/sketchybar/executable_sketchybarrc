@@ -122,6 +122,7 @@ source "$ITEM_DIR/spotify.sh"
 # Create oMLX first so quota's renderer can keep its separate pill beside the rows.
 source "$ITEM_DIR/omlx.sh"
 source "$ITEM_DIR/quota.sh"
+source "$ITEM_DIR/clipboard_feedback.sh"
 
 # ------------------------------------------
 # finalise
