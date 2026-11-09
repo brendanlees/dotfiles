@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Fixed label width keeps CUT/COPY/PASTE the same size so the balance item can
+# Fixed label width keeps cut/copy/paste the same size so the balance item can
 # mirror it exactly and the focused-app pill stays centered while it flashes.
 clipboard_feedback=(
     drawing=off
     icon.drawing=off
-    label.font="$FONT:Bold:13.0"
+    label.font="$FONT:Regular:13.0"
     label.width=48
     label.align=center
     label.padding_left="$ITEM_PADDING"
@@ -27,8 +27,8 @@ add_clipboard_balance() {
 add_clipboard_feedback() {
     sketchybar --add item clipboard_feedback center \
         --set clipboard_feedback "${clipboard_feedback[@]}" \
-        label.color="$GREEN" \
-        background.color="$PILL_BG" \
+        label.color="$CLIPBOARD_COLOR" \
+        background.color="$SURFACE" \
         background.border_color="$SURFACE" \
         background.border_width=1 \
         background.corner_radius="$BORDER_RADIUS" \
