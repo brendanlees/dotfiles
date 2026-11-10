@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Hidden unless CoreAudio reports that an app is actively capturing input.
+# Hidden unless Hammerspoon reports that a microphone is in use.
 # The compact red circle sits beside the focused-app pill in the center block.
 sketchybar --add item microphone center \
     --set microphone \
@@ -22,4 +22,4 @@ sketchybar --add item microphone center \
     padding_right=3 \
     update_freq=0 \
     script="$PLUGIN_DIR/microphone.sh" \
-    --subscribe microphone microphone_change system_woke
+    --subscribe microphone microphone_change

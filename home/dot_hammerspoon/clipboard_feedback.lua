@@ -1,28 +1,11 @@
 local feedback = {}
-
-local function dispatch()
-    if feedback.task or not feedback.pending then
-        return
-    end
-
-    local arguments = feedback.pending
-    feedback.pending = nil
-    feedback.task = hs.task.new("/opt/homebrew/bin/sketchybar", function()
-        feedback.task = nil
-        dispatch()
-    end, arguments)
-    if feedback.task and not feedback.task:start() then
-        feedback.task = nil
-    end
-end
+local set = require("sketchybar").queue()
 
 local function setItem(label, drawing)
-    -- Serialize processes, keeping only the latest complete state while one runs.
-    feedback.pending = {
+    set({
         "--set", "clipboard_feedback", "label=" .. label, "drawing=" .. drawing,
         "--set", "clipboard_balance", "drawing=" .. drawing,
-    }
-    dispatch()
+    })
 end
 
 -- Reloading discards the old hide timer, so clear any lingering feedback.
