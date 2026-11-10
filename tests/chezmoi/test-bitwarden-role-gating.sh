@@ -30,7 +30,7 @@ case "$item_id" in
     field_name="read_only_token"
     field_value="huggingface-token"
     ;;
-  b6e99a07-e620-4e85-9555-abc20006501c)
+  3af598be-5c83-4d5d-997a-b4fd0012b609)
     field_name="forge_token"
     field_value="fixture-forge-token"
     ;;
@@ -161,7 +161,7 @@ assert_bw_item_ids "personal" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
-  "b6e99a07-e620-4e85-9555-abc20006501c" \
+  "3af598be-5c83-4d5d-997a-b4fd0012b609" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
@@ -171,7 +171,7 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
-  "b6e99a07-e620-4e85-9555-abc20006501c" \
+  "3af598be-5c83-4d5d-997a-b4fd0012b609" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
