@@ -87,13 +87,13 @@ matches:
 
   # --- SSH ---
 
-  # ssh > generate ed25519 key (for gitea)
-  - trigger: "==ssh-gitea-ed"
-    form: 'ssh-keygen -t ed25519 -C "gitea repo - [[hostname]]"'
+  # ssh > generate ed25519 key (for forgejo)
+  - trigger: "==ssh-forgejo-ed"
+    form: 'ssh-keygen -t ed25519 -C "forgejo repo - [[hostname]]"'
 
-  # ssh > generate rsa key (for gitea)
-  - trigger: "==ssh-gitea-rsa"
-    form: 'ssh-keygen -t rsa -b 4096 -C "gitea repo - [[hostname]]"'
+  # ssh > generate rsa key (for forgejo)
+  - trigger: "==ssh-forgejo-rsa"
+    form: 'ssh-keygen -t rsa -b 4096 -C "forgejo repo - [[hostname]]"'
 
   # ddev > snapshot
   - trigger: "==ddv-s"

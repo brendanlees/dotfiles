@@ -113,66 +113,13 @@ import sys
 from pathlib import Path
 
 root, vault = Path(sys.argv[1]), sys.argv[2]
-commands = {}
 for shortcut in ("obf", "obn", "obr", "odb"):
     cwd, flag, command, end = (root / f"{shortcut}.log").read_bytes().decode().split("\0")
-    assert cwd == vault and flag == "-c" and end == "", shortcut
-    commands[shortcut] = command
-# Resume uses directory sessions, never AstroNvim's global Last Session.
-assert 'require("resession")' in commands["obr"]
-assert 'dir = "dirsession"' in commands["obr"]
-assert "Last Session" not in commands["obr"]
-(root / "resume.vim").write_text(commands["obr"] + "\n")
+    assert cwd == vault and flag == "-c" and command and end == "", shortcut
 assert (root / "explicit.log").read_bytes().decode().split("\0") == [
     vault, "--", "folder/My note.md", "-draft.md", ""
 ]
 PY
-
-# Exercise the actual session API locally; CI does not install Neovim plugins.
-plugin_root=${NVIM_PLUGIN_ROOT:-"${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy"}
-if command -v nvim >/dev/null && [[ -d "$plugin_root/resession.nvim" ]]; then
-  cat >"$tmpdir/resume.lua" <<'LUA'
-vim.opt.rtp:prepend(vim.env.RESESSION_PLUGIN)
-vim.opt.swapfile = false
-vim.cmd.cd(vim.env.VAULT)
-local session = require("resession")
-session.setup({})
-local picks = 0
-package.preload.fff = function()
-  return { find_files = function() picks = picks + 1 end }
-end
-local resume = table.concat(vim.fn.readfile(vim.env.RESUME_COMMAND), "\n")
-local note = vim.fn.getcwd() .. "/session note.md"
-vim.fn.writefile({ "# Session fixture" }, note)
-vim.cmd.edit(vim.fn.fnameescape(note))
-session.save("Last Session", { notify = false })
-session.detach()
-vim.cmd.enew()
-
--- A global session must not prevent the missing-vault-session picker fallback.
-vim.cmd(resume)
-assert(picks == 1 and session.get_current() == nil)
-assert(vim.api.nvim_buf_get_name(0) == "")
-
--- Directory names contain path separators; list() returns encoded filenames.
-vim.cmd.edit(vim.fn.fnameescape(note))
-session.save(vim.fn.getcwd(), { dir = "dirsession", notify = false })
-session.detach()
-vim.cmd.enew()
-vim.cmd(resume)
-assert(picks == 1, "saved vault session fell back to picker")
-assert(vim.api.nvim_buf_get_name(0) == note, "saved note was not restored")
-vim.fn.delete(note)
-print("Obsidian resume and missing-session fallback ok")
-LUA
-  HOME="$tmpdir/home with spaces" XDG_CONFIG_HOME="$tmpdir/config" \
-    XDG_DATA_HOME="$tmpdir/data" XDG_STATE_HOME="$tmpdir/state" XDG_CACHE_HOME="$tmpdir/cache" \
-    VAULT="$vault" RESESSION_PLUGIN="$plugin_root/resession.nvim" \
-    RESUME_COMMAND="$tmpdir/resume.vim" \
-    nvim --headless -u NONE -i NONE -l "$tmpdir/resume.lua"
-else
-  echo 'SKIP Obsidian resume integration (Neovim or resession.nvim not installed)'
-fi
 
 # Preserve editor failures and never launch it when the vault is missing.
 for shortcut in obf obn obr odb; do

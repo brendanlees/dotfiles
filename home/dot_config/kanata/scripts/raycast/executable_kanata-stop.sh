@@ -14,7 +14,7 @@ set -euo pipefail
 # Documentation:
 # @raycast.description Stop the Kanata homerow mods service (will auto-restart due to KeepAlive)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # shellcheck source=dot_config/kanata/scripts/raycast/_run-with-sudo.sh
 source "$(dirname "$0")/_run-with-sudo.sh"

@@ -11,7 +11,7 @@
 # Documentation:
 # @raycast.description Check Kanata service status, configuration, and recent logs (Windows)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # Show kanata service status, configuration, and recent logs.
 # Mirrors raycast/kanata-status.sh on macOS.

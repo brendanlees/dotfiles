@@ -11,7 +11,7 @@
 # Documentation:
 # @raycast.description Completely disable Kanata service (no auto-restart, Windows)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # Disable the kanata service completely -- stops it AND prevents the scheduled
 # task from running at next logon. Mirrors raycast/kanata-disable.sh on macOS.

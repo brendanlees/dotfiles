@@ -13,6 +13,6 @@ true
 {{- if or (not $python) (not (stat $helper)) -}}
 false
 {{- else -}}
-{{- output "sh" "-c" "if HOME=\"$1\" \"$2\" \"$3\" \"$4\" >/dev/null 2>&1; then printf true; else printf false; fi" "cz-ssh-ready" .chezmoi.homeDir $python $helper "git@gitea.lab.brendans.cloud" -}}
+{{- output "sh" "-c" "if HOME=\"$1\" \"$2\" \"$3\" \"$4\" >/dev/null 2>&1; then printf true; else printf false; fi" "cz-ssh-ready" .chezmoi.homeDir $python $helper "git@git.lab.brendans.cloud" -}}
 {{- end -}}
 {{- end -}}

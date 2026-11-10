@@ -11,7 +11,7 @@
 # Documentation:
 # @raycast.description Start the Kanata homerow mods service (Windows)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # Start the kanata homerow-mods service (mirrors raycast/kanata-start.sh on macOS).
 # The xbxd.kanata scheduled task is elevated; Start-ScheduledTask works from a

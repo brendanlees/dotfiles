@@ -11,7 +11,7 @@
 # Documentation:
 # @raycast.description Enable and start Kanata service (Windows)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # Re-enable and start the kanata service. Mirrors raycast/kanata-enable.sh on macOS.
 $ErrorActionPreference = 'Stop'

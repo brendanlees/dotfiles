@@ -87,7 +87,7 @@ if you ever notice same-hand mod chords stop firing again, the first thing to ch
 unlike Vial (which writes to EEPROM and overrides `config.h`), kanata has **no runtime override layer** — the `.kbd` files are the truth. on macOS:
 
 1. **chezmoi source** — `~/.local/share/chezmoi/dot_config/kanata/config.kbd`. version-controlled, edited via `chezmoi edit` or directly.
-2. **deployed copy** — `~/.config/kanata/config.kbd`. propagated by `chezmoi apply`. this is what kanata reads. its own gitea-tracked repo for separate publishing.
+2. **deployed copy** — `~/.config/kanata/config.kbd`. propagated by `chezmoi apply`. this is what kanata reads. its own forgejo-tracked repo for separate publishing.
 3. **running kanata** — re-reads the file on `sudo launchctl kickstart -k system/xbxd.kanata`. no live reload; restart required.
 
 Windows mirrors the same layout (`config-windows.kbd`, propagated via `chezmoi apply` on Windows, kanata reload via scheduled task restart).

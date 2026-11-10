@@ -1,0 +1,5 @@
+{{- if and .personal (lookPath "bw") -}}
+[user]
+  name  = {{ .bw_forgejo.name }}
+  email = {{ .bw_forgejo.email }}
+{{- end -}}

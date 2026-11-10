@@ -46,7 +46,7 @@ printf '/agents/state/\n' >"$public_root/.gitignore"
 checkout="$tmpdir/private-checkout"
 config_file="$tmpdir/chezmoi.toml"
 helper="$tmpdir/cz-private-agent-skills"
-# This test owns clone/reconcile behavior; agent protocol coverage lives in test-gitea-ssh-remotes.
+# This test owns clone/reconcile behavior; agent protocol coverage lives in test-forgejo-ssh-remotes.
 cat >"$tmpdir/cz-ssh-ready" <<'SH'
 #!/bin/sh
 printf '%s\n' "$1" >>"$FIXTURE_READY_LOG"
