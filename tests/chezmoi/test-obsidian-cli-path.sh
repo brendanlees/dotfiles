@@ -101,34 +101,29 @@ for shortcut in ov obv; do
   [[ ! -e "$tmpdir/nvim.log" ]]
 done
 
-for shortcut in obf obn obr odb; do
+for shortcut in obf obn odb; do
   run_shortcut "$shortcut"
   cp "$tmpdir/nvim.log" "$tmpdir/$shortcut.log"
 done
-run_shortcut obr 'folder/My note.md' '-draft.md'
-cp "$tmpdir/nvim.log" "$tmpdir/explicit.log"
 
 python3 - "$tmpdir" "$vault" <<'PY'
 import sys
 from pathlib import Path
 
 root, vault = Path(sys.argv[1]), sys.argv[2]
-for shortcut in ("obf", "obn", "obr", "odb"):
+for shortcut in ("obf", "obn", "odb"):
     cwd, flag, command, end = (root / f"{shortcut}.log").read_bytes().decode().split("\0")
     assert cwd == vault and flag == "-c" and command and end == "", shortcut
-assert (root / "explicit.log").read_bytes().decode().split("\0") == [
-    vault, "--", "folder/My note.md", "-draft.md", ""
-]
 PY
 
 # Preserve editor failures and never launch it when the vault is missing.
-for shortcut in obf obn obr odb; do
+for shortcut in obf obn odb; do
   status=0
   NVIM_STATUS=23 run_shortcut "$shortcut" || status=$?
   [[ $status == 23 ]]
 done
 rmdir "$vault"
-for shortcut in ov obv obf obn obr odb; do
+for shortcut in ov obv obf obn odb; do
   rm -f "$tmpdir/nvim.log"
   if run_shortcut "$shortcut" 2>"$tmpdir/missing-vault.err"; then
     echo "$shortcut succeeded without a vault" >&2

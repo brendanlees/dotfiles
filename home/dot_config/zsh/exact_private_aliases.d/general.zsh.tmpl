@@ -16,15 +16,6 @@ obn() {
     obv && nvim -c 'lua require("obsidian"); require("user.obsidian.templates").pick()' "$@"
 }
 
-obr() {
-    obv || return
-    if (( $# )); then
-        nvim -- "$@"
-    else
-        obf
-    fi
-}
-
 odb() {
     obv && nvim -c 'Obsidian today' "$@"
 }
