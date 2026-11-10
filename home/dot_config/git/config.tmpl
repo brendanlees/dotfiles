@@ -32,10 +32,11 @@
   cmd = hunk difftool "$LOCAL" "$REMOTE" "$MERGED"
 {{- if .personal }}
 
-[includeIf "hasconfig:remote.*.url:*git.lab.brendans.cloud*"]
+# In these globs * stops at /, so **/ and /** are needed to match ssh://, scp-style and https remotes.
+[includeIf "hasconfig:remote.*.url:**/*git.lab.brendans.cloud*/**"]
   path = ~/.config/git/forgejo
 
-[includeIf "hasconfig:remote.*.url:*github.com*"]
+[includeIf "hasconfig:remote.*.url:**/*github.com*/**"]
   path = ~/.config/git/github
 {{- end }}
 {{- if eq .chezmoi.os "darwin" }}
