@@ -1,25 +1,11 @@
 local feedback = {}
-
-local function dispatch()
-    if feedback.task or not feedback.pending then
-        return
-    end
-
-    local arguments = feedback.pending
-    feedback.pending = nil
-    feedback.task = hs.task.new("/opt/homebrew/bin/sketchybar", function()
-        feedback.task = nil
-        dispatch()
-    end, arguments)
-    if feedback.task and not feedback.task:start() then
-        feedback.task = nil
-    end
-end
+local set = require("sketchybar").queue()
 
 local function setItem(label, drawing)
-    -- Serialize processes, keeping only the latest complete state while one runs.
-    feedback.pending = { "--set", "clipboard_feedback", "label=" .. label, "drawing=" .. drawing }
-    dispatch()
+    set({
+        "--set", "clipboard_feedback", "label=" .. label, "drawing=" .. drawing,
+        "--set", "clipboard_balance", "drawing=" .. drawing,
+    })
 end
 
 -- Reloading discards the old hide timer, so clear any lingering feedback.
@@ -45,11 +31,11 @@ feedback.tap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(eve
     local key = event:getKeyCode()
     local label
     if key == hs.keycodes.map.x then
-        label = "CUT"
+        label = "Cut"
     elseif key == hs.keycodes.map.c then
-        label = "COPY"
+        label = "Copied"
     elseif key == hs.keycodes.map.v then
-        label = "PASTE"
+        label = "Pasted"
     else
         return false
     end
@@ -60,7 +46,7 @@ feedback.tap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(eve
         feedback.pollTimer = nil
     end
 
-    if label == "PASTE" then
+    if label == "Pasted" then
         show(label)
     else
         local count = hs.pasteboard.changeCount()

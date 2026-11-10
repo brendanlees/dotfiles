@@ -1,0 +1,22 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+# Hammerspoon now drives the microphone indicator. Stop the old compiled
+# watcher only if its PID still belongs to that exact command, then remove it.
+cache_dir="$HOME/Library/Caches/sketchybar"
+helper="$cache_dir/mic_activity"
+lock_file="$cache_dir/mic_activity.lock"
+
+if [ -r "$lock_file" ] && IFS= read -r pid <"$lock_file"; then
+  case "$pid" in
+    '' | *[!0-9]*) ;;
+    *)
+      case "$(ps -p "$pid" -o command= 2>/dev/null || true)" in
+        "$helper --watch $lock_file "*) kill "$pid" 2>/dev/null || true ;;
+      esac
+      ;;
+  esac
+fi
+rm -f "$helper" "$lock_file" "$cache_dir/mic_activity.log"
+{{- end }}
