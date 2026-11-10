@@ -16,15 +16,20 @@ HOME="$tmpdir/home" chezmoi execute-template --no-tty \
 printf '[user]\n  email = forgejo@fixture\n' >"$tmpdir/home/.config/git/forgejo"
 printf '[user]\n  email = github@fixture\n' >"$tmpdir/home/.config/git/github"
 
-check() {
-  local url="$1" expected="$2" repo actual
+email_for() {
+  local repo
   repo=$(mktemp -d "$tmpdir/repo.XXXXXX")
   git -C "$repo" init -q
-  git -C "$repo" remote add origin "$url"
-  actual=$(HOME="$tmpdir/home" GIT_CONFIG_GLOBAL="$tmpdir/gitconfig" GIT_CONFIG_NOSYSTEM=1 \
-    git -C "$repo" config --get user.email || echo none)
-  if [[ "$actual" != "$expected" ]]; then
-    echo "$url: expected $expected, got $actual" >&2
+  git -C "$repo" remote add origin "$1"
+  HOME="$tmpdir/home" GIT_CONFIG_GLOBAL="$tmpdir/gitconfig" GIT_CONFIG_NOSYSTEM=1 \
+    git -C "$repo" config --get user.email || echo none
+}
+
+check() {
+  local actual
+  actual=$(email_for "$1")
+  if [[ "$actual" != "$2" ]]; then
+    echo "$1: expected $2, got $actual" >&2
     exit 1
   fi
 }
@@ -34,5 +39,9 @@ check git@git.lab.brendans.cloud:xbxd/skills-vault.git forgejo@fixture
 check https://git.lab.brendans.cloud/xbxd/skills-vault.git forgejo@fixture
 check git@github.com:brendanlees/dotfiles.git github@fixture
 check https://github.com/brendanlees/dotfiles.git github@fixture
-check git@gitea.lab.brendans.cloud:xbxd/old.git default@fixture
+# The default identity depends on whether bw is installed, so only check the include is skipped.
+if [[ "$(email_for git@gitea.lab.brendans.cloud:xbxd/old.git)" == forgejo@fixture ]]; then
+  echo 'gitea.lab remote matched the git.lab identity include' >&2
+  exit 1
+fi
 echo 'git identity includes ok'
