@@ -32,8 +32,8 @@
   cmd = hunk difftool "$LOCAL" "$REMOTE" "$MERGED"
 {{- if .personal }}
 
-[includeIf "hasconfig:remote.*.url:*gitea.lab.brendans.cloud*"]
-  path = ~/.config/git/gitea
+[includeIf "hasconfig:remote.*.url:*git.lab.brendans.cloud*"]
+  path = ~/.config/git/forgejo
 
 [includeIf "hasconfig:remote.*.url:*github.com*"]
   path = ~/.config/git/github

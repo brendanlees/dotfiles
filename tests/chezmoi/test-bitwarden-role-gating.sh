@@ -30,9 +30,9 @@ case "$item_id" in
     field_name="read_only_token"
     field_value="huggingface-token"
     ;;
-  040ae08a-b331-4d3b-abc6-b303002d2a94)
-    field_name="gitea_field"
-    field_value="gitea-value"
+  b6e99a07-e620-4e85-9555-abc20006501c)
+    field_name="forge_token"
+    field_value="fixture-forge-token"
     ;;
   007b0e02-0af0-41e4-9779-b42d0156e6aa)
     field_name="homelab_admin_field"
@@ -148,6 +148,7 @@ import tomllib
 from pathlib import Path
 data = tomllib.loads(Path(sys.argv[1]).read_text())['data']
 assert data['github_token'] == sys.argv[2]
+assert data['bw_forgejo']['forge_token'] == 'fixture-forge-token'
 assert data['bw_vicinae']['weekly_tasks_url'] == 'https://hooks.example.invalid/weekly-tasks?token=fixture'
 PY
 }
@@ -160,7 +161,7 @@ assert_bw_item_ids "personal" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
-  "040ae08a-b331-4d3b-abc6-b303002d2a94" \
+  "b6e99a07-e620-4e85-9555-abc20006501c" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
@@ -170,7 +171,7 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "acf48b07-70b7-43d0-9b2d-b42d0149b091" \
   "d256649b-8944-43a3-a016-abc1018ad825" \
   "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" \
-  "040ae08a-b331-4d3b-abc6-b303002d2a94" \
+  "b6e99a07-e620-4e85-9555-abc20006501c" \
   "007b0e02-0af0-41e4-9779-b42d0156e6aa" \
   "afa4395b-8044-46b1-86c9-b48d007e82ac" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \

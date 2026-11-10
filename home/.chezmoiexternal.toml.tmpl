@@ -83,12 +83,12 @@ exclude = [
 
 {{/* Externals are applied before ~/.ssh and the tool/SSH after-hooks. */}}
 {{- if eq (includeTemplate ".chezmoitemplates/private-harness-ready.tmpl" .) "false" }}
-{{- warnf "Private Gitea configs deferred: generate SSH config with cz-ssh-refresh --fail, then check cz-ssh-ready git@gitea.lab.brendans.cloud. Open Bitwarden and enable/unlock its SSH agent if required; retry chezmoi apply." }}
+{{- warnf "Private Forgejo configs deferred: generate SSH config with cz-ssh-refresh --fail, then check cz-ssh-ready git@git.lab.brendans.cloud. Open Bitwarden and enable/unlock its SSH agent if required; retry chezmoi apply." }}
 {{- else }}
 {{/* agent harness configs */}}
 [".claude"]
 type = "git-repo"
-url = "ssh://git@gitea.lab.brendans.cloud/xbxd/claude-config.git"
+url = "ssh://git@git.lab.brendans.cloud/xbxd/claude-config.git"
 refreshPeriod = "168h"
 exclude = [
   "*/.editorconfig",
@@ -101,7 +101,7 @@ args = ["--autostash", "--rebase"]
 
 [".pi"]
 type = "git-repo"
-url = "ssh://git@gitea.lab.brendans.cloud/xbxd/pi-config.git"
+url = "ssh://git@git.lab.brendans.cloud/xbxd/pi-config.git"
 refreshPeriod = "168h"
 exclude = [
   "*/.editorconfig",

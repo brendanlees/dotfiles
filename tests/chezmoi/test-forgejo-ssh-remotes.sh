@@ -27,12 +27,12 @@ chezmoi execute-template --source "$repo_root" --override-data-file "$render_dat
   --file "$repo_root/home/.chezmoiexternal.toml.tmpl" >"$rendered_external"
 
 for repo in claude-config pi-config; do
-  expected="ssh://git@gitea.lab.brendans.cloud/xbxd/$repo.git"
+  expected="ssh://git@git.lab.brendans.cloud/xbxd/$repo.git"
   grep -Fqx "url = \"$expected\"" "$rendered_external"
 done
 
-if grep -Fq 'https://gitea.lab.brendans.cloud/xbxd/' "$rendered_external"; then
-  echo 'Gitea external repositories must not use HTTPS Git transport' >&2
+if grep -Fq 'https://git.lab.brendans.cloud/xbxd/' "$rendered_external"; then
+  echo 'Forgejo external repositories must not use HTTPS Git transport' >&2
   exit 1
 fi
 
@@ -95,7 +95,7 @@ test "$(command -v jq)" = "$HOME/.local/share/mise/shims/jq"
 [ "${FIXTURE_BW_LOCKED:-0}" = 0 ] || exit 0
 mkdir -p "$HOME/.ssh/config.d"
 cat >"$HOME/.ssh/config.d/personal.conf" <<CONF
-Host gitea.lab.brendans.cloud
+Host git.lab.brendans.cloud
   IdentityAgent "$HOME/.bitwarden-ssh-agent.sock"
   IdentityFile "$HOME/.ssh/public-keys/fixture.pub"
   IdentitiesOnly yes
@@ -106,7 +106,7 @@ SH
 cat >"$fixture/dot_local/bin/executable_cz-private-agent-skills" <<'SH'
 #!/bin/sh
 set -eu
-"$HOME/.local/bin/cz-ssh-ready" git@gitea.lab.brendans.cloud
+"$HOME/.local/bin/cz-ssh-ready" git@git.lab.brendans.cloud
 test "$(command -v jq)" = "$HOME/.local/share/mise/shims/jq"
 printf 'reconciled\n' >"$HOME/skills-reconciled"
 SH
@@ -219,7 +219,7 @@ apply_fresh
 printf '\nHost local-key\n  IdentityAgent none\n' >>"$fresh_home/.ssh/config.d/personal.conf"
 HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-ready" git@local-key:owner/repo.git
 # SSH URL user/port parsing uses the same host-specific check.
-HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-ready" ssh://git@gitea.lab.brendans.cloud:2222/owner/repo.git
+HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-ready" ssh://git@git.lab.brendans.cloud:2222/owner/repo.git
 
 # Existing custom socket variables work, but missing variables are not guessed.
 cat >>"$fresh_home/.ssh/config.d/personal.conf" <<'CONF'
@@ -261,7 +261,7 @@ PY
 kill "$test_agent_pid"
 wait "$test_agent_pid" 2>/dev/null || true
 test_agent_pid=''
-if HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-ready" git@gitea.lab.brendans.cloud >/dev/null 2>&1; then
+if HOME="$fresh_home" PATH="$tmpdir/bin:$PATH" "$fresh_home/.local/bin/cz-ssh-ready" git@git.lab.brendans.cloud >/dev/null 2>&1; then
   echo 'dead agent unexpectedly considered ready' >&2
   exit 1
 fi

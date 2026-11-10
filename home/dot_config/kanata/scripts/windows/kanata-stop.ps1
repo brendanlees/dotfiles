@@ -11,7 +11,7 @@
 # Documentation:
 # @raycast.description Stop the Kanata homerow mods service (Windows; will NOT auto-restart)
 # @raycast.author xbxd
-# @raycast.authorURL https://gitea.lab.brendans.cloud/xbxd
+# @raycast.authorURL https://git.lab.brendans.cloud/xbxd
 
 # Stop the kanata homerow-mods service (mirrors raycast/kanata-stop.sh on macOS).
 # NOTE: unlike macOS launchd KeepAlive=true, the Windows scheduled task triggers
