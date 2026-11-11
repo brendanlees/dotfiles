@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Hermes Obsidian overlay Mutagen daemon (~/.mutagen). Deliberately not named
+         io.mutagen.mutagen: any mutagen binary that sees that plist, including DDEV's
+         bundled one, defers to launchd instead of starting its own daemon. -->
+    <key>Label</key>
+    <string>com.brendan.mutagen-hermes</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/mutagen</string>
+        <string>daemon</string>
+        <string>run</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>LimitLoadToSessionType</key>
+    <string>Aqua</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>StandardErrorPath</key>
+    <string>{{ .chezmoi.homeDir }}/Library/Logs/mutagen-hermes.log</string>
+</dict>
+</plist>
