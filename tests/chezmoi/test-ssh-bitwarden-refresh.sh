@@ -668,6 +668,25 @@ if BW_MODE=missing-session run_refresh "$fail_home" personal --fail >/tmp/cz-ssh
   exit 1
 fi
 
+# Automatic setup belongs to personal machines, even if another scope is set.
+# A helper must not be invoked, warned about, or retried on unattended servers.
+scope_home=$(new_home automatic-scope)
+mkdir -p "$scope_home/.local/bin"
+printf '#!/bin/sh\necho unexpected-helper-call >&2\nexit 1\n' > "$scope_home/.local/bin/cz-ssh-refresh"
+chmod +x "$scope_home/.local/bin/cz-ssh-refresh"
+for scope_data in \
+  '{"personal":false,"work":false,"homelab":true,"ephemeral":false}' \
+  '{"personal":false,"work":true,"homelab":false,"ephemeral":false}' \
+  '{"personal":true,"work":false,"homelab":false,"ephemeral":true}'; do
+  chezmoi execute-template --override-data "$scope_data" \
+    < "$source_root/.chezmoiscripts/run_after_01-refresh-ssh-keys.sh.tmpl" > "$tmpdir/scope-bootstrap.sh"
+  scope_output=$(HOME="$scope_home" XDG_STATE_HOME="$scope_home/state" bash "$tmpdir/scope-bootstrap.sh" 2>&1)
+  if [[ -n "$scope_output" ]]; then
+    echo "automatic SSH setup ran outside a persistent personal scope: $scope_output" >&2
+    exit 1
+  fi
+done
+
 # Bootstrap retries skipped/failed attempts, but stops invoking the helper after
 # any successful refresh. Helper/config changes and missing SSH files are manual.
 auto_home=$(new_home automatic)

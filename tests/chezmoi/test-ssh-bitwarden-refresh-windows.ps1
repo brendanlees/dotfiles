@@ -77,6 +77,23 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'template render failed' }
         [IO.File]::WriteAllText($pair[1], $rendered)
     }
+    # Nonpersonal and ephemeral profiles must not invoke even an installed helper.
+    $helperContent = Get-Content -Raw $helper
+    Set-Content -LiteralPath $helper -Value "throw 'automatic setup invoked helper outside personal scope'"
+    foreach ($scope in @(
+        '{"personal":false,"work":false,"homelab":true,"ephemeral":false}',
+        '{"personal":false,"work":true,"homelab":false,"ephemeral":false}',
+        '{"personal":true,"work":false,"homelab":false,"ephemeral":true}'
+    )) {
+        $scopeRunner = Join-Path $Stage 'scope-refresh.ps1'
+        $rendered = & chezmoi execute-template --source $RepoRoot --config $chezmoiConfig --override-data $scope --file (Join-Path $RepoRoot 'home/.chezmoiscripts/windows/run_after_01-refresh-ssh-keys.ps1.tmpl') | Out-String
+        if ($LASTEXITCODE -ne 0) { throw 'scope template render failed' }
+        [IO.File]::WriteAllText($scopeRunner, $rendered)
+        $output = & $scopeRunner *>&1 | Out-String
+        Assert-True ([string]::IsNullOrWhiteSpace($output)) 'out-of-scope automatic setup produced output'
+    }
+    [IO.File]::WriteAllText($helper, $helperContent)
+
     $receipt = Join-Path $env:XDG_STATE_HOME 'chezmoi/ssh-refresh'
     $config = Join-Path $Stage '.ssh/config.d/personal.conf'
     & $runner

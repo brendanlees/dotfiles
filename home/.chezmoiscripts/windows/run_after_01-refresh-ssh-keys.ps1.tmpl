@@ -2,7 +2,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-if ('{{ .ephemeral }}' -eq 'true' -or '{{ or .personal .work .homelab }}' -ne 'true') { exit 0 }
+if ('{{ .ephemeral }}' -eq 'true' -or '{{ .personal }}' -ne 'true') { exit 0 }
 
 # Honor existing checksum receipts too. Later refreshes and repairs are manual.
 $stateRoot = if ($env:XDG_STATE_HOME) { $env:XDG_STATE_HOME } else { Join-Path $HOME '.local/state' }
