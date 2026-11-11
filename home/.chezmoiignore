@@ -8,6 +8,10 @@ Library
 Library/LaunchAgents/com.brendan.obsidian-headless.plist
 {{- end }}
 
+{{- if or (ne .chezmoi.os "darwin") (not .personal) }}
+Library/LaunchAgents/com.brendan.mutagen-hermes.plist
+{{- end }}
+
 {{- if or (ne .chezmoi.os "darwin") .headless }}
 .config/ghostty
 .config/worktrunk
