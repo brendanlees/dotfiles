@@ -97,6 +97,8 @@ to migrate to `bitwarden_agent`, import the key into bitwarden, change the manif
 
 ## refresh behavior
 
+Automatic setup runs only on non-ephemeral personal machines. Work-only and homelab server profiles do not invoke Bitwarden during apply; explicit manual refreshes remain available.
+
 A successful refresh, automatic or manual, records completion under `${XDG_STATE_HOME:-~/.local/state}/chezmoi/ssh-refresh`. On later `chezmoi apply` and `chezmoi update`, the SSH setup hook checks only for that receipt. It does not invoke the SSH helper, query Bitwarden, compare helper/configuration checksums, or inspect generated SSH files. Existing checksum receipts are accepted without another refresh. Failed or skipped first attempts do not create a receipt; it contains no vault credentials.
 
 After changing the manifest, keys, enabled roles, or agent socket configuration, run `bw sync` and `cz-ssh-refresh --fail` with the vault unlocked. Do this once for older generated configs that still refer to an unset `$BITWARDEN_SSH_AUTH_SOCK`; the receipt deliberately prevents automatic rewriting. Use the same helper to restore deleted generated configs or keys. Direct invocations always refresh, regardless of the receipt. The generic SSH scaffold and GitHub override remain chezmoi-managed.

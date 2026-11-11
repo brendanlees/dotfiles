@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck disable=SC2050
-if [[ "{{ .ephemeral }}" == "true" || "{{ or .personal .work .homelab }}" != "true" ]]; then
+if [[ "{{ .ephemeral }}" == "true" || "{{ .personal }}" != "true" ]]; then
   exit 0
 fi
 
