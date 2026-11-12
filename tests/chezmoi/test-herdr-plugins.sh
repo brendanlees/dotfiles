@@ -152,6 +152,18 @@ cmp "$tmpdir/before-skip-config" "$tmpdir/plugin-config/config.toml"
 [[ ! -s "$tmpdir/herdr.log" ]]
 mv "$tmpdir/herdr" "$fakebin/herdr"
 
+# Lean servers intentionally have no Go toolchain. Even a retained Herdr
+# executable must not trigger plugin builds or reconcile existing plugin state.
+server_rendered="$tmpdir/install-herdr-plugins-server.sh"
+chezmoi execute-template \
+  --source "$repo_root" \
+  --override-data "{\"personal\":false,\"homelab\":true,\"headless\":true,\"herdr\":$plugins,\"chezmoi\":{\"os\":\"linux\"}}" \
+  <"$template" >"$server_rendered"
+[[ ! -s "$server_rendered" ]] || {
+  echo 'lean servers must not reconcile Herdr plugins' >&2
+  exit 1
+}
+
 windows_rendered="$tmpdir/install-herdr-plugins-windows.sh"
 chezmoi execute-template \
   --source "$repo_root" \
