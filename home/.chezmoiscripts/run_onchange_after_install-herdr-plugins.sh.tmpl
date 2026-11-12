@@ -1,4 +1,5 @@
-{{- if ne .chezmoi.os "windows" -}}
+{{- $server := eq (includeTemplate ".chezmoitemplates/server-profile.tmpl" .) "true" -}}
+{{- if and (ne .chezmoi.os "windows") (not $server) -}}
 #!/bin/sh
 set -eu
 
@@ -29,7 +30,7 @@ if ! run_herdr --version >/dev/null; then
   echo "Herdr is not usable; install managed tools before reconciling plugins" >&2
   exit 1
 fi
-# Herdr Plus is managed in every non-Windows role. Its pinned build mistakes a
+# Herdr Plus is managed outside Windows and lean servers. Its pinned build mistakes a
 # Go shim for a compiler and otherwise falls back to an unpinned release download.
 # The global mise Go pin must satisfy the pinned plugin's go.mod (Go 1.26.2):
 # https://github.com/cloudmanic/herdr-plus/blob/f38df3570bea8f7ca71dc1ba11bce3b123d14402/go.mod
