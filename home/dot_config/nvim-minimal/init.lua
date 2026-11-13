@@ -1,7 +1,8 @@
 -- Standalone editor config for constrained hosts, such as the Home Assistant
 -- SSH add-on. Selected with NVIM_APPNAME=nvim-minimal by the minimal role.
 -- Also used on homelab servers. Uses Neovim's built-in plugin manager with
--- mini.nvim, snacks.nvim, fff and indent-blankline; each is optional.
+-- mini.nvim, snacks.nvim, fff, indent-blankline, treesitter-context, nui.nvim
+-- and noice; each is optional.
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -180,6 +181,9 @@ local plugins = {
   "https://github.com/lukas-reineke/indent-blankline.nvim",
   "https://github.com/TheGLander/indent-rainbowline.nvim",
   "https://github.com/folke/snacks.nvim",
+  "https://github.com/nvim-treesitter/nvim-treesitter-context",
+  "https://github.com/MunifTanjim/nui.nvim",
+  "https://github.com/folke/noice.nvim",
 }
 if use_fff then
   -- Follow release tags, which have prebuilt libraries, not untagged commits.
@@ -210,10 +214,80 @@ end
 if has_snacks then
   Snacks.setup {
     bigfile = { enabled = true },
-    picker = { enabled = true },
+    picker = {
+      enabled = true,
+      layout = { preset = "ivy" },
+      sources = {
+        buffers = {
+          focus = "list",
+          actions = {
+            buffer_visit = {
+              action = function(picker, item)
+                if item then vim.api.nvim_win_set_buf(picker.main, item.buf) end
+              end,
+              desc = "Show buffer without closing picker",
+            },
+          },
+          win = {
+            input = { keys = { d = "bufdelete", g = "buffer_visit", gg = false } },
+            list = { keys = { d = "bufdelete", dd = false, g = "buffer_visit", gg = false } },
+          },
+        },
+        explorer = {
+          hidden = true,
+          ignored = true,
+          layout = { layout = { position = "right" } },
+        },
+      },
+      win = {
+        input = {
+          keys = {
+            ["<c-;>"] = { "preview_scroll_up", mode = { "i", "n" } },
+            ["<c-l>"] = { "preview_scroll_down", mode = { "i", "n" } },
+          },
+        },
+        list = {
+          keys = {
+            ["<c-l>"] = "preview_scroll_up",
+            ["<c-;>"] = "preview_scroll_down",
+          },
+        },
+      },
+    },
     lazygit = { enabled = true },
     terminal = { enabled = true },
   }
+end
+
+local has_treesitter_context, treesitter_context = pcall(require, "treesitter-context")
+if has_treesitter_context then pcall(treesitter_context.setup) end
+
+local has_noice, noice = pcall(require, "noice")
+if has_noice then
+  pcall(noice.setup, {
+    cmdline = {
+      format = {
+        search_down = { view = "cmdline_popup", opts = { position = { row = "50%", col = "50%" } } },
+        search_up = { view = "cmdline_popup", opts = { position = { row = "50%", col = "50%" } } },
+      },
+    },
+    messages = { enabled = true, view = "mini", view_error = "mini", view_warn = "mini" },
+    notify = { enabled = false },
+    popupmenu = { enabled = false },
+    lsp = {
+      progress = { enabled = false },
+      hover = { enabled = false },
+      signature = { enabled = false },
+      message = { enabled = false },
+    },
+    presets = {
+      bottom_search = false,
+      command_palette = true,
+      long_message_to_split = false,
+      lsp_doc_border = false,
+      inc_rename = false,
+    },
+  })
 end
 
 if has_mini then
@@ -296,6 +370,7 @@ if not has_snacks then o.path:append "**" end
 map("n", "<Leader>ff", find_files, { desc = "Find files" })
 
 if has_snacks then
+  map("n", "gb", function() Snacks.picker.buffers() end, { desc = "Manage buffers" })
   map("n", "<Leader>fw", function() Snacks.picker.grep() end, { desc = "Find words" })
   map("n", "<Leader>fb", function() Snacks.picker.buffers() end, { desc = "Find buffers" })
   map("n", "<Leader>fo", function() Snacks.picker.recent() end, { desc = "Find recent files" })
@@ -325,4 +400,8 @@ vim.api.nvim_create_autocmd("VimEnter", {
     vim.schedule(find_files)
   end,
 })
-map("n", "<Leader>e", "<Cmd>Explore<CR>", { desc = "File explorer (netrw)" })
+if has_snacks then
+  map("n", "<Leader>e", function() Snacks.picker.explorer() end, { desc = "File explorer" })
+else
+  map("n", "<Leader>e", "<Cmd>Explore<CR>", { desc = "File explorer (netrw)" })
+end
