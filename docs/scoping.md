@@ -34,7 +34,7 @@ precedence: `CHEZMOI_ROLE` environment variable, then hostname defaults, then in
 - `~/.zshrc`, rendered from `.chezmoitemplates/zshrc-minimal.zsh`
 - `~/.config/nvim-minimal/init.lua`, selected with `NVIM_APPNAME=nvim-minimal`
 
-tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, snacks.nvim and, except on musl, fff. Each plugin is optional, so the editor still opens if GitHub is unreachable or Neovim is older. Language servers start only when their command is installed; `yaml-language-server` allows Home Assistant's YAML tags. fff's musl library does not load on Alpine, so musl hosts use the snacks file picker.
+tools come from the host's package manager, because mise's prebuilt binaries can need glibc. The Neovim config uses Neovim 0.12's built-in `vim.pack` to install mini.nvim, snacks.nvim, indent-blankline, treesitter-context, nui.nvim and noice; fff is also installed except on musl. Each plugin is optional, so the editor still opens if GitHub is unreachable or Neovim is older. Host packages provide Treesitter parsers without compilation. Snacks provides the file explorer and picker; it shows hidden and gitignored files. Language servers start only when their command is installed; `yaml-language-server` allows Home Assistant's YAML tags. fff's musl library does not load on Alpine, so musl hosts use the snacks file picker.
 
 the Home Assistant Advanced SSH add-on recreates its container on each start, so its options install the packages and apply the role every time:
 
