@@ -25,3 +25,6 @@ gui:
 git:
   diffRenderers:
     - command: hunk pager
+services:
+  # Forgejo uses Lazygit's Gitea-compatible URL templates.
+  'git.lab.brendans.cloud': 'gitea:git.lab.brendans.cloud'
