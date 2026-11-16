@@ -1,0 +1,109 @@
+matches:
+  # Sharing a trigger opens Espanso's picker for the product names.
+  - trigger: ";stdyprod"
+    replace: "Branding & Identity"
+
+  - trigger: ";stdyprod"
+    replace: "Client Discovery"
+
+  - trigger: ";stdyprod"
+    replace: "Client Meeting"
+
+  - trigger: ";stdyprod"
+    replace: "Client Site Policies Setup"
+
+  - trigger: ";stdyprod"
+    replace: "Consultation"
+
+  - trigger: ";stdyprod"
+    replace: "Content Prep & Scheduling"
+
+  - trigger: ";stdyprod"
+    replace: "Copywriting"
+
+  - trigger: ";stdyprod"
+    replace: "Digital Media Design"
+
+  - trigger: ";stdyprod"
+    replace: "Domain Name Managemer"
+
+  - trigger: ";stdyprod"
+    replace: "Domain Name Renewal"
+
+  - trigger: ";stdyprod"
+    replace: "EDM Campaign Updates"
+
+  - trigger: ";stdyprod"
+    replace: "Full Site Policies Setup"
+
+  - trigger: ";stdyprod"
+    replace: "On-site Web Development"
+
+  - trigger: ";stdyprod"
+    replace: "Partial Site Policies Setup"
+
+  - trigger: ";stdyprod"
+    replace: "Print Media Design"
+
+  - trigger: ";stdyprod"
+    replace: "Project Discovery"
+
+  - trigger: ";stdyprod"
+    replace: "Project Management"
+
+  - trigger: ";stdyprod"
+    replace: "SEO Research"
+
+  - trigger: ";stdyprod"
+    replace: "Site Audit"
+
+  - trigger: ";stdyprod"
+    replace: "Site Build"
+
+  - trigger: ";stdyprod"
+    replace: "Site Maintenance"
+
+  - trigger: ";stdyprod"
+    replace: "Site Migration"
+
+  - trigger: ";stdyprod"
+    replace: "Site Policy License"
+
+  - trigger: ";stdyprod"
+    replace: "Site Updates"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Care Basic"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Care Custom"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Care Essential"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Care Premium"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Development"
+
+  - trigger: ";stdyprod"
+    replace: "Steady Optimisation"
+
+  - trigger: ";stdyprod"
+    replace: "Steady SEO"
+
+  - trigger: ";stdyprod"
+    replace: "Support Request"
+
+  - trigger: ";stdyprod"
+    replace: "Test Product"
+
+  - trigger: ";stdyprod"
+    replace: "Ul Design"
+
+  - trigger: ";stdyprod"
+    replace: "UX Design"
+
+  - trigger: ";stdyprod"
+    replace: "Web Development"
