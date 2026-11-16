@@ -49,6 +49,7 @@ actual=$(run ha-mcp secret_path api-key)
 }
 
 all_fields=$(run ha-mcp)
+# shellcheck disable=SC2016 # Literal chezmoi template text.
 grep -Fq 'unused = {{ $bw_ha_mcp.unused.value | quote }}' <<<"$all_fields"
 if grep -q 'fixture-secret' <<<"$all_fields"; then
   echo 'cz-bw-fields printed a Bitwarden field value' >&2
