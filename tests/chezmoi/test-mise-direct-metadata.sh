@@ -167,7 +167,7 @@ fi
 # Init accepts only the dedicated download input, retains its cache on re-init,
 # and allows deliberate rotation. Project/agent credentials must never be cached.
 expected=''
-for injected in '' fixture-init-token '' fixture-rotated-token; do
+for injected in fixture-init-token '' fixture-rotated-token; do
   [[ -z $injected ]] || expected=$injected
   CHEZMOI_ROLE=ephemeral,headless GITHUB_DOWNLOAD_TOKEN="$injected" \
     GH_TOKEN=fixture-agent-token GITHUB_TOKEN=fixture-project-token \
@@ -182,6 +182,81 @@ from pathlib import Path
 assert tomllib.loads(Path(sys.argv[1]).read_text())['data'].get('github_token', '') == sys.argv[2]
 CHECK
 done
+
+# Missing download credentials must stop init before any apply; minimal hosts
+# stay token-free. A real terminal verifies the fallback never echoes secrets.
+python3 - "$repo_root" "$tmpdir" <<'CHECK'
+import errno
+import os
+from pathlib import Path
+import pty
+import select
+import signal
+import subprocess
+import sys
+import time
+import tomllib
+
+root, temp = map(Path, sys.argv[1:])
+home = temp / 'prompt-home'
+home.mkdir()
+config = temp / 'prompt.toml'
+command = [
+    'chezmoi', 'init', '--source', str(root), '--destination', str(home),
+    '--config', str(config), '--config-path', str(config),
+    '--cache', str(temp / 'prompt-cache'),
+    '--persistent-state', str(temp / 'prompt-state.boltdb'), '--no-tty', '--force',
+]
+env = {
+    **os.environ, 'HOME': str(home), 'CHEZMOI_ROLE': 'homelab',
+    'GITHUB_DOWNLOAD_TOKEN': '', 'GH_TOKEN': 'fixture-agent-token',
+    'GITHUB_TOKEN': 'fixture-project-token',
+}
+result = subprocess.run(command, env=env, input='', capture_output=True, text=True)
+assert result.returncode != 0 and 'Set GITHUB_DOWNLOAD_TOKEN' in result.stderr, result
+assert not config.exists()
+subprocess.run(command, env={**env, 'CHEZMOI_ROLE': 'minimal'},
+               input='', capture_output=True, text=True, check=True)
+assert not tomllib.loads(config.read_text())['data'].get('github_token')
+
+pid, fd = pty.fork()
+if pid == 0:
+    interactive_command = [arg for arg in command if arg != '--no-tty']
+    os.execvpe(interactive_command[0], interactive_command, env)
+transcript = b''
+answered = False
+try:
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        if not select.select([fd], [], [], max(0, deadline - time.monotonic()))[0]:
+            raise AssertionError('timed out waiting for token prompt or init completion')
+        try:
+            chunk = os.read(fd, 65536)
+        except OSError as error:
+            if error.errno != errno.EIO:
+                raise
+            break
+        if not chunk:
+            break
+        transcript += chunk
+        if not answered and b'input hidden): ' in transcript:
+            os.write(fd, b'fixture-interactive-download-token\n')
+            answered = True
+    else:
+        raise AssertionError('token prompt did not finish')
+    _, status = os.waitpid(pid, 0)
+    pid = None
+    assert status == 0, transcript
+finally:
+    os.close(fd)
+    if pid is not None:
+        os.kill(pid, signal.SIGKILL)
+        os.waitpid(pid, 0)
+assert answered and b'fixture-interactive-download-token' not in transcript, transcript
+assert tomllib.loads(config.read_text())['data']['github_token'] == 'fixture-interactive-download-token'
+# The cached response suppresses the prompt on a non-interactive re-init.
+subprocess.run(command, env=env, input='', capture_output=True, text=True, check=True)
+CHECK
 
 # Shell startup leaves gh credentials alone; the explicit download accessor
 # reads only the cache, never a project token or the stored gh login.

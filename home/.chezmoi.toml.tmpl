@@ -132,8 +132,21 @@
 {{- $bw_github := dict -}}
 {{- if and $personal (lookPath "bw") -}}
 {{-   $bw_github = bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" -}}
-{{-   if not (env "GITHUB_DOWNLOAD_TOKEN") -}}
-{{-     $github_token = $bw_github.read_only_token.value -}}
+{{-   $bw_download_token := dig "read_only_token" "value" "" $bw_github -}}
+{{-   if and (not (env "GITHUB_DOWNLOAD_TOKEN")) $bw_download_token -}}
+{{-     $github_token = $bw_download_token -}}
+{{-   end -}}
+{{- end -}}
+{{- if and (not $minimal) (not $github_token) -}}
+{{-   if stdinIsATTY -}}
+{{-     if eq .chezmoi.os "windows" -}}
+{{-       $github_token = output "powershell.exe" "-NoProfile" "-Command" (include ".chezmoitemplates/prompt-github-download-token.ps1") | trim -}}
+{{-     else -}}
+{{-       $github_token = output "bash" "-c" (include ".chezmoitemplates/prompt-github-download-token.sh") | trim -}}
+{{-     end -}}
+{{-   end -}}
+{{-   if not $github_token -}}
+{{-     fail "A GitHub download token is required for mise tool installation. Set GITHUB_DOWNLOAD_TOKEN and re-run chezmoi init, or use CHEZMOI_ROLE=minimal for host-managed tools." -}}
 {{-   end -}}
 {{- end }}
 

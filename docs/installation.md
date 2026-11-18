@@ -35,7 +35,25 @@ chezmoi will detect the system environment automatically, and configure things a
 darwin | windows | linux
 ```
 
-see [scoping](docs/scoping.md) for non-interactive options via env vars, ansible.
+see [scoping](scoping.md) for non-interactive options via env vars, ansible.
+
+### quick install: minimal hosts
+
+Install chezmoi into your home directory and apply only the shell and standalone
+Neovim configuration:
+
+```sh
+CHEZMOI_ROLE=minimal sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" -- -b "$HOME/.local/bin" init --apply brendanlees
+```
+
+Run as the intended dotfiles owner, not through sudo. `minimal` implies
+`headless` and skips mise, apply scripts and externals, so no GitHub download
+token is required. Install Zsh, Neovim and supporting tools through the host's
+package manager; Neovim can still download optional plugins when opened.
+
+Non-minimal interactive installs prompt for a download token if none is already
+available. For automation, supply `GITHUB_DOWNLOAD_TOKEN` before init. See
+[download token provisioning](secrets.md#download-token-provisioning).
 
 ## maintenance
 
