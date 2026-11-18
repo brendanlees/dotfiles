@@ -58,10 +58,15 @@ scoops:
     - aws
     - wp-cli
 
-wingets:
+desktopWingets:
   base: []
   personal:
     - Alacritty.Alacritty
+  work: []
+
+wingets:
+  base: []
+  personal:
     - Anthropic.Claude
     - Anthropic.ClaudeCode
     - Bitwarden.Bitwarden

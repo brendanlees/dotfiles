@@ -6,6 +6,10 @@ source_root="$repo_root/home"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 mkdir -p "$tmpdir/bin"
+printf '[data]\n' >"$tmpdir/config.toml"
+render_template() {
+  chezmoi execute-template --source "$repo_root" --config "$tmpdir/config.toml" "$@"
+}
 cat >"$tmpdir/bin/brew" <<'PY'
 #!/usr/bin/env python3
 import json
@@ -23,36 +27,36 @@ chmod +x "$tmpdir/bin/brew"
 for role in personal work homelab personal-work; do
   case "$role" in
     personal)
-      flags='"personal":true,"work":false'; expected='["base","personal"]'
+      flags='"personal":true,"work":false,"headless":false'; expected='["base","personal"]'
       data='{"personal":true,"work":false,"homelab":false,"chezmoi":{"os":"darwin"}}'
       ;;
     work)
-      flags='"personal":false,"work":true'; expected='["base","work"]'
+      flags='"personal":false,"work":true,"headless":false'; expected='["base","work"]'
       data='{"personal":false,"work":true,"homelab":false,"chezmoi":{"os":"darwin"}}'
       ;;
     homelab)
-      flags='"personal":false,"work":false'; expected='["base"]'
+      flags='"personal":false,"work":false,"headless":false'; expected='["base"]'
       data='{"personal":false,"work":false,"homelab":true,"chezmoi":{"os":"darwin"}}'
       ;;
     personal-work)
-      flags='"personal":true,"work":true'; expected='["base","personal","work"]'
+      flags='"personal":true,"work":true,"headless":false'; expected='["base","personal","work"]'
       data='{"personal":true,"work":true,"homelab":false,"chezmoi":{"os":"darwin"}}'
       ;;
   esac
 
   fixture="{$flags,\"brews\":{\"base\":[\"base\"],\"personal\":[\"personal\",\"base\"],\"work\":[\"work\",\"base\"]}}"
-  merged=$(chezmoi execute-template --source "$repo_root" --override-data "$fixture" \
+  merged=$(render_template --override-data "$fixture" \
     '{{ includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .brews .) }}')
   [[ "$merged" == "$expected" ]]
 
   for template in "$source_root"/.chezmoiscripts/darwin/*install-packages-*.tmpl; do
-    chezmoi execute-template --source "$repo_root" --override-data "$data" \
+    render_template --override-data "$data" \
       <"$template" >/dev/null
   done
   # shellcheck disable=SC2016 # These variables belong to the Go template.
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  render_template --override-data "$data" \
     '{{ $t := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .taps .)) }}{{ $b := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .brews .)) }}{{ $c := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .casks .)) | default (list) }}{{ dict "taps" $t "packages" (concat $b $c) | toJson }}' >"$tmpdir/packages.json"
-  chezmoi execute-template --source "$repo_root" --override-data "$data" \
+  render_template --override-data "$data" \
     --file "$source_root/.chezmoiscripts/darwin/run_onchange_before_install-packages-0-taps.sh.tmpl" >"$tmpdir/taps.sh"
   : >"$tmpdir/brew.log"
   # Repeated invocations approve only the declared taps, before loading each tap.
@@ -74,7 +78,7 @@ actual = [json.loads(line) for line in (root / 'brew.log').read_text().splitline
 assert actual == expected * 2, actual
 PY
   # A fixture keeps failure coverage even if a role declares no real taps.
-  chezmoi execute-template --source "$repo_root" \
+  render_template \
     --override-data "{$flags,\"taps\":{\"base\":[\"fixture/tap\"],\"personal\":[],\"work\":[]}}" \
     --file "$source_root/.chezmoiscripts/darwin/run_onchange_before_install-packages-0-taps.sh.tmpl" >"$tmpdir/taps.sh"
   : >"$tmpdir/brew.log"
@@ -91,8 +95,8 @@ PY
       scoops) installer=scoop ;;
       wingets) installer=winget ;;
     esac
-    fixture="{$flags,\"chezmoi\":{\"os\":\"windows\"},\"$kind\":{\"base\":[\"base\"],\"personal\":[\"personal\",\"base\"],\"work\":[\"work\",\"base\"]}}"
-    chezmoi execute-template --source "$repo_root" --override-data "$fixture" \
+    fixture="{$flags,\"chezmoi\":{\"os\":\"windows\"},\"$kind\":{\"base\":[\"base\"],\"personal\":[\"personal\",\"base\"],\"work\":[\"work\",\"base\"]},\"desktopWingets\":{\"base\":[],\"personal\":[],\"work\":[]}}"
+    render_template --override-data "$fixture" \
       --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-$installer.ps1.tmpl" >"$tmpdir/$kind.ps1"
     python3 - "$tmpdir/$kind.ps1" "$kind" "$expected" <<'PY'
 import json
@@ -111,8 +115,8 @@ else:
               for package in packages]
 assert commands == wanted, (commands, wanted)
 PY
-    empty="{$flags,\"$kind\":{\"base\":[],\"personal\":[],\"work\":[]}}"
-    chezmoi execute-template --source "$repo_root" --override-data "$empty" \
+    empty="{$flags,\"$kind\":{\"base\":[],\"personal\":[],\"work\":[]},\"desktopWingets\":{\"base\":[],\"personal\":[],\"work\":[]}}"
+    render_template --override-data "$empty" \
       --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-$installer.ps1.tmpl" >"$tmpdir/empty.ps1"
     if grep -Eq '^(scoop|winget) ' "$tmpdir/empty.ps1"; then
       echo 'empty package lists must not invoke an installer' >&2
@@ -121,4 +125,19 @@ PY
   done
 done
 
-echo 'Darwin tap approval and Windows package role routing, deduplication and empty lists ok'
+# Headless Windows keeps CLI packages but must not install desktop-only apps.
+for headless in true false; do
+  fixture="{\"personal\":true,\"work\":false,\"headless\":$headless,\"chezmoi\":{\"os\":\"windows\"},\"wingets\":{\"base\":[\"fixture-cli\"],\"personal\":[],\"work\":[]},\"desktopWingets\":{\"base\":[],\"personal\":[\"fixture-gui\"],\"work\":[]}}"
+  render_template --override-data "$fixture" \
+    --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-winget.ps1.tmpl" \
+    >"$tmpdir/desktop-wingets.ps1"
+  python3 - "$tmpdir/desktop-wingets.ps1" "$headless" <<'PY'
+import sys
+from pathlib import Path
+commands = [line for line in Path(sys.argv[1]).read_text().splitlines() if line.startswith('winget ')]
+expected = ['fixture-cli'] + ([] if sys.argv[2] == 'true' else ['fixture-gui'])
+assert [line.rsplit(' ', 1)[1] for line in commands] == expected, commands
+PY
+done
+
+echo 'Darwin tap approval and Windows package role/headless routing, deduplication and empty lists ok'

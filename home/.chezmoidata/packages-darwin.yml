@@ -129,7 +129,6 @@ casks:
     - home-assistant
     - karabiner-elements
     - ledger-live
-    - openlogi
     - micro-snitch
     - mullvad-vpn
     - tailscale

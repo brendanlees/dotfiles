@@ -120,8 +120,12 @@ AppData
 .local/bin/cz-private-agent-skills
 {{- end }}
 
+{{- if or (ne .chezmoi.os "windows") .headless }}
+AppData/Roaming/alacritty
+.config/openlogi
+{{- end }}
+
 {{- if eq .chezmoi.os "windows" }}
-.config/alacritty
 # POSIX-only scripts are not executable on Windows.
 .chezmoiscripts/01-refresh-ssh-keys.sh
 .chezmoiscripts/run_after_01-refresh-ssh-keys.sh.tmpl

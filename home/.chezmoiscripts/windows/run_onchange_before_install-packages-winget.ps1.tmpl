@@ -1,5 +1,9 @@
 # managed by chezmoi - re-runs when packages-windows.yml changes
 {{- $apps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .wingets .)) }}
+{{- if not .headless }}
+{{- $desktopApps := fromJson (includeTemplate ".chezmoitemplates/merge-by-role.tmpl" (list .desktopWingets .)) }}
+{{- $apps = concat $apps $desktopApps | uniq }}
+{{- end }}
 {{- range $apps }}
 winget install --exact --silent --accept-source-agreements --accept-package-agreements --id {{ . }}
 {{- end }}

@@ -1,4 +1,10 @@
 # files removed from source — chezmoi will delete these from the target machine
+# Alacritty uses only its native Windows path. Preserve unrelated app data.
+.config/alacritty/alacritty.toml
+{{ if or (ne .chezmoi.os "windows") .headless }}
+AppData/Roaming/alacritty/alacritty.toml
+.config/openlogi/config.toml
+{{ end }}
 # Retired Deja config/history, Mise artifacts and Zinit plugin.
 .local/share/deja
 .local/share/mise/installs/github-giammarco-ferranti-deja
