@@ -1,0 +1,47 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+set -euo pipefail
+
+# Account state must be reconciled on apply, not inferred from shell dotfiles.
+if ! zsh_path=$(command -v zsh); then
+  echo "Zsh is not installed; install it and re-run chezmoi apply." >&2
+  exit 1
+fi
+
+uid=$(id -u)
+if command -v getent >/dev/null 2>&1; then
+  if ! account=$(getent passwd "$uid"); then
+    echo "Cannot read the login account for UID $uid; no shell change attempted." >&2
+    exit 1
+  fi
+else
+  account=$(awk -F: -v uid="$uid" '$3 == uid { print; exit }' /etc/passwd)
+fi
+IFS=: read -r account_user _ _ _ _ _ login_shell <<<"$account"
+if [[ -z "$account_user" || -z "$login_shell" ]]; then
+  echo "Cannot determine the account's login shell; no shell change attempted." >&2
+  exit 1
+fi
+
+# /bin/zsh and /usr/bin/zsh can name the same installed shell.
+if [[ "$login_shell" == "$zsh_path" || "$login_shell" -ef "$zsh_path" ]]; then
+  echo "Zsh is already the login shell for $account_user."
+  exit 0
+fi
+
+if ! grep -Fxq -- "$zsh_path" /etc/shells; then
+  echo "Zsh at $zsh_path is not registered in /etc/shells; have an administrator register it, then re-run chezmoi apply." >&2
+  exit 1
+fi
+if ! command -v chsh >/dev/null 2>&1; then
+  echo "chsh is not installed; configure the account's login shell through the host's account manager." >&2
+  exit 1
+fi
+
+# Never escalate or replace the running shell while other apply hooks may run.
+if ! chsh -s "$zsh_path" "$account_user"; then
+  echo "Could not change the login shell for $account_user. Resolve the chsh error and re-run chezmoi apply." >&2
+  exit 1
+fi
+echo "Zsh is now the login shell for $account_user. Disconnect and reconnect to start it."
+{{- end -}}
