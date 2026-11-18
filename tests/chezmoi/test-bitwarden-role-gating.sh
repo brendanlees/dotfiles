@@ -23,7 +23,7 @@ case "$item_id" in
     field_value="personal-value"
     ;;
   d256649b-8944-43a3-a016-abc1018ad825)
-    field_name="read_only_token"
+    field_name="${GITHUB_FIELD_NAME:-read_only_token}"
     field_value="github-token"
     ;;
   7acadcd9-f0cf-4fa5-bed2-b46a00743ba5)
@@ -177,6 +177,15 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
   "0b9286df-9ffc-4ab8-996e-b42d014e44d4" \
   "ce6cc659-50b0-43c1-a15c-b4f20011264f"
+
+# A missing vault download field must retain an existing dedicated cache.
+GITHUB_FIELD_NAME=unrelated_field render_role personal
+python3 - "$tmpdir/config-personal.toml" <<'PY'
+import sys
+import tomllib
+from pathlib import Path
+assert tomllib.loads(Path(sys.argv[1]).read_text())['data']['github_token'] == 'fixture-old-download-token'
+PY
 
 # A missing optional field must not break init or populate an unusable URL.
 VICINAE_FIELD_NAME=unrelated_field render_role personal

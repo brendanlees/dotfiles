@@ -13,6 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # CI init configs are temporary; authenticate downloads with the job token.
+  GITHUB_DOWNLOAD_TOKEN: ${{ github.token }}
   ACTIONLINT_VERSION: 1.7.12
   CHEZMOI_VERSION: 2.74.0
   SHELLCHECK_VERSION: 0.11.0

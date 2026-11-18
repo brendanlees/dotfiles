@@ -8,7 +8,11 @@ Keep dependency downloads separate from repository work. A low-privilege downloa
 
 Use a low-privilege GitHub token for public release downloads. A fine-grained token with no repository permissions is sufficient to raise the API rate limit.
 
-Provide it **before the first init** through the dedicated input:
+Interactive non-minimal initialization prompts for a token with hidden input if none is supplied by the environment, Bitwarden or the existing cache. The response is saved in the private chezmoi config for subsequent installs. A blank response or a missing token in non-interactive initialization stops init before apply starts. The token is not checked against GitHub during init; it must be valid and unexpired.
+
+The `minimal` role skips this prompt and requirement because it does not install mise tools.
+
+For automation, provide it **before the first init** through the dedicated input:
 
 ```sh
 GITHUB_DOWNLOAD_TOKEN=your-download-token chezmoi init --apply brendanlees
@@ -23,7 +27,7 @@ chezmoi init --apply brendanlees
 
 Init uses `GITHUB_DOWNLOAD_TOKEN`, then Bitwarden's `read_only_token` when available, then the existing private `github_token` cache. It never takes a download credential from `GH_TOKEN`, `GITHUB_TOKEN`, or `GITHUB_PERSONAL_ACCESS_TOKEN`. Existing caches remain compatible; if one previously captured a repository token, explicitly replace it through the dedicated input or Bitwarden.
 
-Installing Bitwarden in an apply hook is too late for that init's secret lookup. Without a supplied or cached token, authenticated downloads cannot be guaranteed. Ansible-managed hosts must inject their vault-encrypted download token as `GITHUB_DOWNLOAD_TOKEN` during init/update. Never commit the generated chezmoi config or paste its contents into logs.
+Installing Bitwarden in an apply hook is too late for that init's secret lookup. Ansible-managed non-minimal hosts must inject their vault-encrypted download token as `GITHUB_DOWNLOAD_TOKEN` during initialization, with `no_log: true` on the credential-bearing task. Ordinary apply uses the cached token. Never commit the generated chezmoi config or paste its contents into logs.
 
 ### First apply and subsequent downloads
 
