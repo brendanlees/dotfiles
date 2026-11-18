@@ -29,6 +29,8 @@ variants = {
     "work-mac": dict(base, personal=False, work=True),
     "headless-mac": dict(base, headless=True),
     "personal-linux": dict(base, chezmoi={"os": "linux", "username": "test"}),
+    "work-headless-linux": dict(base, personal=False, work=True, headless=True,
+                                chezmoi={"os": "linux", "username": "test"}),
     "personal-windows": dict(base, chezmoi={"os": "windows", "username": "test"}),
 }
 rendered = {}
