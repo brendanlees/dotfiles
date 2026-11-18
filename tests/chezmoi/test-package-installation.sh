@@ -91,7 +91,7 @@ PY
       scoops) installer=scoop ;;
       wingets) installer=winget ;;
     esac
-    fixture="{$flags,\"chezmoi\":{\"os\":\"windows\"},\"$kind\":{\"base\":[\"base\"],\"personal\":[\"personal\",\"base\"],\"work\":[\"work\",\"base\"]}}"
+    fixture="{$flags,\"chezmoi\":{\"os\":\"windows\"},\"$kind\":{\"base\":[\"base\"],\"personal\":[\"personal\",\"base\"],\"work\":[\"work\",\"base\"]},\"desktopWingets\":{\"base\":[],\"personal\":[],\"work\":[]}}"
     chezmoi execute-template --source "$repo_root" --override-data "$fixture" \
       --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-$installer.ps1.tmpl" >"$tmpdir/$kind.ps1"
     python3 - "$tmpdir/$kind.ps1" "$kind" "$expected" <<'PY'
@@ -111,7 +111,7 @@ else:
               for package in packages]
 assert commands == wanted, (commands, wanted)
 PY
-    empty="{$flags,\"$kind\":{\"base\":[],\"personal\":[],\"work\":[]}}"
+    empty="{$flags,\"$kind\":{\"base\":[],\"personal\":[],\"work\":[]},\"desktopWingets\":{\"base\":[],\"personal\":[],\"work\":[]}}"
     chezmoi execute-template --source "$repo_root" --override-data "$empty" \
       --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-$installer.ps1.tmpl" >"$tmpdir/empty.ps1"
     if grep -Eq '^(scoop|winget) ' "$tmpdir/empty.ps1"; then
@@ -121,4 +121,19 @@ PY
   done
 done
 
-echo 'Darwin tap approval and Windows package role routing, deduplication and empty lists ok'
+# Headless Windows keeps CLI packages but must not install desktop-only apps.
+for headless in true false; do
+  fixture="{\"personal\":true,\"work\":false,\"headless\":$headless,\"chezmoi\":{\"os\":\"windows\"},\"wingets\":{\"base\":[\"fixture-cli\"],\"personal\":[],\"work\":[]},\"desktopWingets\":{\"base\":[],\"personal\":[\"fixture-gui\"],\"work\":[]}}"
+  chezmoi execute-template --source "$repo_root" --override-data "$fixture" \
+    --file "$source_root/.chezmoiscripts/windows/run_onchange_before_install-packages-winget.ps1.tmpl" \
+    >"$tmpdir/desktop-wingets.ps1"
+  python3 - "$tmpdir/desktop-wingets.ps1" "$headless" <<'PY'
+import sys
+from pathlib import Path
+commands = [line for line in Path(sys.argv[1]).read_text().splitlines() if line.startswith('winget ')]
+expected = ['fixture-cli'] + ([] if sys.argv[2] == 'true' else ['fixture-gui'])
+assert [line.rsplit(' ', 1)[1] for line in commands] == expected, commands
+PY
+done
+
+echo 'Darwin tap approval and Windows package role/headless routing, deduplication and empty lists ok'

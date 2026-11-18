@@ -185,4 +185,59 @@ assert_file_has "$tmpdir/server.zshrc" 'export NVIM_APPNAME=nvim-minimal'
 assert_file_has "$tmpdir/server.zshrc" 'mise activate'
 assert_file_lacks "$tmpdir/desktop.zshrc" 'export NVIM_APPNAME=nvim-minimal'
 
-echo 'role routing matrix and private ownership boundary ok'
+# Desktop-only Windows configs must be removed when leaving scope, without
+# removing sibling files owned by the user or the applications.
+apps_source="$tmpdir/desktop-app-source"
+mkdir -p "$apps_source"
+cp "$source_root/.chezmoiignore" "$source_root/.chezmoiremove.tmpl" "$apps_source/"
+for mapping in \
+  'dot_config/alacritty/alacritty.toml.tmpl:dot_config/alacritty/alacritty.toml' \
+  'AppData/Roaming/alacritty/alacritty.toml.tmpl:AppData/Roaming/alacritty/alacritty.toml' \
+  'dot_config/openlogi/private_config.toml:dot_config/openlogi/private_config.toml'; do
+  source_path=${mapping%%:*}
+  fixture_path=${mapping#*:}
+  if [[ -f "$source_root/$source_path" ]]; then
+    mkdir -p "$apps_source/$(dirname "$fixture_path")"
+    printf 'fixture managed config\n' >"$apps_source/$fixture_path"
+  fi
+done
+
+for scope in windows-desktop windows-headless mac-desktop linux-server; do
+  os=linux headless=true personal=true work=false
+  case "$scope" in
+    windows-desktop) os=windows headless=false ;;
+    windows-headless) os=windows ;;
+    mac-desktop) os=darwin headless=false ;;
+    linux-server) personal=false work=true ;;
+  esac
+  apps_home="$tmpdir/$scope"
+  for directory in .config/alacritty AppData/Roaming/alacritty .config/openlogi; do
+    mkdir -p "$apps_home/$directory"
+    printf 'keep sibling data\n' >"$apps_home/$directory/keep"
+  done
+  printf 'legacy managed config\n' >"$apps_home/.config/alacritty/alacritty.toml"
+  printf 'legacy managed config\n' >"$apps_home/AppData/Roaming/alacritty/alacritty.toml"
+  printf 'legacy managed config\n' >"$apps_home/.config/openlogi/config.toml"
+  printf '[data]\npersonal=%s\nwork=%s\nhomelab=false\nephemeral=false\nheadless=%s\n' \
+    "$personal" "$work" "$headless" >"$tmpdir/$scope.toml"
+  HOME="$apps_home" chezmoi apply --source "$apps_source" --destination "$apps_home" \
+    --config "$tmpdir/$scope.toml" --persistent-state "$tmpdir/$scope.boltdb" \
+    --override-data "{\"chezmoi\":{\"os\":\"$os\"}}" --no-tty --force
+  if [[ -e "$apps_home/.config/alacritty/alacritty.toml" ]]; then
+    echo "legacy POSIX Alacritty config survived on $scope" >&2
+    exit 1
+  fi
+  for file in AppData/Roaming/alacritty/alacritty.toml .config/openlogi/config.toml; do
+    if [[ $scope == windows-desktop ]]; then
+      grep -Fxq 'fixture managed config' "$apps_home/$file"
+    elif [[ -e "$apps_home/$file" ]]; then
+      echo "out-of-scope desktop config survived on $scope: $file" >&2
+      exit 1
+    fi
+  done
+  for directory in .config/alacritty AppData/Roaming/alacritty .config/openlogi; do
+    grep -Fxq 'keep sibling data' "$apps_home/$directory/keep"
+  done
+done
+
+echo 'role routing matrix, desktop config cleanup and private ownership boundary ok'
