@@ -13,6 +13,8 @@ export GITHUB_API_TOKEN="${GITHUB_API_TOKEN:-$GITHUB_TOKEN}"
 # Keep direct GitHub metadata separate from previously cached hosted responses.
 export MISE_USE_VERSIONS_HOST=0
 export MISE_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/mise-direct"
+# Build native npm modules for the current Node, not from aube's cache.
+export AUBE_SIDE_EFFECTS_CACHE=false
 
 MISE="$HOME/.local/bin/mise"
 if [[ ! -x "$MISE" ]]; then

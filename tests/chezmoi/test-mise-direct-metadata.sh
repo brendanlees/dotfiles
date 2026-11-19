@@ -21,6 +21,7 @@ set -euo pipefail
 case "$*" in
   '--cd '*"$HOME"' install')
     [[ $MISE_USE_VERSIONS_HOST == 0 && $MISE_CACHE_DIR == "$HOME/.cache/mise-direct" ]] || exit 92
+    [[ $AUBE_SIDE_EFFECTS_CACHE == false ]] || exit 94
     [[ $GITHUB_TOKEN == "$EXPECTED_TOKEN" && $GITHUB_API_TOKEN == "$EXPECTED_TOKEN" ]] || exit 93
     printf 'install\n' >>"$INSTALL_LOG"
     exit "${INSTALL_STATUS:-0}"
