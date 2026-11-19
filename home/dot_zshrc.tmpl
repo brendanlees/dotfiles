@@ -125,6 +125,9 @@ setopt hist_find_no_dups
 
 export PATH=$HOME/.local/bin:$PATH
 _cached_eval mise mise mise activate zsh
+# Aube's build cache ignores the Node version, so reinstalls could reuse native
+# modules built for an older Node. Mise's [env] does not reach its embedded aube.
+export AUBE_SIDE_EFFECTS_CACHE=false
 
 # FTL must run after Mise exposes the real Starship binary, but before the
 # remaining startup work. Keep the experiment on personal, non-headless Macs.

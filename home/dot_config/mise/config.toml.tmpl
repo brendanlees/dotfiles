@@ -82,6 +82,9 @@ python = "latest"
 {{ end -}}
 {{ if .personal -}}
 {{ if eq .chezmoi.os "darwin" -}}
+# The headless Sync client's better-sqlite3 build matches one Node ABI. When the
+# Node LTS major changes, run `mise install -f npm:obsidian-headless` and restart
+# the service.
 "npm:obsidian-headless" = { version = "0.0.14", allow_builds = ["better-sqlite3"] }
 # Excalidraw canvas CLI for the private excalidraw agent skill. Its Mermaid
 # dependencies pin two releases published without provenance, each reviewed
