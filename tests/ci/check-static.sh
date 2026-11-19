@@ -18,7 +18,7 @@ done
 SHELLCHECK_OPTS=${SHELLCHECK_OPTS:--e SC1091,SC2001} actionlint
 
 # Generic repository policy owns managed dotfiles, CI, the installer, and
-# tests. Skill content is validated at its distribution boundary by SkillSpector.
+# tests. Skill content is reviewed on demand with the skillspector-review skill.
 shellcheck_filespecs=(
   '.github/**/*.sh'
   '.github/**/*.zsh'
