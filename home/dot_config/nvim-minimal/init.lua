@@ -37,10 +37,31 @@ o.completeopt = "menuone,noselect,popup"
 -- clipboard
 -- ------------------------------------------
 
--- No display server over SSH. Force OSC 52 because tmux can hide the
--- terminal's support from auto-detection. Copy with <Leader>y; paste from the
--- terminal instead of "+p, which some terminals block.
-vim.g.clipboard = "osc52"
+-- As in the full config, yanks and deletes go to the system clipboard. There is
+-- no display server over SSH, and tmux can hide the terminal's OSC 52 support
+-- from detection, so copy with OSC 52 explicitly.
+-- Reads are never sent to the terminal: Herdr doesn't answer them, so every
+-- put would stall for up to 10 seconds, and tmux answers only from its own
+-- buffers. Puts reuse Neovim's last copy; paste text copied elsewhere with the
+-- terminal's paste key.
+o.clipboard = "unnamedplus"
+local osc52 = require "vim.ui.clipboard.osc52"
+local copied = {}
+local function copy(reg)
+  local send = osc52.copy(reg)
+  return function(lines, regtype)
+    copied[reg] = { lines, regtype }
+    send(lines)
+  end
+end
+local function paste(reg)
+  return function() return copied[reg] or { {}, "v" } end
+end
+vim.g.clipboard = {
+  name = "OSC 52",
+  copy = { ["+"] = copy "+", ["*"] = copy "*" },
+  paste = { ["+"] = paste "+", ["*"] = paste "*" },
+}
 
 -- ------------------------------------------
 -- treesitter
@@ -347,7 +368,6 @@ map("n", "]b", "<Cmd>bnext<CR>", { desc = "Next buffer" })
 map("n", "[b", "<Cmd>bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<Leader>/", "gcc", { remap = true, desc = "Toggle comment" })
 map("x", "<Leader>/", "gc", { remap = true, desc = "Toggle comment" })
-map({ "n", "x" }, "<Leader>y", '"+y', { desc = "Copy to system clipboard" })
 
 -- Built-in LSP keys also work: K hover, grn rename, gra code action, grr references.
 map("n", "<Leader>ld", vim.diagnostic.open_float, { desc = "Line diagnostics" })
