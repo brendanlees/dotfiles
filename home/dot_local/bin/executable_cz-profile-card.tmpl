@@ -1,0 +1,141 @@
+{{- if .personal -}}
+#!/usr/bin/env python3
+"""Render the GitHub profile card (whoami.svg) from the active chezmoi theme.
+
+usage: cz-profile-card [OUTPUT]
+
+OUTPUT defaults to the local profile checkout. Its directory must already
+exist. The script only writes the file; review, commit and push it yourself.
+"""
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from xml.sax.saxutils import escape
+
+# Rendered by chezmoi, so `theme <name>` refreshes this command too.
+THEME = {{ .theme | quote }}
+PALETTE = json.loads({{ (index .themes .theme).palette | toJson | quote }})
+DEFAULT_OUTPUT = Path({{ joinPath .chezmoi.homeDir .code_dir "brendanlees" "whoami.svg" | quote }})
+
+# Card content. Edit here, then rerun and commit the result in the profile repo.
+TAGLINE = "web developer & homelab tinkerer"
+LOCATION = "brisbane, au"
+ROWS = [
+    ("work", ["steady digital", "web", "automation", "ai"]),
+    ("stack", ["astro", "typescript", "php", "wordpress"]),
+    ("homelab", ["proxmox", "komodo", "traefik", "forgejo"]),
+    ("ops", ["ansible", "docker", "bash", "cloud"]),
+    ("ai", ["omlx", "pi-durable", "n8n", "hermes"]),
+    ("desk", ["ghostty", "neovim", "pi", "herdr", "rex"]),
+]
+UPGRADE_CMD = "brendan --upgrade devops"
+UPGRADE_PROGRESS = 0.6
+LEARNING = ["kubernetes", "terraform", "aws", "go"]
+SITE = "steadydigital.co"
+WINDOW_TITLE = "brendan@github: ~"
+
+CHAR_WIDTH = 9.3  # approximate advance of a 15.5px monospace glyph
+VALUE_X = 150
+LINE = 26
+
+
+def render(theme, p):
+    c = dict(bg=p["bg"], surf=p["surface"], line=p["surface_alt"], fg=p["fg"], muted=p["muted"],
+             comment=p["comment"], accent=p["accent"], primary=p["primary"], secondary=p["secondary"],
+             success=p["success"], warn=p["warn"], error=p["error"], orange=p["orange"])
+
+    def text(x, y, parts):
+        spans = []
+        for s, colour, bold in parts:
+            weight = ' font-weight="700"' if bold else ""
+            spans.append(f'<tspan fill="{colour}"{weight}>{escape(s)}</tspan>')
+        return f'<text x="{x}" y="{y}" xml:space="preserve">{"".join(spans)}</text>'
+
+    def items(values):
+        parts = []
+        for i, s in enumerate(values):
+            if i:
+                parts.append((" · ", c["comment"], False))
+            parts.append((s, c["fg"], False))
+        return parts
+
+    def prompt(y, cmd, colour=None):
+        return text(28, y, [("❯ ", c["accent"], False), (cmd, colour or c["fg"], False)])
+
+    out, y = [], 84
+    out.append(prompt(y, "whoami --verbose"))
+    y += round(LINE * 1.6)
+    out.append(text(28, y, [("brendan", c["primary"], True), ("  ·  ", c["comment"], False),
+                            (TAGLINE, c["fg"], False), ("  ·  ", c["comment"], False),
+                            (LOCATION, c["warn"], False)]))
+    y += round(LINE * 1.5)
+    for key, values in ROWS:
+        out.append(text(28, y, [(key, c["secondary"], False)]) + text(VALUE_X, y, items(values)))
+        y += LINE
+    out.append(text(28, y, [("theme", c["secondary"], False)]) + text(VALUE_X, y, [(theme, c["fg"], False)]))
+    sx = VALUE_X + len(theme) * CHAR_WIDTH + 16
+    swatches = [c["error"], c["orange"], c["warn"], c["success"], c["accent"], c["primary"], c["secondary"], c["muted"]]
+    out += [f'<rect x="{sx + i * 22:.0f}" y="{y - 13}" width="16" height="16" rx="3" fill="{colour}"/>'
+            for i, colour in enumerate(swatches)]
+    y += LINE
+
+    y += round(LINE * 0.6)
+    out.append(prompt(y, UPGRADE_CMD))
+    y += LINE + 2
+    full = round(88 * UPGRADE_PROGRESS)
+    out.append(f'<rect x="50" y="{y - 12}" width="88" height="12" rx="2" fill="{c["line"]}"/>'
+               f'<rect x="50" y="{y - 12}" width="{full}" height="12" rx="2" fill="{c["accent"]}">'
+               f'<animate attributeName="width" from="0" to="{full}" dur="1.6s" begin="0.4s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1" keyTimes="0;1"/></rect>')
+    out.append(text(VALUE_X, y, items(LEARNING)))
+    y += LINE
+
+    y += round(LINE * 0.6)
+    out.append(prompt(y, SITE, c["muted"]))
+    cursor_x = 28 + (2 + len(SITE)) * CHAR_WIDTH + 18
+    out.append(f'<rect x="{cursor_x:.0f}" y="{y - 15}" width="9" height="19" fill="{c["fg"]}">'
+               '<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.5;1" dur="1.1s" repeatCount="indefinite"/></rect>')
+
+    rows = "; ".join(f"{k}: {', '.join(v)}" for k, v in ROWS)
+    title = escape(f"brendan, {TAGLINE} in Brisbane. {rows}. Currently learning: {', '.join(LEARNING)}. {SITE}")
+    height = y + 30
+    body = "\n    ".join(out)
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="820" height="{height}" viewBox="0 0 820 {height}" role="img" aria-labelledby="t" font-family="'JetBrainsMono Nerd Font', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+  <title id="t">{title}</title>
+  <rect x="0.5" y="0.5" width="819" height="{height - 1}" rx="10" fill="{c["bg"]}" stroke="{c["line"]}"/>
+  <path d="M10.5 0.5h799a10 10 0 0 1 10 10V38H0.5V10.5a10 10 0 0 1 10-10z" fill="{c["surf"]}"/>
+  <line x1="0.5" y1="38" x2="819.5" y2="38" stroke="{c["line"]}"/>
+  <circle cx="22" cy="19" r="6" fill="{c["error"]}"/><circle cx="42" cy="19" r="6" fill="{c["warn"]}"/><circle cx="62" cy="19" r="6" fill="{c["success"]}"/>
+  <text x="410" y="24" text-anchor="middle" fill="{c["muted"]}" font-size="13">{escape(WINDOW_TITLE)}</text>
+  <g font-size="15.5">
+    {body}
+  </g>
+</svg>
+'''
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Render the GitHub profile card from the active chezmoi theme.")
+    parser.add_argument("output", nargs="?", type=Path, default=DEFAULT_OUTPUT,
+                        help=f"SVG path to write (default: {DEFAULT_OUTPUT})")
+    target = parser.parse_args().output.expanduser()
+
+    # Never create directories: a missing checkout means the path is wrong.
+    if not target.parent.is_dir():
+        sys.exit(f"error: {target.parent} does not exist; clone the profile repo or pass OUTPUT")
+
+    svg = render(THEME, PALETTE)
+    if target.is_file() and target.read_text() == svg:
+        print(f"{target} already matches theme {THEME}")
+        return
+    temporary = target.with_name(f".{target.name}.tmp")
+    temporary.write_text(svg)
+    os.replace(temporary, target)
+    print(f"rendered {target} with theme {THEME}; review the diff, then commit and push")
+
+
+if __name__ == "__main__":
+    main()
+{{- end -}}

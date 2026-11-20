@@ -60,6 +60,17 @@ Enable `chezmoi-theme` manually once in Obsidian and keep `[me] my-custom-css` a
 
 Do not use an in-vault symlink ([Obsidian symlink limitations](https://help.obsidian.md/symlinks)). A synced vault should have one deliberate writer for this generated file; separate device themes otherwise create last-writer-wins conflicts. On another device, install a private adapter only if that device is intended to regenerate the shared snippet. Rendering tests validate dynamic palette and derived HSL output plus routing, but not Obsidian's live reload or visual cascade.
 
+## github profile card
+
+On personal machines, `cz-profile-card` renders `whoami.svg` for the GitHub profile repo from the active palette, so the published card can match the current theme. The palette is baked in when chezmoi renders the command, so run it after `theme <name>`. The card's text lives at the top of `home/dot_local/bin/executable_cz-profile-card.tmpl`.
+
+```sh
+cz-profile-card                  # writes ~/code/brendanlees/whoami.svg
+cz-profile-card /tmp/whoami.svg  # writes anywhere else, e.g. to preview
+```
+
+It only writes the file. It refuses a missing directory, and `theme` never runs it, so switching themes never publishes anything. Review the diff, then commit and push in the profile repo yourself.
+
 ## file overview
 
 | file                                                                          | role                                                                                    |

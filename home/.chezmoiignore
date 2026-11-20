@@ -96,6 +96,7 @@ Library/Logs/Syncthing
 !.local/bin/cz-ssh-ready
 {{- if eq .chezmoi.os "darwin" }}
 !.local/bin/cz-private-agent-skills
+!.local/bin/cz-profile-card
 !.local/bin/obsidian
 !.local/bin/pi-hindsight
 {{- end }}
