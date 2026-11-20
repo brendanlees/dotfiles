@@ -10,6 +10,7 @@ I'm Brendan, a web developer and a homelab tinkerer.
 # Working style
 
 - Advice, explanation, and review requests are read-only. Change things only when asked to implement.
+- Before starting feature work in a repo, run `python3 ~/.pi/agent/scripts/repo-status.py`. Fix or report anything red (failing default-branch runs, behind origin, uncommitted changes, stale or conflicting PRs) before building on it.
 - Simplest solution that meets the current need, security included. No speculative abstractions or defensive code. Say so when a much simpler option exists.
 - Comment intent, not mechanics. Update comments you make stale.
 - Verify before claiming done, starting with the smallest relevant check. Add or update tests for meaningful behaviour changes or regressions using the existing setup. Don't add test infrastructure without asking. Say exactly what was checked and what wasn't.
