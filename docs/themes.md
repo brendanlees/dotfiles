@@ -62,14 +62,33 @@ Do not use an in-vault symlink ([Obsidian symlink limitations](https://help.obsi
 
 ## github profile card
 
-On personal machines, `cz-profile-card` renders `whoami.svg` for the GitHub profile repo from the active palette, so the published card can match the current theme. The palette is baked in when chezmoi renders the command, so run it after `theme <name>`. The card's text lives at the top of `home/dot_local/bin/executable_cz-profile-card.tmpl`.
+On personal machines, `cz-profile-card` renders `whoami.svg` for the GitHub profile repo (`~/code/brendanlees`). The two inputs live apart on purpose:
+
+- colours come from the active chezmoi palette, baked in when chezmoi renders the command
+- text (rows, tagline, learning list, site) comes from `card.json` in the profile repo
+
+Never edit `whoami.svg` or the README alt text by hand; the next render overwrites both. When `README.md` sits next to the output, the command rewrites its `whoami.svg` alt text from the same `card.json`, and fails if that image tag is missing.
 
 ```sh
-cz-profile-card                  # writes ~/code/brendanlees/whoami.svg
-cz-profile-card /tmp/whoami.svg  # writes anywhere else, e.g. to preview
+# change the card's text
+cd ~/code/brendanlees && git switch -c tweak/card
+$EDITOR card.json
+cz-profile-card                  # rewrites whoami.svg and the README alt text
+
+# publish a new theme on the card
+theme <name>
+cz-profile-card
+
+# preview without touching the repo (README is only synced next to the output)
+cz-profile-card /tmp/whoami.svg
+
+# render a theme other than the active one, e.g. to keep the published colours
+chezmoi execute-template --override-data '{"theme":"moonfly"}' \
+  --file ~/.local/share/chezmoi/home/dot_local/bin/executable_cz-profile-card.tmpl \
+  | python3 -
 ```
 
-It only writes the file. It refuses a missing directory, and `theme` never runs it, so switching themes never publishes anything. Review the diff, then commit and push in the profile repo yourself.
+It only writes files. It refuses a missing directory or `card.json`, and `theme` never runs it, so switching themes never publishes anything. Review the diff, then commit and push in the profile repo yourself.
 
 ## file overview
 
