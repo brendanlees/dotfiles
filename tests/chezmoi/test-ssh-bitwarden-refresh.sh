@@ -752,7 +752,7 @@ env -u XDG_STATE_HOME HOME="$render_home" PATH="$fake_bin:$PATH" \
 routing_home=$(new_home github-routing)
 routing_dir="$routing_home/.ssh/config.d"
 mkdir -p "$routing_dir"
-cp "$source_root/private_dot_ssh/config.d/00-github.conf" "$routing_dir/00-github.conf"
+cp "$source_root/private_dot_ssh/private_config.d/00-github.conf" "$routing_dir/00-github.conf"
 cat > "$routing_dir/personal.conf" <<'SSH'
 Host github.com
   HostName github.com
@@ -781,5 +781,22 @@ run_refresh "$routing_home" personal
 ssh -G -F "$routing_home/.ssh/config" git@github.com > "$tmpdir/github-refreshed.conf" 2>/dev/null
 assert_contains "$tmpdir/github-refreshed.conf" 'hostname ssh.github.com'
 assert_contains "$tmpdir/github-refreshed.conf" 'port 443'
+
+# Refresh locks the SSH directories to 700; chezmoi's source attributes must
+# expect the same mode or every apply reports them as changed.
+ssh_source="$tmpdir/ssh-source"
+mkdir -p "$ssh_source"
+cp -R "$source_root/private_dot_ssh" "$ssh_source/"
+: > "$tmpdir/empty-chezmoi.toml"
+mode_status=$(chezmoi status --recursive=false \
+  --config "$tmpdir/empty-chezmoi.toml" \
+  --persistent-state "$tmpdir/chezmoistate.boltdb" \
+  --source "$ssh_source" --destination "$routing_home" \
+  "$routing_home/.ssh/config.d" "$routing_home/.ssh/keys" "$routing_home/.ssh/public-keys")
+if [[ -n "$mode_status" ]]; then
+  echo "expected refreshed SSH directories to match chezmoi target modes:" >&2
+  echo "$mode_status" >&2
+  exit 1
+fi
 
 echo "ssh bitwarden refresh and one-time provisioning ok"
