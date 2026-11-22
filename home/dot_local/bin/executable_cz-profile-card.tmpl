@@ -2,15 +2,19 @@
 #!/usr/bin/env python3
 """Render the GitHub profile card (whoami.svg) from the active chezmoi theme.
 
-usage: cz-profile-card [OUTPUT]
+usage: cz-profile-card [--card CARD] [OUTPUT]
 
-OUTPUT defaults to the local profile checkout. Its directory must already
-exist. The script only writes the file; review, commit and push it yourself.
+Colours come from the active chezmoi theme; the card's text comes from
+card.json in the profile repo. OUTPUT defaults to the local profile checkout
+and its directory must already exist. When a README.md sits next to OUTPUT,
+its whoami.svg alt text is rewritten to match. The script only writes files;
+review, commit and push them yourself.
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -18,31 +22,21 @@ from xml.sax.saxutils import escape
 # Rendered by chezmoi, so `theme <name>` refreshes this command too.
 THEME = {{ .theme | quote }}
 PALETTE = json.loads({{ (index .themes .theme).palette | toJson | quote }})
-DEFAULT_OUTPUT = Path({{ joinPath .chezmoi.homeDir .code_dir "brendanlees" "whoami.svg" | quote }})
-
-# Card content. Edit here, then rerun and commit the result in the profile repo.
-TAGLINE = "web developer & homelab tinkerer"
-LOCATION = "brisbane, au"
-ROWS = [
-    ("work", ["steady digital", "web", "automation", "ai"]),
-    ("stack", ["astro", "typescript", "php", "wordpress"]),
-    ("homelab", ["proxmox", "komodo", "traefik", "forgejo"]),
-    ("ops", ["ansible", "docker", "bash", "cloud"]),
-    ("ai", ["omlx", "pi-durable", "n8n", "hermes"]),
-    ("desk", ["ghostty", "neovim", "pi", "herdr", "rex"]),
-]
-UPGRADE_CMD = "brendan --upgrade devops"
-UPGRADE_PROGRESS = 0.6
-LEARNING = ["kubernetes", "terraform", "aws", "go"]
-SITE = "steadydigital.co"
-WINDOW_TITLE = "brendan@github: ~"
+PROFILE_DIR = Path({{ joinPath .chezmoi.homeDir .code_dir "brendanlees" | quote }})
 
 CHAR_WIDTH = 9.3  # approximate advance of a 15.5px monospace glyph
 VALUE_X = 150
 LINE = 26
 
 
-def render(theme, p):
+def summary(card):
+    """Plain-text description shared by the SVG title and the README alt text."""
+    rows = "; ".join(f"{k}: {', '.join(v)}" for k, v in card["rows"].items())
+    return (f"brendan, {card['tagline']} in Brisbane. {rows}. "
+            f"Currently learning: {', '.join(card['learning'])}. {card['site']}")
+
+
+def render(theme, p, card):
     c = dict(bg=p["bg"], surf=p["surface"], line=p["surface_alt"], fg=p["fg"], muted=p["muted"],
              comment=p["comment"], accent=p["accent"], primary=p["primary"], secondary=p["secondary"],
              success=p["success"], warn=p["warn"], error=p["error"], orange=p["orange"])
@@ -69,10 +63,10 @@ def render(theme, p):
     out.append(prompt(y, "whoami --verbose"))
     y += round(LINE * 1.6)
     out.append(text(28, y, [("brendan", c["primary"], True), ("  ·  ", c["comment"], False),
-                            (TAGLINE, c["fg"], False), ("  ·  ", c["comment"], False),
-                            (LOCATION, c["warn"], False)]))
+                            (card["tagline"], c["fg"], False), ("  ·  ", c["comment"], False),
+                            (card["location"], c["warn"], False)]))
     y += round(LINE * 1.5)
-    for key, values in ROWS:
+    for key, values in card["rows"].items():
         out.append(text(28, y, [(key, c["secondary"], False)]) + text(VALUE_X, y, items(values)))
         y += LINE
     out.append(text(28, y, [("theme", c["secondary"], False)]) + text(VALUE_X, y, [(theme, c["fg"], False)]))
@@ -83,23 +77,22 @@ def render(theme, p):
     y += LINE
 
     y += round(LINE * 0.6)
-    out.append(prompt(y, UPGRADE_CMD))
+    out.append(prompt(y, card["upgrade_command"]))
     y += LINE + 2
-    full = round(88 * UPGRADE_PROGRESS)
+    full = round(88 * card["upgrade_progress"])
     out.append(f'<rect x="50" y="{y - 12}" width="88" height="12" rx="2" fill="{c["line"]}"/>'
                f'<rect x="50" y="{y - 12}" width="{full}" height="12" rx="2" fill="{c["accent"]}">'
                f'<animate attributeName="width" from="0" to="{full}" dur="1.6s" begin="0.4s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1" keyTimes="0;1"/></rect>')
-    out.append(text(VALUE_X, y, items(LEARNING)))
+    out.append(text(VALUE_X, y, items(card["learning"])))
     y += LINE
 
     y += round(LINE * 0.6)
-    out.append(prompt(y, SITE, c["muted"]))
-    cursor_x = 28 + (2 + len(SITE)) * CHAR_WIDTH + 18
+    out.append(prompt(y, card["site"], c["muted"]))
+    cursor_x = 28 + (2 + len(card["site"])) * CHAR_WIDTH + 18
     out.append(f'<rect x="{cursor_x:.0f}" y="{y - 15}" width="9" height="19" fill="{c["fg"]}">'
                '<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.5;1" dur="1.1s" repeatCount="indefinite"/></rect>')
 
-    rows = "; ".join(f"{k}: {', '.join(v)}" for k, v in ROWS)
-    title = escape(f"brendan, {TAGLINE} in Brisbane. {rows}. Currently learning: {', '.join(LEARNING)}. {SITE}")
+    title = escape(summary(card))
     height = y + 30
     body = "\n    ".join(out)
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="820" height="{height}" viewBox="0 0 820 {height}" role="img" aria-labelledby="t" font-family="'JetBrainsMono Nerd Font', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
@@ -108,7 +101,7 @@ def render(theme, p):
   <path d="M10.5 0.5h799a10 10 0 0 1 10 10V38H0.5V10.5a10 10 0 0 1 10-10z" fill="{c["surf"]}"/>
   <line x1="0.5" y1="38" x2="819.5" y2="38" stroke="{c["line"]}"/>
   <circle cx="22" cy="19" r="6" fill="{c["error"]}"/><circle cx="42" cy="19" r="6" fill="{c["warn"]}"/><circle cx="62" cy="19" r="6" fill="{c["success"]}"/>
-  <text x="410" y="24" text-anchor="middle" fill="{c["muted"]}" font-size="13">{escape(WINDOW_TITLE)}</text>
+  <text x="410" y="24" text-anchor="middle" fill="{c["muted"]}" font-size="13">{escape(card["window_title"])}</text>
   <g font-size="15.5">
     {body}
   </g>
@@ -116,24 +109,49 @@ def render(theme, p):
 '''
 
 
+README_ALT = re.compile(r'(<img src="\./whoami\.svg"[^>]*? alt=")[^"]*(")')
+
+
+def write_if_changed(path, content):
+    if path.is_file() and path.read_text() == content:
+        return False
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(content)
+    os.replace(temporary, path)
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description="Render the GitHub profile card from the active chezmoi theme.")
-    parser.add_argument("output", nargs="?", type=Path, default=DEFAULT_OUTPUT,
-                        help=f"SVG path to write (default: {DEFAULT_OUTPUT})")
-    target = parser.parse_args().output.expanduser()
+    parser.add_argument("output", nargs="?", type=Path, default=PROFILE_DIR / "whoami.svg",
+                        help=f"SVG path to write (default: {PROFILE_DIR / 'whoami.svg'})")
+    parser.add_argument("--card", type=Path, default=PROFILE_DIR / "card.json",
+                        help=f"card text to render (default: {PROFILE_DIR / 'card.json'})")
+    args = parser.parse_args()
+    target, card_path = args.output.expanduser(), args.card.expanduser()
 
     # Never create directories: a missing checkout means the path is wrong.
     if not target.parent.is_dir():
         sys.exit(f"error: {target.parent} does not exist; clone the profile repo or pass OUTPUT")
+    if not card_path.is_file():
+        sys.exit(f"error: {card_path} does not exist; clone the profile repo or pass --card")
+    card = json.loads(card_path.read_text())
 
-    svg = render(THEME, PALETTE)
-    if target.is_file() and target.read_text() == svg:
-        print(f"{target} already matches theme {THEME}")
+    # Keep the README alt text in step with the card, and fail loudly if its image tag has drifted.
+    readme = target.parent / "README.md"
+    readme_text = None
+    if readme.is_file():
+        alt = escape(summary(card), {'"': "&quot;"})
+        readme_text, count = README_ALT.subn(lambda m: m[1] + alt + m[2], readme.read_text())
+        if count != 1:
+            sys.exit(f"error: {readme} needs exactly one <img src=\"./whoami.svg\" ... alt=\"...\">")
+
+    changed = [p for p, content in [(target, render(THEME, PALETTE, card)), (readme, readme_text)]
+               if content is not None and write_if_changed(p, content)]
+    if not changed:
+        print(f"{target} already matches theme {THEME} and {card_path}")
         return
-    temporary = target.with_name(f".{target.name}.tmp")
-    temporary.write_text(svg)
-    os.replace(temporary, target)
-    print(f"rendered {target} with theme {THEME}; review the diff, then commit and push")
+    print(f"rendered {', '.join(map(str, changed))} with theme {THEME}; review the diff, then commit and push")
 
 
 if __name__ == "__main__":
