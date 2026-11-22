@@ -41,6 +41,8 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 
 {{- if not .personal }}
 .config/sesh/configs/personal.toml
+.config/zsh/aliases.d/thaw.zsh
+Library/Application Support/Thaw
 Library/Application Support/Syncthing
 Library/LaunchAgents/com.brendan.syncthing-health.plist
 Library/Logs/Syncthing
