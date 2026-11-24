@@ -214,10 +214,10 @@ tell application "System Events" to keystroke "," using {command down, shift dow
 OSA
 fi
 
-# yabai borders — SIGUSR1 reload
+# JankyBorders accepts updated options from a second invocation, not a signal.
 if pgrep -xq borders 2>/dev/null; then
   echo ":: borders reload"
-  pkill -USR1 borders 2>/dev/null || true
+  "$HOME/.config/borders/bordersrc" || echo "warn: borders reload failed" >&2
 fi
 
 # sketchybar — reload config so the rendered colors apply

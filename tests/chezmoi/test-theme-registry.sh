@@ -64,7 +64,16 @@ exec "$REAL_CHEZMOI" --config "$TEST_CONFIG" --destination "$HOME" \
   --persistent-state "$HOME/state.boltdb" --cache "$HOME/cache" \
   --override-data '{"chezmoi":{"os":"darwin"}}' "$@"
 WRAPPER
-printf '#!/bin/sh\nexit 1\n' >"$tmpdir/bin/pgrep"
+cat >"$tmpdir/bin/pgrep" <<'PGREP'
+#!/bin/sh
+[ "$2" = borders ] && [ -f "$HOME/borders-running" ]
+PGREP
+# Never let a regression send a real signal from the fixture.
+cat >"$tmpdir/bin/pkill" <<'PKILL'
+#!/bin/sh
+touch "$HOME/unexpected-signal"
+PKILL
+chmod +x "$tmpdir/bin/pkill"
 cat >"$tmpdir/bin/borders" <<'BORDERS'
 #!/bin/sh
 printf '%s\n' "$@" >"$HOME/borders-args"
@@ -84,6 +93,7 @@ run_theme second >"$tmpdir/switch.log" 2>&1 || {
     exit 1
   }
 
+[[ ! -e "$home/borders-args" ]]
 grep -Fxq second "$home/.config/active-theme"
 grep -Fxq "$home/.config/chezmoi-theme/obsidian.css" "$home/obsidian-sync-args"
 jq -e '.vars.activeTheme == "second"' "$home/.pi/agent/themes/chezmoi.json" >/dev/null
@@ -103,10 +113,12 @@ chmod +x "$tmpdir/bin/fzf"
 printf 'unrelated: preserved\n' >>"$fixture/.chezmoidata/local.yml"
 printf 'first\n' >"$home/picker-choice"
 printf '0\n' >"$home/picker-status"
+touch "$home/borders-running"
 run_theme >"$tmpdir/picker.log" 2>&1 || {
   cat "$tmpdir/picker.log" >&2
   exit 1
 }
+[[ -s "$home/borders-args" && ! -e "$home/unexpected-signal" ]]
 grep -Fxq first "$home/picker-input"
 grep -Fxq second "$home/picker-input"
 grep -Fxq 'Select theme (current: second)' "$home/picker-args"
