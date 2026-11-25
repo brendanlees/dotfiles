@@ -1,6 +1,9 @@
 # Managed by chezmoi.
 # Private host entries are generated locally by cz-ssh-refresh into ~/.ssh/config.d/.
 
+{{ if eq .chezmoi.os "darwin" -}}
+Include ~/.config/colima/ssh_config
+{{ end -}}
 Include ~/.ssh/config.d/*.conf
 
 Host *
