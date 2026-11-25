@@ -129,9 +129,10 @@
 {{- if and (not $github_token) (hasKey . "github_token") -}}
 {{-   $github_token = .github_token -}}
 {{- end -}}
+{{- $vaultAvailable := or (lookPath "rbw") (lookPath "bw") -}}
 {{- $bw_github := dict -}}
-{{- if and $personal (lookPath "bw") -}}
-{{-   $bw_github = bitwardenFields "item" "d256649b-8944-43a3-a016-abc1018ad825" -}}
+{{- if and $personal $vaultAvailable -}}
+{{-   $bw_github = includeTemplate ".chezmoitemplates/vault-fields.tmpl" "d256649b-8944-43a3-a016-abc1018ad825" | fromJson -}}
 {{-   $bw_download_token := dig "read_only_token" "value" "" $bw_github -}}
 {{-   if and (not (env "GITHUB_DOWNLOAD_TOKEN")) $bw_download_token -}}
 {{-     $github_token = $bw_download_token -}}
@@ -175,17 +176,17 @@
 
 # --- secrets (sourced once at init from Bitwarden; cached in ~/.config/chezmoi/chezmoi.toml) ---
 # Every value below is fetched at `chezmoi init` time so subsequent `chezmoi apply`
-# runs never touch bw — that means one master-password prompt per init, zero per apply.
+# runs read these values without contacting either vault client.
 # Re-run `chezmoi init` whenever a referenced Bitwarden field changes. See docs/secrets.md.
 
-{{- if and $personal (lookPath "bw") }}
-{{- $bw_info   := bitwardenFields "item" "acf48b07-70b7-43d0-9b2d-b42d0149b091" }}
-{{- $bw_huggingface  := bitwardenFields "item" "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" }}
+{{- if and $personal $vaultAvailable }}
+{{- $bw_info   := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "acf48b07-70b7-43d0-9b2d-b42d0149b091" | fromJson }}
+{{- $bw_huggingface  := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "7acadcd9-f0cf-4fa5-bed2-b46a00743ba5" | fromJson }}
   hf_token = {{ $bw_huggingface.read_only_token.value | quote }}
-{{- $bw_forgejo  := bitwardenFields "item" "3af598be-5c83-4d5d-997a-b4fd0012b609" }}
-{{- $bw_ha_mcp := bitwardenFields "item" "afa4395b-8044-46b1-86c9-b48d007e82ac" }}
-{{- $bw_executor_work := bitwardenFields "item" "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" }}
-{{- $bw_vicinae := bitwardenFields "item" "ce6cc659-50b0-43c1-a15c-b4f20011264f" }}
+{{- $bw_forgejo  := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "3af598be-5c83-4d5d-997a-b4fd0012b609" | fromJson }}
+{{- $bw_ha_mcp := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "afa4395b-8044-46b1-86c9-b48d007e82ac" | fromJson }}
+{{- $bw_executor_work := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" | fromJson }}
+{{- $bw_vicinae := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "ce6cc659-50b0-43c1-a15c-b4f20011264f" | fromJson }}
 
 [data.bw_info]
 {{- range $k, $v := $bw_info }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
@@ -219,8 +220,8 @@
 {{- end }}
 {{- end }}
 
-{{- if and $personal $work (lookPath "bw") }}
-{{- $bw_work := bitwardenFields "item" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" }}
+{{- if and $personal $work $vaultAvailable }}
+{{- $bw_work := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "0b9286df-9ffc-4ab8-996e-b42d014e44d4" | fromJson }}
 
 [data.bw_work]
 {{- range $k, $v := $bw_work }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}
@@ -228,8 +229,8 @@
 {{- end }}{{ end }}
 {{- end }}
 
-{{- if and $personal (lookPath "bw") }}
-{{- $bw_homelab := bitwardenFields "item" "007b0e02-0af0-41e4-9779-b42d0156e6aa" }}
+{{- if and $personal $vaultAvailable }}
+{{- $bw_homelab := includeTemplate ".chezmoitemplates/vault-fields.tmpl" "007b0e02-0af0-41e4-9779-b42d0156e6aa" | fromJson }}
 
 [data.bw_homelab]
 {{- range $k, $v := $bw_homelab }}{{ $val := index $v "value" }}{{ if and $val (regexMatch "^[A-Za-z_][A-Za-z0-9_]*$" $k) }}

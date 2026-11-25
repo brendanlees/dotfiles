@@ -8,13 +8,21 @@ trap 'rm -rf "$tmpdir"' EXIT
 bw_log="$tmpdir/bw.log"
 fake_bin="$tmpdir/bin"
 mkdir -p "$fake_bin"
+for tool in chezmoi bash cat git hostname scutil; do
+  command -v "$tool" >/dev/null || continue
+  ln -s "$(command -v "$tool")" "$fake_bin/$tool"
+done
 : > "$bw_log"
 
 cat > "$fake_bin/bw" <<'BW'
 #!/usr/bin/env bash
 set -euo pipefail
 
-printf '%s\n' "$*" >> "${BW_LOG:?}"
+case "${0##*/}:$1:$2" in
+  rbw:get:--raw|bw:get:item) ;;
+  *) echo 'unexpected vault command' >&2; exit 64 ;;
+esac
+printf '%s %s\n' "${0##*/}" "$*" >> "${BW_LOG:?}"
 
 item_id="${!#}"
 case "$item_id" in
@@ -94,7 +102,7 @@ TOML
 
   if ! CHEZMOI_ROLE="$role" GITHUB_DOWNLOAD_TOKEN="${INIT_TOKEN:-}" \
     GH_TOKEN=fixture-agent-token GITHUB_TOKEN=fixture-project-token \
-    BW_LOG="$bw_log" PATH="$fake_bin:$PATH" \
+    BW_LOG="$bw_log" PATH="$fake_bin" \
     chezmoi init \
       --source "$repo_root" \
       --config "$config_file" \
@@ -148,11 +156,17 @@ import tomllib
 from pathlib import Path
 data = tomllib.loads(Path(sys.argv[1]).read_text())['data']
 assert data['github_token'] == sys.argv[2]
+assert data['bw_ha_mcp']['secret_path'] == 'ha-mcp-value'
+assert data['bw_executor_work']['bearer_token'] == 'executor-token'
 assert data['bw_forgejo']['forge_token'] == 'fixture-forge-token'
 assert data['bw_vicinae']['weekly_tasks_url'] == 'https://hooks.example.invalid/weekly-tasks?token=fixture'
 PY
 }
 
+# First exercise the official CLI alone, then ensure rbw wins when both exist.
+render_role personal
+grep -q '^bw get item ' "$bw_log"
+ln -s bw "$fake_bin/rbw"
 assert_zero_bw_calls "ephemeral,headless"
 assert_zero_bw_calls "homelab"
 assert_zero_bw_calls "work"
@@ -177,6 +191,11 @@ INIT_TOKEN=fixture-injected-token assert_bw_item_ids "personal,work" \
   "0c4c3b88-6ed3-49a0-9f59-b487007acf3e" \
   "0b9286df-9ffc-4ab8-996e-b42d014e44d4" \
   "ce6cc659-50b0-43c1-a15c-b4f20011264f"
+
+if grep -q '^bw ' "$bw_log"; then
+  echo 'rbw was available but init called bw' >&2
+  exit 1
+fi
 
 # A missing vault download field must retain an existing dedicated cache.
 GITHUB_FIELD_NAME=unrelated_field render_role personal

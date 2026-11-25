@@ -1,0 +1,5 @@
+{{- if lookPath "rbw" -}}
+{{- rbwFields . | toJson -}}
+{{- else -}}
+{{- bitwardenFields "item" . | toJson -}}
+{{- end -}}
