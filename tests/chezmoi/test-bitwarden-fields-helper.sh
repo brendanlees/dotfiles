@@ -30,6 +30,7 @@ JSON
 esac
 BW
 chmod +x "$fake_bin/bw"
+ln -s "/usr/bin/false" "$fake_bin/rbw"
 
 run() {
   PATH="$fake_bin:$PATH" ALIASES_FILE="$aliases_file" \

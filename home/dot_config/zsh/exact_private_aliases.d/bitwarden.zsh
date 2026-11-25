@@ -3,6 +3,11 @@
 # ------------------------------------------
 # Plain .zsh, not .tmpl: the output contains chezmoi template syntax.
 
+# rbw has a different CLI; helpers that need Bitwarden's commands use command bw.
+if (( $+commands[rbw] )); then
+    alias bw=rbw
+fi
+
 # print a .chezmoi.toml.tmpl lookup block for each Bitwarden item matching
 # <search>, limited to the named custom fields (all fields when none given).
 # only item ids and field names are printed, never field values.
@@ -13,7 +18,7 @@ cz-bw-fields() {
     fi
     local tool
     for tool in bw jq; do
-        command -v "$tool" >/dev/null || {
+        whence -p "$tool" >/dev/null || {
             print -u2 "cz-bw-fields: $tool not on PATH"
             return 127
         }
@@ -21,7 +26,7 @@ cz-bw-fields() {
 
     local search=$1 items
     shift
-    items=$(bw list items --search "$search") || return
+    items=$(command bw list items --search "$search") || return
     if [[ $(jq length <<<"$items") == 0 ]]; then
         print -u2 "cz-bw-fields: no items match '$search'"
         return 1

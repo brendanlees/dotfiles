@@ -53,6 +53,7 @@ printf 'yes\n' | env -u BW_SESSION \
   CHEZMOI_LOG="$chezmoi_log" \
   CHEZMOI_SOURCE="$fixture_source" \
   zsh -fc '
+    alias bw=false  # Interactive aliases must not intercept session handling.
     source "$ALIASES_FILE"
     cz-bw-r
     if [[ -n "${BW_SESSION-}" ]]; then

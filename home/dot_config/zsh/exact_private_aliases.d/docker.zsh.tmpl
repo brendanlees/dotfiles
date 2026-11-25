@@ -180,7 +180,7 @@ infi-auth-bw() {
         echo "usage: infi-auth-bw <namespace> [domain]" >&2
         return 2
     fi
-    if ! command -v bw >/dev/null 2>&1; then
+    if ! whence -p bw >/dev/null 2>&1; then
         echo "infi-auth-bw: bw not on PATH; token unchanged" >&2
         return 127
     fi
@@ -198,7 +198,7 @@ infi-auth-bw() {
     local unlocked_here=0
 
     if [[ -z "$bw_session" ]]; then
-        bw_session="$(bw unlock --raw)" || return 1
+        bw_session="$(command bw unlock --raw)" || return 1
         if [[ -z "$bw_session" ]]; then
             echo "infi-auth-bw: Bitwarden returned an empty session" >&2
             return 1
@@ -208,7 +208,7 @@ infi-auth-bw() {
 
     local auth_output
     auth_output="$(
-        BW_SESSION="$bw_session" bw get item "$item_id" |
+        BW_SESSION="$bw_session" command bw get item "$item_id" |
             python3 -c '
 import json
 import sys
@@ -229,7 +229,7 @@ print(*values, sep="\n")
     local rc=$?
 
     if (( unlocked_here )); then
-        BW_SESSION="$bw_session" bw lock >/dev/null 2>&1 ||
+        BW_SESSION="$bw_session" command bw lock >/dev/null 2>&1 ||
             echo "infi-auth-bw: warning: could not re-lock Bitwarden" >&2
     fi
     bw_session=""

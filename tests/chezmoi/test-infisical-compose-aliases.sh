@@ -205,6 +205,7 @@ INFI_ALIAS_TEST_LOG="$LOG" \
 "$ZSH_BIN" -fc "
   cd '$COMPOSE_DIR'
   setopt aliases
+  alias bw=false
   source '$ALIASES'
   infi-auth-bw komodo-rpi1
   eval 'idcrec.proxy'
@@ -221,6 +222,7 @@ HOME="$TEST_ROOT/home" \
 PATH="/usr/bin:/bin" \
 "$ZSH_BIN" -fc "
   cd '$COMPOSE_DIR'
+  alias bw=false
   source '$ALIASES'
   _INFISICAL_COMPOSE_ACCESS_TOKEN=sentinel
   infi-auth-bw komodo-rpi1
