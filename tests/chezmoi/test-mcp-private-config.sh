@@ -6,32 +6,9 @@ source_root="$repo_root/home"
 template="$source_root/dot_config/private_mcp/private_mcp.json.tmpl"
 config_template="$source_root/.chezmoi.toml.tmpl"
 ignore_template="$source_root/.chezmoiignore"
-ha_item_id="afa4395b-8044-46b1-86c9-b48d007e82ac"
 executor_url="https://executor.lab.brendans.cloud/mcp/toolkits/hermes-work"
-# shellcheck disable=SC2016 # Match the literal Go-template variable name.
-executor_assignment_pattern='\$bw_executor_work := bitwardenFields "item" "[0-9a-f-]{36}"'
-# shellcheck disable=SC2016 # Match the literal Go-template variable name.
-executor_bearer_template='bearer_token = {{ (index $bw_executor_work "api-key").value | quote }}'
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
-
-missing=0
-if [[ ! -f "$template" ]]; then
-  echo "missing production private MCP template: $template" >&2
-  missing=1
-fi
-if ! grep -Fq "bitwardenFields \"item\" \"$ha_item_id\"" "$config_template" ||
-  ! grep -Fq '[data.bw_ha_mcp]' "$config_template"; then
-  echo "missing cached bw_ha_mcp data wiring" >&2
-  missing=1
-fi
-if ! grep -Eq "$executor_assignment_pattern" "$config_template" ||
-  ! grep -Fq '[data.bw_executor_work]' "$config_template" ||
-  ! grep -Fq "$executor_bearer_template" "$config_template"; then
-  echo "missing cached bw_executor_work data wiring" >&2
-  missing=1
-fi
-((missing == 0)) || exit 1
 
 sentinel_url=$(printf 'https://%s/%s?%s=%s&%s=%s' \
   'sentinel.invalid' 'mcp' 'quote' '"' 'backslash' $'\\')

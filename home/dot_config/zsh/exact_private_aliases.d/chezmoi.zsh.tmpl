@@ -14,27 +14,21 @@ cz-lib-readd() {
     chezmoi re-add --recursive "$@" "$HOME/Library"
 }
 
-# init with a single bw prompt (unlocks vault once, passes session via env)
-cz-bw-init() {
-    whence -p bw >/dev/null || {
-        printf 'cz-bw-init: bw not on PATH\n' >&2
-        return 1
-    }
-    local s
-    s="$(command bw unlock --raw)" || return 1
-    BW_SESSION="$s" chezmoi init "$@"
+# Unlock before invoking czr: a failed unlock must never reach its purge step.
+_cz_with_vault() {
+    if (( $+commands[rbw] )); then
+        command rbw unlock && "$@"
+    elif (( $+commands[bw] )); then
+        local session
+        session=$(command bw unlock --raw) && BW_SESSION="$session" "$@"
+    else
+        print -u2 'Neither rbw nor bw is on PATH'
+        return 127
+    fi
 }
 
-# purge system & reinit with a single bw prompt
-cz-bw-r() {
-    whence -p bw >/dev/null || {
-        printf 'cz-bw-r: bw not on PATH\n' >&2
-        return 1
-    }
-    local s
-    s="$(command bw unlock --raw)" || return 1
-    BW_SESSION="$s" czr
-}
+cz-bw-init() { _cz_with_vault chezmoi init "$@"; }
+cz-bw-r() { _cz_with_vault czr; }
 
 # purge system & reinit
 # refuses if there is unpushed work or extra worktrees in the chezmoi source dir

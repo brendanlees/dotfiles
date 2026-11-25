@@ -32,7 +32,7 @@ these maintain a generic ssh config scaffold, while private hostnames, aliases, 
 ## setup
 
 1. install `bw` (and `jq` for posix refreshes; windows uses powershell json parsing).
-2. sign in and unlock bitwarden: `export BW_SESSION=$(bw unlock --raw)` on posix, or `$env:BW_SESSION = bw unlock --raw` in powershell.
+2. sign in and unlock bitwarden: `export BW_SESSION=$(command bw unlock --raw)` on posix, or `$env:BW_SESSION = bw unlock --raw` in powershell.
 3. create a Bitwarden secure note (or reuse the existing manifest item) and attach the UTF-8 JSON file as `bw-ssh-config.json`. Keep exactly one attachment with that name. Smaller existing manifests can remain in Notes.
 4. re-run `chezmoi init --apply brendanlees` on an enabled machine and set `ssh_bw_manifest_item` to that item name or id.
 5. the first apply provisions SSH automatically. For later changes or repairs, run `cz-ssh-refresh --fail` explicitly.
@@ -108,7 +108,7 @@ After changing the manifest, keys, enabled roles, or agent socket configuration,
 if bitwarden is locked, run:
 
 ```sh
-export BW_SESSION=$(bw unlock --raw)
+export BW_SESSION=$(command bw unlock --raw)
 cz-ssh-refresh
 ```
 

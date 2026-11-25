@@ -198,9 +198,10 @@ grep -Fq 'infisical run <run> <--domain=https://infisical.lab.brendans.cloud>' "
 
 # Bitwarden is opt-in. It derives the uppercase custom field names from the
 # explicit namespace, exchanges the pair, re-locks, and primes the same cache.
+for tool in env python3 cat bash basename sed; do ln -s "$(command -v "$tool")" "$BIN_DIR/$tool"; done
 : >"$LOG"
 HOME="$TEST_ROOT/home" \
-PATH="$BIN_DIR:$PATH" \
+PATH="$BIN_DIR" \
 INFI_ALIAS_TEST_LOG="$LOG" \
 "$ZSH_BIN" -fc "
   cd '$COMPOSE_DIR'
@@ -217,6 +218,39 @@ grep -Fq 'bw <unlock> <--raw>' "$LOG"
 grep -Fq 'bw <get> <item> <e0421ba7-4f2d-4c27-8fff-b49a00a87137>' "$LOG"
 grep -Fq 'bw <lock>' "$LOG"
 
+# Use rbw's agent when present, including on hosts that also have bw.
+cat >"$BIN_DIR/rbw" <<'RBW'
+#!/bin/sh
+echo "rbw $*" >> "$INFI_ALIAS_TEST_LOG"
+case "$*" in
+  unlocked) [ -n "${ALREADY_UNLOCKED:-}" ] ;;
+  unlock|lock) ;;
+  'get --raw e0421ba7-4f2d-4c27-8fff-b49a00a87137')
+    [ -z "${FAIL_GET:-}" ] || exit 42
+    echo '{"fields":[{"name":"KOMODO-RPI1_CLIENT_ID","value":"client-id"},{"name":"KOMODO-RPI1_CLIENT_SECRET","value":"client-secret"}]}'
+    ;;
+  *) exit 64 ;;
+esac
+RBW
+chmod +x "$BIN_DIR/rbw"
+run_rbw() {
+  # shellcheck disable=SC2016 # The child zsh expands its positional argument.
+  HOME="$TEST_ROOT/home" PATH="$BIN_DIR" INFI_ALIAS_TEST_LOG="$LOG" \
+    "$ZSH_BIN" -fc 'source "$1"; infi-auth-bw komodo-rpi1' zsh "$ALIASES"
+}
+: >"$LOG"
+run_rbw
+grep -Fxq 'rbw unlock' "$LOG"
+grep -Fxq 'rbw lock' "$LOG"
+grep -q '^infisical login' "$LOG"
+: >"$LOG"
+ALREADY_UNLOCKED=1 run_rbw
+if grep -Eq '^rbw (unlock|lock)$' "$LOG"; then exit 1; fi
+: >"$LOG"
+if FAIL_GET=1 run_rbw; then exit 1; fi
+grep -Fxq 'rbw lock' "$LOG"
+if grep -Eq '^(bw |infisical login)' "$LOG"; then exit 1; fi
+
 # On a host without bw, the optional helper leaves an existing token untouched.
 HOME="$TEST_ROOT/home" \
 PATH="/usr/bin:/bin" \
@@ -227,6 +261,6 @@ PATH="/usr/bin:/bin" \
   _INFISICAL_COMPOSE_ACCESS_TOKEN=sentinel
   infi-auth-bw komodo-rpi1
   rc=\$?
-  [[ \$rc -eq 127 ]]
+  [[ \$rc -eq 127 ]] || exit 1
   [[ \$_INFISICAL_COMPOSE_ACCESS_TOKEN == sentinel ]]
 "

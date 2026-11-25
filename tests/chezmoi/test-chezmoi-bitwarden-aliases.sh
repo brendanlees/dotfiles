@@ -11,6 +11,7 @@ fixture_source="$tmpdir/source"
 bw_log="$tmpdir/bw.log"
 chezmoi_log="$tmpdir/chezmoi.log"
 mkdir -p "$fake_bin"
+for tool in zsh bash git wc; do ln -s "$(command -v "$tool")" "$fake_bin/$tool"; done
 git init --quiet "$fixture_source"
 
 cat >"$fake_bin/bw" <<'BW'
@@ -47,7 +48,7 @@ chmod +x "$fake_bin/chezmoi"
 
 # shellcheck disable=SC2016 # Expanded by the isolated zsh process, not bash.
 printf 'yes\n' | env -u BW_SESSION \
-  PATH="$fake_bin:$PATH" \
+  PATH="$fake_bin" \
   ALIASES_FILE="$aliases_file" \
   BW_LOG="$bw_log" \
   CHEZMOI_LOG="$chezmoi_log" \
@@ -68,4 +69,22 @@ grep -Fxq "source-path|fixture-session" "$chezmoi_log"
 grep -Fxq "purge --force|fixture-session" "$chezmoi_log"
 grep -Fxq "init --apply brendanlees|fixture-session" "$chezmoi_log"
 
-echo 'Bitwarden reinit alias passes one session to czr'
+cat >"$fake_bin/rbw" <<'RBW'
+#!/bin/sh
+[ "$*" = unlock ] && [ -z "${FAIL_UNLOCK:-}" ]
+RBW
+chmod +x "$fake_bin/rbw"
+: > "$bw_log"
+: > "$chezmoi_log"
+export BW_LOG="$bw_log" CHEZMOI_LOG="$chezmoi_log" CHEZMOI_SOURCE="$fixture_source"
+# shellcheck disable=SC2016 # The child zsh expands its positional argument.
+env -u BW_SESSION PATH="$fake_bin" zsh -fc '
+  source "$1"
+  cz-bw-init --apply fixture || exit 1
+  FAIL_UNLOCK=1 cz-bw-r && exit 1
+  exit 0
+' zsh "$aliases_file"
+[[ ! -s "$bw_log" ]]
+[[ $(<"$chezmoi_log") == 'init --apply fixture|<unset>' ]]
+
+echo 'Bitwarden init helpers select the client and stop before purge on unlock failure'

@@ -18,12 +18,7 @@ For automation, provide it **before the first init** through the dedicated input
 GITHUB_DOWNLOAD_TOKEN=your-download-token chezmoi init --apply brendanlees
 ```
 
-Alternatively, on personal machines, install and sign in to the Bitwarden CLI before init, then unlock it:
-
-```sh
-export BW_SESSION=$(bw unlock --raw)
-chezmoi init --apply brendanlees
-```
+On personal machines, init prefers a configured `rbw` on PATH. Run `rbw unlock` before init. If `rbw` is absent, unlock the official CLI with `export BW_SESSION=$(command bw unlock --raw)`. In zsh, `cz-bw-init --apply brendanlees` handles either unlock. SSH attachment provisioning still uses the official CLI (see [SSH refresh behavior](ssh.md#refresh-behavior)).
 
 Init uses `GITHUB_DOWNLOAD_TOKEN`, then Bitwarden's `read_only_token` when available, then the existing private `github_token` cache. It never takes a download credential from `GH_TOKEN`, `GITHUB_TOKEN`, or `GITHUB_PERSONAL_ACCESS_TOKEN`. Existing caches remain compatible; if one previously captured a repository token, explicitly replace it through the dedicated input or Bitwarden.
 

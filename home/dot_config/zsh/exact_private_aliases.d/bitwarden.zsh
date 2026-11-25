@@ -3,7 +3,6 @@
 # ------------------------------------------
 # Plain .zsh, not .tmpl: the output contains chezmoi template syntax.
 
-# rbw has a different CLI; helpers that need Bitwarden's commands use command bw.
 if (( $+commands[rbw] )); then
     alias bw=rbw
 fi
@@ -16,17 +15,24 @@ cz-bw-fields() {
         print -u2 'usage: cz-bw-fields <search> [field...]'
         return 2
     fi
-    local tool
-    for tool in bw jq; do
-        whence -p "$tool" >/dev/null || {
-            print -u2 "cz-bw-fields: $tool not on PATH"
-            return 127
-        }
-    done
-
-    local search=$1 items
+    setopt localoptions pipefail
+    local search=$1 items ids id
     shift
-    items=$(command bw list items --search "$search") || return
+    if (( $+commands[rbw] )); then
+        # Search results omit custom fields. Fetch only the matching entries.
+        ids=$(command rbw search --fields id -- "$search") || return
+        items=$(
+            for id in "${(@f)ids}"; do
+                [[ -n "$id" ]] || continue
+                command rbw get --raw "$id" || return 1
+            done | jq -s '.'
+        ) || return
+    elif (( $+commands[bw] )); then
+        items=$(command bw list items --search "$search") || return
+    else
+        print -u2 'cz-bw-fields: neither rbw nor bw on PATH'
+        return 127
+    fi
     if [[ $(jq length <<<"$items") == 0 ]]; then
         print -u2 "cz-bw-fields: no items match '$search'"
         return 1
@@ -37,7 +43,7 @@ cz-bw-fields() {
         | [.[]
           | ("bw_" + (.name | ascii_downcase | gsub("[^a-z0-9_]"; "_"))) as $var
           | ["# \(.name)",
-             "{{- $\($var) := bitwardenFields \"item\" \"\(.id)\" }}",
+             "{{- $\($var) := includeTemplate \".chezmoitemplates/vault-fields.tmpl\" \"\(.id)\" | fromJson }}",
              "[data.\($var)]",
              (.fields[]? | .name as $f
               | select(($want | length) == 0 or any($want[]; . == $f))

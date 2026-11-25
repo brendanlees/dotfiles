@@ -172,6 +172,40 @@ infi-auth() {
     return $rc
 }
 
+# Send one item to the field parser. Only re-lock a vault we unlocked.
+_infi_bw_item() {
+    local item_id=$1 unlocked_here=0
+    local -a get_item lock_vault
+    if (( $+commands[rbw] )); then
+        if ! command rbw unlocked >/dev/null 2>&1; then
+            command rbw unlock >&2 || return 1
+            unlocked_here=1
+        fi
+        get_item=(rbw get --raw)
+        lock_vault=(rbw lock)
+    elif (( $+commands[bw] )); then
+        local -x BW_SESSION="${BW_SESSION:-}"
+        if [[ -z "$BW_SESSION" ]]; then
+            BW_SESSION=$(command bw unlock --raw) || return 1
+            [[ -n "$BW_SESSION" ]] || { print -u2 'infi-auth-bw: empty Bitwarden session'; return 1; }
+            unlocked_here=1
+        fi
+        get_item=(bw get item)
+        lock_vault=(bw lock)
+    else
+        print -u2 'infi-auth-bw: neither rbw nor bw on PATH; token unchanged'
+        return 127
+    fi
+
+    {
+        command "${get_item[@]}" "$item_id"
+    } always {
+        if (( unlocked_here )); then
+            command "${lock_vault[@]}" >/dev/null || print -u2 'infi-auth-bw: warning: could not re-lock Bitwarden'
+        fi
+    }
+}
+
 # Optionally retrieve a namespace credential pair from the shared Bitwarden
 # secure note. Namespace "komodo-rpi1" maps to the custom fields
 # KOMODO-RPI1_CLIENT_ID and KOMODO-RPI1_CLIENT_SECRET.
@@ -179,10 +213,6 @@ infi-auth-bw() {
     if (( $# < 1 || $# > 2 )); then
         echo "usage: infi-auth-bw <namespace> [domain]" >&2
         return 2
-    fi
-    if ! whence -p bw >/dev/null 2>&1; then
-        echo "infi-auth-bw: bw not on PATH; token unchanged" >&2
-        return 127
     fi
     if ! command -v python3 >/dev/null 2>&1; then
         echo "infi-auth-bw: python3 not on PATH; token unchanged" >&2
@@ -194,22 +224,9 @@ infi-auth-bw() {
     local item_id="e0421ba7-4f2d-4c27-8fff-b49a00a87137"
     local client_id_field="${namespace}_CLIENT_ID"
     local client_secret_field="${namespace}_CLIENT_SECRET"
-    local bw_session="${BW_SESSION:-}"
-    local unlocked_here=0
-
-    if [[ -z "$bw_session" ]]; then
-        bw_session="$(command bw unlock --raw)" || return 1
-        if [[ -z "$bw_session" ]]; then
-            echo "infi-auth-bw: Bitwarden returned an empty session" >&2
-            return 1
-        fi
-        unlocked_here=1
-    fi
-
-    local auth_output
-    auth_output="$(
-        BW_SESSION="$bw_session" command bw get item "$item_id" |
-            python3 -c '
+    local item auth_output
+    item=$(_infi_bw_item "$item_id") || return
+    auth_output="$(print -rn -- "$item" | python3 -c '
 import json
 import sys
 
@@ -224,15 +241,8 @@ if not all(isinstance(value, str) and value for value in values):
     missing = [name for name, value in zip(sys.argv[1:], values) if not value]
     raise SystemExit("infi-auth-bw: missing custom field(s): " + ", ".join(missing))
 print(*values, sep="\n")
-' "$client_id_field" "$client_secret_field"
-    )"
+' "$client_id_field" "$client_secret_field")"
     local rc=$?
-
-    if (( unlocked_here )); then
-        BW_SESSION="$bw_session" command bw lock >/dev/null 2>&1 ||
-            echo "infi-auth-bw: warning: could not re-lock Bitwarden" >&2
-    fi
-    bw_session=""
 
     if (( rc != 0 )); then
         auth_output=""
