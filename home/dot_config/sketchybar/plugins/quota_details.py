@@ -172,9 +172,10 @@ def cache_notice(config):
         [str(config / "vendor/showy-quota/bin/showy-quota-render"), "--emit", "sketchybar", "--from-cache"],
         capture_output=True, text=True, check=False,
     )
-    # The upstream header retains its freshness and degraded-CLI diagnostics.
+    # The upstream header's first flag marks stale data. Its second flags CLI
+    # fetching as degraded, but quota.env deliberately fetches through the CLI.
     flags = result.stdout.splitlines()[0].split("\x1f") if result.returncode == 0 and result.stdout else []
-    return " · ".join(label for flag, label in zip(flags, ("stale", "CLI")) if flag == "1")
+    return "stale" if flags[:1] == ["1"] else ""
 
 
 def render_strip(config, metrics, items, mode, close_popup=False):
