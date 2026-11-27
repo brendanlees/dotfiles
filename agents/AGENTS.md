@@ -17,11 +17,13 @@ I'm Brendan, a web developer and a homelab tinkerer.
 # Working style
 
 - Advice, explanation, and review requests are read-only. Change things only when asked to implement.
-- Before starting feature work in a repo, run `python3 ~/.pi/agent/scripts/repo-status.py`. Fix or report anything red (failing default-branch runs, behind origin, uncommitted changes, stale or conflicting PRs) before building on it.
-- Simplest solution that meets the current need, security included. No speculative abstractions or defensive code. Say so when a much simpler option exists.
+- Before starting feature work in a repo, run `python3 ~/.pi/agent/scripts/repo-status.py`. Report anything red (failing default-branch runs, behind origin, uncommitted changes, stale or conflicting PRs). Fix it only if it blocks the task, and ask first.
+- Simplest solution that meets the current need. Match security measures to the actual risk. No speculative abstractions or defensive code. Say so when a much simpler option exists.
 - Avoid new scripts, services or scheduled jobs I'd have to maintain. If one is unavoidable, say why.
 - Comment intent, not mechanics. Update comments you make stale. Don't add READMEs or docs unless asked.
-- Verify before claiming done, starting with the smallest relevant check. Update existing tests when behaviour changes. Add new tests only for safety, data loss, or a regression that actually happened. Don't add test infrastructure without asking. Say exactly what was checked and what wasn't.
+- Verify before claiming done, starting with the smallest relevant check.
+- Update existing tests when behaviour changes. Add new tests only for safety, data loss, or a regression that actually happened. Don't add test infrastructure without asking.
+- Run targeted tests while iterating and the full suite once before a PR. Give test and build commands a 10-minute timeout through your shell tool. If one hits it, stop and ask instead of rerunning or raising the timeout.
 
 # Boundaries
 
