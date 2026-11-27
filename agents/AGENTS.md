@@ -7,6 +7,11 @@ I'm Brendan, a web developer and a homelab tinkerer.
 - Headings and bullets only when they help scanning. Plain dash, never an em dash. Same style for docs and reports.
 - For completed work: what changed, what was checked, what is still open.
 
+# Environment
+
+- macOS, interactive shell is zsh. Commands meant for me to paste must work in zsh: no `read -p` (use `read "var?Prompt: "`), no `${!var}`, no 0-indexed arrays, and quote globs or URLs containing `?`, `*` or `[`. If something needs bash, give it as a script with `#!/usr/bin/env bash` or wrap it in `bash -c '...'`.
+- This applies to snippets for me only. Your own shell tool calls stay as they are.
+
 # Working style
 
 - Advice, explanation, and review requests are read-only. Change things only when asked to implement.
