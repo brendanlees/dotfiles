@@ -44,6 +44,11 @@ rex.bind("ctrl+b>shift+l", "client.tab.previous")
 rex.bind("ctrl+b>g", "pane.go_to")
 rex.bind("ctrl+b>b", "client.sidebar.toggle")
 rex.bind("ctrl+b>shift+n", "session.new")
+-- Rex's copy mode already uses vi keys (v selects, y yanks).
+rex.bind("ctrl+b>[", "pane.copy_mode.enter")
+-- Stand-ins for tmux's agent-next.sh and the sesh/herdr-plus project pickers.
+rex.bind("ctrl+b>shift+a", "pane.view_activity")
+rex.bind("ctrl+b>shift+k", "pane.go_to_directory")
 rex.bind("ctrl+b>1", "client.tab.goto", { index = 1 })
 rex.bind("ctrl+b>2", "client.tab.goto", { index = 2 })
 rex.bind("ctrl+b>3", "client.tab.goto", { index = 3 })
