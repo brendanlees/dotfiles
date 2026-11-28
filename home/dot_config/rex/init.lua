@@ -23,12 +23,34 @@ rex.bind("repeat/h", "pane.resize", { amount = 5, direction = "left" })
 rex.bind("ctrl+alt+shift+h", "client.tab.move.backward")
 rex.bind("ctrl+alt+shift+l", "client.tab.move.forward")
 
--- vim-tmux-navigator style pane focus. Not vim-aware: programs inside the
--- pane no longer receive ctrl+h/j/k/l.
-rex.bind("ctrl+h", "pane.focus", { direction = "left" })
-rex.bind("ctrl+j", "pane.focus", { direction = "down" })
-rex.bind("ctrl+k", "pane.focus", { direction = "up" })
-rex.bind("ctrl+l", "pane.focus", { direction = "right" })
+-- ctrl+h/j/k/l move between panes unless the pane's foreground program uses
+-- the key, as Herdr's pi-navigation.sh and vim-herdr-navigation did. nvim
+-- hands off to Rex itself at the edge of its own splits; pi uses ctrl+j/k
+-- for its lists.
+local nav_keys = { left = "ctrl+h", down = "ctrl+j", up = "ctrl+k", right = "ctrl+l" }
+local nav_owners = {
+  left = { nvim = true },
+  right = { nvim = true },
+  down = { nvim = true, pi = true },
+  up = { nvim = true, pi = true },
+}
+rex.action{
+  name = "smart_focus",
+  title = "Focus Pane or Pass Key",
+  args = { direction = "string" },
+  run = function(ctx, args)
+    local proc = ctx.block_id and rex.block.call("com.superlogical.terminal", "process", { block_id = ctx.block_id })
+    local name = proc and proc.foreground and proc.foreground.name
+    if name and nav_owners[args.direction][name] then
+      rex.client.queue("pane.send_key", { key = nav_keys[args.direction] })
+    else
+      rex.client.queue("pane.focus", { direction = args.direction })
+    end
+  end,
+}
+for direction, key in pairs(nav_keys) do
+  rex.bind(key, "smart_focus", { direction = direction })
+end
 
 -- Herdr
 rex.bind("ctrl+b>r", "client.config.reload")
@@ -67,4 +89,3 @@ rex.bind("ctrl+f", "pane.zoom")
 
 -- Ghostty
 rex.bind("shift+cmd+,", "client.config.reload")
-rex.bind("shift+enter", "pane.send_key", { key = "alt+enter" })
