@@ -19,6 +19,17 @@ rex.bind("repeat/k", "pane.resize", { amount = 5, direction = "up" })
 rex.bind("repeat/l", "pane.resize", { amount = 5, direction = "right" })
 rex.bind("repeat/h", "pane.resize", { amount = 5, direction = "left" })
 
+-- tmux swap-window, which Rex has as moving the tab
+rex.bind("ctrl+alt+shift+h", "client.tab.move.backward")
+rex.bind("ctrl+alt+shift+l", "client.tab.move.forward")
+
+-- vim-tmux-navigator style pane focus. Not vim-aware: programs inside the
+-- pane no longer receive ctrl+h/j/k/l.
+rex.bind("ctrl+h", "pane.focus", { direction = "left" })
+rex.bind("ctrl+j", "pane.focus", { direction = "down" })
+rex.bind("ctrl+k", "pane.focus", { direction = "up" })
+rex.bind("ctrl+l", "pane.focus", { direction = "right" })
+
 -- Herdr
 rex.bind("ctrl+b>r", "client.config.reload")
 rex.bind("ctrl+b>c", "client.tab.new")
@@ -27,6 +38,8 @@ rex.bind("ctrl+b>p", "client.tab.previous")
 rex.bind("ctrl+shift+h", "client.tab.previous")
 rex.bind("ctrl+b>n", "client.tab.next")
 rex.bind("ctrl+shift+l", "client.tab.next")
+-- Herdr's prefix+L toggled the last workspace; Rex has no last-used toggle.
+rex.bind("ctrl+b>shift+l", "client.tab.previous")
 rex.bind("ctrl+b>1", "client.tab.goto", { index = 1 })
 rex.bind("ctrl+b>2", "client.tab.goto", { index = 2 })
 rex.bind("ctrl+b>3", "client.tab.goto", { index = 3 })
