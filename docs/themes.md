@@ -1,6 +1,6 @@
 # themes
 
-a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, claude code, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin, vicinae and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
+a single `theme` key in `home/.chezmoidata/defaults.yml` drives colors across ghostty, pi, claude code, herdr, tmux, nvim, btop, bat, starship, glow, zed, atuin, vicinae, rex and sketchybar. the tracked default is `moonfly`; an existing host-local override still takes precedence.
 
 ## switching
 
@@ -15,7 +15,7 @@ type to fuzzy-filter theme names, then press Enter to select. Escape or Ctrl-C c
 
 the script writes the choice to `home/.chezmoidata/local.yml`, applies configuration with `--exclude=scripts,externals`, then runs only the Pi and Claude Code theme hooks for the current OS. It does not install packages, update plugins or sync private repositories.
 
-tmux, ghostty, herdr, borders, sketchybar, nvim and claude code are live-reloaded where available.
+tmux, ghostty, herdr, rex, borders, sketchybar, nvim and claude code are live-reloaded where available.
 
 a few apps need a manual restart to pick up the new theme:
 
@@ -49,6 +49,10 @@ Atuin selects the generated `chezmoi` theme at `~/.config/atuin/themes/chezmoi.t
 Personal, non-headless macOS machines generate `~/.local/share/vicinae/themes/chezmoi.toml` from the active palette. The theme ID stays `chezmoi`; its display name includes the palette, for example “Chezmoi · moonfly”. The managed profile selects it for both macOS appearance modes. All current palettes are dark, so switching macOS to light mode does not change the launcher to a different palette.
 
 Vicinae's writable `settings.json` is left untouched. [Local settings override imported profiles](https://docs.vicinae.com/config#config-imports), so an existing local theme choice may need a one-time `vicinae theme set chezmoi` in each affected appearance mode. Once selected, the normal `theme` command updates the generated file; Vicinae [watches theme files and reloads them automatically](https://docs.vicinae.com/theming/cli-tools#theme-directory-structure), with no extra reload hook. After changing settings in the GUI, run `cz-vicinae-update` to copy them into the profile and clear the local copies.
+
+### rex
+
+Personal, non-headless macOS machines generate a Ghostty-format theme file at `~/.config/chezmoi-theme/rex/chezmoi`, approximating the semantic palette onto the 16 ANSI colours. `theme` imports it with `rex do client.theme.import`; Rex updates its custom theme named `chezmoi` in place and selects it for dark mode. The light-mode theme is left alone. Client actions need Remote Control turned on in Rex under Settings > General, otherwise the import warns and the other reloads still run. zsh puts the Rex CLI on `PATH` from the app's `Versions/Current` server bundle.
 
 ## obsidian palette bridge
 
@@ -100,6 +104,7 @@ It only writes files. It refuses a missing directory or `card.json`, and `theme`
 | `home/.chezmoitemplates/pi-theme.json.tmpl`                                   | shared source for the generated pi theme                                                |
 | `home/.chezmoitemplates/claude-theme.json.tmpl`                               | shared source for the generated claude code theme                                       |
 | `home/dot_config/atuin/themes/chezmoi.toml.tmpl`                              | generated Atuin theme using the active shared palette                                   |
+| `home/dot_config/chezmoi-theme/rex/chezmoi.tmpl`                              | Ghostty-format 16-colour approximation of the active palette, imported into Rex         |
 | `home/dot_config/herdr/config.toml.tmpl`                                      | tmux-compatible herdr keys and generated custom palette                                 |
 | `home/.chezmoiscripts/run_onchange_after_configure-pi-theme.py.tmpl`          | posix atomic writer for `~/.pi/agent/themes/chezmoi.json` after the `.pi` external sync |
 | `home/.chezmoiscripts/windows/run_onchange_after_configure-pi-theme.ps1.tmpl` | windows atomic writer for the same generated runtime theme                              |

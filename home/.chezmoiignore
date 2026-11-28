@@ -14,6 +14,7 @@ Library/LaunchAgents/com.brendan.mutagen-hermes.plist
 
 {{- if or (ne .chezmoi.os "darwin") .headless }}
 .config/ghostty
+.config/rex
 .config/worktrunk
 .config/aerospace
 .config/borders
@@ -37,6 +38,7 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 .local/share/vicinae/themes
 .finicky.js
 .config/chezmoi-theme/obsidian.css
+.config/chezmoi-theme/rex
 {{- end }}
 
 {{- if not .personal }}
