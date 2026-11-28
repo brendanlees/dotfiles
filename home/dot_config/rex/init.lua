@@ -40,6 +40,8 @@ rex.bind("ctrl+b>n", "client.tab.next")
 rex.bind("ctrl+shift+l", "client.tab.next")
 -- Herdr's prefix+L toggled the last workspace; Rex has no last-used toggle.
 rex.bind("ctrl+b>shift+l", "client.tab.previous")
+-- Stands in for Herdr's prefix+t "jump to anything".
+rex.bind("ctrl+b>g", "pane.go_to")
 rex.bind("ctrl+b>1", "client.tab.goto", { index = 1 })
 rex.bind("ctrl+b>2", "client.tab.goto", { index = 2 })
 rex.bind("ctrl+b>3", "client.tab.goto", { index = 3 })
