@@ -1,0 +1,27 @@
+# Generated from .chezmoidata/themes.yml; switch palettes with the theme command.
+# Rex imports Ghostty theme files, so the semantic palette is approximated onto
+# the 16 ANSI colours: bright variants reuse the base hue where the palette
+# has no second shade.
+{{- $p := (index .themes .theme).palette }}
+palette = 0={{ $p.surface }}
+palette = 1={{ $p.error }}
+palette = 2={{ $p.success }}
+palette = 3={{ $p.warn }}
+palette = 4={{ $p.primary }}
+palette = 5={{ $p.secondary }}
+palette = 6={{ $p.info }}
+palette = 7={{ $p.muted }}
+palette = 8={{ $p.comment }}
+palette = 9={{ $p.error }}
+palette = 10={{ $p.success }}
+palette = 11={{ $p.orange }}
+palette = 12={{ $p.primary_alt }}
+palette = 13={{ $p.secondary }}
+palette = 14={{ $p.info_alt }}
+palette = 15={{ $p.fg }}
+background = {{ $p.bg }}
+foreground = {{ $p.fg }}
+cursor-color = {{ $p.accent }}
+cursor-text = {{ $p.bg }}
+selection-background = {{ $p.surface_alt }}
+selection-foreground = {{ $p.fg }}

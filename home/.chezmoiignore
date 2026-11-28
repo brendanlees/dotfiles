@@ -37,6 +37,7 @@ Library/LaunchAgents/com.federicoterzi.espanso.plist
 .local/share/vicinae/themes
 .finicky.js
 .config/chezmoi-theme/obsidian.css
+.config/chezmoi-theme/rex
 {{- end }}
 
 {{- if not .personal }}
